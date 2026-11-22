@@ -57,7 +57,7 @@ public sealed record ImprovingScoreRow(string Ticker, int Passed, int Applied, d
 public sealed partial class ReadApi
 {
     // The rule its trades are kept under before a freeze registers one, the night's own word.
-    public const string ImprovingProvisional = "provisional";
+    public const string ImprovingProvisional = PaperBooks.Provisional;
 
     // From 22.15 the live rule the family's step kept a night under on an index, where a freeze stands, read off the
     // night's own rows; the provisional rule where none does.

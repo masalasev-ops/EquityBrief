@@ -1,11 +1,11 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Loop;
-using EquityBrief.Data;
+using EquityBrief.Core.Paper;
 
-namespace EquityBrief.Api.Reading;
+namespace EquityBrief.Data;
 
-public sealed partial class ReadApi
+public sealed partial class PaperReads
 {
     // The S&P 500's registered rules' trades kept under a plan, their fill and sale as the fill step stored them, and from
     // 23.10's second part the swing filter's rules' the same; the S&P 400's and 600's the same; and every index's dip rules',

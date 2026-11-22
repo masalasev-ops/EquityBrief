@@ -82,6 +82,9 @@ public static class PaperBooks
     // The unit a book's record is read in.
     public const string Points = "points";
 
+    // The name a family's own step keeps its provisional rule's trades under, before any freeze registers one.
+    public const string Provisional = "provisional";
+
     // An index's code by the name a reader knows it by, the S&P 500's where the name is none of the three.
     public static string IndexCodeOf(string indexName) =>
         new[] { FundHoldings.MidCapIndex, FundHoldings.SmallCapIndex }.FirstOrDefault(code => OwnStepCandidate.NameOf(code) == indexName) ?? "GSPC";

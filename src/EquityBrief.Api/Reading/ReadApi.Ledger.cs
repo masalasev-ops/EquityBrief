@@ -88,15 +88,7 @@ public sealed partial class ReadApi
         return held is { } run ? new AnswerTable(run.Run, run.Month, run.Cutoff, rows) : null;
     }
 
-    public async Task<DateOnly?> ModelCutoffAsync()
-    {
-        await using var connection = Open();
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = NewestCutoff;
-
-        return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
-    }
+    public Task<DateOnly?> ModelCutoffAsync() => Paper.ModelCutoffAsync();
 
     // From 21.6 where the readings whose sources keep no history of their own start: the first quarters fetch filing the
     // current year's trend, the first night the night asked every member's trend, the first settlement of FINRA's short
