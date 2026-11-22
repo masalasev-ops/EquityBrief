@@ -45,6 +45,7 @@ public partial class ArchitectureConformance
         ("24.18", [], []),
         ("24.19", [.. FixtureExpectations.SessionReadingRows], []),
         ("24.21", [.. ComponentAccess.PaperReadsRows], []),
+        ("24.20", [], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -89,6 +90,7 @@ public partial class ArchitectureConformance
         ("24.18", 0),
         ("24.19", -3),
         ("24.21", 0),
+        ("24.20", 0),
     ];
 
     [Fact]
@@ -142,6 +144,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1683), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1683), (before, low, high, actual));
     }
 }
