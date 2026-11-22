@@ -103,7 +103,7 @@ public partial class ReadSurface
         Assert.Contains("<span>Bought at</span><b>$101.00</b><span class=\"sale-note judge-buy\">At the open on Fri 20 Nov. Last close before it $100.00.</span>", aaa, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">$99.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it paid.</span>", aaa, StringComparison.Ordinal);
         Assert.Contains("<b class=\"aim\">$105.00</b>", aaa, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI stock picker's pick, ranked 1 of 2 on the night of 19 Nov.</b>", aaa, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"judge-rank\">Pick 1 of 2 on the night of 19 Nov</div>", aaa, StringComparison.Ordinal);
         Assert.Contains("Bought on Fri 20 Nov at $100.00 and still open in version 1's own account.", ddd, StringComparison.Ordinal);
 
         var summary = SinglePageApp.VersionSummaryWords(new JudgeVersionView(1, new DateOnly(2026, 11, 19), new DateOnly(2026, 11, 19), [], new JudgeScoreboard(1, 1, 3.0, null, 300), []), 2);
@@ -120,7 +120,7 @@ public partial class ReadSurface
         Assert.Contains("<b>0</b> trades closed<span>0 of 300 needed for a firm verdict</span>", drawn, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2), drawn, StringComparison.Ordinal);
         Assert.Equal("Its record counts version 2's picks alone, from the night of 23 Nov 2026. Each earlier version's picks are bought and walked to their exits in an account of their own, drawn apart under its number and never added to the record.", SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2));
-        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (1)", drawn, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's large-cap picks tonight (1)", drawn, StringComparison.Ordinal);
 
         // No pick is drawn without an account that buys it: each card is tonight's under the record, or an earlier version's
         // saying what its account did, and every pick stored is drawn.

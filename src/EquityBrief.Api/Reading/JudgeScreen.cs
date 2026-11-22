@@ -174,12 +174,22 @@ public static class JudgeScreen
             return trade is not null && HeldOf(trade, judgeWalk) is { Skipped: PaperAccount.UnderTheCash } unfunded ? card with { Held = unfunded } : card;
         }
 
+        // The index's tile: its account's return since its first session, none before it has bought a trade, its trades still
+        // open and closed, and its picks tonight.
+        var score = JudgeScore.Of(record);
+        var tile = new JudgeTile(
+            within,
+            judgeWalk.Trades.Any(one => one.Skipped is null) && judgeWalk.Values.Count > 1 && judgeWalk.Values[0].Value > 0m ? Statistic.FromRatio((judgeWalk.Values[^1].Value / judgeWalk.Values[0].Value) - 1m) : null,
+            judgeWalk.Trades.Count(one => one.Skipped is null && one.Trade.Ended is null),
+            score.Closed,
+            tonight.Length);
+
         return new JudgeView(
             newest?.Session,
             newest?.Outcome,
             newest?.Why,
             [.. tonight.Select(Tonight)],
-            JudgeScore.Of(record),
+            score,
             JudgeScore.AgainstRandom(judgeWalk.Values.Count > 0 ? judgeWalk.Values[^1].Value : null, band.Count > 0 ? band[^1] : null),
             randomResults.Length == 0 ? null : randomResults.Average(),
             JudgeScore.Looked([.. judged.Select((one, at) => (one.Pick.Ticker, one.Trade?.Bought ?? one.Pick.Session.AddDays(1), record[at].result))], ruleTrades),
@@ -203,6 +213,7 @@ public static class JudgeScreen
             Index = within,
             Marked = newest is { Index: not null } ran && ran.Outcome is "picked" or "none" ? ran.Kept : null,
             FixedFive = fixedFive,
+            Tiles = [tile],
         };
     }
 
@@ -234,8 +245,8 @@ public static class JudgeScreen
     static JudgeCardView Card(JudgePickRow pick, int of) =>
         new JudgeCardView(pick.Rank, of, pick.Ticker, pick.Company, pick.Sector, pick.Size, pick.Reason, pick.LastClose, pick.Stop, pick.Target, pick.GiveUp, pick.Hold, pick.Shape) with
         {
-            Named = pick.Named is { } named ? [.. named.Select(key => Fact(key, pick.Sheet))] : null,
-            Rest = [.. JudgeFacts.In(JudgeRound.Sheet).Where(field => pick.Named?.Contains(field.Key, StringComparer.Ordinal) != true).Select(field => Fact(field.Key, pick.Sheet))],
+            Named = pick.Named is { } named ? [.. named.Select(key => Fact(key, pick.Sheet, pick.Tenths))] : null,
+            Rest = [.. JudgeFacts.In(JudgeRound.Sheet).Where(field => pick.Named?.Contains(field.Key, StringComparer.Ordinal) != true).Select(field => Fact(field.Key, pick.Sheet, pick.Tenths))],
         };
 
     // What an account did with a pick: bought at the open after its night at the price it paid, its stop and take-profit from
@@ -252,13 +263,18 @@ public static class JudgeScreen
         return new JudgeHeld(trade.Bought, trade.Buy, trade.Stop, trade.Target, trade.Trail, trade.Ended, trade.Sale, JudgeAccounts.ResultOf(trade), taken is null ? NotTaken : taken.Skipped);
     }
 
-    // One fact of a pick's sheet: its words and its value as the judge was shown it, a field it held none of not on file.
-    static JudgeFactView Fact(string key, IReadOnlyDictionary<string, string> sheet)
+    // One fact of a pick's sheet: its words and its value as the judge was shown it, a field it held none of not on file, with
+    // its key and the tenth it stood in among its index's members that night, none where it was not placed.
+    static JudgeFactView Fact(string key, IReadOnlyDictionary<string, string> sheet, IReadOnlyDictionary<string, int> tenths)
     {
         var field = JudgeFacts.All.FirstOrDefault(one => one.Key == key);
         var shown = sheet.TryGetValue(key, out var text) ? text : JudgeFacts.NotOnFile;
 
-        return new JudgeFactView(field?.Words ?? key, shown, JudgeFactView.Compared(key, shown));
+        return new JudgeFactView(field?.Words ?? key, shown, JudgeFactView.Compared(key, shown))
+        {
+            Key = key,
+            Tenth = shown != JudgeFacts.NotOnFile && tenths.TryGetValue(key, out var tenth) ? tenth : null,
+        };
     }
 
     // From 24.13 the first session the exchange trades after a night, the open its picks buy at.

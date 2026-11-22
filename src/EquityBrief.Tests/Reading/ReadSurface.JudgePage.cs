@@ -97,16 +97,18 @@ public partial class ReadSurface
         Assert.Contains(SinglePageApp.JudgeReplayedLine, page, StringComparison.Ordinal);
 
         // The cards, in the words of the rule on the open, AAA first.
-        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (2)", page, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's large-cap picks tonight (2)", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"judge-rank\">Pick 1 of 2 tonight, S&P 500</div><div class=\"home-ticker\">", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as the local model wrote it.</small></p>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI stock picker's pick, ranked 1 of 2 tonight.</b> It saw Industrials, a large company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as your local model wrote it.</small></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"judge-saw\">It saw: Industrials, a large company. No name, ticker or date.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close $100.00.</span>", page, StringComparison.Ordinal);
         Assert.Contains("The prices are worked from the last close until it is bought, then again from the price it actually paid.", page, StringComparison.Ordinal);
         Assert.Contains("<span>Sell if it closes below</span><b class=\"stop\">$98.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it pays.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Take profit at</span><b class=\"aim\">$104.00</b><span class=\"sale-note judge-target\">2 times the risk: $4.00 up for $2.00 down.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Otherwise sell after</span><b class=\"aim judge-hold\">1 week</b>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI stock picker's pick, ranked 2 of 2 tonight.</b> It saw Health Care, a mid-size company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"judge-rank\">Pick 2 of 2 tonight, S&P 500</div>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"judge-saw\">It saw: Health Care, a mid-size company. No name, ticker or date.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">$97.00</b><span class=\"sale-note judge-stop\">1.5 typical daily moves under the price it pays.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Take profit on half at</span><b class=\"aim\">$106.00</b><span class=\"sale-note judge-target\">2 times the risk: $6.00 up for $3.00 down.</span>", page, StringComparison.Ordinal);
         Assert.Contains("Sells on a close under a give-up price that rises behind its highest close, $3.00 under it.", page, StringComparison.Ordinal);
@@ -148,7 +150,7 @@ public partial class ReadSurface
         var view = new JudgeView(new DateOnly(2026, 11, 19), "picked", "", [new JudgeCardView(1, 1, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole)], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0);
         var home = SinglePageApp.JudgeHomeLine(view);
 
-        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (2)", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's large-cap picks tonight (2)", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
         Assert.Contains("<span class=\"ai-tag\">AI stock picker</span>", page, StringComparison.Ordinal);
         Assert.Contains("The AI stock picker has not run yet.", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
         Assert.Contains("<b>AI stock picker</b>", home, StringComparison.Ordinal);
@@ -327,14 +329,14 @@ public partial class ReadSurface
         var rest = JudgeFacts.In(JudgeRound.Sheet).Count() - 3;
 
         Assert.Contains(
-            "<ul class=\"ai-facts\" data-facts=\"named\">"
-            + "<li class=\"why\"><span>Analysts' estimates over the last month</span><b>+4%</b><span class=\"cmp\">Analysts raised their estimates.</span></li>"
-            + "<li class=\"why\"><span>Volume against its own average</span><b>-12%</b><span class=\"cmp\">Less volume than it usually trades.</span></li>"
-            + "<li class=\"why\"><span>Momentum (RSI)</span><b>61 of 100</b></li></ul>",
+            "<table class=\"judge-facts\" data-facts=\"named\"><colgroup><col class=\"l\"><col class=\"v\"><col class=\"b\"><col class=\"c\"></colgroup><tbody>"
+            + "<tr class=\"why\" data-fact=\"estimate_revision_month\"><td class=\"l\">Analysts' estimates over the last month</td><td class=\"v\">+4%</td><td class=\"b\"></td><td class=\"c\">Analysts raised their estimates.</td></tr>"
+            + "<tr class=\"why\" data-fact=\"volume_ratio\"><td class=\"l\">Volume against its own average</td><td class=\"v\">-12%</td><td class=\"b\"></td><td class=\"c\">Less volume than it usually trades.</td></tr>"
+            + "<tr class=\"why\" data-fact=\"rsi\"><td class=\"l\">Momentum (RSI)</td><td class=\"v\">61 of 100</td><td class=\"b\"></td><td class=\"c\"></td></tr></tbody></table>",
             bbb, StringComparison.Ordinal);
-        Assert.Contains($"<summary>Everything else it saw ({rest} facts)</summary>", bbb, StringComparison.Ordinal);
-        Assert.Contains("<li class=\"\"><span>How deep the pullback from its 20-day high</span><b>3%</b></li>", bbb, StringComparison.Ordinal);
-        Assert.Contains("<li class=\"\"><span>Gap up into the night</span><b>not on file</b></li>", bbb, StringComparison.Ordinal);
+        Assert.Contains($"<summary>Everything else it saw ({rest} facts), grouped</summary>", bbb, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"\" data-fact=\"depth\"><td class=\"l\">How deep the pullback from its 20-day high</td><td class=\"v\">3%</td>", bbb, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"\" data-fact=\"gap_days\"><td class=\"l\">Gap up into the night</td><td class=\"v\">not on file</td>", bbb, StringComparison.Ordinal);
         Assert.DoesNotContain(SinglePageApp.JudgeBeforeNamed, bbb, StringComparison.Ordinal);
 
         // CCC, picked with no facts stored: its sentence, then its whole sheet under the mark, nothing folded.
@@ -342,7 +344,7 @@ public partial class ReadSurface
 
         Assert.Contains("\"Picked before the facts were stored.\"", ccc, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"facts-h\" data-facts=\"before\">{SinglePageApp.JudgeBeforeNamed}</p>", ccc, StringComparison.Ordinal);
-        Assert.Contains("<li class=\"\"><span>Momentum (RSI)</span><b>40 of 100</b></li>", ccc, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"\" data-fact=\"rsi\"><td class=\"l\">Momentum (RSI)</td><td class=\"v\">40 of 100</td>", ccc, StringComparison.Ordinal);
         Assert.DoesNotContain("data-facts=\"named\"", ccc, StringComparison.Ordinal);
         Assert.DoesNotContain("<details", ccc, StringComparison.Ordinal);
 

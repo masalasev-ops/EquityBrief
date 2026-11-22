@@ -241,6 +241,9 @@ public partial class ReadSurface
             // 24.24, the picker's page within one index.
             .. PickerIndexRows,
 
+            // The picker's page from its approved mockup.
+            .. PickerPageRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

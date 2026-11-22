@@ -106,7 +106,7 @@ public sealed class JudgeFactWriter(IClock clock, string databaseFile) : ICompon
         return fields.ToJsonString();
     }
 
-    public const string TenthsKey = "tenths";
+    public const string TenthsKey = JudgeFacts.TenthsKey;
 
     static string Stamp(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
