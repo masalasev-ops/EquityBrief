@@ -122,6 +122,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "income-readings" => await IncomeReadingsVerb(args),
     "fallback-facts" => await FallbackFactsVerb(args),
     "paper-figures" => await PaperFiguresVerb(args),
+    "case-words" => await CaseWordsVerb(),
     _ => NoVerb(),
 };
 
@@ -1259,7 +1260,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 93 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 94 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1546,6 +1547,7 @@ static int NoVerb()
         "with '--facts <folder>' what each fallback line would add read from the SEC's answers kept there, and with '--list' each member, writing nothing, " +
         "'fallback-facts --kept <folder>' fills the two fallback lines once for every member's filer, from the answers kept there or asked again of the SEC, " +
         "'paper-figures --session <yyyy-MM-dd>' prints every paper account's figures on each index as Paper trading draws them, or with '--index <code>' one, writing nothing, " +
+        "'case-words' asks the local model for the case for and the case against of each case the newest monthly run stored that holds no words for its figures, as each local run slot does after its releases, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
@@ -2585,6 +2587,13 @@ static async Task<int> LoopMonthRun(string[] args)
         TakesTheLock: true));
 
     steps.Add(new("report", (_, cancellation) => run!.ReportAsync(month, cancellation)));
+
+    // Each case standing on each index stored with its figures, the long history's read as the newest long test stored them,
+    // before the long test so that test stays last.
+    // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+    steps.Add(new(
+        EquityBrief.Worker.Loop.PromotionCaseStore.Step,
+        (runId, cancellation) => new EquityBrief.Worker.Loop.PromotionCaseStore(clock, store.DatabaseFile, store.DataRoot).StoreAsync(month, runId, Console.Out, cancellation)));
 
     // From 23.7 the long test, last, so a failure holds nothing the report needs.
     // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
@@ -4084,7 +4093,46 @@ static async Task<int> LocalRunVerb(string[] args)
         : pin ? await run.PinAsync(Console.Out)
         : await run.TwiceAsync(Console.Out);
 
+    // A slot's releases read, the newest monthly run's cases waiting for their words are asked for them.
+    // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+    if (slot is not null)
+    {
+        await new CaseWords(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot).RunAsync(Console.Out);
+    }
+
     return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead or LocalRun.PinUnchanged ? 0 : 1;
+}
+
+// The case's words by hand: each case the newest monthly run stored whose figures hold no words asked of the local model.
+// see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+static async Task<int> CaseWordsVerb()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"case-words: no store at '{store.DatabaseFile}'.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("case-words: " + refused.Message);
+
+        return 1;
+    }
+
+    var outcome = await new CaseWords(LmStudioReadingFeed.Live(settings), settings, SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot).RunAsync(Console.Out);
+
+    return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead ? 0 : 1;
 }
 
 // The results releases by hand. From 20.2 '--history --from <yyyy-MM-dd>': every ledger filer's releases from the one

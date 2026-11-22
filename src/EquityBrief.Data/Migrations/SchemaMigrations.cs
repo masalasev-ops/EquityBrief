@@ -778,7 +778,47 @@ public static class SchemaMigrations
         new Migration(155, "create fallback_fact", CreateFallbackFacts),
         new Migration(156, "add judge_pick.fields", AddJudgeFields),
         new Migration(157, "create session_reading and session_reading_year", CreateSessionReadings),
+        new Migration(158, "create promotion_case and promotion_case_words", CreatePromotionCases),
     ];
+
+    // Each case standing at a monthly run, a variant meeting the rule against its running revision on an index, stored with
+    // its figures by the monthly run whether or not the page is read; and the local model's case for and case against over a
+    // case's figures, asked once for each figures a later run stores changed, a reply refused kept with its cause and the
+    // earlier words kept as the case's history.
+    // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+    const string CreatePromotionCases = @"
+        CREATE TABLE promotion_case (
+            month        TEXT NOT NULL,
+            index_code   TEXT NOT NULL,
+            family       TEXT NOT NULL,
+            variant      TEXT NOT NULL,
+            night        TEXT NOT NULL,
+            figures      TEXT NOT NULL,
+            figures_key  TEXT NOT NULL,
+            stored_at    TEXT NOT NULL,
+            run_id       TEXT NOT NULL,
+            PRIMARY KEY (month, index_code, family, variant)
+        ) STRICT;
+
+        CREATE TABLE promotion_case_words (
+            index_code     TEXT    NOT NULL,
+            family         TEXT    NOT NULL,
+            variant        TEXT    NOT NULL,
+            figures_key    TEXT    NOT NULL,
+            pin            INTEGER NOT NULL,
+            version        TEXT    NOT NULL,
+            outcome        TEXT    NOT NULL,
+            cause          TEXT,
+            for_words      TEXT,
+            against_words  TEXT,
+            answer         TEXT,
+            model          TEXT    NOT NULL,
+            seconds        REAL,
+            asked_at       TEXT    NOT NULL,
+            run_id         TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family, variant, figures_key)
+        ) STRICT;
+    ";
 
     // Every member's readings on every session from 2005, a row a member an index a session with the members as they stood,
     // in `ledger_reading`'s form: worked by the build where no night stored the session, and the night's own rows copied where

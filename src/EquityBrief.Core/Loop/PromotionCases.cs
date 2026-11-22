@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Paper;
 
@@ -127,6 +130,15 @@ public static class PromotionCases
     // The cases standing among an index's rows: each variant meeting the rule.
     public static IReadOnlyList<PromotionCaseView> Standing(IReadOnlyList<PromotionRowView> rows) =>
         [.. rows.SelectMany(row => row.Variants).Where(one => one.Conditions.Meets)];
+
+    // A case's figures as the monthly run stores them, and the key a later run's figures are read against: a case whose
+    // figures are the same keeps its words, and one whose figures changed is asked for them again.
+    public static string Figures(PromotionCaseView one) => JsonSerializer.Serialize(one);
+
+    public static string FiguresKey(string figures) =>
+        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(figures)))[..32];
+
+    public static PromotionCaseView? FromFigures(string figures) => JsonSerializer.Deserialize<PromotionCaseView>(figures);
 
     // The trades an account's walk bought, with their stored results, as Paper trading's tiles count them; every trade where
     // no walk ran.

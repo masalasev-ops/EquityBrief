@@ -5,9 +5,17 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
 
+// One answer of the local model's over a case's figures: the case for, the case against, the model that wrote them and the
+// day it did.
+public sealed record CaseWordsLine(string For, string Against, string Model, DateOnly Written);
+
+// A variant's words: the newest answer, and the earlier ones kept as the case's history, newest first.
+public sealed record CaseWordsView(CaseWordsLine Newest, IReadOnlyList<CaseWordsLine> Earlier);
+
 // The case for promotion's page: the night it is read for, the day the rule freeze ends while the day falls inside it, every
-// running revision with its variants, and the ideas the monthly runs have tested to date with those that passed.
-public sealed record PromotionPageView(DateOnly? Night, DateOnly? FrozenUntil, IReadOnlyList<PromotionRowView> Rows, int Tested, int Passed)
+// running revision with its variants, the ideas the monthly runs have tested to date with those that passed, and the local
+// model's words over each stored case by its variant.
+public sealed record PromotionPageView(DateOnly? Night, DateOnly? FrozenUntil, IReadOnlyList<PromotionRowView> Rows, int Tested, int Passed, IReadOnlyDictionary<string, CaseWordsView>? Words = null)
 {
     public IReadOnlyList<PromotionCaseView> Cases => [.. Rows.SelectMany(row => row.Variants).Where(one => one.Conditions.Meets)];
 
@@ -103,8 +111,22 @@ public sealed partial class SinglePageApp
         html.Append($"<tr data-row=\"long\"><td>Long history, chosen on 2005 to 2018, judged from 2019</td><td class=\"r num\" data-h=\"The variant\">{Escaped(LongFigure(one.Book, one.Long))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(LongFigure(one.Book, one.RunningLong))}</td></tr>");
         html.Append($"</tbody></table></div><p class=\"lm-small\" data-part=\"conditions\">{Escaped(ConditionsLine(one))}</p></div>");
         html.Append($"<div data-part=\"picks\"><h4>What its picks looked like</h4><p>{Escaped(PicksLine(one))}</p></div>");
-        html.Append($"<div data-part=\"for\"><h4>The case for</h4><p class=\"ai-quote\" data-words=\"code\">{Escaped(CodeFor)}<small>{Escaped(CodeWords)}</small></p></div>");
-        html.Append($"<div data-part=\"against\"><h4>The case against</h4><p data-counted><b>Counted by code:</b> {Escaped(CountedAgainst(one, view.Tested, view.Passed))}</p><p class=\"ai-quote\" data-words=\"code\">{Escaped(CodeAgainst)}<small>{Escaped(CodeWords)}</small></p></div>");
+        var words = view.Words is not null && view.Words.TryGetValue(CaseKey(one.Index, one.Family, one.Variant), out var written) ? written : null;
+
+        html.Append($"<div data-part=\"for\"><h4>The case for</h4>{Quote(words?.Newest.For, CodeFor, words?.Newest)}</div>");
+        html.Append($"<div data-part=\"against\"><h4>The case against</h4><p data-counted><b>Counted by code:</b> {Escaped(CountedAgainst(one, view.Tested, view.Passed))}</p>{Quote(words?.Newest.Against, CodeAgainst, words?.Newest)}</div>");
+
+        if (words is { Earlier.Count: > 0 })
+        {
+            html.Append("<details class=\"lm-small\" data-part=\"earlier-words\"><summary>Earlier words, over the figures of an earlier monthly run</summary><ul>");
+
+            foreach (var earlier in words.Earlier)
+            {
+                html.Append($"<li>{Escaped(Written(earlier))}: for, {Escaped(earlier.For)} Against, {Escaped(earlier.Against)}</li>");
+            }
+
+            html.Append("</ul></details>");
+        }
         html.Append($"<div data-part=\"tonight\"><h4>What would change on Tonight's cards</h4><p>{Escaped(TonightLine(one))}</p></div>");
         html.Append("</div>");
 
@@ -119,6 +141,18 @@ public sealed partial class SinglePageApp
 
         return html.ToString();
     }
+
+    // The key a case's words are read under: its index, its setup and its variant.
+    public static string CaseKey(string index, string family, string variant) => index + "|" + family + "|" + variant;
+
+    // A case's words as the page draws them: the local model's with the day it wrote them and the model, or code's own
+    // sentence where none is written.
+    static string Quote(string? model, string code, CaseWordsLine? line) =>
+        model is { } said && line is { } by
+            ? $"<p class=\"ai-quote\" data-words=\"model\">{Escaped(said)}<small>{Escaped(Written(by))}</small></p>"
+            : $"<p class=\"ai-quote\" data-words=\"code\">{Escaped(code)}<small>{Escaped(CodeWords)}</small></p>";
+
+    public static string Written(CaseWordsLine line) => $"Written on {Day(line.Written)} by {line.Model}";
 
     public static string PromoteLine(int revision) =>
         $"This variant becomes {RevisionView.Named(revision + 1).ToLowerInvariant()}; {RevisionView.Named(revision).ToLowerInvariant()} runs on as a variant, each keeping its own record.";
