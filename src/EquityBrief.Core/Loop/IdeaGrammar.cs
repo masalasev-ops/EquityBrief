@@ -326,7 +326,7 @@ public static class IdeaGrammar
 
         return sorted.Length < Tenths
             ? null
-            : [.. Enumerable.Range(1, Tenths - 1).Select(k => sorted[(int)Math.Ceiling(k * sorted.Length / (double)Tenths) - 1])];
+            : [.. Enumerable.Range(1, Tenths - 1).Select(k => sorted[(int)Math.Ceiling(k * sorted.Length * 1.0 / Tenths) - 1])];
     }
 
     // The tenth a value stands in against the early years' cut points: 1 at or under the first, 10 above the ninth.
