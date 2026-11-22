@@ -21,7 +21,8 @@ public partial class ArchitectureConformance
     // what has happened since; and none at 24.9 or 24.8; and none at 24.16, the Loop page's name and words landing as
     // clauses of section 15.20's route and the renamed row of choosing a variant; and 24.17's three regions of the case for
     // promotion, section 18's row of a press on a case and section 17's row of the rule; and none at 24.18, the AI stock
-    // picker's rows renamed where they stood and the word check landing as a clause of banned-prose's roster row.
+    // picker's rows renamed where they stood and the word check landing as a clause of banned-prose's roster row; and
+    // 24.19's two stores and the History page's row.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -42,6 +43,7 @@ public partial class ArchitectureConformance
         ("24.16", [], []),
         ("24.17", [.. Reading.ReadSurface.PromotionCaseRows, .. FixtureExpectations.PromotionRuleClaims], []),
         ("24.18", [], []),
+        ("24.19", [.. FixtureExpectations.SessionReadingRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -61,7 +63,8 @@ public partial class ArchitectureConformance
     // roster's row of the nightly run stood, its words gaining the build across the cores. 24.8, none of two: the History page
     // draws no book's years, which each book's record box draws off the monthly run's lines, and the long test's years landed
     // as clauses of section 17's paragraph and the runbook's line, which stood. 24.16, none as counted. 24.17, five of five.
-    // 24.18, none as counted.
+    // 24.18, none as counted. 24.19, three of six: the table's two stores and the History page's row, the setup ledger's
+    // catalogue and matrix rows standing with its new work landing as clauses of them.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -82,6 +85,7 @@ public partial class ArchitectureConformance
         ("24.16", 0),
         ("24.17", 0),
         ("24.18", 0),
+        ("24.19", -3),
     ];
 
     [Fact]
@@ -135,6 +139,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1678), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1681), (before, low, high, actual));
     }
 }

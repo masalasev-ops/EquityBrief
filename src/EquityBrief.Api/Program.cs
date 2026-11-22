@@ -3944,7 +3944,7 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
 // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
-    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync()), "text/html; charset=utf-8"));
+    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync(), await read.SessionCoverageAsync()), "text/html; charset=utf-8"));
 
 // From 24.6 the AI stock picker's page: its four accounts worked when the page is read, the scoreboard of its live record, the
 // newest night's cards, where it looked against the rules' picks, and a replayed record apart.

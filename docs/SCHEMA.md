@@ -108,6 +108,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `setup_night` | SetupLedger | none | SetupLedger |
 | `ledger_summary` | SetupLedger | none | SetupLedger |
 | `ledger_reading` | SetupLedger | SetupLedger | SetupLedger |
+| `session_reading` | SetupLedger | SetupLedger | none |
+| `session_reading_year` | SetupLedger | none | SetupLedger |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2597,6 +2599,40 @@ Grain: one row per index, member and night the ledger read, from 19.2.
 Primary key: `index_code`, `session_date`, `ticker`.
 
 **Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none. From 19.13 it holds the four insider readings after them, and the setup ledger is its updater too: once the night's filings refresh has stored the session before's filings, it writes the night's rows' four insider readings again in place, every other reading left as the step wrote it (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). From 20.8 it holds the four release readings after them, and each night's step writes the release readings of the rows of the seven days before the night again in place where they differ from what it reads now, a slot having since read a release those nights could read, every other reading left as written (see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff).
+
+### session_reading
+Grain: one row per index, member and session from 2005, the members as they stood with a bar and no gap, from 24.19.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the session |
+| `ticker` | TEXT | the member |
+| `readings` | TEXT | the ledger's readings in the catalogue's order as a list in the invariant form, `null` where none was read, as `ledger_reading` holds them |
+| `pin` | TEXT | the catalogue's version the readings were read under |
+| `source` | TEXT | `build` where the build worked them from the long history, `night` where a night stored the session and its own row was copied |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**Every member's readings on every session, written by the setup ledger alone, its insert and its updater, and deleted by nothing** (see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then). `ledger-build --every-session --index` works each session the table holds no row of under the catalogue's version now over the long history reader's history, each member's readings as the night works them, and where `ledger_reading` holds the session copies the night's own rows instead; each night's step copies its own rows and those of the 14 days before it again in its own transaction, their insider, business and release readings having been rewritten in place since, so a copied row is the night's as it stands. A row is replaced only by a later copy of the night's own row or by a build under another version. The readings are statistics, stored as text only because the catalogue's readings sit in one cell. Read by the build to go on from where it stopped and by its check, and by no night, card, rule or page.
+
+### session_reading_year
+Grain: one row per index and year of `session_reading`, from 24.19.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `year` | INTEGER | the sessions' year |
+| `rows` | INTEGER | the year's rows on the index |
+| `sessions` | INTEGER | the year's sessions holding a row |
+| `night_sessions` | INTEGER | the year's sessions `ledger_reading` holds, whose rows are the night's own |
+| `first_session` | TEXT | the year's first session holding a row |
+| `last_session` | TEXT | the year's last session holding a row |
+| `counted_at` | TEXT | UTC instant of the count |
+
+Primary key: `index_code`, `year`.
+
+**Each index's years of every member's readings on every session, counted by the setup ledger, its own deleter: a count replaces the years it counts** (see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then). A build counts every year of its index at its end, and each night's step the years its copy reaches into. Read by the History page alone, so it draws the coverage without counting the rows.
 
 ### loop_run
 Grain: one row per tester run on an index.

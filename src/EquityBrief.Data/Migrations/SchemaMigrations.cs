@@ -777,7 +777,36 @@ public static class SchemaMigrations
         new Migration(154, "create judge_pin, judge_run, judge_ask and judge_pick", CreateJudgePicks),
         new Migration(155, "create fallback_fact", CreateFallbackFacts),
         new Migration(156, "add judge_pick.fields", AddJudgeFields),
+        new Migration(157, "create session_reading and session_reading_year", CreateSessionReadings),
     ];
+
+    // Every member's readings on every session from 2005, a row a member an index a session with the members as they stood,
+    // in `ledger_reading`'s form: worked by the build where no night stored the session, and the night's own rows copied where
+    // one did; and each index's years counted, which the History page draws. Written by the setup ledger alone.
+    // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+    const string CreateSessionReadings = @"
+        CREATE TABLE session_reading (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            readings      TEXT NOT NULL,
+            pin           TEXT NOT NULL,
+            source        TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE session_reading_year (
+            index_code     TEXT    NOT NULL,
+            year           INTEGER NOT NULL,
+            rows           INTEGER NOT NULL,
+            sessions       INTEGER NOT NULL,
+            night_sessions INTEGER NOT NULL,
+            first_session  TEXT    NOT NULL,
+            last_session   TEXT    NOT NULL,
+            counted_at     TEXT    NOT NULL,
+            PRIMARY KEY (index_code, year)
+        ) STRICT;
+    ";
 
     // From 24.14 the keys of the three to five facts of its sheet each of the judge's picks named as deciding it, in the order
     // named; null on a pick made before the judge named its facts.

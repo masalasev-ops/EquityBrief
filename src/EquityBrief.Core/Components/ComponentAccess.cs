@@ -117,6 +117,9 @@ public enum Store
     FiledFactPull,
     // From 24.12 the two fallback lines a filer's operating income falls back to, read by no rule.
     FallbackFact,
+    // Every member's readings on every session from 2005, and each index's years of them counted; no night reads either.
+    SessionReading,
+    SessionReadingYear,
     FilingDay,
     InsiderTrade,
     InsiderRead,
