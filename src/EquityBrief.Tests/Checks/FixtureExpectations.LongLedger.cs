@@ -267,7 +267,7 @@ public partial class FixtureExpectations
             .ToArray();
 
         Assert.Equal(
-            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.SessionReadings.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs"],
+            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.SessionReadings.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/IdeaTestRun.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs"],
             readers);
 
         var pinned = CandidateEvaluators.All

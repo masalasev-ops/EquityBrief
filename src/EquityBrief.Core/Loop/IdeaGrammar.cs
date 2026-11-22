@@ -241,7 +241,7 @@ public static class IdeaGrammar
                     {
                         shape = TimeOnly;
                     }
-                    else if (words.Length == 6 && words[1] == "profit" && words[2] is Whole or Half && words[3] == "at" && words[5] is "risk" or "risks"
+                    else if (words.Length == 6 && part.StartsWith("take profit ", StringComparison.Ordinal) && words[2] is Whole or Half && words[3] == "at" && words[5] is "risk" or "risks"
                         && NumberOf(words[4]) is { } times && Multiples.Contains(times))
                     {
                         (shape, multiple) = (words[2], times);
