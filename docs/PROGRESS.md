@@ -21605,7 +21605,7 @@ Mutated:    the rule, stated before the run: each guard 24.26 adds taken out at 
             anything was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 3954 of 3954 tests ran with none failed, migrations 0 to 161 with none
-            pending, schema version 161, against `data-ci` and never `data`; the phase report 69 tables, 1712 claims, 1712
+            pending, schema version 161, against `data-ci` and never `data`; the phase report 68 tables, 1712 claims, 1712
             passing, none out of scope and none unexamined, 1727 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open; migration 161 and `notebook-fill` on the operator's store after the merge.
