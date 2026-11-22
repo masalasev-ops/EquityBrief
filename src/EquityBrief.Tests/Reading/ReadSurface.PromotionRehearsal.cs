@@ -38,7 +38,8 @@ public partial class ReadSurface
         }
 
         var reads = new PaperReads(database);
-        var newest = DateOnly.ParseExact((string)Scalar(database, "SELECT MAX(session_date) FROM listing;")!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var newestStored = (string)Scalar(database, "SELECT MAX(session_date) FROM listing;")!;
+        var newest = DateOnly.ParseExact(newestStored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         // A real variant: the first on the S&P 500 holding trades, its case worked by the case code as of the newest night.
         var worked = await PaperWork.WorkAsync(reads, "GSPC", "S&P 500", true, newest, null);
