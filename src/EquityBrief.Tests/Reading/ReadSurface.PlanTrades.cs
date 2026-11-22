@@ -251,7 +251,7 @@ public partial class ReadSurface
             Row("a variant", "OTHR", new(2026, 11, 10), AtAPrice, 97),
         ];
 
-        var drawn = PlanScreen.Cells(list, planned, night).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
+        var drawn = PlannedTrades.Cells(list, planned, night).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
         Assert.Equal((PickStatus.Waiting, 97.25m, 94.25m, "buys if it falls to $97.25; cancelled if not filled by 24 Nov 2026", (DateOnly?)null), (drawn["TTWO"].Status, drawn["TTWO"].Buy, drawn["TTWO"].Stop, drawn["TTWO"].Unfilled, drawn["TTWO"].FilledOn));
         Assert.Equal((PickStatus.Waiting, 99m, 96m), (drawn["FERG"].Status, drawn["FERG"].Buy, drawn["FERG"].Stop));
@@ -279,9 +279,9 @@ public partial class ReadSurface
     [Fact]
     public void AnOrdersLastSessionIsItsWindowsSessionsAfterItsNightAndItsWordsNameItsPrice()
     {
-        Assert.Equal(new DateOnly(2026, 10, 14), PlanScreen.LastDay(new DateOnly(2026, 9, 30), 10));
-        Assert.Equal(new DateOnly(2026, 10, 9), PlanScreen.LastDay(new DateOnly(2026, 10, 2), 5));
-        Assert.Equal(new DateOnly(2026, 12, 30), PlanScreen.LastDay(new DateOnly(2026, 12, 24), 3));
+        Assert.Equal(new DateOnly(2026, 10, 14), PlannedTrades.LastDay(new DateOnly(2026, 9, 30), 10));
+        Assert.Equal(new DateOnly(2026, 10, 9), PlannedTrades.LastDay(new DateOnly(2026, 10, 2), 5));
+        Assert.Equal(new DateOnly(2026, 12, 30), PlannedTrades.LastDay(new DateOnly(2026, 12, 24), 3));
         Assert.Equal("buys if it falls to $47.50; cancelled if not filled by 14 Oct 2026", PlanOrderWords.Waiting(47.5m, new DateOnly(2026, 10, 14)));
         Assert.Equal("buys if it falls to a level its plan could not place tonight, so it will not fill; cancelled by 14 Oct 2026", PlanOrderWords.Waiting(null, new DateOnly(2026, 10, 14)));
         Assert.Equal(", 1 new tonight waiting to buy, 2 from earlier nights waiting to buy", PlanOrderWords.Counts(1, 2));

@@ -642,7 +642,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
     // From the 23.10 correction of 2026-11-13 each held trade a live rule's plan buying at a price made drawn as it made it.
     // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-    var before = night is { } picked ? PlanScreen.Cells(PicksScreen.Before(await read.PicksAsync(picked, ticker), picked), await read.PlannedTradesAsync(Universes.Large.Code, picked), picked) : null;
+    var before = night is { } picked ? PlannedTrades.Cells(PicksScreen.Before(await read.PicksAsync(picked, ticker), picked), await read.PlannedTradesAsync(Universes.Large.Code, picked), picked) : null;
     var nightCards = night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null;
 
     // From the 22.1 correction of 2026-11-11 the short-term dip's open trade on the stock's own index, on any index, drawn as
@@ -3204,14 +3204,14 @@ async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Pro
     // From the 23.10 correction of 2026-11-13 an order no price filled counts toward no rule's record.
     // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var planned = await read.PlannedTradesAsync(reading.Code, night);
-    var sources = PlanScreen.Accounts(PaperBooks.Accounts(
+    var sources = PlannedTrades.Accounts(PaperBooks.Accounts(
         large,
         reading.Name,
         night,
         await read.RegisteredCandidatesAsync(),
         indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings),
         await read.PaperRowsAsync(reading.Code),
-        large ? PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [],
+        large ? PlannedTrades.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [],
         PaperBooks.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code),
         large ? await read.FamilyReplaysAsync() : [],
         TonightScreen.ReadAsOf(indexNight, night)), planned);
@@ -3297,14 +3297,14 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price drawn as its plan made it.
     // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var planned = await read.PlannedTradesAsync(reading.Code, night);
-    var cells = large ? PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [];
+    var cells = large ? PlannedTrades.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [];
     var indexNight = await read.IndexNightAsync(reading.Code, night);
     var provisional = indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings);
     var register = await read.RegisteredCandidatesAsync();
     // The register read as the night's page reads it, as of the instant a night run again read it at, on the S&P 500 off
     // its own index's night as on the S&P 400 and 600.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    var sources = PlanScreen.Accounts(PaperBooks.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperBooks.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night)), planned);
+    var sources = PlannedTrades.Accounts(PaperBooks.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperBooks.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night)), planned);
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
@@ -3313,7 +3313,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var earliest = earlier.Select(one => one.Session).Append(from).Min();
     // The stocks bought, and those waiting to be bought, whose rows draw their company and the night's close too.
     var tickers = bought.Concat(earlier).Select(one => one.Ticker)
-        .Concat(planned.Where(row => row.Listed <= night && PlanScreen.IsWaiting(row)).Select(row => row.Ticker))
+        .Concat(planned.Where(row => row.Listed <= night && PlannedTrades.IsWaiting(row)).Select(row => row.Ticker))
         .Concat(sources.SelectMany(account => (account.Unfilled ?? []).Select(one => one.Ticker)))
         .Distinct(StringComparer.Ordinal).ToArray();
     var closes = await read.ClosesAsync(tickers, earliest);
@@ -3860,7 +3860,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     }
 
     var cells = night is { } asOf
-        ? PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(asOf), asOf, TonightScreen.ProvisionalSetups(await read.RegisteredCandidatesAsync(), asOf)), paper?.Planned ?? await read.PlannedTradesAsync(reading.Code, asOf), asOf)
+        ? PlannedTrades.Cells(PicksScreen.Cells(await read.PicksAsync(asOf), asOf, TonightScreen.ProvisionalSetups(await read.RegisteredCandidatesAsync(), asOf)), paper?.Planned ?? await read.PlannedTradesAsync(reading.Code, asOf), asOf)
         : [];
     var status = request.Query["status"].FirstOrDefault();
 
@@ -4514,7 +4514,7 @@ app.MapGet("/screens/run/{night?}", async (
             how: how,
             picture: picture,
             // The live rule's own trades: the pullback's, whatever the other setups listed.
-            trades: PicksScreen.Summary(PicksScreen.OfSetup(PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback), dated),
+            trades: PicksScreen.Summary(PicksScreen.OfSetup(PlannedTrades.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback), dated),
             fresh: RunScreen.Freshness(everyListing, dated, first),
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
@@ -4549,7 +4549,7 @@ app.MapGet("/screens/run/{night?}", async (
                         TonightScreen.FamilyRun(
                             dated,
                             await read.FamilyPicksAsync(dated),
-                            PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated),
+                            PlannedTrades.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated),
                             await read.RegisteredCandidatesAsync(),
                             await read.FamilyTradesAsync(dated),
                             await read.FamilyReplaysAsync()),
