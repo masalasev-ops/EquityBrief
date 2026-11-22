@@ -3,7 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 
-namespace EquityBrief.Api.Reading;
+namespace EquityBrief.Core.Paper;
 
 // What an index's families ran on, read off the settings its night stored: the floors and the gate every rule of the
 // index shares, the cost its trades pay, the market check's floor, each family's own settings, from 15.5 the families

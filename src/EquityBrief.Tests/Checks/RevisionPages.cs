@@ -51,7 +51,7 @@ public class RevisionPages
 
         faults.AddRange(Version.Matches(text).Select(match => $"'{match.Value}' in the visible text: ...{text[Math.Max(0, match.Index - 40)..Math.Min(text.Length, match.Index + 40)]}..."));
 
-        if (text.Contains(Api.Reading.RuleSentences.NoSentence, StringComparison.Ordinal))
+        if (text.Contains(RuleSentences.NoSentence, StringComparison.Ordinal))
         {
             faults.Add("a setting is drawn with no sentence written for it");
         }
@@ -212,7 +212,7 @@ public class RevisionPages
 
         Assert.True(chips.Length > 60, $"only {chips.Length} chips were drawn");
 
-        string[] unread = [.. chips.Where(chip => Api.Reading.RuleSentences.Of(chip) is null || Api.Reading.RuleSentences.Without(chip) is null).Select(chip => chip.Key + ": " + chip.Words).Distinct(StringComparer.Ordinal)];
+        string[] unread = [.. chips.Where(chip => RuleSentences.Of(chip) is null || RuleSentences.Without(chip) is null).Select(chip => chip.Key + ": " + chip.Words).Distinct(StringComparer.Ordinal)];
 
         Assert.True(unread.Length == 0, "No sentence is written for:\n" + string.Join("\n", unread));
     }
