@@ -118,28 +118,30 @@ public partial class FixtureExpectations
         Assert.Equal(2, await writer.WriteAsync(DateOnly.ParseExact(JudgeNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), "judge-facts-test"));
 
         // AAA's short row worked by hand: the year's return 150 over 100, its close of 100 against the high of 200, its
-        // reward of 30 over its risk of 10, and the two good and one bad of the stories read.
+        // reward of 30 over its risk of 10, and the two good and one bad of the stories read; from 24.24 AAA alone among the
+        // S&P 500's members, so each figure it holds stands in the middle tenth, half of one member below it: 5.
         Assert.Equal(
-            ["Sector: Information Technology; Size: large; Return over 1 month: +5%; Return over 3 months: +12%; Return over 12 months less the last: +50%; Strength against its index: above 63% of its index's stocks; Distance from its 52-week high: -50%; Against its 50-day average: +2%; Against its 200-day average: -5%; Momentum (RSI): 62 of 100; Volume against its own average: 1.3 times; How much it usually moves in a day, this month: 2.3%; Business score: 7 of the 9 checks that apply; Last earnings against estimates, and days since: +8%, 12 trading days ago; Analysts' estimates over the last month: +3%"],
+            ["Sector: Information Technology; Size: large; Return over 1 month: +5% (tenth 5 of 10); Return over 3 months: +12% (tenth 5 of 10); Return over 12 months less the last: +50% (tenth 5 of 10); Strength against its index: above 63% of its index's stocks; Distance from its 52-week high: -50% (tenth 5 of 10); Against its 50-day average: +2% (tenth 5 of 10); Against its 200-day average: -5% (tenth 5 of 10); Momentum (RSI): 62 of 100 (tenth 5 of 10); Volume against its own average: 1.3 times (tenth 5 of 10); How much it usually moves in a day, this month: 2.3% (tenth 5 of 10); Business score: 7 of the 9 checks that apply (tenth 5 of 10); Last earnings against estimates, and days since: +8%, 12 trading days ago (tenth 5 of 10); Analysts' estimates over the last month: +3% (tenth 5 of 10)"],
             FamilyRows(store, "SELECT row_text FROM judge_fact WHERE ticker = 'AAA';"));
 
         var sheet = Assert.Single(FamilyRows(store, "SELECT sheet_text FROM judge_fact WHERE ticker = 'AAA';"));
 
-        Assert.Contains("\nReward to the nearest resistance against the risk to support: 3.0 times the risk\n", sheet, StringComparison.Ordinal);
+        Assert.Contains("\nReward to the nearest resistance against the risk to support: 3.0 times the risk (tenth 5 of 10)\n", sheet, StringComparison.Ordinal);
         Assert.Contains("\nNews over 30 days, as the labeller read it: 2 good and 1 bad\n", sheet, StringComparison.Ordinal);
-        Assert.Contains("\nDebt against assets, on a year before: debt fell 2.4 points of assets\n", sheet, StringComparison.Ordinal);
+        Assert.Contains("\nDebt against assets, on a year before: debt fell 2.4 points of assets (tenth 5 of 10)\n", sheet, StringComparison.Ordinal);
         Assert.Contains("\nIts index's stocks above their 200-day average: 52%\n", sheet, StringComparison.Ordinal);
 
-        // BBB holds a ledger row alone: every field but the news is not on file.
-        var thin = JsonSerializer.Deserialize<Dictionary<string, string>>(Assert.Single(FamilyRows(store, "SELECT fields FROM judge_fact WHERE ticker = 'BBB';")))!;
+        // BBB holds a ledger row alone: every field but the news is not on file, and no figure of it is placed.
+        var thin = ShownOf(Assert.Single(FamilyRows(store, "SELECT fields FROM judge_fact WHERE ticker = 'BBB';")));
 
         Assert.All(thin.Where(pair => pair.Key != "news"), pair => Assert.Equal(JudgeFacts.NotOnFile, pair.Value));
         Assert.Equal("0 good and 0 bad", thin["news"]);
+        Assert.Equal("{}", System.Text.Json.Nodes.JsonNode.Parse(Assert.Single(FamilyRows(store, "SELECT fields FROM judge_fact WHERE ticker = 'BBB';")))![JudgeFactWriter.TenthsKey]!.ToJsonString());
 
         // The fields written are the approved list's and no other, on every member.
         Assert.All(FamilyRows(store, "SELECT fields FROM judge_fact;"), fields => Assert.Equal(
             JudgeFacts.All.Select(field => field.Key).Order(StringComparer.Ordinal),
-            JsonSerializer.Deserialize<Dictionary<string, string>>(fields)!.Keys.Order(StringComparer.Ordinal)));
+            ShownOf(fields).Keys.Order(StringComparer.Ordinal)));
 
         // No text names a ticker, a company, an industry or a date, on every member.
         Assert.All(FamilyRows(store, "SELECT row_text || char(10) || sheet_text FROM judge_fact;"), text =>
@@ -154,6 +156,12 @@ public partial class FixtureExpectations
         Assert.Equal(2, await writer.WriteAsync(DateOnly.ParseExact(JudgeNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), "judge-facts-again"));
         Assert.Equal(["judge-facts-again", "judge-facts-again"], FamilyRows(store, "SELECT run_id FROM judge_fact;"));
     }
+
+    // A member's stored fields' shown texts by key, the tenths 24.24 stores beside them left out.
+    internal static IReadOnlyDictionary<string, string> ShownOf(string fields) =>
+        System.Text.Json.Nodes.JsonNode.Parse(fields)!.AsObject()
+            .Where(pair => pair.Value is System.Text.Json.Nodes.JsonValue)
+            .ToDictionary(pair => pair.Key, pair => pair.Value!.GetValue<string>(), StringComparer.Ordinal);
 
     [Fact]
     public void EachSizeReadsItsBandOnBothSidesOfAnEdgeAndAShortYearReadsNone()
@@ -218,7 +226,7 @@ public partial class FixtureExpectations
         var settings = new LocalModelSettings("local", "http://127.0.0.1:1234/v1/", "the model", 60, 8192, 60);
 
         return await new JudgeNamingTest(new NamingFeed(naming, refusing), settings, clock, store.DatabaseFile, store.Root, (_, _) => Task.CompletedTask)
-            .RunAsync(DateOnly.ParseExact(JudgeNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), 7, clock.UtcNow.AddHours(6), run);
+            .RunAsync(DateOnly.ParseExact(JudgeNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), 7, clock.UtcNow.AddHours(6), run, "GSPC");
     }
 
     [Fact]
@@ -246,7 +254,7 @@ public partial class FixtureExpectations
         await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}"))
         {
             await connection.OpenAsync();
-            Assert.True((await JudgeNamingTest.MayStartAsync(connection, JudgeFacts.Version)).May);
+            Assert.True((await JudgeNamingTest.MayStartAsync(connection, JudgeFacts.Version, "GSPC")).May);
         }
 
         var three = await NamingRun(store, "naming-three", new HashSet<string> { Sheet(0), Sheet(1), Sheet(2) }, new HashSet<string>());
@@ -258,13 +266,13 @@ public partial class FixtureExpectations
         {
             await connection.OpenAsync();
 
-            var (may, why) = await JudgeNamingTest.MayStartAsync(connection, JudgeFacts.Version);
+            var (may, why) = await JudgeNamingTest.MayStartAsync(connection, JudgeFacts.Version, "GSPC");
 
             Assert.False(may);
             Assert.Contains("sheets 3 named of 100 answered of 100 asked", why, StringComparison.Ordinal);
 
             // A field list no test has run under starts no judge.
-            Assert.False((await JudgeNamingTest.MayStartAsync(connection, "another0list")).May);
+            Assert.False((await JudgeNamingTest.MayStartAsync(connection, "another0list", "GSPC")).May);
         }
 
         var refused = await NamingRun(store, "naming-refused", new HashSet<string>(), new HashSet<string>(Enumerable.Range(0, 6).Select(Row)));

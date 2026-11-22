@@ -24,9 +24,11 @@ public static class JudgeReplayRun
 
     const string Cutoff = "SELECT cutoff FROM reading_pin ORDER BY id DESC LIMIT 1;";
 
+    // A night's minutes, from 24.24 its indices' runs together.
     const string LiveMinutes = @"
-        SELECT (julianday(ended_at) - julianday(started_at)) * 1440 FROM judge_run
-        WHERE outcome IN ('picked', 'none') AND run_id NOT LIKE 'judge-replay-%';";
+        SELECT SUM((julianday(ended_at) - julianday(started_at)) * 1440) FROM judge_run
+        WHERE outcome IN ('picked', 'none') AND run_id NOT LIKE 'judge-replay-%'
+        GROUP BY session_date;";
 
     const string Stored = "SELECT ticker, row_text, sheet_text FROM judge_fact WHERE session_date = $session AND version = $version;";
 

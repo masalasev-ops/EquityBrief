@@ -450,9 +450,10 @@ public partial class ArchitectureConformance
         // stores and the History page's row of them, and 1683 with the paper reads' catalogue and matrix rows, and 1690 with the
         // stored cases' and their words' catalogue, matrix and store rows and section 18's row of a case's answer refused, and
         // 1695 with the promotion swap's catalogue and matrix rows, the presses' and swaps' stores and section 18's row of a
-        // Promote whose variant no longer stands.
+        // Promote whose variant no longer stands, and 1701 with the picker within each index's section 17 and 18 rows and its
+        // page's four.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1695),
+            (789, 853, 6, 4, 855, 876, 1701),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

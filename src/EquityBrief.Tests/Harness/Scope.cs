@@ -4052,6 +4052,14 @@ internal static class Scope
             Verdict.Pass,
             "a Promote whose variant retired before the night and one naming no variant each answered without a swap, a Keep answered with nothing changed, the register's rows the same, and a night run again answering nothing twice",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "The AI stock picker within each index")] = new Scoped(
+            Verdict.Pass,
+            "the best quarter of the marked rounded up and held to 5 worked by hand on both sides of each bound, an index of 12 marked picking 3 and a fixed 5 taking 5 with no question of its own, 40 marked ranked by three questions of 14, 13 and 13 and then one of their best, a label marked twice read once and a ranking longer than asked keeping its first, a constructed index's figures placed in their tenths among its own members alone, and a short night's order with a version past the off-peak run's first slot written not run, each through recorded answers",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A night the AI stock picker marks no stock of an index, or a version the night cannot hold")] = new Scoped(
+            Verdict.Pass,
+            "an index none of whose stocks is marked picking none and asking no question of round two, its run written none with its count of marks; a version past its index's running one written not run and asked nothing; and an index whose own members' naming test has not passed refused alone, each through recorded answers",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A filer that files no operating income for a member's four newest quarters")] = new Scoped(
             Verdict.Pass,
             "each cause and each fallback line worked by hand over a constructed filer, the same line read for every quarter compared and named on the card and the report; a filer covered by neither line saying so; the refresh keeping the two lines apart from the filed facts and leaving them as they were; the fill reading the kept answers and asking for a filer that filed since; and no source a rule's version pins among those the pages' fallback writes",
@@ -4932,6 +4940,23 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI stock picker", "An earlier version's picks")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding version 1's two picks of 19 Nov and version 2's one of 23 Nov, version 1's region read back with each card saying what its account did, one bought and sold at 3 risks and one bought and open, its prices from the price paid and its account's summary worked by hand, its line drawn apart beneath the four, the record version 2's alone from its first night, every card drawn under an account that buys it; the same store before version 2 runs reading version 1 as the record with nothing apart; and Home on version 1's night naming its account",
+            ByReadSurface),
+        // 24.24, the operator's amendment of 2026-11-22.
+        [CheckReach.Key("15.26 The AI stock picker", "Within one index")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store holding a version from before 24.24 and this version's runs on the S&P 500 and the S&P 600, each index's page read back naming its index and drawing its own night's picks alone, the same plan on every member read over the S&P 500's four alone and worked by hand, and the earlier version drawn apart on both",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "The night's marks")] = new Scoped(
+            Verdict.Pass,
+            "the same store's two pages read back with Tonight's line of 5 marked and the best quarter of 2, and of 1 marked and 1, each worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "A fixed 5")] = new Scoped(
+            Verdict.Pass,
+            "the same store's S&P 500 page read back with the variant's region holding every pick its version ranked, the one outside the best quarter among them and absent from Tonight's cards, under its words",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "A pick past the cash")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed account of $10,000, the second pick's 60 shares worked by hand above the cash the first left, its card read back not bought for want of cash and its result counted in the record's two closed trades and its $1.50 per $1 risked",
             ByReadSurface),
         // 24.17, the operator's answers of 2026-11-21.
         [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = new Scoped(
@@ -8004,6 +8029,10 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI stock picker", "The facts it named")] = "24.14",
         [CheckReach.Key("15.26 The AI stock picker", "A pick made before it named its facts")] = "24.14",
         [CheckReach.Key("15.26 The AI stock picker", "An earlier version's picks")] = "24.14",
+        [CheckReach.Key("15.26 The AI stock picker", "Within one index")] = "24.24",
+        [CheckReach.Key("15.26 The AI stock picker", "The night's marks")] = "24.24",
+        [CheckReach.Key("15.26 The AI stock picker", "A fixed 5")] = "24.24",
+        [CheckReach.Key("15.26 The AI stock picker", "A pick past the cash")] = "24.24",
         [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "A case")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "No case")] = "24.17",

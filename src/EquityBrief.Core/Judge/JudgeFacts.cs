@@ -18,7 +18,15 @@ public sealed record JudgeField(string Key, JudgeRound Round, string Words, stri
 // not hold reading not on file.
 public sealed record JudgeFact(string Index, string Ticker, DateOnly Session, IReadOnlyDictionary<string, string> Shown)
 {
+    // From 24.24 the tenth each of its figures stands in among its own index's members that night, 1 the lowest, by key; a
+    // field it holds none of, or one that is no figure, has none.
+    public IReadOnlyDictionary<string, int> Tenths { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
+
     public string Of(string key) => Shown.TryGetValue(key, out var text) ? text : JudgeFacts.NotOnFile;
+
+    // A field as the picker reads it: its shown text, with the tenth it stands in where it has one.
+    public string Placed(string key) =>
+        Tenths.TryGetValue(key, out var tenth) && Of(key) != JudgeFacts.NotOnFile ? Of(key) + JudgeFacts.TenthWords(tenth) : Of(key);
 }
 
 // The fields the operator approved at 24.1 and no other, and how each is shown: with no name, ticker, industry, date or
@@ -100,11 +108,67 @@ public static class JudgeFacts
         new("vix_over_median", JudgeRound.Sheet, "The VIX against its own median", "ledger_reading: vix_over_median"),
     ];
 
+    // From 24.24 the fields whose figure is placed among its own index's members that night, each in the tenth it stands
+    // in: every figure that differs from member to member. The sector, the size band, a yes or no, a release's answer and
+    // the news stand as words; strength already reads as a place among its index's stocks and the valuation as one among
+    // its own quarters; and the index's breadth and the VIX are one figure for every member.
+    // see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
+    public static IReadOnlyList<string> Placed { get; } =
+    [
+        "return_month", "return_quarter", "return_twelve_less_one", "high_ratio", "close_over_fifty", "close_over_long", "rsi",
+        "volume_ratio", "volatility_month", "business_score", "surprise", "estimate_revision_month",
+        "depth", "since_high", "tightness", "reward_to_risk", "stretch_days", "gap_days", "revenue_growth", "growth_change",
+        "gross_margin_change", "operating_margin_change", "cash_over_income", "return_on_assets", "return_on_assets_change",
+        "leverage_fall", "share_fall", "insider_buyers", "short_interest_share", "sector_month", "sector_quarter",
+    ];
+
+    public const int Tenths = 10;
+
+    // How a figure's tenth is shown after it.
+    public static string TenthWords(int tenth) => FormattableString.Invariant($" (tenth {tenth} of {Tenths})");
+
+    // The tenth a figure stands in among every figure of its kind its index's members hold that night, itself among them:
+    // the share of them below it, a tie counting half, read up to the next tenth, so the lowest tenth is 1 and the highest
+    // 10, and a figure alone in its index stands in the middle; none where no member holds one.
+    public static int? TenthAmong(double figure, IReadOnlyList<double> among)
+    {
+        if (among.Count == 0 || !double.IsFinite(figure))
+        {
+            return null;
+        }
+
+        var below = among.Count(other => other < figure);
+        var equal = among.Count(other => other == figure);
+        var share = (below + (equal / 2.0)) / among.Count;
+
+        return Math.Clamp((int)Math.Ceiling(share * Tenths), 1, Tenths);
+    }
+
+    // Each member's tenths, its figures placed among those of the members of its own index alone.
+    public static IReadOnlyList<JudgeFact> PlacedAmongTheirIndex(IReadOnlyList<(JudgeFact Fact, IReadOnlyDictionary<string, double?> Figures)> members) =>
+    [
+        .. members.GroupBy(member => member.Fact.Index, StringComparer.Ordinal).SelectMany(index =>
+        {
+            var among = Placed.ToDictionary(
+                key => key,
+                key => (IReadOnlyList<double>)[.. index.Select(member => member.Figures.GetValueOrDefault(key)).OfType<double>().Where(double.IsFinite)],
+                StringComparer.Ordinal);
+
+            return index.Select(member => member.Fact with
+            {
+                Tenths = Placed
+                    .Where(key => member.Fact.Of(key) != NotOnFile && member.Figures.GetValueOrDefault(key) is { } figure && double.IsFinite(figure))
+                    .ToDictionary(key => key, key => TenthAmong(member.Figures[key]!.Value, among[key])!.Value, StringComparer.Ordinal),
+            });
+        }),
+    ];
+
     // The field list's version: a hash of every field and every bound above, which a night's rows and a naming test are
     // stored under, so a test passed under one list answers for no other.
     public static string Version { get; } = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
         string.Join("\n", All.Select(field => $"{field.Key}|{field.Round}|{field.Words}|{field.Source}"))
-        + FormattableString.Invariant($"\n{MidSizeFrom}|{LargeFrom}|{VeryLargeFrom}|{YearSessions}|{MonthSessions}|{NewsDays}"))))[..12];
+        + FormattableString.Invariant($"\n{MidSizeFrom}|{LargeFrom}|{VeryLargeFrom}|{YearSessions}|{MonthSessions}|{NewsDays}")
+        + "\nplaced among its index: " + string.Join(",", Placed) + TenthWords(Tenths))))[..12];
 
     // The three fields of the mockup dropped at 24.1 until a change that moves the ledger's pins anyway fills them.
     public static IReadOnlyList<string> Dropped { get; } = ["band_strength", "rating_actions_net", "insider_cluster_buyers"];
@@ -210,11 +274,11 @@ public static class JudgeFacts
 
     static string Signed(double value) => (value > 0 ? "+" : string.Empty) + value.ToString("0.##", CultureInfo.InvariantCulture);
 
-    // The short row as one line, its fields in the approved order.
+    // The short row as one line, its fields in the approved order, each figure with its tenth among its index's stocks.
     public static string RowText(JudgeFact fact) =>
-        string.Join("; ", In(JudgeRound.Row).Select(field => $"{field.Words}: {fact.Of(field.Key)}"));
+        string.Join("; ", In(JudgeRound.Row).Select(field => $"{field.Words}: {fact.Placed(field.Key)}"));
 
-    // The full sheet, a field a line under the row's, its fields in the approved order.
+    // The full sheet, a field a line under the row's, its fields in the approved order, each figure with its tenth.
     public static string SheetText(JudgeFact fact) =>
-        string.Join("\n", In(JudgeRound.Sheet).Select(field => $"{field.Words}: {fact.Of(field.Key)}"));
+        string.Join("\n", In(JudgeRound.Sheet).Select(field => $"{field.Words}: {fact.Placed(field.Key)}"));
 }

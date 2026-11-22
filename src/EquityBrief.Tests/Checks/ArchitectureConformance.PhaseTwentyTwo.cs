@@ -221,6 +221,9 @@ public partial class ArchitectureConformance
         .. ComponentAccess.SwapRows,
         .. SchemaColumns.SwapStoreRows,
         .. FixtureExpectations.SwapClaims,
+
+        // And the picker within each index: section 17's and section 18's rows and the page's four rows.
+        .. FixtureExpectations.JudgeIndexRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

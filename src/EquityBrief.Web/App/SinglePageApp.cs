@@ -521,7 +521,7 @@ public sealed partial class SinglePageApp : IComponent
             screen.innerHTML = await history.text();
           } else if (path === '{{{JudgeRoute}}}') {
             view = 'judge';
-            const judge = await fetch('/screens/judge');
+            const judge = await fetch('/screens/judge' + (query ? '?' + query : ''));
             screen.innerHTML = await judge.text();
           } else if (path === '{{{MarkingRoute}}}') {
             view = 'marking';

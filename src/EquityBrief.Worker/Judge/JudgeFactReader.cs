@@ -12,8 +12,10 @@ namespace EquityBrief.Worker.Judge;
 // file by the next morning, the size the night's company value as a band, the readings the night's ledger row's, the
 // business score the night's own, the news the stories published in the 30 days to the next morning as the labeller read
 // them by then, and the three fields the ledger's night step leaves empty worked from the bars to the night and the
-// night's ladder plan. It reads the store alone, opened for reading, and writes nothing.
+// night's ladder plan; from 24.24 each figure placed in the tenth it stands in among its own index's members that night.
+// It reads the store alone, opened for reading, and writes nothing.
 // see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
 public static class JudgeFactReader
 {
     // The hour of the next morning, in UTC, before which everything read was stored: ahead of the next open.
@@ -119,26 +121,57 @@ public static class JudgeFactReader
             news[row.GetString(0)] = (row.GetInt32(1), row.GetInt32(2));
         }
 
-        var facts = new List<JudgeFact>();
+        var facts = new List<(JudgeFact, IReadOnlyDictionary<string, double?>)>();
 
         await foreach (var row in RowsAsync(connection, Ledger, [("$session", day), ("$ticker", named)], cancellation))
         {
             var (index, member) = (row.GetString(0), row.GetString(1));
             var readings = row.IsDBNull(2) ? [] : JsonSerializer.Deserialize<double?[]>(row.GetString(2)) ?? [];
             var (closes, highs) = bars.TryGetValue(member, out var held) ? held : ([], []);
+            (int Passed, int Applied)? score = scores.TryGetValue((index, member), out var scored) ? scored : null;
 
-            facts.Add(new JudgeFact(index, member, session, Shown(
+            facts.Add((new JudgeFact(index, member, session, Shown(
                 readings,
                 sectors.GetValueOrDefault(member),
                 values.GetValueOrDefault((index, member)),
-                scores.TryGetValue((index, member), out var score) ? score : null,
+                score,
                 closes,
                 highs,
                 plans.GetValueOrDefault(member),
-                news.TryGetValue(member, out var told) ? told : (0, 0))));
+                news.TryGetValue(member, out var told) ? told : (0, 0))),
+                Figures(readings, score, closes, highs, plans.GetValueOrDefault(member))));
         }
 
-        return facts;
+        // From 24.24 each figure is placed among its own index's members that night, and a member named alone among none.
+        return JudgeFacts.PlacedAmongTheirIndex(facts);
+    }
+
+    // A member's figures the picker places among its index's, by key, from the same readings its shown text is worked
+    // from: each placed field's figure, none where it holds none.
+    public static IReadOnlyDictionary<string, double?> Figures(
+        IReadOnlyList<double?> readings,
+        (int Passed, int Applied)? score,
+        IReadOnlyList<decimal> closes,
+        IReadOnlyList<decimal> highs,
+        double? rewardToRisk)
+    {
+        double? At(string column) => LedgerReadings.IndexOf(column) is var at && at < readings.Count ? readings[at] : null;
+
+        var figures = new Dictionary<string, double?>(StringComparer.Ordinal)
+        {
+            ["return_twelve_less_one"] = JudgeFacts.ReturnTwelveLessOne(closes),
+            ["high_ratio"] = JudgeFacts.HighRatio(closes, highs),
+            ["business_score"] = score is { Applied: > 0 } held ? (double)held.Passed / held.Applied : null,
+            ["surprise"] = At("surprise_percent") is { } beat && At("surprise_sessions") is not null ? beat : null,
+            ["reward_to_risk"] = rewardToRisk,
+        };
+
+        foreach (var key in JudgeFacts.Placed.Where(key => !figures.ContainsKey(key)))
+        {
+            figures[key] = At(key);
+        }
+
+        return figures;
     }
 
     // The instant on the morning after a night before which everything the judge reads was stored.

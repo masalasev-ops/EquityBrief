@@ -8,19 +8,27 @@ namespace EquityBrief.Api.Reading;
 // The AI stock picker's page as the store holds it, worked when the page is read: the judge's live picks walked into its account,
 // the random accounts drawn from one seed over the same nights and members, the rules' accounts on the three indices given
 // an equal share, the three indices' funds held, the scoreboard, whether it beats random so far, where it looked against the
-// rules' picks, the newest night's cards, and a replayed night's record apart from the live one.
+// rules' picks, the newest night's cards, and a replayed night's record apart from the live one. From 24.24 it is worked for
+// one index at a time: that index's picker version and its picks, the best quarter of the marked, its variant "a fixed 5"
+// in an account of its own beside it, random picks from that index's members, that index's rules and that index's fund;
+// a version from before 24.24, which picked across the three indices, drawn apart under its number on each.
 // see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
+// see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
 public static class JudgeScreen
 {
     // The seed the random accounts are drawn from, so the page draws the same band each time it is read.
     public const int RandomSeed = 20261120;
 
+    // A pick or run within one index: an index's own, or one across the three indices before 24.24.
+    static bool Within(string? runIndex, string index) => runIndex is null || string.Equals(runIndex, index, StringComparison.Ordinal);
+
     public static JudgeView Build(
+        string within,
         IReadOnlyList<JudgeRunRow> runs,
         IReadOnlyList<JudgePickRow> picks,
         IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Open, double Close)>> bars,
         IReadOnlyDictionary<(string Ticker, DateOnly Night), double> typicals,
-        IReadOnlyDictionary<DateOnly, IReadOnlyList<string>> members,
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<(string Index, string Ticker)>> everyMember,
         IReadOnlyList<(string Index, PaperWalk Walk)> rules,
         IReadOnlyList<(string Ticker, DateOnly Bought, double? Result)> ruleTrades,
         IReadOnlyList<Func<DateOnly, decimal?>> funds,
@@ -34,12 +42,22 @@ public static class JudgeScreen
         // numbered in the order the versions first ran, an earlier version's drawn apart under its number.
         // see: Each of the picker's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
         // see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's
-        var every = picks.Where(pick => !pick.Replayed).ToArray();
+        runs = [.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
+
+        var ranked = picks.Where(pick => !pick.Replayed && Within(pick.RunIndex, within)).ToArray();
+        var every = ranked.Where(pick => pick.InQuarter).ToArray();
         var versions = Versions(every, runs);
         var version = versions.Length == 0 ? string.Empty : versions.OrderByDescending(one => one.Last).ThenByDescending(one => one.First).First().Key;
-        var live = every.Where(pick => KeyOf(pick.Version) == version).ToArray();
+        var live = every.Where(pick => KeyOf(pick) == version).ToArray();
+
+        // The members its random picks and its same plan are drawn from: the index's, or every index's for a version that
+        // picked across the three before 24.24.
+        var across = !version.Contains(KeyMark, StringComparison.Ordinal);
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<string>> members = everyMember.ToDictionary(
+            pair => pair.Key,
+            pair => (IReadOnlyList<string>)[.. pair.Value.Where(member => across || member.Index == within).Select(member => member.Ticker).Distinct(StringComparer.Ordinal)]);
         var earlier = versions.Length > 1;
-        var replayed = picks.Where(pick => pick.Replayed).ToArray();
+        var replayed = picks.Where(pick => pick.Replayed && Within(pick.RunIndex, within) && pick.InQuarter).ToArray();
         // From 24.15 Home drawn for a past night reads that night's run and picks in place of the newest.
         var newest = runs.FirstOrDefault(run => !run.Replayed && (drawnNight is null || run.Session == drawnNight));
 
@@ -84,9 +102,9 @@ public static class JudgeScreen
 
         // Each earlier version's account: its picks bought at the open after their night and walked under their plans from its
         // first night, the same money, sizing and costs as the record's, each card saying what its account did with it.
-        JudgeVersionView Apart((string Key, DateOnly First, DateOnly Last) one, int number)
+        JudgeVersionView Apart((string Key, DateOnly First, DateOnly Last) one, int number, bool fixedFive = false)
         {
-            var its = every.Where(pick => KeyOf(pick.Version) == one.Key).OrderBy(pick => pick.Session).ThenBy(pick => pick.Rank).ToArray();
+            var its = (fixedFive ? ranked : every).Where(pick => KeyOf(pick) == one.Key).OrderBy(pick => pick.Session).ThenBy(pick => pick.Rank).ToArray();
             var itsTrades = its.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
             var walk = PaperAccount.Walk(settings, [.. itsTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= one.First)], Close);
             var cards = its.Select((pick, at) => Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldOf(itsTrades[at], walk) }).ToArray();
@@ -94,12 +112,15 @@ public static class JudgeScreen
             double? noOverSamePlan = null;
             (double? Result, double? OverSamePlan)[] results = [.. itsTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noOverSamePlan))];
 
-            return new JudgeVersionView(number, one.First, one.Last, cards, JudgeScore.Of(results), walk.Values);
+            return new JudgeVersionView(number, one.First, one.Last, cards, JudgeScore.Of(results), walk.Values) { Variant = fixedFive ? JudgeNight.FixedFive : null };
         }
 
         var numbered = versions.Select((one, at) => (One: one, Number: at + 1)).ToArray();
         var apart = numbered.Where(pair => pair.One.Key != version).Select(pair => Apart(pair.One, pair.Number)).ToArray();
         int? recordNumber = earlier ? numbered.Single(pair => pair.One.Key == version).Number : null;
+
+        // From 24.24 the record's version's variant "a fixed 5", every pick its second round ranked, in an account of its own.
+        var fixedFive = numbered.Where(pair => pair.One.Key == version && version.Contains(KeyMark, StringComparison.Ordinal)).Select(pair => Apart(pair.One, pair.Number, fixedFive: true)).FirstOrDefault();
 
         var judged = live.Select(pick => (Pick: pick, Trade: TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove))).ToArray();
         var judgeWalk = PaperAccount.Walk(settings, [.. judged.Select(one => one.Trade).OfType<PaperTrade>()], sessions, Close);
@@ -139,16 +160,25 @@ public static class JudgeScreen
                 .Select(result => (result, default(double?))),
         ];
 
-        var tonight = newest is null ? [] : every.Where(pick => pick.Session == newest.Session).OrderBy(pick => pick.Rank).ToArray();
+        var tonight = newest is null ? [] : every.Where(pick => pick.Session == newest.Session && (newest.Index is null || pick.RunId == newest.RunId)).OrderBy(pick => pick.Rank).ToArray();
 
         // From 24.15 Home drawn for a past night an earlier version picked on names that version's account.
-        var picksFrom = tonight.Length == 0 ? null : numbered.Where(pair => pair.One.Key == KeyOf(tonight[0].Version) && pair.One.Key != version).Select(pair => apart.Single(one => one.Number == pair.Number)).FirstOrDefault();
+        var picksFrom = tonight.Length == 0 ? null : numbered.Where(pair => pair.One.Key == KeyOf(tonight[0]) && pair.One.Key != version).Select(pair => apart.Single(one => one.Number == pair.Number)).FirstOrDefault();
+
+        // From 24.24 a card of the record's its account had no cash for says it was not bought.
+        JudgeCardView Tonight(JudgePickRow pick)
+        {
+            var card = Card(pick, tonight.Length);
+            var trade = KeyOf(pick) == version ? judged.FirstOrDefault(one => one.Pick == pick).Trade : null;
+
+            return trade is not null && HeldOf(trade, judgeWalk) is { Skipped: PaperAccount.UnderTheCash } unfunded ? card with { Held = unfunded } : card;
+        }
 
         return new JudgeView(
             newest?.Session,
             newest?.Outcome,
             newest?.Why,
-            [.. tonight.Select(pick => Card(pick, tonight.Length))],
+            [.. tonight.Select(Tonight)],
             JudgeScore.Of(record),
             JudgeScore.AgainstRandom(judgeWalk.Values.Count > 0 ? judgeWalk.Values[^1].Value : null, band.Count > 0 ? band[^1] : null),
             randomResults.Length == 0 ? null : randomResults.Average(),
@@ -170,21 +200,30 @@ public static class JudgeScreen
             Earlier = apart,
             RecordNumber = recordNumber,
             PicksFrom = picksFrom,
+            Index = within,
+            Marked = newest is { Index: not null } ran && ran.Outcome is "picked" or "none" ? ran.Kept : null,
+            FixedFive = fixedFive,
         };
     }
 
     // Why a pick its account's walk did not take is not bought there.
     public const string NotTaken = "its account's walk did not take it";
 
-    // A version's key: its prompt version, a pick under no pin read as one version of its own.
-    static string KeyOf(string? version) => version ?? string.Empty;
+    // What sets an index's own version's key apart from one picked across the three indices.
+    const string KeyMark = "|";
+
+    // A version's key: its prompt version, from 24.24 with the index it picked within, a pick under no pin read as one
+    // version of its own.
+    static string KeyOf(JudgePickRow pick) => KeyOf(pick.Version, pick.RunIndex);
+
+    static string KeyOf(string? version, string? index) => (version ?? string.Empty) + (index is null ? string.Empty : KeyMark + index);
 
     // Each judge version's first and last night, read off its live picks and the live runs under its pin, in the order the
     // versions first ran.
     static (string Key, DateOnly First, DateOnly Last)[] Versions(IReadOnlyList<JudgePickRow> every, IReadOnlyList<JudgeRunRow> runs) =>
     [
-        .. every.Select(pick => (Key: KeyOf(pick.Version), pick.Session))
-            .Concat(runs.Where(run => !run.Replayed && run.Version is not null).Select(run => (Key: run.Version!, run.Session)))
+        .. every.Select(pick => (Key: KeyOf(pick), pick.Session))
+            .Concat(runs.Where(run => !run.Replayed && run.Version is not null).Select(run => (Key: KeyOf(run.Version, run.Index), run.Session)))
             .GroupBy(one => one.Key, StringComparer.Ordinal)
             .Select(group => (group.Key, First: group.Min(one => one.Session), Last: group.Max(one => one.Session)))
             .OrderBy(one => one.First)

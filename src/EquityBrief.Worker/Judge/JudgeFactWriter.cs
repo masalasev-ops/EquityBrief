@@ -33,7 +33,9 @@ public sealed class JudgeFactWriter(IClock clock, string databaseFile) : ICompon
 
     public const string Stage = "judge-facts";
 
-    const string DeleteNight = "DELETE FROM judge_fact WHERE session_date = $session;";
+    // From 24.24 a night written again replaces its own rows under the field list's version alone, so an earlier version's
+    // rows of the night stand for the picks made under it.
+    const string DeleteNight = "DELETE FROM judge_fact WHERE session_date = $session AND version = $version;";
 
     const string Insert = @"
         INSERT INTO judge_fact (index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id)
@@ -55,14 +57,14 @@ public sealed class JudgeFactWriter(IClock clock, string databaseFile) : ICompon
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-        await ExecuteAsync(connection, transaction, DeleteNight, [("$session", day)], cancellation);
+        await ExecuteAsync(connection, transaction, DeleteNight, [("$session", day), ("$version", JudgeFacts.Version)], cancellation);
 
         foreach (var fact in facts)
         {
             await ExecuteAsync(connection, transaction, Insert,
             [
                 ("$index", fact.Index), ("$session", day), ("$ticker", fact.Ticker), ("$version", JudgeFacts.Version),
-                ("$fields", JsonSerializer.Serialize(fact.Shown.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToDictionary(pair => pair.Key, pair => pair.Value))),
+                ("$fields", FieldsJson(fact)),
                 ("$row", JudgeFacts.RowText(fact)), ("$sheet", JudgeFacts.SheetText(fact)),
                 ("$written_at", Stamp(clock.UtcNow)), ("$run_id", runId),
             ], cancellation);
@@ -80,6 +82,31 @@ public sealed class JudgeFactWriter(IClock clock, string databaseFile) : ICompon
 
         return facts.Count;
     }
+
+    // A member's fields as stored: each field's shown text by its key, and from 24.24 under "tenths" each figure's tenth
+    // among its index's members, which a page reads apart from the text.
+    public static string FieldsJson(JudgeFact fact)
+    {
+        var fields = new System.Text.Json.Nodes.JsonObject();
+
+        foreach (var (key, text) in fact.Shown.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            fields[key] = text;
+        }
+
+        var tenths = new System.Text.Json.Nodes.JsonObject();
+
+        foreach (var (key, tenth) in fact.Tenths.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            tenths[key] = tenth;
+        }
+
+        fields[TenthsKey] = tenths;
+
+        return fields.ToJsonString();
+    }
+
+    public const string TenthsKey = "tenths";
 
     static string Stamp(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 

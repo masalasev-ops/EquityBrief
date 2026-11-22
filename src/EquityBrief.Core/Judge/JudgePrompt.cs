@@ -13,23 +13,32 @@ public sealed record JudgeChoice(string Label, string Hold, string Shape, string
     public IReadOnlyList<string> Fields { get; init; } = [];
 }
 
-// The judge's two rounds as the model is asked them. Round one shows the short rows of every member about 50 at a time,
-// each under a made-up label drawn by a seeded shuffle, and keeps at most one of each batch; round two shows the kept
-// members' full sheets together and picks up to 5, ranked, each with a hold and a take-profit from the menu and a reason
-// holding no digit and no name. The model answers closed choices and words alone; code reads every answer and refuses
-// one outside them.
+// The picker's two rounds as the model is asked them, from 24.24 within one index at a time. Round one shows the short
+// rows of that index's members 50 at a time, each under a made-up label drawn by a seeded shuffle and each figure with the
+// tenth it stands in among that index's stocks, and marks every member it rates worth buying, each judged on its own
+// facts, the batch only the size the model reads in; round two shows the marked members' full sheets at most 16 at a
+// time and ranks the best of them, the best quarter of the marked rounded up and at most 5, each with a hold and a
+// take-profit from the menu and a reason holding no digit and no name. The model answers closed choices and words alone;
+// code reads every answer and refuses one outside them.
 // see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
 public static partial class JudgePrompt
 {
     public const int BatchSize = 50;
 
-    public const int KeepPerBatch = 1;
+    // From 24.24 the most marked members' sheets one question of round two shows, the most the local model answered every
+    // question of over replayed nights, and the share of the marked it picks: one in four, rounded up.
+    public const int SheetsPerAsk = 16;
+
+    public const int QuarterOf = 4;
 
     public const int MostPicks = 5;
 
-    public const int ScreenTokens = 64;
+    public const int ScreenTokens = 640;
 
-    public const int PickTokens = 1024;
+    // From 24.24 the answer's budget of round two: five ranked picks with their facts, which the model writes laid out over
+    // more than a thousand tokens.
+    public const int PickTokens = 2048;
 
     public const string None = "none";
 
@@ -40,9 +49,16 @@ public static partial class JudgePrompt
 
     public const int MostFields = 5;
 
-    // The one prompt version a judge pin may move from to this one, written as a new pin of its own: the version the
-    // judge picked under before it named its facts. Any other version a pin holds is refused.
-    public const string Previous = "837506398bd8";
+    // The prompt versions a picker pin may move from to this one, each followed by a new pin of its own: the version the
+    // picker picked under before it named its facts, and the one it named them under before it picked within each index.
+    // Any other version a pin holds is refused.
+    public static IReadOnlyList<string> Earlier { get; } = ["837506398bd8", "407c9a9b3be1"];
+
+    // How many of the marked the picker picks: the best quarter, rounded up, at most 5, and none where none is marked.
+    public static int Quarter(int marked) => marked <= 0 ? 0 : Math.Min(MostPicks, (marked + QuarterOf - 1) / QuarterOf);
+
+    // How many of the marked round two ranks: as many as a fixed 5 takes, at most 5, the best quarter the first of them.
+    public static int Ranked(int marked) => marked <= 0 ? 0 : Math.Min(MostPicks, marked);
 
     public const string NamedNone = "it named no fact";
 
@@ -53,16 +69,21 @@ public static partial class JudgePrompt
     public const string NamedLacking = "it named a fact its sheet lacks";
 
     public const string ScreenSystem =
-        "You will read short fact rows about companies listed in the United States, each under a made-up label. Their names, tickers, "
-        + "industries, dates and prices have been removed. Choose the one company you would most want to buy at the next open and hold "
-        + "for between a week and three months, or answer none if no company stands out. Answer with its label.";
+        "You will read short fact rows about companies in one index of stocks listed in the United States, each under a made-up label. "
+        + "Their names, tickers, industries, dates and prices have been removed, and each figure is followed by the tenth it stands in "
+        + "among that index's stocks, from 1 the lowest to 10 the highest. Judge each company on its own facts, and mark every one you "
+        + "rate worth buying at the next open and holding for between a week and three months, or none if none is. Answer with their labels.";
 
     public static readonly string PickSystem =
-        "You will read full fact sheets about companies listed in the United States, each under a made-up label. Their names, tickers, "
-        + "industries, dates and prices have been removed. Choose up to " + Words(MostPicks) + " to buy at the next open, ranked with the one "
-        + "you most want first, or none. For each, choose how long to hold it and how to take profit from the lists given, give one "
-        + "sentence of reasoning in plain words, with no digit and no company's name, and name the " + Words(FewestFields) + " to "
-        + Words(MostFields) + " facts of its sheet that decided it, each by its name exactly as the sheet shows it.";
+        "You will read full fact sheets about companies in one index of stocks listed in the United States, each under a made-up label "
+        + "and each already rated worth buying. Their names, tickers, industries, dates and prices have been removed, and each figure is "
+        + "followed by the tenth it stands in among that index's stocks, from 1 the lowest to 10 the highest. Rank the number of them asked "
+        + "that you most want to buy at the next open, the one you most want first. For each, choose how long to hold it and how to take "
+        + "profit from the lists given, give one sentence of reasoning in plain words, with no digit and no company's name, and name the "
+        + Words(FewestFields) + " to " + Words(MostFields) + " facts of its sheet that decided it, each by its name exactly as the sheet shows it.";
+
+    // The line opening each question, naming the index its members are placed among.
+    public static string AmongLine(string indexName) => $"Every company here is in the {indexName}, and each tenth places a figure among the {indexName}'s stocks tonight.";
 
     static readonly string[] Colours = ["Amber", "Blue", "Coral", "Gray", "Green", "Ivory", "Olive", "Violet"];
 
@@ -89,11 +110,13 @@ public static partial class JudgePrompt
             : throw new ArgumentOutOfRangeException(nameof(count), FormattableString.Invariant($"an ask shows at most {shuffled.Length} members"));
     }
 
-    public static string ScreenPrompt(IReadOnlyList<(string Label, string Row)> rows) =>
-        string.Join("\n", rows.Select(row => row.Label + ": " + row.Row));
+    public static string ScreenPrompt(string indexName, IReadOnlyList<(string Label, string Row)> rows) =>
+        AmongLine(indexName) + "\n\n" + string.Join("\n", rows.Select(row => row.Label + ": " + row.Row));
 
-    public static string PickPrompt(IReadOnlyList<(string Label, string Sheet)> sheets) =>
-        "How long to hold: " + string.Join("; ", JudgeMenu.Holds.Select(hold => hold.Words)) + ".\n"
+    public static string PickPrompt(string indexName, int count, IReadOnlyList<(string Label, string Sheet)> sheets) =>
+        AmongLine(indexName) + "\n"
+        + string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Rank {count} of these {sheets.Count}.\n")
+        + "How long to hold: " + string.Join("; ", JudgeMenu.Holds.Select(hold => hold.Words)) + ".\n"
         + "How to take profit: " + string.Join("; ", JudgeMenu.Shapes) + ".\n\n"
         + string.Join("\n\n", sheets.Select(sheet => sheet.Label + "\n" + sheet.Sheet));
 
@@ -102,13 +125,18 @@ public static partial class JudgePrompt
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["keep"] = new JsonObject { ["type"] = "string", ["enum"] = Enum([.. labels, None]) },
+            ["marked"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["maxItems"] = labels.Count,
+                ["items"] = new JsonObject { ["type"] = "string", ["enum"] = Enum(labels) },
+            },
         },
-        ["required"] = new JsonArray("keep"),
+        ["required"] = new JsonArray("marked"),
         ["additionalProperties"] = false,
     };
 
-    public static JsonObject PickSchema(IReadOnlyList<string> labels) => new()
+    public static JsonObject PickSchema(IReadOnlyList<string> labels, int count) => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
@@ -116,7 +144,7 @@ public static partial class JudgePrompt
             ["picks"] = new JsonObject
             {
                 ["type"] = "array",
-                ["maxItems"] = MostPicks,
+                ["maxItems"] = count,
                 ["items"] = new JsonObject
                 {
                     ["type"] = "object",
@@ -129,9 +157,7 @@ public static partial class JudgePrompt
                         ["facts"] = new JsonObject
                         {
                             ["type"] = "array",
-                            ["minItems"] = FewestFields,
-                            ["maxItems"] = MostFields,
-                            ["items"] = new JsonObject { ["type"] = "string", ["enum"] = Enum(FieldWords) },
+                            ["items"] = new JsonObject { ["type"] = "string" },
                         },
                     },
                     ["required"] = new JsonArray("label", "hold", "take_profit", "reason", "facts"),
@@ -149,12 +175,18 @@ public static partial class JudgePrompt
         "\n",
         [
             ScreenSystem, PickSystem, string.Join(",", AllLabels), string.Join(",", JudgeMenu.Holds.Select(hold => FormattableString.Invariant($"{hold.Words}:{hold.Sessions}:{hold.StopMoves}"))),
-            string.Join(",", JudgeMenu.Shapes), FormattableString.Invariant($"{BatchSize}:{KeepPerBatch}:{MostPicks}:{ScreenTokens}:{PickTokens}:{ReasonPattern}"),
+            string.Join(",", JudgeMenu.Shapes), FormattableString.Invariant($"{BatchSize}:{SheetsPerAsk}:{QuarterOf}:{MostPicks}:{ScreenTokens}:{PickTokens}:{ReasonPattern}"),
+            AmongLine("x"),
             string.Join(",", FieldWords), FormattableString.Invariant($"{FewestFields}:{MostFields}"),
         ]))))[..12];
 
     // The facts a pick may name: every field of the full sheet, by the words the sheet shows it under.
     public static IReadOnlyList<string> FieldWords => [.. JudgeFacts.In(JudgeRound.Sheet).Select(shown => shown.Words)];
+
+    // The words of the field a fact is named by: the field's own words, or those before its value where it is named as its
+    // sheet's line shows it; the words as given where they name no field.
+    public static string NameOf(string named) =>
+        FieldWords.FirstOrDefault(words => string.Equals(named, words, StringComparison.Ordinal) || named.StartsWith(words + ": ", StringComparison.Ordinal)) ?? named;
 
     // The key of the field a sheet shows under these words, none where no field is.
     public static string? KeyOf(string words) => JudgeFacts.All.FirstOrDefault(shown => string.Equals(shown.Words, words, StringComparison.Ordinal))?.Key;
@@ -185,31 +217,49 @@ public static partial class JudgePrompt
             : NamedLacking;
     }
 
-    // Round one's answer: the label kept, none where the model kept none, or the cause it cannot be read.
-    public static (string? Kept, string? Cause) ReadScreen(string? answer, IReadOnlyList<string> labels)
+    // Round one's answer: the labels marked, in the order shown, none where the model marked none, a label marked twice read
+    // once, or the cause it cannot be read: a label not shown.
+    public static (IReadOnlyList<string> Marked, string? Cause) ReadScreen(string? answer, IReadOnlyList<string> labels)
     {
         if (Parse(answer) is not { } root)
         {
-            return (null, "not one object");
+            return ([], "not one object");
         }
 
-        if (root["keep"] is not JsonValue value || !value.TryGetValue(out string? keep) || keep is null)
+        if (root["marked"] is not JsonArray marked)
         {
-            return (null, "missing an answer");
+            return ([], "missing an answer");
         }
 
-        if (keep == None)
+        var read = new List<string>();
+
+        foreach (var one in marked)
         {
-            return (null, null);
+            if (one is not JsonValue value || !value.TryGetValue(out string? label) || label is null)
+            {
+                return ([], "missing an answer");
+            }
+
+            if (!labels.Contains(label, StringComparer.Ordinal))
+            {
+                return ([], "a label not shown");
+            }
+
+            // A label marked twice marks its member once.
+            if (!read.Contains(label, StringComparer.Ordinal))
+            {
+                read.Add(label);
+            }
         }
 
-        return labels.Contains(keep, StringComparer.Ordinal) ? (keep, null) : (null, "a label not shown");
+        return ([.. labels.Where(label => read.Contains(label, StringComparer.Ordinal))], null);
     }
 
-    // Round two's answer: up to 5 picks in the order ranked, or the cause it cannot be read. A label shown twice, one not
-    // shown, a hold or a take-profit off the menu, or a reason holding a digit is refused whole; a reason naming the member
-    // is refused by the caller, which alone holds the names.
-    public static (IReadOnlyList<JudgeChoice> Picks, string? Cause) ReadPick(string? answer, IReadOnlyList<string> labels)
+    // Round two's answer: the number of picks asked in the order ranked, the first of them where it ranks more, or the
+    // cause it cannot be read. A label shown twice, one not shown, a hold or a take-profit off the menu, a reason holding a
+    // digit, or fewer picks than asked is refused whole; a reason naming the member is refused by the caller, which alone
+    // holds the names.
+    public static (IReadOnlyList<JudgeChoice> Picks, string? Cause) ReadPick(string? answer, IReadOnlyList<string> labels, int count)
     {
         if (Parse(answer) is not { } root)
         {
@@ -221,14 +271,16 @@ public static partial class JudgePrompt
             return ([], "missing an answer");
         }
 
-        if (picks.Count > MostPicks)
+        if (picks.Count < count)
         {
-            return ([], FormattableString.Invariant($"more than {MostPicks} picks"));
+            return ([], FormattableString.Invariant($"{picks.Count} picks where {count} were asked"));
         }
+
+        var ranked = picks.Take(count).ToArray();
 
         var read = new List<JudgeChoice>();
 
-        foreach (var pick in picks)
+        foreach (var pick in ranked)
         {
             if (pick is not JsonObject one
                 || Text(one, "label") is not { } label
@@ -261,8 +313,9 @@ public static partial class JudgePrompt
 
             // The facts it named are read as given, none where it named none; the caller, which holds each sheet, refuses
             // the one pick whose facts do not stand and keeps the rest.
+            // From 24.24 a fact named with its value after it, as its sheet shows it, is read by its name.
             IReadOnlyList<string> facts = one["facts"] is JsonArray named
-                ? [.. named.Select(fact => fact is JsonValue value && value.TryGetValue(out string? words) ? words : string.Empty)]
+                ? [.. named.Select(fact => fact is JsonValue value && value.TryGetValue(out string? words) ? NameOf(words) : string.Empty)]
                 : [];
 
             read.Add(new JudgeChoice(label, hold, shape, reason.Trim()) { Fields = facts });

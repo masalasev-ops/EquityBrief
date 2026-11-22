@@ -97,7 +97,7 @@ public partial class ReadSurface
         Assert.Contains(SinglePageApp.JudgeReplayedLine, page, StringComparison.Ordinal);
 
         // The cards, in the words of the rule on the open, AAA first.
-        Assert.Contains("The AI stock picker's picks tonight (2)", page, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (2)", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as the local model wrote it.</small></p>", page, StringComparison.Ordinal);
         Assert.Contains("<b>The AI stock picker's pick, ranked 1 of 2 tonight.</b> It saw Industrials, a large company, with no name, ticker or date.", page, StringComparison.Ordinal);
@@ -148,7 +148,7 @@ public partial class ReadSurface
         var view = new JudgeView(new DateOnly(2026, 11, 19), "picked", "", [new JudgeCardView(1, 1, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole)], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0);
         var home = SinglePageApp.JudgeHomeLine(view);
 
-        Assert.Contains("The AI stock picker's picks tonight (2)", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (2)", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
         Assert.Contains("<span class=\"ai-tag\">AI stock picker</span>", page, StringComparison.Ordinal);
         Assert.Contains("The AI stock picker has not run yet.", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
         Assert.Contains("<b>AI stock picker</b>", home, StringComparison.Ordinal);
@@ -283,7 +283,7 @@ public partial class ReadSurface
 
         store.Execute(
             "INSERT INTO judge_pin (id, reading_pin_id, model, file, sha256, size, modified, context, prompt_version, written_at) VALUES "
-            + $"(1, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Previous}', '2026-11-20T01:00:00Z'), "
+            + $"(1, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Earlier[0]}', '2026-11-20T01:00:00Z'), "
             + $"(2, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Version}', '2026-11-21T01:00:00Z');");
         store.Execute(
             "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
