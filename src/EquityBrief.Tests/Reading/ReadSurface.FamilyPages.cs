@@ -475,7 +475,7 @@ public partial class ReadSurface
         // The share's own count, by hand over two constructed trades that each reached a target with a
         // break-even of 40 per cent: the pullback's is decided, and the drift's, listed by a setup handed in
         // as provisional, is counted as listed and finished and is no decided trade.
-        EquityBrief.Api.Reading.PickRow Won(string ticker, string family) => new(
+        PickRow Won(string ticker, string family) => new(
             ticker, new DateOnly(2026, 9, 1), "clear", 100m, 96m, 110m, true, ForwardReturnSeries.Win, new DateOnly(2026, 9, 10), 10.0, 40.0,
             null, 100m, new DateOnly(2026, 9, 30), 111m, Family: family);
 

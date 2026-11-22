@@ -479,49 +479,6 @@ public sealed record GateResultRow(
     double? ClearRewardToRisk = null,
     double? ClearStopMoves = null);
 
-// One trade the live list recommended, as the store holds it: the name the swing filter passed on a
-// night it listed, the plan that night's trade gate read, its entry, stop and target, the forward return
-// that plan was scored under with whether a row is stored at all, the company's name, the close the
-// name's bars hold now for its listing night, and the newest close at or before the night asked for.
-public sealed record PickRow(
-    string Ticker,
-    DateOnly Night,
-    string Plan,
-    decimal? Entry,
-    decimal? Stop,
-    decimal? Target,
-    bool OutcomeStored,
-    string? Outcome,
-    DateOnly? ResolvedOn,
-    double? ReturnPct,
-    double? BreakEven,
-    string? Company,
-    decimal? ListingClose,
-    DateOnly? NowOn,
-    decimal? NowClose,
-    // The state the member's reported quarters gave it on its listing night, and none on a night that
-    // stored no readings.
-    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-    string? State = null,
-    // The setup family the page listed the trade under, and the other families the stock qualified under
-    // that night, which a night the families did not draw holds none of.
-    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
-    string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
-    IReadOnlyList<string>? Also = null,
-    // What the plan put at risk from its fill, as the filler stored it beside the outcome.
-    double? PlannedRisk = null,
-    // From 19.10 the trade's fill at the next session's open: its result there in the risk its close put up, the open it
-    // was bought at, the session of that open, whether that open was past its stop or its target, and why it holds no
-    // fill; all none while it waits on its next session.
-    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
-    double? FillResult = null,
-    decimal? Fill = null,
-    DateOnly? FilledOn = null,
-    string? Past = null,
-    string? Unfilled = null,
-    // From 22.26 the session the next open sold it at and the price, both none while that sale waits on its open.
-    DateOnly? SoldOn = null,
-    decimal? Sale = null);
 
 // A pick's card as the night stored it: its index, night, family and stock, its place, the plan's prices, the rule it
 // names, the card's values it was read with, its lines and the rule's record as the card read it, none where the rule had
