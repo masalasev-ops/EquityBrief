@@ -254,17 +254,6 @@ public sealed record ForwardReturnRow(
 // picked the name: whether the candidate fired and each of its gate's answers with its plan.
 public sealed record ShadowPickRow(DateOnly Session, string Ticker, bool LivePassed, string Candidate, bool Fired, string Values);
 
-public sealed record CandidateRow(
-    long Id,
-    string Candidate,
-    string Evaluator,
-    string Event,
-    string? Retires,
-    DateTimeOffset RegisteredAt,
-    string Parameters = "{}",
-    string? Evidence = null,
-    string EvaluatorVersion = "");
-
 // One name-night a candidate fired on, with what its setup came to.
 //
 // The name is not carried and no surface could draw one from this: what a record is over is a
@@ -589,36 +578,6 @@ public sealed record HeldTradeFigures(decimal? Fill, DateOnly? FilledOn, decimal
 // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
 public sealed record TakenRecordRow(string Index, string Family, string Unit, int Won, int Lost, int Ended, int Open, double? Average, int SameNights = 0, int RuleListed = 0, int RuleWon = 0, int RuleLost = 0, int RuleEnded = 0, double? RuleAverage = null);
 
-// A trade the operator took from a card, as the store holds it: the stock and when it was taken, the card it came from,
-// the stock's sector, its fill and the session it is for, whether that fill is still the plan's buy awaiting the next
-// session's open and whether the operator entered it, the plan it is managed by, and the exit the operator recorded.
-// see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
-public sealed record TakenTradeRow(
-    string Ticker,
-    string TakenAt,
-    string Index,
-    string Family,
-    DateOnly Night,
-    string? Sector,
-    decimal Fill,
-    DateOnly FillDate,
-    bool Provisional,
-    bool Entered,
-    decimal? Stop,
-    decimal? Target,
-    decimal? Trail,
-    int? Cap,
-    decimal? ExitPrice,
-    DateOnly? ExitDate,
-    string? FollowedThrough,
-    DateOnly? EndedOn = null,
-    decimal? EndPrice = null,
-    string? EndReason = null,
-    double? Result = null)
-{
-    // Open while neither the operator's exit nor the night's follower has ended it.
-    public bool IsOpen => ExitDate is null && EndedOn is null;
-}
 
 // One stock under one family on a night the families drew the page's list, as the store holds it: whether
 // the page lists it, its place down the page and the other families it qualified under, or why it is held
@@ -634,10 +593,6 @@ public sealed record FamilyPickRow(
     DateOnly? HeldNight,
     string? HeldIndex = null);
 
-// One S&P 400 or 600 night as the index families stored it: the members read, the index's own breadth, whether its
-// market check left its swing lists open, the settings its rules ran on and whether its sector heavyweights rebalanced.
-// see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
-public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced, string? Fault = null);
 
 // One member's answer under one of an index's families on a night: whether the family's provisional rule passed it,
 // its place among those it passed and its trade, or the first part of the rule it failed; and from 20.11 every part's

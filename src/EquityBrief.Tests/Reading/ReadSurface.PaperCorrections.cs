@@ -69,8 +69,8 @@ public partial class ReadSurface
     public void AnAccountCountsFromItsVersionsFirstSessionAndTheSameTradesBeforeItStandApartUnderIt()
     {
         const string rule = "the live breakout rule at the order's words";
-        var standing = new EquityBrief.Api.Reading.CandidateRow(301, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 11, 3, 2, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
-        var earlier = new EquityBrief.Api.Reading.CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), "{\"volumeMultiple\": 2}", EvaluatorVersion: "u");
+        var standing = new CandidateRow(301, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 11, 3, 2, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
+        var earlier = new CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), "{\"volumeMultiple\": 2}", EvaluatorVersion: "u");
         var replay = new EquityBrief.Core.Candidates.FamilyReplayRow(rule, "v", new DateOnly(2026, 10, 2), true, "reproduced", new DateTimeOffset(2026, 11, 3, 3, 0, 0, TimeSpan.Zero));
 
         (PaperTrade, double?) Trade(string ticker, DateOnly listed) => (new PaperTrade(ticker, listed.AddDays(1), 100m, 90m, null, null, null, 1, Listed: listed), null);
@@ -270,7 +270,7 @@ public partial class ReadSurface
         var drift = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [(dd, null), (gww, null)], new DateOnly(2026, 11, 3), Unfilled: [("DD", night, PaperAccount.Waiting), ("XYZ", night, PaperAccount.Waiting)]);
         var walk = new PaperWalk([(night, 100_000m)], [new PaperTaken(dd, 10, null), new PaperTaken(gww, 0, PaperAccount.UnderTheCash)], 1, 1, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]);
         var view = new PaperAccountView("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", "within luck", null, "risks", [], walk, 2, 0, null, new DateOnly(2026, 11, 3));
-        var built = EquityBrief.Api.Reading.PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "drift", "SPY", _ => null);
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, PaperStockRow>(StringComparer.Ordinal), _ => null, null, "drift", "SPY", _ => null);
         var page = PaperPageOf(built);
         var line = Regex.Match(page, "<p class=\"paper-unbought\"[^>]*data-family=\"drift\">.*?</p>").Value;
 
@@ -306,7 +306,7 @@ public partial class ReadSurface
             night,
             [night],
             (_, _) => 190m,
-            new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal),
+            new Dictionary<string, PaperStockRow>(StringComparer.Ordinal),
             _ => null,
             null,
             "drift",
@@ -354,7 +354,7 @@ public partial class ReadSurface
             ["improving"] = new(EquityBrief.Api.Reading.PaperScreen.FundamentalsSells(7, 126), new Dictionary<string, string>(StringComparer.Ordinal) { ["FTNT"] = EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(8, 9, 7) }),
             ["quality"] = new(EquityBrief.Api.Reading.PaperScreen.QualitySells(new DateOnly(2026, 12, 1)), new Dictionary<string, string>(StringComparer.Ordinal) { ["MGM"] = "Still qualifies." }),
         };
-        var built = EquityBrief.Api.Reading.PaperScreen.Page([improving, quality], [View(improving), View(quality)], night, [night], (_, _) => 110m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "improving", "SPY", _ => null, null, books);
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([improving, quality], [View(improving), View(quality)], night, [night], (_, _) => 110m, new Dictionary<string, PaperStockRow>(StringComparer.Ordinal), _ => null, null, "improving", "SPY", _ => null, null, books);
         var page = PaperPageOf(built);
 
         Assert.Contains("<td class=\"pb-sells\" colspan=\"2\" data-sells>Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days</td>", page, StringComparison.Ordinal);

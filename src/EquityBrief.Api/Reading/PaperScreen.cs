@@ -3,6 +3,7 @@ using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Loop;
+using EquityBrief.Core.Paper;
 using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
 

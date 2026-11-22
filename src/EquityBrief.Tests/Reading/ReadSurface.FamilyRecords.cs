@@ -195,13 +195,13 @@ public partial class ReadSurface
         var again = new DateTimeOffset(2026, 4, 15, 12, 0, 0, TimeSpan.Zero);
         FamilyTradeRow[] trades = [new(LiveBreakout, new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 20), 1.5, 0.5)];
 
-        EquityBrief.Api.Reading.CandidateRow Registered(long id, DateTimeOffset at, string version) =>
+        CandidateRow Registered(long id, DateTimeOffset at, string version) =>
             new(id, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Registered, null, at, EvaluatorVersion: version);
 
-        FamilyRecordView Read(IReadOnlyList<EquityBrief.Api.Reading.CandidateRow> register, params FamilyReplayRow[] replays) =>
+        FamilyRecordView Read(IReadOnlyList<CandidateRow> register, params FamilyReplayRow[] replays) =>
             Assert.Single(EquityBrief.Api.Reading.TonightScreen.FamilyRecordViews(register, trades, night, replays), view => view.View.Candidate == LiveBreakout).View;
 
-        EquityBrief.Api.Reading.CandidateRow[] registeredAgain =
+        CandidateRow[] registeredAgain =
         [
             Registered(1, first, "v1"),
             new(2, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Retired, LiveBreakout, again, Evidence: "a code change moved its evaluator"),
