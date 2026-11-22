@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // deciding may read. The walk-forward tester reads them through the one reader of the stored answers alone and asks no
 // model; the generator writes them and asks the local model and decides nothing; no other component touches them; and no
 // source under the deciding folders names their table, which the one reader alone names.
-// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI judge's own account
+// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI stock picker's own account
 // see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
 public partial class RulesChooseTheStocks
 {

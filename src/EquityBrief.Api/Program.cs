@@ -3242,7 +3242,7 @@ static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> c
 // An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
 // sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's
 // standing tonight.
-// The AI judge's page as the store holds it: its rows, every member's sessions from its first night, each index's live
+// The AI stock picker's page as the store holds it: its rows, every member's sessions from its first night, each index's live
 // rules' accounts and their trades, the three funds and the account the operator saved or the example one; Home's line reads
 // it without the rules' accounts, which it does not draw.
 async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, bool withRules = true, DateOnly? drawnNight = null)
@@ -3946,9 +3946,9 @@ IResult SweepReportPage(StoreLocation store, string? run)
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
     Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync()), "text/html; charset=utf-8"));
 
-// From 24.6 the AI judge's page: its four accounts worked when the page is read, the scoreboard of its live record, the
+// From 24.6 the AI stock picker's page: its four accounts worked when the page is read, the scoreboard of its live record, the
 // newest night's cards, where it looked against the rules' picks, and a replayed record apart.
-// see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
+// see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
 app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
     Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store)), "text/html; charset=utf-8"));
 

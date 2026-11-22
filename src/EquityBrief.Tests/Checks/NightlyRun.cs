@@ -98,7 +98,7 @@ public partial class NightlyRun
             // The store's copy, on the operator's ruling of 2026-10-02.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.StoreCopyStep),
 
-            // 24.4, the AI judge, the night's last step.
+            // 24.4, the AI stock picker, the night's last step.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.JudgeStep),
 
             // 5.4, tonight's list.
@@ -1387,7 +1387,7 @@ public partial class NightlyRun
         Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start no copy of the store", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.4, start the AI stock picker", steps[^1], StringComparison.Ordinal);
         Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
         using var store = new TemporaryStore();
@@ -1584,7 +1584,7 @@ public partial class NightlyRun
         Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start no copy of the store", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.4, start the AI stock picker", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);

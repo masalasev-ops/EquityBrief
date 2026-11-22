@@ -25,7 +25,7 @@ public sealed record JudgePickRow(int Rank, string Index, string Ticker, string 
 // questions asked and those that failed twice, and its picks.
 public sealed record JudgeRunOutcome(string Run, DateOnly Session, string Outcome, string? Why, int Screened, int Kept, int Asks, int AsksFailed, IReadOnlyList<JudgePickRow> Picks);
 
-// The AI judge's nightly picks, a process of its own the night starts after its last step. It reads the night's facts
+// The AI stock picker's nightly picks, a process of its own the night starts after its last step. It reads the night's facts
 // under the field list's version, starts only under a passed naming test of that version, waits for the night to let go
 // of its lock and then for the local model's lock, refuses any model, model file, window or prompt but its pin's, and
 // asks the model in two rounds: every member's short row about 50 at a time, keeping at most one a batch, then the kept
@@ -33,7 +33,7 @@ public sealed record JudgeRunOutcome(string Run, DateOnly Session, string Outcom
 // question the answer to which cannot be read is asked once more and then counted, never guessed. Code works every
 // price from the last close and the typical daily move. It takes the drain's lock for its one write, and a night it
 // cannot store before the next open is written as missed with no pick and never filled in later.
-// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 public sealed class JudgePicker(
     IReadingModelFeed feed,
     LocalModelSettings settings,
@@ -417,7 +417,7 @@ public sealed class JudgePicker(
 
             if (!await reader.ReadAsync(cancellation))
             {
-                return (null, "no reading pin stands for the judge to be pinned under");
+                return (null, "no reading pin stands for the picker to be pinned under");
             }
 
             (readingId, model, file, sha, size, modified, context) = (reader.GetInt64(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetInt64(4), Instant(reader.GetString(5)), reader.GetInt32(6));
@@ -455,7 +455,7 @@ public sealed class JudgePicker(
 
                 return part is null
                     ? (new PinRead(readingId, settings.Model, facts.Relative, sha, facts.Size, facts.Modified, settings.ContextTokens, id), string.Empty)
-                    : (null, FormattableString.Invariant($"{part} is not judge pin {id}'s"));
+                    : (null, FormattableString.Invariant($"{part} is not picker pin {id}'s"));
             }
         }
 
@@ -468,7 +468,7 @@ public sealed class JudgePicker(
 
         return first is null
             ? (new PinRead(readingId, model, file, sha, size, modified, context, null), string.Empty)
-            : (null, FormattableString.Invariant($"{first} is not reading pin {readingId}'s, which the judge's first pin is written from"));
+            : (null, FormattableString.Invariant($"{first} is not reading pin {readingId}'s, which the picker's first pin is written from"));
     }
 
     async Task<IReadOnlyList<Member>> MembersAsync(SqliteConnection connection, string day, CancellationToken cancellation)
@@ -607,7 +607,7 @@ public sealed class JudgePicker(
 
     // What a run came to, in words for its verb's line.
     public static string Words(JudgeRunOutcome outcome) =>
-        FormattableString.Invariant($"the judge's run for {outcome.Session:yyyy-MM-dd}: {outcome.Outcome}, {outcome.Screened} screened, {outcome.Kept} kept, {outcome.Picks.Count} picked, {outcome.Asks} questions asked, {outcome.AsksFailed} failed twice")
+        FormattableString.Invariant($"the picker's run for {outcome.Session:yyyy-MM-dd}: {outcome.Outcome}, {outcome.Screened} screened, {outcome.Kept} kept, {outcome.Picks.Count} picked, {outcome.Asks} questions asked, {outcome.AsksFailed} failed twice")
         + (outcome.Why is { } why ? "; " + why : string.Empty);
 
     static DateTimeOffset Instant(string text) =>

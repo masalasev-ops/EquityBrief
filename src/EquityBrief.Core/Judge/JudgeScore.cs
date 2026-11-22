@@ -1,17 +1,17 @@
 namespace EquityBrief.Core.Judge;
 
-// One group of where the AI judge looked: its name, the picks in it, those closed and what they made per $1 risked.
+// One group of where the AI stock picker looked: its name, the picks in it, those closed and what they made per $1 risked.
 public sealed record JudgeLooked(string Group, int Picks, int Closed, double? PerDollar);
 
-// The scoreboard of the AI judge's live record: its trades closed, those that made money, what they made per $1 risked,
+// The scoreboard of the AI stock picker's live record: its trades closed, those that made money, what they made per $1 risked,
 // how much more than the same plans bought on every stock those nights, and how many closed trades a firm verdict waits for.
 public sealed record JudgeScoreboard(int Closed, int Winners, double? PerDollar, double? OverSamePlan, int Needed);
 
-// The AI judge's page figures, worked by code from its walked trades: the scoreboard, whether its account beats random
+// The AI stock picker's page figures, worked by code from its walked trades: the scoreboard, whether its account beats random
 // picks so far against their band, and where it looked against the rules' picks of the same nights. A replayed night's
 // trades are read apart and never counted in the live record.
-// see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
-// owes: The AI judge's live record read at 300 closed picks
+// see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
+// owes: The AI stock picker's live record read at 300 closed picks
 public static class JudgeScore
 {
     public const int Firm = 300;

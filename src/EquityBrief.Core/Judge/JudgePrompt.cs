@@ -18,7 +18,7 @@ public sealed record JudgeChoice(string Label, string Hold, string Shape, string
 // members' full sheets together and picks up to 5, ranked, each with a hold and a take-profit from the menu and a reason
 // holding no digit and no name. The model answers closed choices and words alone; code reads every answer and refuses
 // one outside them.
-// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 public static partial class JudgePrompt
 {
     public const int BatchSize = 50;

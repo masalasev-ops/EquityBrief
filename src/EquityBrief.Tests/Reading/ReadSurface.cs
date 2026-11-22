@@ -220,7 +220,7 @@ public partial class ReadSurface
             // 23.1, the History page.
             .. DataCheckPageRows,
 
-            // 24.6, the AI judge's page and Home's line of it.
+            // 24.6, the AI stock picker's page and Home's line of it.
             .. JudgePageRows,
 
             // 24.13, the judge's page on an empty record.

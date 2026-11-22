@@ -27,7 +27,7 @@ public partial class NightlyRun
         Assert.Equal(EquityBrief.Worker.Nightly.LabelledByTheOffPeakRun, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{NewsLabeller.NightStage}';").Single());
         Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{NewsLabeller.NightStage}';"));
 
-        // The step comes after the report's, the store's copy's row after it, starting no copy, and from 24.4 the AI judge
+        // The step comes after the report's, the store's copy's row after it, starting no copy, and from 24.4 the AI stock picker
         // last, started once as a process of its own with no model call on the night's row.
         Assert.Equal(
             ["report", NewsLabeller.NightStage, StoreBackup.NightStage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
@@ -50,7 +50,7 @@ public partial class NightlyRun
         Assert.Equal("no labeller was started, since this night was run again for an earlier session", Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{NewsLabeller.NightStage}';").Single());
         Assert.Equal(EquityBrief.Worker.Nightly.CopiedByItsOwnRun, Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{StoreBackup.NightStage}';").Single());
         Assert.Equal(0, still.JudgeStarts);
-        Assert.Equal("no judge was started, since this night was run again for an earlier session", Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';").Single());
+        Assert.Equal("no picker was started, since this night was run again for an earlier session", Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';").Single());
 
         // The night's own source asks its launcher for neither, so a night whose list asks for reports leaves them
         // queued as the fixture's night, which asks for none, shows.

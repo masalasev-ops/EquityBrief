@@ -11,12 +11,12 @@ namespace EquityBrief.Tests.Reading;
 // own, an earlier version's drawn on the judge's page under its number with its account apart from the four, the newest
 // version's alone the record from its first night, and no pick drawn without an account that buys it; read back off the
 // page over a constructed store and worked by hand.
-// see: Each judge version's picks are bought and walked in an account of its own, and the record counts the newest version's
+// see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's
 public partial class ReadSurface
 {
     internal static string[] JudgeVersionRows =>
     [
-        CheckReach.Key("15.26 The AI judge", "An earlier version's picks"),
+        CheckReach.Key("15.26 The AI stock picker", "An earlier version's picks"),
     ];
 
     // Version 1 picks AAA and DDD on the night of 19 Nov under the earlier prompt, AAA a week and DDD two, each with the whole
@@ -103,7 +103,7 @@ public partial class ReadSurface
         Assert.Contains("<span>Bought at</span><b>$101.00</b><span class=\"sale-note judge-buy\">At the open on Fri 20 Nov. Last close before it $100.00.</span>", aaa, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">$99.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it paid.</span>", aaa, StringComparison.Ordinal);
         Assert.Contains("<b class=\"aim\">$105.00</b>", aaa, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI judge's pick, ranked 1 of 2 on the night of 19 Nov.</b>", aaa, StringComparison.Ordinal);
+        Assert.Contains("<b>The AI stock picker's pick, ranked 1 of 2 on the night of 19 Nov.</b>", aaa, StringComparison.Ordinal);
         Assert.Contains("Bought on Fri 20 Nov at $100.00 and still open in version 1's own account.", ddd, StringComparison.Ordinal);
 
         var summary = SinglePageApp.VersionSummaryWords(new JudgeVersionView(1, new DateOnly(2026, 11, 19), new DateOnly(2026, 11, 19), [], new JudgeScoreboard(1, 1, 3.0, null, 300), []), 2);
@@ -120,7 +120,7 @@ public partial class ReadSurface
         Assert.Contains("<b>0</b> trades closed<span>0 of 300 needed for a firm verdict</span>", drawn, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2), drawn, StringComparison.Ordinal);
         Assert.Equal("Its record counts version 2's picks alone, from the night of 23 Nov 2026. Each earlier version's picks are bought and walked to their exits in an account of their own, drawn apart under its number and never added to the record.", SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2));
-        Assert.Contains("The AI judge's picks tonight (1)", drawn, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's picks tonight (1)", drawn, StringComparison.Ordinal);
 
         // No pick is drawn without an account that buys it: each card is tonight's under the record, or an earlier version's
         // saying what its account did, and every pick stored is drawn.
@@ -138,14 +138,14 @@ public partial class ReadSurface
         var earlier = new JudgeVersionView(1, new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 20), [], new JudgeScoreboard(0, 0, null, null, 300), []);
         var view = new JudgeView(new DateOnly(2026, 11, 20), "picked", "", [new JudgeCardView(1, 1, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole)], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0) { PicksFrom = earlier, RecordNumber = 2 };
 
-        Assert.Contains("<b>AI judge</b> Picked 1 stock that night in the account of Version 1, picked 20 Nov, kept apart from its record. No trade of it has closed yet.", WebUtility.HtmlDecode(SinglePageApp.JudgeHomeLine(view, past: true)), StringComparison.Ordinal);
+        Assert.Contains("<b>AI stock picker</b> Picked 1 stock that night in the account of Version 1, picked 20 Nov, kept apart from its record. No trade of it has closed yet.", WebUtility.HtmlDecode(SinglePageApp.JudgeHomeLine(view, past: true)), StringComparison.Ordinal);
         Assert.Contains("Picked 1 stock tonight in its own paper account.", SinglePageApp.JudgeHomeLine(view with { PicksFrom = null }), StringComparison.Ordinal);
         Assert.Equal("Version 1, picked 20 Nov to 27 Nov", SinglePageApp.VersionWords(earlier with { Last = new DateOnly(2026, 11, 27) }));
     }
 
     // No source a rule's version pins is one the correction writes, so no rule's version moves.
     [Fact]
-    public void NoSourceARulesVersionPinsIsOneTheJudgesVersionAccountsWrite()
+    public void NoSourceARulesVersionPinsIsOneThePickersVersionAccountsWrite()
     {
         string[] written =
         [

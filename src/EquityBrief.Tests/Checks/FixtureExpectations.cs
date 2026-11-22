@@ -148,17 +148,17 @@ public partial class FixtureExpectations
             .. NewReadingClaims,
             // The 23.10 correction of 2026-11-17: section 17's row of the symbol list's names.
             .. NamesClaims,
-            // 24.3: section 17's rows of the AI judge's facts and its naming test, and section 18's row.
+            // 24.3: section 17's rows of the AI stock picker's facts and its naming test, and section 18's row.
             .. JudgeFactClaims,
-            // 24.4: section 17's row of the AI judge's menu and section 18's two rows.
+            // 24.4: section 17's row of the AI stock picker's menu and section 18's two rows.
             .. JudgePickClaims,
-            // 24.5: section 17's row of the AI judge's four accounts.
+            // 24.5: section 17's row of the AI stock picker's four accounts.
             .. JudgeAccountClaims,
-            // 24.7: section 18's row of the AI judge's replay.
+            // 24.7: section 18's row of the AI stock picker's replay.
             .. JudgeReplayClaims,
             // 24.12: section 18's row of a filer filing no operating income.
             .. IncomeFallbackClaims,
-            // 24.14: section 17's row of the facts an AI judge pick names and section 18's row of a pick refused for them.
+            // 24.14: section 17's row of the facts an AI stock picker pick names and section 18's row of a pick refused for them.
             .. JudgeNamedClaims,
             // 24.17: section 17's row of the rule a variant replaces its running revision by.
             .. PromotionRuleClaims,

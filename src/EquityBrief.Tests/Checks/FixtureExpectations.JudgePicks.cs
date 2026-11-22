@@ -13,34 +13,34 @@ using EquityBrief.Worker.Local;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 24.4: the AI judge's picks of a constructed night through recorded answers, worked by hand into
+// fixture-expectations, 24.4: the AI stock picker's picks of a constructed night through recorded answers, worked by hand into
 // ranked picks with each price; each menu choice priced from a close and from a fill, a choice off the menu refused; a
 // reason holding a digit or naming its company refused and asked once more; a night reaching the next open, or still
 // waiting on the local model's lock at it, stored as missed with no pick; a run under another prompt than its pin
 // refused; the night constructing no reader of the judge's tables; and no source a rule pins among those 24.4 writes.
-// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 public partial class FixtureExpectations
 {
     // The night's step that starts the judge, as section 14 states it.
     internal const string JudgeStep =
-        "From 24.4, start the AI judge, a process of its own that waits until the night has finished, writes the night's facts and picks up " +
+        "From 24.4, start the AI stock picker, a process of its own that waits until the night has finished, writes the night's facts and picks up " +
         "to five for its own account under the local model's lock, its calls on its own row and never the night's, and stores them before " +
-        "the next open or writes the night as missed; a night run again for an earlier session starts none (see: The AI judge picks straight " +
+        "the next open or writes the night as missed; a night run again for an earlier session starts none (see: The AI stock picker picks straight " +
         "after the night under the local model's lock, its picks stored before the next open or shown as missed).";
 
     // The rows of section 17 and 18 24.4 adds that this check reaches.
     internal static readonly string[] JudgePickClaims =
     [
-        CheckReach.Key(Scope.LimitsTable, "The AI judge's menu"),
-        CheckReach.Key(Scope.FailureTable, "A night the AI judge does not store before the next open, or a question it cannot read"),
-        CheckReach.Key(Scope.FailureTable, "An AI judge run under another model, file, window or prompt than its pin"),
+        CheckReach.Key(Scope.LimitsTable, "The AI stock picker's menu"),
+        CheckReach.Key(Scope.FailureTable, "A night the AI stock picker does not store before the next open, or a question it cannot read"),
+        CheckReach.Key(Scope.FailureTable, "An AI stock picker run under another model, file, window or prompt than its pin"),
     ];
 
     // From 24.14 section 17's row of the facts a pick names and section 18's row of a pick refused for them.
     internal static readonly string[] JudgeNamedClaims =
     [
-        CheckReach.Key(Scope.LimitsTable, "The facts an AI judge pick names"),
-        CheckReach.Key(Scope.FailureTable, "An AI judge pick naming no fact or one its sheet lacks"),
+        CheckReach.Key(Scope.LimitsTable, "The facts an AI stock picker pick names"),
+        CheckReach.Key(Scope.FailureTable, "An AI stock picker pick naming no fact or one its sheet lacks"),
     ];
 
     // Every row 24.14 adds: the two claims above and the judge's page's two rows.
@@ -293,12 +293,12 @@ public partial class FixtureExpectations
         var feed = new PickFeed(PickTargets);
         var outcome = await PickRun(store, feed, PickEvening, "judge-pinned");
 
-        Assert.Equal((JudgePicker.Refused, "the prompt is not judge pin 1's", 0), (outcome.Outcome, outcome.Why, feed.Requests));
+        Assert.Equal((JudgePicker.Refused, "the prompt is not picker pin 1's", 0), (outcome.Outcome, outcome.Why, feed.Requests));
 
         store.Execute("DELETE FROM judge_run; DELETE FROM run_log;");
         store.Execute($"UPDATE judge_pin SET prompt_version = '{JudgePrompt.Version}', model = 'another model';");
 
-        Assert.Equal("the model is not judge pin 1's", (await PickRun(store, feed, PickEvening, "judge-pinned-model")).Why);
+        Assert.Equal("the model is not picker pin 1's", (await PickRun(store, feed, PickEvening, "judge-pinned-model")).Why);
     }
 
     // From 24.14, over recorded answers: a pick naming no fact, and one naming a fact its sheet shows as not on file, are each
@@ -401,7 +401,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheNightStartsTheJudgeAndConstructsNoReaderOfItsTables()
+    public void TheNightStartsThePickerAndConstructsNoReaderOfItsTables()
     {
         var night = SourceStatements.WithoutComments(File.ReadAllText(Path.Combine(Repository.Root, "src/EquityBrief.Worker/Nightly.cs")));
 
@@ -430,7 +430,7 @@ public partial class FixtureExpectations
 
     // No source a rule's version pins is one 24.4 writes outside its comments, so no rule's version moves.
     [Fact]
-    public void NoSourceARulesVersionPinsIsOneTheJudgesPicksWrite()
+    public void NoSourceARulesVersionPinsIsOneThePickersPicksWrite()
     {
         var pinned = CandidateEvaluators.All
             .SelectMany(evaluator => evaluator.OwnSources)

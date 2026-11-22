@@ -10,20 +10,20 @@ using EquityBrief.Worker.Judge;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 24.3: the AI judge's facts of a constructed night worked by hand, the size bands on both sides of
+// fixture-expectations, 24.3: the AI stock picker's facts of a constructed night worked by hand, the size bands on both sides of
 // each edge, a field a member does not hold read as not on file, no name, ticker, industry or date in any text and the
 // fields written the approved list's and no other; and the naming test passing and failing on each side of its bounds over
 // constructed answers, the judge starting only under a passed test of its field list's version.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
-// see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+// see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
 public partial class FixtureExpectations
 {
     // The rows of section 17 and 18 24.3 adds that this check reaches.
     internal static readonly string[] JudgeFactClaims =
     [
-        CheckReach.Key(Scope.LimitsTable, "The AI judge's facts"),
+        CheckReach.Key(Scope.LimitsTable, "The AI stock picker's facts"),
         CheckReach.Key(Scope.LimitsTable, "The naming test"),
-        CheckReach.Key(Scope.FailureTable, "A judge's fact a member does not hold, or a naming test that fails"),
+        CheckReach.Key(Scope.FailureTable, "A picker's fact a member does not hold, or a naming test that fails"),
     ];
 
     // Every row 24.3 adds: the fact writer's and the naming test's catalogue and matrix rows, their two stores, section 17's
@@ -110,7 +110,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheJudgesFactsOfANightAreWorkedByHandAndHoldNoNameTickerIndustryOrDate()
+    public async Task ThePickersFactsOfANightAreWorkedByHandAndHoldNoNameTickerIndustryOrDate()
     {
         using var store = JudgeStore();
         var writer = new JudgeFactWriter(FixedClock.At(new DateTimeOffset(2026, 11, 20, 1, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile);
@@ -222,7 +222,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheNamingTestPassesAndFailsOnEachSideOfItsBoundsAndTheJudgeStartsOnlyUnderAPassedTest()
+    public async Task TheNamingTestPassesAndFailsOnEachSideOfItsBoundsAndThePickerStartsOnlyUnderAPassedTest()
     {
         using var store = NamingStore();
 

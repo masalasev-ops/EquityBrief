@@ -121,7 +121,7 @@ public partial class ReadSurface
                 "/screens/ledger?family=pullback&setup=AAA.2026-03-09");
         }
 
-        // From 24.6 the AI judge's page over a live night's picks, one closed and one open, and a replayed night apart.
+        // From 24.6 the AI stock picker's page over a live night's picks, one closed and one open, and a replayed night apart.
         using (var judge = JudgePageStore())
         {
             await Read(PlainWords.JudgePage, "a live night and a replayed one", judge, "/screens/judge");

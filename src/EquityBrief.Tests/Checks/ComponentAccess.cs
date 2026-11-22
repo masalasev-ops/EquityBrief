@@ -275,7 +275,7 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Fallback facts fill"),
     ];
 
-    // 24.3: the AI judge's fact writer and its naming test.
+    // 24.3: the AI stock picker's fact writer and its naming test.
     internal static string[] JudgeRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Judge fact writer"),
@@ -284,7 +284,7 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Judge naming test"),
     ];
 
-    // 24.4: the AI judge's picker.
+    // 24.4: the AI stock picker's picker.
     internal static string[] JudgePickerRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Judge picker"),

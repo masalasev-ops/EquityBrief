@@ -4,17 +4,17 @@ using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 24.5: the AI judge's four accounts over constructed sessions, each worked by hand: a pick bought at
+// fixture-expectations, 24.5: the AI stock picker's four accounts over constructed sessions, each worked by hand: a pick bought at
 // the open after its night and walked under each take-profit from the price it paid; the random accounts drawn again from
 // their seed, as many members a night as the judge picked; their median and middle band; the index held; a pick against the
 // same plan bought on every member that night; and the money, sizing and costs read from the one account function alone.
-// see: The readings for every stock on every session are built once before the reviewer, the judge's comparison reading the same plan on every stock until then
+// see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
 public partial class FixtureExpectations
 {
     // The row of section 17 24.5 adds that this check reaches.
     internal static readonly string[] JudgeAccountClaims =
     [
-        CheckReach.Key(Scope.LimitsTable, "The AI judge's four accounts"),
+        CheckReach.Key(Scope.LimitsTable, "The AI stock picker's four accounts"),
     ];
 
     static readonly DateOnly AccountNight = new(2026, 11, 19);
@@ -48,7 +48,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheRandomAccountsRepeatFromTheirSeedAndPickAsManyMembersEachNightAsTheJudgeDid()
+    public void TheRandomAccountsRepeatFromTheirSeedAndPickAsManyMembersEachNightAsThePickerDid()
     {
         var members = Enumerable.Range(0, 40).Select(at => $"M{at:00}").ToArray();
         IReadOnlyList<(DateOnly, int, IReadOnlyList<string>)> nights = [(AccountNight, 3, members), (AccountNight.AddDays(1), 5, members), (AccountNight.AddDays(2), 0, members)];

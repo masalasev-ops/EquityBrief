@@ -8,7 +8,7 @@ namespace EquityBrief.Core.Judge;
 // sheets, each asked alone. It passes where the model names at most 2 in 100 of either round, an answer naming the
 // company where its ticker is the member's or its words hold the member's name as the names refresh keeps it; and the
 // judge starts under the field list's version only where the newest test under that version passed.
-// see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+// see: The AI stock picker starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
 public static partial class JudgeNaming
 {
     public const int SampleSize = 100;

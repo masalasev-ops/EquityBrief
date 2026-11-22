@@ -435,10 +435,10 @@ public partial class ArchitectureConformance
         // less section 14's step asking for the reported quarters, and 1627 from its replay fix, the replay's catalogue and
         // matrix rows, and 1628 from the operator's ruling of 2026-11-16, Tonight's row of a book's own exit, and 1632 from the
         // 23.10 correction of 2026-11-17, the names refresh's catalogue and matrix rows, its store's row and section 17's row of
-        // its names, and 1641 from 24.3, the AI judge's fact writer's and naming test's catalogue and matrix rows, their two
+        // its names, and 1641 from 24.3, the AI stock picker's fact writer's and naming test's catalogue and matrix rows, their two
         // stores, section 17's two rows and section 18's row, and 1651 from 24.4, the judge picker's catalogue and matrix
         // rows, its four stores, section 14's step, section 17's menu and section 18's two rows, and 1652 from 24.5, section
-        // 17's row of the AI judge's four accounts, and 1658 from 24.6, the AI judge's page's five regions and Home's line of it,
+        // 17's row of the AI stock picker's four accounts, and 1658 from 24.6, the AI stock picker's page's five regions and Home's line of it,
         // and 1659 from 24.7, section 18's row of the judge's replay, and 1661 from 24.11, the Run page's row of the splits the
         // share check does not read and section 18's row of their causes, and 1665 from 24.12, the fallback facts fill's catalogue
         // and matrix rows, its store's row and section 18's row of a filer filing no operating income, and 1666 from 24.13, the AI

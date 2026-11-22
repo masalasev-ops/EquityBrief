@@ -99,6 +99,29 @@ public partial class FixtureExpectations
         Assert.False(PromotionRule.Judge(true, PromotionRule.Record(true, held, start, new DateOnly(2027, 11, 15)), PromotionRule.Record(true, [new(start, new DateOnly(2027, 1, 4), 0.02)], start, new DateOnly(2027, 11, 15)), better, worse).Enough);
     }
 
+    // A book whose holdings closed inside its first month: from 1 Mar 2027 to 31 Mar, 22 sessions and no whole month, two
+    // holdings closed at +4% and +2%, so +3.00 points so far, by hand, never spread over 22/21 of a month (2.86) and never a
+    // rate over 0 months. On 1 Apr a whole month has passed and the figure is a rate again.
+    [Fact]
+    public void ABooksRecordInsideItsFirstMonthReadsItsPointsSoFarAndNeverARateOverNoMonths()
+    {
+        var from = new DateOnly(2027, 3, 1);
+        IReadOnlyList<PromotionTrade> held = [new(from, new DateOnly(2027, 3, 10), 0.04), new(from, new DateOnly(2027, 3, 24), 0.02)];
+        var first = PromotionRule.Record(true, held, from, new DateOnly(2027, 3, 31));
+
+        Assert.Equal(0, first.Months);
+        Assert.Equal(3.0, first.Figure!.Value, 12);
+        Assert.Equal("+3.00 points so far, in its first month", Web.App.SinglePageApp.Record(true, first));
+        Assert.DoesNotContain("over 0 months", Web.App.SinglePageApp.Record(true, first), StringComparison.Ordinal);
+        Assert.Equal("-1.50 points so far, in its first month", Web.App.SinglePageApp.Record(true, PromotionRule.Record(true, [new(from, new DateOnly(2027, 3, 10), -0.015)], from, new DateOnly(2027, 3, 31))));
+
+        var whole = PromotionRule.Record(true, held, from, new DateOnly(2027, 4, 1));
+
+        Assert.Equal(1, whole.Months);
+        Assert.Equal(3.0 / PromotionRule.TradingMonths(from, new DateOnly(2027, 4, 1)), whole.Figure!.Value, 12);
+        Assert.EndsWith("points a month over 1 month", Web.App.SinglePageApp.Record(true, whole), StringComparison.Ordinal);
+    }
+
     // The long history from 2019: 2017's years are never read, 2019 and 2020 read 1 and 2 over 10 units each against the
     // running revision's 0.5 and 0.5, $0.15 against $0.05.
     [Fact]

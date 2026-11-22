@@ -10,12 +10,12 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Judge;
 
-// The AI judge's replay of the nights after the model's cutoff, by hand on the operator's word: its plan read from the
+// The AI stock picker's replay of the nights after the model's cutoff, by hand on the operator's word: its plan read from the
 // store, printed before anything starts; each night's facts built again as they stood and held to those stored for it,
 // a night whose facts differ named and skipped; and each night picked by the judge's own picker under the replay's
 // prefix, with no open to meet. Before each night it yields the local model to the night, the drain and the monthly run,
 // and to the labeller or a local run holding the model's lock, and it stops at the instant it is given.
-// see: The AI judge's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
+// see: The AI stock picker's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
 public static class JudgeReplayRun
 {
     const string Buildable = "SELECT DISTINCT session_date FROM ledger_reading ORDER BY session_date;";

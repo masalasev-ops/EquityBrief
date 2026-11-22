@@ -9,7 +9,7 @@ using Xunit;
 
 namespace EquityBrief.Tests.Reading;
 
-// 24.6's AI judge page: its scoreboard, its four accounts' chart, its cards in the words of the rule on the open, where it
+// 24.6's AI stock picker page: its scoreboard, its four accounts' chart, its cards in the words of the rule on the open, where it
 // looked and a replayed night apart, read back off the page over a constructed store; the verdict against random picks and
 // the three groups worked by hand; and Home's line of it.
 // see: No line states or implies the price a stock will open at, and a buy at the open buys at whatever price it opens
@@ -17,12 +17,12 @@ public partial class ReadSurface
 {
     internal static string[] JudgePageRows =>
     [
-        CheckReach.Key("15.26 The AI judge", "The judge's scoreboard"),
-        CheckReach.Key("15.26 The AI judge", "The four accounts' chart"),
-        CheckReach.Key("15.26 The AI judge", "The judge's picks tonight"),
-        CheckReach.Key("15.26 The AI judge", "Where the AI looked"),
-        CheckReach.Key("15.26 The AI judge", "Replayed nights"),
-        CheckReach.Key("15.24 Home", "The AI judge's line"),
+        CheckReach.Key("15.26 The AI stock picker", "The picker's scoreboard"),
+        CheckReach.Key("15.26 The AI stock picker", "The four accounts' chart"),
+        CheckReach.Key("15.26 The AI stock picker", "The AI stock picker's picks tonight"),
+        CheckReach.Key("15.26 The AI stock picker", "Where the AI looked"),
+        CheckReach.Key("15.26 The AI stock picker", "Replayed nights"),
+        CheckReach.Key("15.24 Home", "The AI stock picker's line"),
     ];
 
     static readonly string[] JudgeSessions = ["2026-11-19", "2026-11-20", "2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"];
@@ -73,7 +73,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheJudgesPageDrawsItsScoreboardChartCardsAndWhereItLookedWithAReplayedNightApart()
+    public async Task ThePickersPageDrawsItsScoreboardChartCardsAndWhereItLookedWithAReplayedNightApart()
     {
         using var store = JudgePageStore();
         using var host = new Host(store.Root);
@@ -92,21 +92,21 @@ public partial class ReadSurface
 
         // The chart: the judge's line and random picks' middle, with the band, and the line on a replayed night.
         Assert.Contains("<polygon class=\"judge-band\"", page, StringComparison.Ordinal);
-        Assert.Contains("AI judge: ", page, StringComparison.Ordinal);
+        Assert.Contains("AI stock picker: ", page, StringComparison.Ordinal);
         Assert.Contains("Random picks: the middle of 1,000 random accounts: ", page, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.JudgeReplayedLine, page, StringComparison.Ordinal);
 
         // The cards, in the words of the rule on the open, AAA first.
-        Assert.Contains("The AI judge's picks tonight (2)", page, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI judge</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's picks tonight (2)", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as the local model wrote it.</small></p>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI judge's pick, ranked 1 of 2 tonight.</b> It saw Industrials, a large company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<b>The AI stock picker's pick, ranked 1 of 2 tonight.</b> It saw Industrials, a large company, with no name, ticker or date.", page, StringComparison.Ordinal);
         Assert.Contains("<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close $100.00.</span>", page, StringComparison.Ordinal);
         Assert.Contains("The prices are worked from the last close until it is bought, then again from the price it actually paid.", page, StringComparison.Ordinal);
         Assert.Contains("<span>Sell if it closes below</span><b class=\"stop\">$98.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it pays.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Take profit at</span><b class=\"aim\">$104.00</b><span class=\"sale-note judge-target\">2 times the risk: $4.00 up for $2.00 down.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Otherwise sell after</span><b class=\"aim judge-hold\">1 week</b>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>The AI judge's pick, ranked 2 of 2 tonight.</b> It saw Health Care, a mid-size company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<b>The AI stock picker's pick, ranked 2 of 2 tonight.</b> It saw Health Care, a mid-size company, with no name, ticker or date.", page, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">$97.00</b><span class=\"sale-note judge-stop\">1.5 typical daily moves under the price it pays.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Take profit on half at</span><b class=\"aim\">$106.00</b><span class=\"sale-note judge-target\">2 times the risk: $6.00 up for $3.00 down.</span>", page, StringComparison.Ordinal);
         Assert.Contains("Sells on a close under a give-up price that rises behind its highest close, $3.00 under it.", page, StringComparison.Ordinal);
@@ -124,6 +124,57 @@ public partial class ReadSurface
         // The replayed night apart, never in the live record: EEE is counted in neither the scoreboard nor the cards.
         Assert.Contains("Replayed, 1 night: no trade closed yet.", page, StringComparison.Ordinal);
         Assert.DoesNotContain("A replayed pick.", page, StringComparison.Ordinal);
+    }
+
+    // From 24.18 the picker's page, with picks and before its first run, and Home's line of it name the AI stock picker, and
+    // no word a reader sees on either says judge in any form; the menu links the new address, the old one redirects to it; and
+    // the picker's store tables keep their names, so nothing migrates.
+    // see: What picks stocks each night is the AI stock picker, and the AI judge names only the monitor that reviews it
+    static string VisibleWords(string html) =>
+        WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(html, "<[^>]*>", " "));
+
+    [Fact]
+    public async Task ThePickersPageAndHomesLineNameTheAiStockPickerAndNoVisibleWordSaysJudge()
+    {
+        using var store = JudgePageStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        using var empty = new TemporaryStore().Migrated();
+        using var emptyHost = new Host(empty.Root);
+        using var emptyClient = emptyHost.CreateClient();
+
+        var page = await client.GetStringAsync("/screens/judge");
+        var before = await emptyClient.GetStringAsync("/screens/judge");
+        var view = new JudgeView(new DateOnly(2026, 11, 19), "picked", "", [new JudgeCardView(1, 1, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole)], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0);
+        var home = SinglePageApp.JudgeHomeLine(view);
+
+        Assert.Contains("The AI stock picker's picks tonight (2)", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"ai-tag\">AI stock picker</span>", page, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker has not run yet.", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
+        Assert.Contains("<b>AI stock picker</b>", home, StringComparison.Ordinal);
+        Assert.Contains("See the AI stock picker</a>", home, StringComparison.Ordinal);
+
+        foreach (var (name, html) in new[] { ("the page", page), ("the page before its first run", before), ("Home's line", home) })
+        {
+            var said = System.Text.RegularExpressions.Regex.Matches(VisibleWords(html), @"\b\w*judge\w*\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Select(match => match.Value).ToArray();
+
+            Assert.True(said.Length == 0, $"{name} says {string.Join(", ", said)}.");
+        }
+
+        // The menu links the new address under its new name, and the router sends the old one there.
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        Assert.Equal("#/picker", SinglePageApp.JudgeRoute);
+        Assert.Equal("#/judge", SinglePageApp.JudgeOldRoute);
+        Assert.Contains("<a href=\"#/picker\" data-view=\"judge\">AI stock picker</a>", shell, StringComparison.Ordinal);
+        Assert.Contains("if (path === '#/judge') { path = '#/picker'; history.replaceState(null, '', path + (query ? '?' + query : '')); }", System.Text.RegularExpressions.Regex.Replace(shell, @"\s+", " "), StringComparison.Ordinal);
+        Assert.True(shell.IndexOf("path = '#/picker';", StringComparison.Ordinal) < shell.IndexOf("} else if (path === '#/picker') {", StringComparison.Ordinal), "The old address is sent on before the routes are read.");
+
+        // The picker's store tables stand under their names.
+        foreach (var table in new[] { "judge_pin", "judge_run", "judge_ask", "judge_pick", "judge_fact", "judge_naming" })
+        {
+            Assert.Equal(1L, Scalar(store, $"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '{table}';"));
+        }
     }
 
     [Fact]
@@ -151,12 +202,12 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public void HomeDrawsTheJudgesLineWithItsCountAndItsRecordBesideRandomPicks()
+    public void HomeDrawsThePickersLineWithItsCountAndItsRecordBesideRandomPicks()
     {
         var view = new JudgeView(new DateOnly(2026, 11, 19), "picked", "", [new JudgeCardView(1, 2, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole), new JudgeCardView(2, 2, "BBB", null, null, null, "r", 100m, 97m, 106m, 3m, "2 weeks", JudgeMenu.HalfThenGiveUp)], new JudgeScoreboard(1, 1, 3.0, 2.25, 300), JudgeScore.NotToldApart, 0.4, [], [], [], null, 0);
         var drawn = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Judge = view }, string.Empty));
 
-        Assert.Contains($"<b>AI judge</b> Picked 2 stocks tonight in its own paper account. Since it started: $3.00 per $1 risked, against $0.40 for random picks. <a href=\"{SinglePageApp.JudgeRoute}\">See the AI judge</a>", drawn, StringComparison.Ordinal);
+        Assert.Contains($"<b>AI stock picker</b> Picked 2 stocks tonight in its own paper account. Since it started: $3.00 per $1 risked, against $0.40 for random picks. <a href=\"{SinglePageApp.JudgeRoute}\">See the AI stock picker</a>", drawn, StringComparison.Ordinal);
         Assert.DoesNotContain("data-home=\"judge\"", WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day(), string.Empty)), StringComparison.Ordinal);
     }
 
@@ -164,11 +215,11 @@ public partial class ReadSurface
     // say why they are empty, the night read from its first stored picks and the open from the session after it.
     internal static string[] JudgeEmptyRecordRows =>
     [
-        CheckReach.Key("15.26 The AI judge", "An empty record"),
+        CheckReach.Key("15.26 The AI stock picker", "An empty record"),
     ];
 
     [Fact]
-    public async Task UntilTheJudgeHasABoughtTradeItsScoreboardAndFourAccountsSayWhyTheyAreEmpty()
+    public async Task UntilThePickerHasABoughtTradeItsScoreboardAndFourAccountsSayWhyTheyAreEmpty()
     {
         // The night of Friday 20 Nov picks AAA and nothing holds an open after it: the session after it is Monday 23 Nov, the
         // weekend between, worked by hand off the exchange's calendar.
@@ -189,7 +240,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/judge"));
-        const string Words = "The judge's first picks, made on the night of 20 Nov, are bought at the open on Mon 23 Nov. The accounts start from then.";
+        const string Words = "The picker's first picks, made on the night of 20 Nov, are bought at the open on Mon 23 Nov. The accounts start from then.";
 
         Assert.Equal(Words, SinglePageApp.EmptyRecordWords(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 23)));
         Assert.Equal(2, Blocks(page, "<p class=\"empty\" data-empty=\"record\" data-summary>" + System.Text.RegularExpressions.Regex.Escape(Words) + "</p>").Count);
@@ -218,12 +269,12 @@ public partial class ReadSurface
     // counts the new version's picks from its first night.
     internal static string[] JudgeNamedRows =>
     [
-        CheckReach.Key("15.26 The AI judge", "The facts it named"),
-        CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts"),
+        CheckReach.Key("15.26 The AI stock picker", "The facts it named"),
+        CheckReach.Key("15.26 The AI stock picker", "A pick made before it named its facts"),
     ];
 
     [Fact]
-    public async Task EachCardDrawsTheFactsTheJudgeNamedAndTheRecordCountsFromTheVersionThatNamedThem()
+    public async Task EachCardDrawsTheFactsThePickerNamedAndTheRecordCountsFromTheVersionThatNamedThem()
     {
         // The night of 19 Nov under pin 1, the prompt before facts were named: AAA, which closes at 3 risks as above. The night
         // of 20 Nov under pin 2, this prompt: BBB naming three facts, two of them signed. By hand the record counts BBB alone,
@@ -310,7 +361,7 @@ public partial class ReadSurface
 
     // No source a rule's version pins is one 24.13 writes, so no rule's version moves.
     [Fact]
-    public void NoSourceARulesVersionPinsIsOneTheJudgesEmptyRecordWrites()
+    public void NoSourceARulesVersionPinsIsOneThePickersEmptyRecordWrites()
     {
         string[] written = ["src/EquityBrief.Api/Reading/JudgeScreen.cs", "src/EquityBrief.Web/App/SinglePageApp.Judge.cs"];
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All

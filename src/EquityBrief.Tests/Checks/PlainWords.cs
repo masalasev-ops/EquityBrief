@@ -49,7 +49,7 @@ public partial class PlainWords
 
     internal const string PaperPage = "Paper trading";
 
-    internal const string JudgePage = "The AI judge";
+    internal const string JudgePage = "The AI stock picker";
 
     internal const string LoopPage = "The Loop page";
 

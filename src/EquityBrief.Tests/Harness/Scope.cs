@@ -2986,7 +2986,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
             Verdict.Pass,
-            "over a constructed night the launcher the night was handed is asked to start the AI judge once, its row the last the night writes with no model call on it, a night run again for an earlier session starts none and says so, and the night's source constructs no reader of the judge's tables",
+            "over a constructed night the launcher the night was handed is asked to start the AI stock picker once, its row the last the night writes with no model call on it, a night run again for an earlier session starts none and says so, and the night's source constructs no reader of the judge's tables",
             ByNight),
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine)] = new Scoped(
             Verdict.Pass,
@@ -3876,7 +3876,7 @@ internal static class Scope
             Verdict.Pass,
             "a constructed refresh over a recorded list keeps each member's name, the common stock's where a code is listed twice, asks nothing inside the week and asks again after it, and a refused list keeps every name held; the week read off the document against the constant",
             ByExpectations),
-        // 24.3, the AI judge's fact writer, its naming test and what they keep.
+        // 24.3, the AI stock picker's fact writer, its naming test and what they keep.
         [CheckReach.Key(CatalogueTable, "Judge fact writer")] = new Scoped(
             Verdict.Pass,
             "the class declares the night's rows it reads, the judge facts and the run log it writes and no feed, each reconciled against the row",
@@ -3901,7 +3901,7 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
-        [CheckReach.Key(LimitsTable, "The AI judge's facts")] = new Scoped(
+        [CheckReach.Key(LimitsTable, "The AI stock picker's facts")] = new Scoped(
             Verdict.Pass,
             "a constructed night's short row worked by hand, the year's return and high over 252 closes and the stories of the 30 days to the next morning among it, each size read on both sides of each band's edge, no name, ticker, industry or date in any member's texts and the fields written the approved list's alone; the figures read off the document against the constants",
             ByExpectations),
@@ -3909,7 +3909,7 @@ internal static class Scope
             Verdict.Pass,
             "over constructed answers a seeded draw of 100 members, two named in each round passing, three failing, five refused passing and six failing, and the judge starting only under a passed test of its field list's version; the figures read off the document against the constants",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "A judge's fact a member does not hold, or a naming test that fails")] = new Scoped(
+        [CheckReach.Key(FailureTable, "A picker's fact a member does not hold, or a naming test that fails")] = new Scoped(
             Verdict.Pass,
             "a member holding a ledger row alone reading not on file in every field but the news, a store's year short of 252 closes reading no year's return or high, a plan holding no reward reading none, and a failed or untested field list starting no judge",
             ByExpectations),
@@ -3937,15 +3937,15 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
-        [CheckReach.Key(LimitsTable, "The AI judge's menu")] = new Scoped(
+        [CheckReach.Key(LimitsTable, "The AI stock picker's menu")] = new Scoped(
             Verdict.Pass,
             "each hold's stop and take-profit worked by hand from a close of 100 and again from a fill, a choice off the menu or a missing typical move pricing nothing, and a constructed night of 120 members asked in batches of 50, 50 and 20 keeping at most one each and picking two ranked; the figures read off the document against the constants",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "A night the AI judge does not store before the next open, or a question it cannot read")] = new Scoped(
+        [CheckReach.Key(FailureTable, "A night the AI stock picker does not store before the next open, or a question it cannot read")] = new Scoped(
             Verdict.Pass,
             "a run at the next open and one still waiting on the local model's lock at it asking nothing, storing no pick and writing the night as missed, a reason naming its company refused and asked once more, and a reason holding a digit, a label picked twice and a choice off the menu each refused",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "An AI judge run under another model, file, window or prompt than its pin")] = new Scoped(
+        [CheckReach.Key(FailureTable, "An AI stock picker run under another model, file, window or prompt than its pin")] = new Scoped(
             Verdict.Pass,
             "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version; from 24.14 a pin under the one earlier prompt version followed by a new pin under this one, the run stored under it",
             ByExpectations),
@@ -3955,19 +3955,19 @@ internal static class Scope
             Verdict.Pass,
             "each condition worked by hand on both sides over constructed records, a tie no win, 49 closed trades short and 50 enough, a book's 11 months short and 12 enough, a variant registered after the restart read from its own first night and one before it from the freeze's first day, and the long history's years before 2019 never read; the figures read off the document against the constants",
             ByExpectations),
-        [CheckReach.Key(LimitsTable, "The facts an AI judge pick names")] = new Scoped(
+        [CheckReach.Key(LimitsTable, "The facts an AI stock picker pick names")] = new Scoped(
             Verdict.Pass,
             "three facts a constructed sheet shows standing, none, two, one twice, a word no field is, one shown as not on file and the sector a sheet does not show each refused, and a constructed night's picks stored with the keys of the three facts each named; the figures read off the document against the constants",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "An AI judge pick naming no fact or one its sheet lacks")] = new Scoped(
+        [CheckReach.Key(FailureTable, "An AI stock picker pick naming no fact or one its sheet lacks")] = new Scoped(
             Verdict.Pass,
             "over recorded answers a pick naming no fact and one naming the business score its sheet shows as not on file each refused, named on the run's row and its run log row and stored as no pick, the night's one pick naming three facts its sheet shows kept and ranked first",
             ByExpectations),
-        [CheckReach.Key(LimitsTable, "The AI judge's four accounts")] = new Scoped(
+        [CheckReach.Key(LimitsTable, "The AI stock picker's four accounts")] = new Scoped(
             Verdict.Pass,
             "a pick walked by hand under each take-profit from the price it paid, the random draw repeated from its seed with the judge's count a night and a member placing no trade drawn past, the median and band read off eleven sorted accounts, the index held grown by its fund, a pick against two members worked by hand, and the accounts sizing and costing through the one account function alone; the figures read off the document against the constants",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "An AI judge replay without the operator's word, over a night on or before the model's cutoff, or with another process waiting on the model")] = new Scoped(
+        [CheckReach.Key(FailureTable, "An AI stock picker replay without the operator's word, over a night on or before the model's cutoff, or with another process waiting on the model")] = new Scoped(
             Verdict.Pass,
             "the plan worked by hand leaving out the nights on or before the cutoff and those run, its hours the count times the minutes and none stated before a live night is measured; nothing replayed without the word; a waiting process or the instant given stopping it before the next night; a held local lock read as waiting; a night's facts built again held to those stored with each difference named; and the replay's prefix the one the page reads apart",
             ByExpectations),
@@ -4830,42 +4830,42 @@ internal static class Scope
             Verdict.Pass,
             "the counts of a store the check wrote read back off the page by class, kind and era, the run's line above them, and a store it has not run over saying so",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "The judge's scoreboard")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "The picker's scoreboard")] = new Scoped(
             Verdict.Pass,
             "read back off the page over a constructed store: the trades closed against the 300, the winners and what they made per $1 risked worked by hand, and the verdict against random picks read better, worse and not told apart on each side of the band",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "The four accounts' chart")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "The four accounts' chart")] = new Scoped(
             Verdict.Pass,
             "read back off the page over a constructed store: one line for each of the four accounts with its name and its return, the band shaded, and the line saying a replayed night is drawn apart",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "The judge's picks tonight")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "The AI stock picker's picks tonight")] = new Scoped(
             Verdict.Pass,
             "read back off the page over a constructed store: each card's tags, reason, sector and size with no name, ticker or date, the buy at the next open at whatever price it opens beside the last close, its stop and take-profit, its hold, and no line stating a price the stock opens at",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "Where the AI looked")] = new Scoped(
             Verdict.Pass,
             "the three groups worked by hand over constructed picks of the judge and the rules matched by stock and the session bought, and read back off the page",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "Replayed nights")] = new Scoped(
             Verdict.Pass,
             "a replayed night's picks read in a region of their own labelled replayed and never in the live record's figures, over a constructed store holding both",
             ByReadSurface),
         // 24.13, the operator's word of 2026-11-21.
-        [CheckReach.Key("15.26 The AI judge", "An empty record")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "An empty record")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding the picks of the night of 20 Nov and no open after it, the scoreboard and the four accounts each read the operator's words with the night and its next open, Mon 23 Nov, worked by hand off the exchange's calendar, and no tile or chart; and over a store whose pick opened, the tiles and chart as before and the replayed night labelled",
             ByReadSurface),
         // 24.14, the operator's word of 2026-11-21.
-        [CheckReach.Key("15.26 The AI judge", "The facts it named")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "The facts it named")] = new Scoped(
             Verdict.Pass,
             "over a constructed store a card drawn with Home's pick card reading the sentence in quotes, the three facts named in the order named with their values and the comparisons their signs say, and the rest of the sheet folded under its count worked by hand",
             ByReadSurface),
-        [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "A pick made before it named its facts")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding a night under the earlier prompt and one under this, a pick with no facts stored keeping its sentence and its whole sheet under the mark with nothing folded, and the record counting the newer version's picks alone, the earlier closed trade not in it, worked by hand, with the night it counts from",
             ByReadSurface),
         // The 24.14 correction, the operator's word of 2026-11-21.
-        [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = new Scoped(
+        [CheckReach.Key("15.26 The AI stock picker", "An earlier version's picks")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding version 1's two picks of 19 Nov and version 2's one of 23 Nov, version 1's region read back with each card saying what its account did, one bought and sold at 3 risks and one bought and open, its prices from the price paid and its account's summary worked by hand, its line drawn apart beneath the four, the record version 2's alone from its first night, every card drawn under an account that buys it; the same store before version 2 runs reading version 1 as the record with nothing apart; and Home on version 1's night naming its account",
             ByReadSurface),
@@ -4895,7 +4895,7 @@ internal static class Scope
             Verdict.Pass,
             "each line worked by hand over a constructed trade open, sold at its take-profit and under its stop from the price it paid, sold between them, never filled and still waiting; and over a constructed store a past night's card reading its fill on the night after and its return to the newest close",
             ByReadSurface),
-        [CheckReach.Key("15.24 Home", "The AI judge's line")] = new Scoped(
+        [CheckReach.Key("15.24 Home", "The AI stock picker's line")] = new Scoped(
             Verdict.Pass,
             "read back off Home over a constructed store: tonight's count of the judge's picks, its record per $1 risked beside random picks' and the link to its page",
             ByReadSurface),
@@ -7927,21 +7927,21 @@ internal static class Scope
         [CheckReach.Key("15.24 Home", "How it works")] = "22.16",
         [CheckReach.Key("15.25 History", "Counts by class and era")] = "23.1",
         [CheckReach.Key("15.25 History", "To read against the filings")] = "23.1",
-        [CheckReach.Key("15.26 The AI judge", "The judge's scoreboard")] = "24.6",
-        [CheckReach.Key("15.26 The AI judge", "The four accounts' chart")] = "24.6",
-        [CheckReach.Key("15.26 The AI judge", "The judge's picks tonight")] = "24.6",
-        [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = "24.6",
-        [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = "24.6",
-        [CheckReach.Key("15.26 The AI judge", "An empty record")] = "24.13",
-        [CheckReach.Key("15.26 The AI judge", "The facts it named")] = "24.14",
-        [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = "24.14",
-        [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = "24.14",
+        [CheckReach.Key("15.26 The AI stock picker", "The picker's scoreboard")] = "24.6",
+        [CheckReach.Key("15.26 The AI stock picker", "The four accounts' chart")] = "24.6",
+        [CheckReach.Key("15.26 The AI stock picker", "The AI stock picker's picks tonight")] = "24.6",
+        [CheckReach.Key("15.26 The AI stock picker", "Where the AI looked")] = "24.6",
+        [CheckReach.Key("15.26 The AI stock picker", "Replayed nights")] = "24.6",
+        [CheckReach.Key("15.26 The AI stock picker", "An empty record")] = "24.13",
+        [CheckReach.Key("15.26 The AI stock picker", "The facts it named")] = "24.14",
+        [CheckReach.Key("15.26 The AI stock picker", "A pick made before it named its facts")] = "24.14",
+        [CheckReach.Key("15.26 The AI stock picker", "An earlier version's picks")] = "24.14",
         [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "A case")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "No case")] = "24.17",
         [CheckReach.Key("15.24 Home", "A past night's picks")] = "24.15",
         [CheckReach.Key("15.24 Home", "What has happened since")] = "24.15",
-        [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
+        [CheckReach.Key("15.24 Home", "The AI stock picker's line")] = "24.6",
         [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
@@ -8602,7 +8602,7 @@ internal static class Scope
         "15.22 Chart",
         "15.24 Home",
         "15.25 History",
-        "15.26 The AI judge",
+        "15.26 The AI stock picker",
         "15.27 The case for promotion",
         "15.11 How a reason's record is displayed",
     ];
@@ -9170,8 +9170,8 @@ internal static class Scope
         ["Fill forward returns"] = "5.5",
         ["Count today"] = "5.5",
         ["Close the arithmetic"] = "5.5",
-        // 24.4's step, the AI judge after the store's copy.
-        ["From 24.4, start the AI judge"] = "24.4",
+        // 24.4's step, the AI stock picker after the store's copy.
+        ["From 24.4, start the AI stock picker"] = "24.4",
     };
 
     // Figure 12.1's boxes, which are the research flow and land in phase 6.

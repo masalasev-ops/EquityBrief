@@ -237,13 +237,13 @@ public class PriceStorageForm
         //
         // `JudgeFacts.ReturnTwelveLessOne`, `HighRatio` and `RewardToRisk` joined it at 24.3: a member's stored closes and
         // highs, or its plan's reward and risk, in, the year's return less the last month, the close over the year's high
-        // and the reward over the risk out, each through `Statistic.FromRatio`. They are the three fields the AI judge's
+        // and the reward over the risk out, each through `Statistic.FromRatio`. They are the three fields the AI stock picker's
         // own fact reader works from the stored prices.
-        // see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+        // see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
         //
         // `SinglePageApp.ReturnFrom` joined it at 24.6: an account's value and the value it started at in, its return out as
         // the judge's chart draws it, through `Statistic.FromRatio`. It is the chart of the four accounts' one crossing.
-        // see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
+        // see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
