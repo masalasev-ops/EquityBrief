@@ -415,6 +415,41 @@ public partial class FixtureExpectations
         Assert.Equal(["2"], FamilyRows(store, "SELECT pin_id FROM judge_run WHERE index_code = 'GSPC';"));
     }
 
+    // The 24.4 correction of 2026-11-22: a picker pin stores its model file's modified instant to the whole second, so a run
+    // under the pin of a file modified at a fraction of a second is read at that second and asks, where before it was
+    // refused naming the file.
+    [Fact]
+    public async Task ARunUnderItsOwnPinOfAFileModifiedAtAFractionOfASecondIsNotRefused()
+    {
+        using var store = PickStore();
+        var fraction = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero).AddMilliseconds(769);
+
+        store.Execute("UPDATE reading_pin SET modified = '2026-11-01T00:00:00.769Z';");
+
+        async Task<JudgeRunOutcome> Run(string run) =>
+            (await new JudgePicker(
+                    new PickFeed(PickTargets),
+                    new LocalModelSettings("local", "http://127.0.0.1:1234/v1/", "the model", 60, 8192, 60),
+                    FixedClock.At(PickEvening, SessionZones.UnitedStates),
+                    store.DatabaseFile,
+                    store.Root,
+                    (_, _) => Task.CompletedTask,
+                    () => PickFile with { Modified = fraction })
+                .RunAsync(DateOnly.ParseExact(PickNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), PickOpen, run)).Indices.Single(index => index.Index == "GSPC");
+
+        // The first run writes the pin at the whole second; the night cleared, a second run asks under it.
+        Assert.Equal(JudgePicker.Picked, (await Run("pin-first")).Outcome);
+        Assert.Equal(["2026-11-01T00:00:00Z"], FamilyRows(store, "SELECT modified FROM judge_pin;"));
+
+        store.Execute("DELETE FROM judge_pick; DELETE FROM judge_ask; DELETE FROM judge_run; DELETE FROM run_log;");
+
+        var again = await Run("pin-again");
+
+        Assert.Equal((JudgePicker.Picked, (string?)null), (again.Outcome, again.Why));
+        Assert.True(JudgePicker.SameSecond(fraction, new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero)));
+        Assert.False(JudgePicker.SameSecond(fraction, new DateTimeOffset(2026, 11, 1, 0, 0, 1, TimeSpan.Zero)));
+    }
+
     [Fact]
     public void TheNightStartsThePickerAndConstructsNoReaderOfItsTables()
     {

@@ -605,7 +605,7 @@ public sealed class JudgePicker(
                 var id = reader.GetInt64(0);
                 var part =
                     !string.Equals(settings.Model, reader.GetString(1), StringComparison.Ordinal) ? ReadingPins.ModelPart
-                    : !string.Equals(facts.Relative, reader.GetString(2), StringComparison.Ordinal) || facts.Size != reader.GetInt64(3) || facts.Modified.UtcTicks != Instant(reader.GetString(4)).UtcTicks ? ReadingPins.FilePart
+                    : !string.Equals(facts.Relative, reader.GetString(2), StringComparison.Ordinal) || facts.Size != reader.GetInt64(3) || !SameSecond(facts.Modified, Instant(reader.GetString(4))) ? ReadingPins.FilePart
                     : settings.ContextTokens != reader.GetInt32(5) ? ReadingPins.WindowPart
                     : !string.Equals(JudgePrompt.Version, reader.GetString(6), StringComparison.Ordinal) ? ReadingPins.PromptPart
                     : null;
@@ -792,6 +792,11 @@ public sealed class JudgePicker(
     public static string Words(JudgeRunOutcome outcome) =>
         FormattableString.Invariant($"{(outcome.Index is { } index ? OwnStepCandidate.NameOf(index) : "every index")} {outcome.Outcome}, {outcome.Screened} screened, {outcome.Kept} marked, {outcome.Picks.Count(pick => pick.InQuarter)} picked of {outcome.Picks.Count} ranked, {outcome.Asks} questions asked, {outcome.AsksFailed} failed twice")
         + (outcome.Why is { } why ? " (" + why + ")" : string.Empty);
+
+    // Whether a model file's modified instant is the one a picker pin holds, read at the whole second the pin is stored at,
+    // so a file modified at a fraction of a second matches the pin written from it.
+    public static bool SameSecond(DateTimeOffset file, DateTimeOffset pinned) =>
+        file.UtcTicks / TimeSpan.TicksPerSecond == pinned.UtcTicks / TimeSpan.TicksPerSecond;
 
     static DateTimeOffset Instant(string text) =>
         DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);

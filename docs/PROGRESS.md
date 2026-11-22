@@ -21504,3 +21504,25 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open; migration 160 applied to the operator's store by the merge; each index's naming test
             run on the operator's store before the first night picks within each index.
+
+### 24.4 - correction: a picker pin's model file read at the whole second the pin stores   2026-11-22
+
+Queue:      done, 24.0 to 24.23, 24.19 done, its correction open; in progress, 24.24 with this correction in one pull
+            request; next, 24.25.
+Corrects:   a picker pin stores its model file's modified instant to the whole second and the picker compared it with the
+            file's full instant, so every run after the one that wrote the pin was refused, "the model's file is not picker pin
+            1's", and the night of 2026-11-23 would have picked nothing. Found replaying a night on the copy.
+Built:      the file's instant read at the whole second the pin holds.
+Tests:      1 new: a first run writing its pin at the whole second from a file modified at a fraction of one, and a second
+            run under that pin asking and picking.
+Claims:     1701, none new.
+Pins:       none moved.
+Mutated:    the rule: the guard the correction adds is the second's reading, so the exact comparison is put back. m1 the
+            file's full instant compared: red, refused naming the file. Filtered to its test and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3945 of 3945 tests ran with none failed, migrations 0 to 160 with none
+            pending, schema version 160, against `data-ci` and never `data`; the phase report 68 tables, 1701 claims, 1701
+            passing, none out of scope and none unexamined, 1716 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open.
