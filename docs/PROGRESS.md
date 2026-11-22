@@ -21370,3 +21370,83 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open; the rules' half for the monthly run of 2027-02-06; migration 158 applied to the
             operator's store by the merge.
+
+### 24.22 - correction: a case's long-history figures name the long test they come from, and the stored figures carry its run   2026-11-22
+
+Queue:      done, 24.0 to 24.18, 24.19 done, its correction open, 24.20 to 24.22; in progress, this correction and 24.23 in
+            one pull request; next, 24.24.
+Ruled:      the operator's answers of 2026-11-22, item 8, word for word as Appendix AA of the plan's file: the cases step
+            stays where it is, before the long test, and each long-history figure says which month's long test it comes from.
+Built:      a case's view carries the month and the run of the long test its long-history figures were read from, read
+            off the index's newest long rule rows by the cases step and the page alike; the case page writes "From the long
+            test of November 2026, run on 9 Nov 2026" under the long history's row, and none where no long test judged the
+            variant. The stored case's figures carry the run, so a later month's long test changes the figures and asks the
+            words again. Section 15's row "A case" and the changelog.
+Tests:      1 new: the line worked by hand from a month and a run's name, drawn under the row and absent where no long test
+            judged the variant, the stored figures read back with the run, a later run's figures under another key, and the
+            long test read off the newest rule rows.
+Claims:     1690, none new: the case's row stood.
+Pins:       none moved.
+Mutated:    the rule: the guard the correction adds is the line naming the long test, so the line is taken away. m1 the line
+            read as none: red, the page's line missing. Filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3931 of 3931 tests ran with none failed, migrations 0 to 159 with none
+            pending, schema version 159, against `data-ci` and never `data`; the phase report 68 tables, 1695 claims, 1695
+            passing, none out of scope and none unexamined, 1710 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open.
+
+### 24.23 - the Promote swap: a press written as the operator's word, the swap at the start of the next night that runs carrying both records, Undo, and the rehearsal over a copy on both sides of 6 Feb   2026-11-22
+
+Queue:      done, 24.0 to 24.18, 24.19 done, its correction open, 24.20 to 24.22; in progress, 24.23 with the 24.22
+            correction; next, 24.24, the AI stock picker picks within each index.
+Ruled:      the operator's answers of 2026-11-22, word for word as Appendix AC of the plan's file: the swap at the next
+            night's start, the case page saying "Waiting: becomes revision 8 from the night of x" with Undo until then, the
+            next night that does run applying it; and the rehearsal in code only, with the clock on both sides of
+            2027-02-06, over a real variant's records on a copy, with screenshots of Paper trading and Past picks after
+            Promote and after Undo. A new decision supersedes the one that held a press to writing nothing until this landed.
+Built:      after the freeze a press of Promote, Keep or Undo is inserted by the read surface into `promotion_press` as the
+            operator's word: Promote only on a variant whose case stands at the newest monthly run, one waiting a setup an
+            index; Undo only naming a promotion of the setup. The case page's Your presses draws each with its state and
+            Undo. The night's own build, straight after the loop apply at the start of the swing filter's step, answers every
+            press no night has answered in `promotion_swap`: inside the freeze refused; Keep recorded; a Promote undone
+            before it ran answered undone; otherwise through the registrar at one instant the variant's row and the running
+            revision's retired, the variant's settings registered under the running revision's name, its next revision from
+            that night, and the running revision's registered as a variant named "as revision N ran"; an Undo of an applied
+            swap the same swap back. Each answer stores the records it carries, which Paper trading reads through its one
+            reader: the variant's trades counted to the revision it became and the replaced revision's to the variant it
+            became, among each account's same trades, drawn as "The trades carried to this account at a promotion" and in each
+            trade log. Migration 159; the swap's catalogue and matrix rows; the two stores' rows; section 18's row of a Promote
+            whose variant or running revision no longer stands; Paper reads' and the read API's rows; the plan's two
+            sections; the runbook; the guide; the changelog.
+Measured:   the rehearsal over the C: copy of the store of 2026-11-21, migrated to 159, the clock set: on 2027-02-05 the
+            press refused and nothing written; on 2027-02-06 the S&P 500 Fundamentals rule's first variant holding trades
+            pressed, its case worked by the case code from its own records with only its conditions set to stand, waiting;
+            the night of 2027-02-08 made it revision 3, revision 2 running on as a variant, Paper trading drawing 3 trades
+            carried since 16 Nov 2026; the Undo of 2027-02-09 made revision 4 on revision 2's settings, each record back. Two
+            earlier runs over the same copy, the S&P 500 dip's revision 4 to 5 and back and one stopped by a run log row
+            meeting an earlier run's at one instant, are in the copy too; the copy is deleted when the 24.19 correction no
+            longer needs it. Screenshots of Paper trading and Past picks after Promote and after Undo at 1440 and a true 390
+            in both palettes, no page wider than its screen.
+Tests:      4 new: over a constructed store a press refused on the freeze's last day and a press the night finds there
+            answered refused with the register unchanged, then a Promote waiting with the night it runs from, one more refused
+            as waiting, the night's swap registering the variant's settings as revision 2 and revision 1's as a variant, the
+            variant's trades counted to revision 2 and revision 1's to the variant, worked by hand, and an Undo swapping them
+            back with each record back; the carries read back as written and a promotion's carries stopping at an applied
+            Undo; a Promote whose variant retired and one naming no variant answered without a swap, a Keep changing nothing
+            and a night run again answering nothing twice; and the rehearsal itself, over the constructed store in the suite.
+Claims:     1695, five of the plan's three: the swap's catalogue and matrix rows, the two stores and section 18's row, where
+            the plan counted the register's form, Paper trading's row and section 18's, the first two landing as words.
+Pins:       none moved: the swap writes through the registrar, and no file a rule's version pins is changed.
+Mutated:    the rule, stated before the run: each guard 24.23 adds taken out in turn. m1 the carry returning the accounts as
+            they stood: red, the variant's trades not under revision 2; m2 the night's freeze refusal taken out: red, a
+            press inside the freeze swapped; m3 the Undo's carries emptied: red in the swap's test and the rehearsal, the
+            records not back. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3931 of 3931 tests ran with none failed, migrations 0 to 159 with none
+            pending, schema version 159, against `data-ci` and never `data`; the phase report 68 tables, 1695 claims, 1695
+            passing, none out of scope and none unexamined, 1710 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; migration 159 applied to the operator's store by the merge; after a promotion every
+            other variant of the setup counts from the new revision's first session, as a variant of the running revision
+            does.

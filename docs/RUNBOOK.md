@@ -1792,6 +1792,12 @@ From 24.22 the monthly run's cases step, after the report and before the long te
 dotnet run --project src/EquityBrief.Worker -- case-words
 ```
 
+From 24.23, after the run of 6 Feb 2027, a press of Promote on a standing case is written as your word and waits: the case page's Your presses says "Waiting: becomes revision N from the night of x", x the session after the newest night, and Undo beside it takes it back before it runs. The next night that runs writes the swap at its start, before anything reads the register: the variant's settings become the setup's next revision from that night, the running revision's settings run on as a variant named "as revision N ran", and each record is carried, the variant's trades counted to the revision it became and the revision's to the variant it became, shown on Paper trading under "The trades carried to this account at a promotion" and in each trade log. Its answer stands on the run log under `promotion-swap`. An Undo pressed after the swap ran swaps it back from the next night, each record carried back. Inside the freeze every press is refused and nothing is written. The rehearsal before the run of 6 Feb runs in code with the clock on both sides of that run, over a copy of the store and never over `data/`, the press refused before it and a real variant promoted and undone after it, and writes Paper trading's and Past picks' pages in both palettes for screenshots:
+
+```
+$env:EquityBrief__Rehearsal__Store = "<copy's folder>"; $env:EquityBrief__Rehearsal__Shots = "<shots folder>"; dotnet test src/EquityBrief.Tests --filter "FullyQualifiedName~ReadSurface.APromotionIsRehearsed"
+```
+
 Each night, after the cards, the follower follows every open taken trade over the stored closes under its rule's own management, replaces a provisional fill with its session's stored open, ends a trade at its stop, target, cap, its book's sale, your recorded exit or its last close as a member, and writes your record of each family on each index to `taken_record`; its row on the run page says how many it followed and ended. Past picks lists your trades for the chosen index under Your trades. A trade whose fill's session or card's night has no stored bar stays open until the bars arrive.
 
 ### What could hit a pick

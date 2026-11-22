@@ -3915,20 +3915,22 @@ app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreL
         foreach (var reading in Universes.Offered)
         {
             var accounts = await PaperAccountsAsync(read, reading, on, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
-            var (_, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
+            var (longRules, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
 
-            rows.AddRange(CaseScreen.Rows(reading.Code, reading.Name, accounts, longYears, on, await CaseOwnExitsAsync(read, reading, on, register, accounts)));
+            rows.AddRange(CaseScreen.Rows(reading.Code, reading.Name, accounts, longYears, on, await CaseOwnExitsAsync(read, reading, on, register, accounts), longRules));
         }
     }
 
     var (tested, passed) = await read.IdeasTestedAsync();
+    var (presses, answers) = await read.PromotionSwapsAsync();
 
-    return Results.Content(page.CaseRegion(new PromotionPageView(night, read.FrozenUntil(), rows, tested, passed, await read.CaseWordsAsync())), "text/html; charset=utf-8");
+    return Results.Content(page.CaseRegion(new PromotionPageView(night, read.FrozenUntil(), rows, tested, passed, await read.CaseWordsAsync(), EquityBrief.Core.Paper.PromotionSwaps.States(presses, answers))), "text/html; charset=utf-8");
 });
 
-// A press of Promote or Keep on a case: refused inside the rule freeze, and until the swap's own checkpoint lands refused after
-// it too, nothing written either way.
+// A press of Promote, Keep or Undo on a case: refused inside the rule freeze with nothing written, and after it written as the
+// operator's word, which the next night that runs answers at its start.
 // see: An approval inside the rule freeze is refused and replaces no live rule
+// see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
 app.MapPost(SinglePageApp.CasePostRoute + "{index}/{family}", async (string index, string family, HttpRequest request, ReadApi read) =>
 {
     if (!FromAPage(request))
@@ -3937,7 +3939,14 @@ app.MapPost(SinglePageApp.CasePostRoute + "{index}/{family}", async (string inde
     }
 
     var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
-    var written = read.Promote(form?["press"].ToString() != "keep");
+    var press = form?["press"].ToString() switch
+    {
+        "keep" => EquityBrief.Core.Paper.PromotionSwaps.Keep,
+        "undo" => EquityBrief.Core.Paper.PromotionSwaps.Undo,
+        _ => EquityBrief.Core.Paper.PromotionSwaps.Promote,
+    };
+    var undoes = long.TryParse(form?["undoes"].ToString(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var id) ? id : (long?)null;
+    var written = await read.PromoteAsync(index, family, form?["variant"].ToString() ?? string.Empty, press, undoes);
 
     return Said(written.Written, written.Line);
 });

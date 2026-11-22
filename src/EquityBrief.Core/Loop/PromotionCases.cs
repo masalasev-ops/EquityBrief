@@ -10,7 +10,8 @@ namespace EquityBrief.Core.Loop;
 // name, the setup and whether it is a book, the running revision's number and first session, the variant's account key, its
 // one change as a sentence and the settings it differs in, both records over the same nights and over the long history, the
 // rule's three conditions, the picks each listed a night over the same nights and how many of the variant's were the
-// revision's too, and tonight's picks of each.
+// revision's too, tonight's picks of each, and the long test the long history's figures come from, its month and its run, none
+// where no long test judged the variant.
 public sealed record PromotionCaseView(
     string Index,
     string IndexName,
@@ -29,7 +30,9 @@ public sealed record PromotionCaseView(
     int Sessions,
     int Shared,
     IReadOnlyList<string> Tonight,
-    IReadOnlyList<string> RunningTonight);
+    IReadOnlyList<string> RunningTonight,
+    string? LongTestMonth = null,
+    string? LongTestRun = null);
 
 // One running revision on an index as the table under the cases reads it, with each variant beside it, and for a book its
 // own exit's points a month beside the book's over the same nights, none where none is walked.
@@ -47,7 +50,8 @@ public sealed record PromotionRowView(
 // The case for promotion's rows on one index, read off Paper trading's accounts as the core works them: each running revision
 // with each variant of it, both records over the same nights from the trades the account bought, the long history's test
 // from the variant's years judged from 2019, and the rule's three conditions. It computes no account of its own, so every
-// figure is the one Paper trading draws, and the page and the monthly run read the same rows.
+// figure is the one Paper trading draws, and the page and the monthly run read the same rows. A case judged over the long
+// history names the long test it read, its month and its run, given with the years.
 // see: A background version replaces a live rule at a monthly run only where it beat it over the same nights and over the long history and closed 50 trades or a book's 12 months
 // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
 public static class PromotionCases
@@ -60,7 +64,8 @@ public static class PromotionCases
         IReadOnlyList<DateOnly>? accountSessions,
         IReadOnlyList<RuleTestYearRow> longYears,
         DateOnly night,
-        IReadOnlyDictionary<string, (double Own, double Book)>? ownExits = null)
+        IReadOnlyDictionary<string, (double Own, double Book)>? ownExits = null,
+        (string Month, string Run)? longTest = null)
     {
         var sources = accountSources.ToDictionary(account => account.Key, StringComparer.Ordinal);
         var sessions = accountSessions ?? [];
@@ -109,7 +114,9 @@ public static class PromotionCases
                     sessions.Count(session => session >= from && session <= night),
                     source.Trades.Count(one => one.Trade.ListedOn >= from && one.Trade.ListedOn <= night && theirs.Contains((one.Trade.Ticker, one.Trade.ListedOn))),
                     Tonight(source.Trades, night),
-                    Tonight(sources[head.Key].Trades, night)));
+                    Tonight(sources[head.Key].Trades, night),
+                    judged is null ? null : longTest?.Month,
+                    judged is null ? null : longTest?.Run));
             }
 
             rows.Add(new PromotionRowView(
@@ -126,6 +133,10 @@ public static class PromotionCases
 
         return rows;
     }
+
+    // The long test an index's rule rows were read from: the month it ran for and its run, none where no long test is stored.
+    public static (string Month, string Run)? LongTestOf(IReadOnlyList<RuleTestRow> rules) =>
+        rules.Count == 0 ? null : (rules[0].Month, rules[0].RunId);
 
     // The cases standing among an index's rows: each variant meeting the rule.
     public static IReadOnlyList<PromotionCaseView> Standing(IReadOnlyList<PromotionRowView> rows) =>

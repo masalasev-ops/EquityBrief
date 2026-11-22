@@ -124,6 +124,11 @@ public enum Store
     // Each case standing at a monthly run with its figures, and the local model's words over each case's figures.
     PromotionCase,
     PromotionCaseWords,
+
+    // The operator's presses on the case for promotion, and the night's answer to each, the swap it wrote and the records it
+    // carried.
+    PromotionPress,
+    PromotionSwap,
     FilingDay,
     InsiderTrade,
     InsiderRead,

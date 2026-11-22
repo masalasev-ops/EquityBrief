@@ -779,7 +779,41 @@ public static class SchemaMigrations
         new Migration(156, "add judge_pick.fields", AddJudgeFields),
         new Migration(157, "create session_reading and session_reading_year", CreateSessionReadings),
         new Migration(158, "create promotion_case and promotion_case_words", CreatePromotionCases),
+        new Migration(159, "create promotion_press and promotion_swap", CreatePromotionSwaps),
     ];
+
+    // The operator's presses on the case for promotion, Promote, Keep or Undo, each a row the read surface inserts and never
+    // edits; and the night's answer to each, the swap it wrote at its start or why it wrote none, with the records each account
+    // carries across it.
+    // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+    const string CreatePromotionSwaps = @"
+        CREATE TABLE promotion_press (
+            id          INTEGER PRIMARY KEY,
+            index_code  TEXT    NOT NULL,
+            family      TEXT    NOT NULL,
+            variant     TEXT    NOT NULL,
+            press       TEXT    NOT NULL CHECK (press IN ('promote', 'keep', 'undo')),
+            undoes      INTEGER,
+            month       TEXT,
+            pressed_at  TEXT    NOT NULL
+        ) STRICT;
+
+        CREATE TABLE promotion_swap (
+            press_id      INTEGER PRIMARY KEY,
+            index_code    TEXT    NOT NULL,
+            family        TEXT    NOT NULL,
+            applied       INTEGER NOT NULL,
+            words         TEXT    NOT NULL,
+            revision      INTEGER,
+            promoted      TEXT,
+            running       TEXT,
+            replaced      TEXT,
+            carries       TEXT,
+            night         TEXT    NOT NULL,
+            swapped_at    TEXT    NOT NULL,
+            run_id        TEXT    NOT NULL
+        ) STRICT;
+    ";
 
     // Each case standing at a monthly run, a variant meeting the rule against its running revision on an index, stored with
     // its figures by the monthly run whether or not the page is read; and the local model's case for and case against over a

@@ -185,6 +185,9 @@ public class SchemaColumns
     // Each case standing at a monthly run, and the local model's words over each case's figures.
     internal static string[] CaseStoreRows => [.. new[] { "Promotion cases", "Promotion case words" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // The operator's presses on the case for promotion and the night's answer to each.
+    internal static string[] SwapStoreRows => [.. new[] { "Promotion presses", "Promotion swaps" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // 24.3: the AI stock picker's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
@@ -337,6 +340,7 @@ public class SchemaColumns
             .. FallbackStoreRows,
             .. SessionReadingStoreRows,
             .. CaseStoreRows,
+            .. SwapStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,

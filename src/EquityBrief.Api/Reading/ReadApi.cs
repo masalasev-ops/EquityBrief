@@ -866,6 +866,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopLink, Touch.Read),
             new StoreTouch(Store.ReleaseAnswerEdge, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.PromotionPress, Touch.Insert),
             new StoreTouch(Store.LoopApplied, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.LoopAlarm, Touch.Read),
@@ -4028,6 +4029,12 @@ public sealed partial class ReadApi : IComponent
     const string InsertDecision = @"
         INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
         VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";
+
+    // From 24.23 the operator's word on a case for promotion, the case page's presses' one write.
+    // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+    const string InsertPress = @"
+        INSERT INTO promotion_press (index_code, family, variant, press, undoes, month, pressed_at)
+        VALUES ($index, $family, $variant, $press, $undoes, $month, $pressed_at);";
 
     const string DeleteUnfollowed = @"
         DELETE FROM taken_trade

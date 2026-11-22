@@ -8,7 +8,7 @@ namespace EquityBrief.Web.Marks;
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
 // drawn apart under the account: its family, the session the replay counted from, and each trade.
 // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
-public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades);
+public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades, bool Carried = false);
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
 // ended on, its result in the account's unit, so far at tonight's close where it is open, why the account skipped it, and
@@ -471,8 +471,10 @@ public sealed partial class MarkRenderer
     // The words heading an account's trades listed before its version that replay the same under it, from the session the
     // replay counted from.
     // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
-    public static string SameWords(DateOnly since) =>
-        FormattableString.Invariant($"The same trades before this revision (since {since:d MMM}), kept in the rule's record and not in this account");
+    public static string SameWords(DateOnly since, bool carried = false) =>
+        carried
+            ? FormattableString.Invariant($"The trades carried to this account at a promotion (since {since:d MMM}), kept in its record and not in this account's walk")
+            : FormattableString.Invariant($"The same trades before this revision (since {since:d MMM}), kept in the rule's record and not in this account");
 
     // The index's fund on a tile, over that tile's own account's days: its return over them, or where its closes start later
     // the day they start; none where the account holds no walk.
@@ -612,7 +614,7 @@ public sealed partial class MarkRenderer
         // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         foreach (var same in page.Same)
         {
-            html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
+            html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since, same.Carried))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
             html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
 
             foreach (var trade in same.Trades)

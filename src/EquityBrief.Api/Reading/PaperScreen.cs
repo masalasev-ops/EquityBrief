@@ -176,7 +176,8 @@ public static class PaperScreen
                 .Select(head => new PaperSameView(
                     head.Family,
                     source[head.Key].SameSince!.Value,
-                    [.. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, null)).OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)])),
+                    [.. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, null)).OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)],
+                    source[head.Key].CarriedBySwap)),
         ];
         var chosen = views.FirstOrDefault(view => view.Head && view.Family == variants);
         var headTrades = chosen is null ? [] : source[chosen.Key].Trades.Select(one => one.Trade).Concat((source[chosen.Key].Earlier ?? []).Select(one => one.Trade)).Concat(source[chosen.Key].Same.Select(one => one.Trade)).ToArray();
@@ -321,7 +322,7 @@ public static class PaperScreen
     public static IReadOnlyList<PaperTradeView> EarlierLog(PaperAccountSource account, DateOnly night, Func<string, DateOnly, decimal?> close) =>
     [
         .. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version)),
-        .. account.SameSince is { } since ? account.Same.Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, MarkRenderer.SameWords(since))) : [],
+        .. account.SameSince is { } since ? account.Same.Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, MarkRenderer.SameWords(since, account.CarriedBySwap))) : [],
     ];
 
     static PaperTradeView Logged(bool book, PaperTrade trade, double? stored, DateOnly night, Func<string, DateOnly, decimal?> close, string? skipped, string? version)

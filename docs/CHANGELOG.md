@@ -7,6 +7,32 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - a promotion swaps a running revision and its variant at the start of the next night that runs, at 24.23
+Decision: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+Was:
+> ARCHITECTURE.html, section 15's row "A press on a case for promotion": "from 24.17 Promote and Keep are drawn on each case and inside the rule freeze drawn unpressable; a press of either is refused with nothing written, inside the freeze naming the run that ends it, and after it naming the swap as not yet built until 24.23 lands it (see: An approval inside the rule freeze is refused and replaces no live rule) (see: A promotion's swap is its own checkpoint rehearsed on a copy of the store, and until it lands a press on a case writes nothing)"
+> ARCHITECTURE.html: the catalogue's row "Paper reads" reading "... reading pins, run log"; "Read API" writing "... loop decisions, session marks"; no catalogue or matrix row for the promotion swap, no stores rows for promotion presses or promotion swaps, and no section 18 row of a Promote whose variant or running revision no longer stands
+> SCHEMA.md: no `promotion_press` or `promotion_swap`
+> BUILD_PLAN.md, 24.17: "Promote and Keep are drawn on each case, and a press of either writes nothing, inside the freeze refused naming the run that ends it and after it naming the swap 24.23 builds (see: A promotion's swap is its own checkpoint rehearsed on a copy of the store, and until it lands a press on a case writes nothing)."
+> BUILD_PLAN.md, 24.23: "On the operator's answer of 2026-11-21, kept word for word as Appendix U of the plan's file. After the freeze, Promote registers the variant as its setup's next revision carrying its record, and the running revision runs on as a variant carrying its own; Keep records the operator's word and changes nothing. ... The swap lands well before the monthly run of 2027-02-06, rehearsed end to end on a copy of the operator's store: promote, ... (see: A promotion's swap is its own checkpoint rehearsed on a copy of the store, and until it lands a press on a case writes nothing)."
+> RUNBOOK.md: no paragraph on a promotion's press, swap, Undo or rehearsal
+Now:
+> ARCHITECTURE.html, "A press on a case for promotion": "... a press of either refused with nothing written, naming the run that ends it; from 24.23 after the freeze a press is written as the operator's word, Promote only on a variant whose case stands at the newest monthly run and one waiting a setup an index, Undo only on a promotion of the setup, and the next night that runs answers it at its start ..."
+> ARCHITECTURE.html: "Paper reads" reading the promotion presses and swaps; "Read API" writing promotion presses; the promotion swap's catalogue and matrix rows; the stores rows "Promotion presses" and "Promotion swaps"; section 18's row "A Promote the night answers whose variant or running revision no longer stands"
+> SCHEMA.md: the two tables' ownership rows and sections, each inserted by its one writer and never updated or deleted
+> BUILD_PLAN.md, 24.17: "Promote and Keep are drawn on each case, and a press of either writes nothing inside the freeze, refused naming the run that ends it; after it, from 24.23, a press is the operator's word the next night answers (see: A promotion swaps ...)."
+> BUILD_PLAN.md, 24.23: "On the operator's answers of 2026-11-21 and 2026-11-22, kept word for word as Appendices U and AC of the plan's file. ... written by the next night that runs at its start and waiting until then with Undo beside it; ... rehearsed end to end in code over a copy of the operator's store with the clock set on both sides of that run ..."
+> RUNBOOK.md: the press, the night's swap, Undo and the rehearsal over a copy
+Why: the operator's answers of 2026-11-22, kept as Appendix AC of the phase 24 plan's file: the swap at the next night's start, waiting with Undo until then, and the rehearsal in code only with the clock on both sides of 6 Feb, over a real variant's records on a copy, with screenshots.
+
+### 2026-11-22 - docs/ARCHITECTURE.html - a case's long-history figures name the long test they come from, at the 24.22 correction
+Corrects: a case's long-history figures said nothing of which month's long test they came from, while the cases step runs before the month's long test and so reads the long test of the month before.
+Was:
+> ARCHITECTURE.html, section 15's row "A case": "... and over the long history's years from 2019 beside the running revision's; each condition met ..."
+Now:
+> ARCHITECTURE.html, "A case": "... and over the long history's years from 2019 beside the running revision's, from the 24.22 correction of 2026-11-22 named by the month of the long test they come from and the day its run started, which the stored case's figures carry; each condition met ..."
+Why: the operator's answers of 2026-11-22, item 8, kept as Appendix AA of the phase 24 plan's file: "The case for promotion says which month's long test each long-history figure comes from, for example "From the long test of x". It shows the new figure, with its date, once that month's long test finishes. A stored case records which long test it used."
+
 ### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the monthly run stores each case standing and the local run writes its words, at 24.22
 Decision: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
 Was:

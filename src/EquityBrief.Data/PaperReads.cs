@@ -53,6 +53,8 @@ public sealed partial class PaperReads(string databaseFile) : IPaperReads, IComp
             new StoreTouch(Store.LoopRuleYear, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read),
+            new StoreTouch(Store.PromotionPress, Touch.Read),
+            new StoreTouch(Store.PromotionSwap, Touch.Read),
         ],
         Feeds: []);
 

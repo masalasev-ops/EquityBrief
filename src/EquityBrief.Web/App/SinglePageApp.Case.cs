@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using EquityBrief.Core.Loop;
+using EquityBrief.Core.Paper;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
@@ -14,9 +15,12 @@ public sealed record CaseWordsView(CaseWordsLine Newest, IReadOnlyList<CaseWords
 
 // The case for promotion's page: the night it is read for, the day the rule freeze ends while the day falls inside it, every
 // running revision with its variants, the ideas the monthly runs have tested to date with those that passed, and the local
-// model's words over each stored case by its variant.
-public sealed record PromotionPageView(DateOnly? Night, DateOnly? FrozenUntil, IReadOnlyList<PromotionRowView> Rows, int Tested, int Passed, IReadOnlyDictionary<string, CaseWordsView>? Words = null)
+// model's words over each stored case by its variant, and from 24.23 each Promote pressed with its state.
+public sealed record PromotionPageView(DateOnly? Night, DateOnly? FrozenUntil, IReadOnlyList<PromotionRowView> Rows, int Tested, int Passed, IReadOnlyDictionary<string, CaseWordsView>? Words = null, IReadOnlyList<EquityBrief.Core.Paper.PromotionState>? Promotions = null)
 {
+    // The night a press waiting now runs from: the session after the newest night, named again each time the page is read.
+    public DateOnly? NextNight => Night is { } night ? EquityBrief.Core.Paper.PromotionSwaps.NextNight(night) : null;
+
     public IReadOnlyList<PromotionCaseView> Cases => [.. Rows.SelectMany(row => row.Variants).Where(one => one.Conditions.Meets)];
 
     // The variants nearest to meeting the rule, the three nearest, more conditions met first, then the share of the count
@@ -64,6 +68,16 @@ public sealed partial class SinglePageApp
             ? $"<p class=\"lm-freeze\" data-frozen=\"{Cards.Day(until)}\"><b>The rules are frozen until the monthly run of {Day(until)}.</b> Until then the buttons are drawn and a press is refused.</p>"
             : string.Empty;
 
+        if (PromotionsRegion(view) is { Length: > 0 } promotions)
+        {
+            region.Append(Cards.Computed(
+                "Improvement loop · " + CaseName,
+                promotions,
+                title: "Your presses",
+                lede: "A promotion is written by the night's own build at its start, so it runs from the next night that runs; until then it can be undone.",
+                region: "case-presses"));
+        }
+
         foreach (var one in view.Cases)
         {
             region.Append(Cards.Computed(
@@ -96,6 +110,43 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
+    // From 24.23 each Promote pressed and not undone: waiting, with the night it runs from and Undo; or applied, with the
+    // revision it made and Undo, which swaps it back from the next night; a promotion undone before it ran is drawn as undone.
+    // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+    public static string PromotionsRegion(PromotionPageView view)
+    {
+        if (view.Promotions is not { Count: > 0 } states || view.NextNight is not { } next)
+        {
+            return string.Empty;
+        }
+
+        var html = new StringBuilder("<ul class=\"lm-presses\">");
+
+        foreach (var state in states.OrderByDescending(one => one.Press.Id))
+        {
+            var named = $"{MarkRenderer.FamilyName(state.Press.Family)}, {EquityBrief.Core.Candidates.OwnStepCandidate.NameOf(state.Press.Index)}";
+            var line = state switch
+            {
+                { UndoneBy: not null, Answer: null or { Applied: false } } => PromotionSwaps.UndoWaiting(next),
+                { UndoneBy: not null } => PromotionSwaps.UndoApplied(next),
+                { Answer: { Applied: true, Revision: { } revision } answer } => PromotionSwaps.Applied(revision, revision - 1, answer.Night),
+                { Answer: { } refused } => refused.Words,
+                _ => PromotionSwaps.Waiting(WaitingRevision(view, state), next),
+            };
+            var undo = state.UndoneBy is null && (state.Answer is null || state.Answer.Applied)
+                ? $"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(CasePostRoute + Uri.EscapeDataString(state.Press.Index) + "/" + Uri.EscapeDataString(state.Press.Family))}\" data-loop-key=\"press|{state.Press.Id.ToString(CultureInfo.InvariantCulture)}\"><input type=\"hidden\" name=\"variant\" value=\"{Escaped(state.Press.Variant)}\"><input type=\"hidden\" name=\"press\" value=\"undo\"><input type=\"hidden\" name=\"undoes\" value=\"{state.Press.Id.ToString(CultureInfo.InvariantCulture)}\"><button type=\"submit\" class=\"btn-2\">Undo</button></form>"
+                : string.Empty;
+
+            html.Append($"<li data-press=\"{state.Press.Id.ToString(CultureInfo.InvariantCulture)}\"><b>{Escaped(named)}</b>: {Escaped(line)}{undo}<p class=\"loop-said\" aria-live=\"polite\"></p></li>");
+        }
+
+        return html.Append("</ul>").ToString();
+    }
+
+    // The revision a waiting press would make: the one after its variant's running revision, read off the rows drawn.
+    static int WaitingRevision(PromotionPageView view, PromotionState state) =>
+        (view.Rows.FirstOrDefault(row => row.Index == state.Press.Index && row.Family == state.Press.Family)?.Revision ?? 0) + 1;
+
     public static string CaseTitle(PromotionCaseView one) =>
         $"{MarkRenderer.FamilyName(one.Family)}, {one.IndexName}: the variant '{Lowered(one.VariantName)}' against {RevisionView.Named(one.Revision).ToLowerInvariant()}";
 
@@ -108,7 +159,7 @@ public sealed partial class SinglePageApp
         html.Append("<div class=\"lm-wide\" data-part=\"figures\"><h4>The figures</h4>");
         html.Append($"<div class=\"tbl-wrap\"><table class=\"lm-table lm-narrow\"><thead><tr><th></th><th class=\"r\">The variant</th><th class=\"r\">{Escaped(RevisionView.Named(one.Revision))}, running since {Day(one.RevisionFrom)}</th></tr></thead><tbody>");
         html.Append($"<tr data-row=\"same\"><td>Same nights since {Day(one.Same.From)}, {(one.Book ? "points a month" : "per $1 risked")}</td><td class=\"r num\" data-h=\"The variant\">{Escaped(Record(one.Book, one.Same))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(Record(one.Book, one.RunningSame))}</td></tr>");
-        html.Append($"<tr data-row=\"long\"><td>Long history, chosen on 2005 to 2018, judged from 2019</td><td class=\"r num\" data-h=\"The variant\">{Escaped(LongFigure(one.Book, one.Long))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(LongFigure(one.Book, one.RunningLong))}</td></tr>");
+        html.Append($"<tr data-row=\"long\"><td>Long history, chosen on 2005 to 2018, judged from 2019{(LongTestLine(one) is { } test ? $"<br><small data-part=\"long-test\">{Escaped(test)}</small>" : string.Empty)}</td><td class=\"r num\" data-h=\"The variant\">{Escaped(LongFigure(one.Book, one.Long))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(LongFigure(one.Book, one.RunningLong))}</td></tr>");
         html.Append($"</tbody></table></div><p class=\"lm-small\" data-part=\"conditions\">{Escaped(ConditionsLine(one))}</p></div>");
         html.Append($"<div data-part=\"picks\"><h4>What its picks looked like</h4><p>{Escaped(PicksLine(one))}</p></div>");
         var words = view.Words is not null && view.Words.TryGetValue(CaseKey(one.Index, one.Family, one.Variant), out var written) ? written : null;
@@ -153,6 +204,22 @@ public sealed partial class SinglePageApp
             : $"<p class=\"ai-quote\" data-words=\"code\">{Escaped(code)}<small>{Escaped(CodeWords)}</small></p>";
 
     public static string Written(CaseWordsLine line) => $"Written on {Day(line.Written)} by {line.Model}";
+
+    // Which long test the long history's figures come from: its month, and the day its run started where the run's name
+    // carries it, none where no long test judged the variant.
+    public static string? LongTestLine(PromotionCaseView one)
+    {
+        if (one.LongTestMonth is not { } month
+            || !DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var first))
+        {
+            return null;
+        }
+
+        var stamp = one.LongTestRun?.Split('-')[^1];
+        var ran = stamp is { Length: >= 8 } && DateOnly.TryParseExact(stamp[..8], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? $", run on {Day(day)}" : string.Empty;
+
+        return $"From the long test of {first.ToString("MMMM yyyy", CultureInfo.InvariantCulture)}{ran}";
+    }
 
     public static string PromoteLine(int revision) =>
         $"This variant becomes {RevisionView.Named(revision + 1).ToLowerInvariant()}; {RevisionView.Named(revision).ToLowerInvariant()} runs on as a variant, each keeping its own record.";

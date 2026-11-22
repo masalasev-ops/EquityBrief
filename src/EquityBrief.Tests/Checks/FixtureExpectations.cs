@@ -165,6 +165,9 @@ public partial class FixtureExpectations
 
             // The case words' answer refused.
             .. CaseClaims,
+
+            // A Promote the night answers whose variant or running revision no longer stands.
+            .. SwapClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.
             .. SplitCauseClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.

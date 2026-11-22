@@ -112,6 +112,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `session_reading_year` | SetupLedger | none | SetupLedger |
 | `promotion_case` | PromotionCaseStore | none | none |
 | `promotion_case_words` | CaseWords | none | none |
+| `promotion_press` | ReadApi | none | none |
+| `promotion_swap` | PromotionSwap | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2679,6 +2681,47 @@ Grain: one row per index, setup, variant and stored case's figures asked of the 
 Primary key: `index_code`, `family`, `variant`, `figures_key`.
 
 **The local model's case for and case against over each stored case's figures, inserted by the local run's case words alone and never updated or deleted** (see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words). Asked once for each figures a monthly run stores, so words are asked again only where a later run stored a case's figures changed, and the earlier rows stay as the case's history; an answer holding a number, a ticker or a company's name is asked once more and then kept refused with its cause. Read by the case for promotion, which draws the newest answered words with their day and model and code's own sentences where none is answered.
+
+### promotion_press
+Grain: one row per press on the case for promotion, from 24.23.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the press, in the order pressed |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup |
+| `variant` | TEXT | the variant's account key |
+| `press` | TEXT | `promote`, `keep` or `undo`, constrained in the table |
+| `undoes` | INTEGER | for an Undo, the press it undoes; null otherwise |
+| `month` | TEXT | the newest monthly run's month the press was made at, null where none stored a case |
+| `pressed_at` | TEXT | UTC instant of the press |
+
+Primary key: `id`.
+
+**The operator's word on a case, inserted by the read surface alone after the rule freeze and never updated or deleted** (see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record). Inside the freeze no press is written. A Promote is written only for a variant whose case stands at the newest monthly run, one waiting a setup an index; an Undo only naming a promotion of the setup. Read by Paper reads, which the case page and the promotion swap read the presses through.
+
+### promotion_swap
+Grain: one row per press the night answered, from 24.23.
+
+| Column | Type | Notes |
+|---|---|---|
+| `press_id` | INTEGER | the press answered |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup |
+| `applied` | INTEGER | 1 where the night swapped, 0 where it answered without a swap |
+| `words` | TEXT | what the night did, or why it did nothing |
+| `revision` | INTEGER | the revision the swap made, null where none |
+| `promoted` | TEXT | the name whose settings became the running revision's, null where none |
+| `running` | TEXT | the running revision's name |
+| `replaced` | TEXT | the name the settings it replaced run on under |
+| `carries` | TEXT | JSON, each record carried: the name it counts to, the name it was kept under and its sessions |
+| `night` | TEXT | the session the swap runs from |
+| `swapped_at` | TEXT | UTC instant of the answer |
+| `run_id` | TEXT | the night that answered |
+
+Primary key: `press_id`.
+
+**The night's answer to each press, inserted by the promotion swap alone at the start of the swing filter's step and never updated or deleted** (see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record). Its register writes go through the candidate registrar in one transaction, and the answer is written after them. Read by Paper reads, whose accounts read the carries of every swap applied by the night they show and not undone by then.
 
 ### loop_run
 Grain: one row per tester run on an index.

@@ -553,6 +553,18 @@ public static class Nightly
                             + (applying.Waiting == 0 ? string.Empty : $", {applying.Waiting} S&P 500 change(s) left for the next night")
                             + (applying.Retired is { Count: > 0 } retired ? $", {retired.Count} replaced rule(s) retired" : string.Empty);
                         wroteFrom = applying.WroteFrom;
+
+                        // From 24.23 each press on the case for promotion the night has not answered, a Promote swapping the
+                        // running revision and its variant before anything reads the register.
+                        // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+                        var swapping = await new EquityBrief.Worker.Loop.PromotionSwap(clock, store.DatabaseFile).NightAsync(runId, clock.SessionDateAt(clock.UtcNow), night.Token);
+
+                        if (swapping.Answers.Count > 0)
+                        {
+                            applied += $", {swapping.Answers.Count(one => one.Applied)} promotion swap(s) applied and {swapping.Answers.Count(one => !one.Applied)} press(es) answered without one";
+                        }
+
+                        wroteFrom = new[] { wroteFrom, swapping.WroteFrom }.OfType<DateTimeOffset>().Select(at => (DateTimeOffset?)at).Min();
                     }
                     catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
                     {
