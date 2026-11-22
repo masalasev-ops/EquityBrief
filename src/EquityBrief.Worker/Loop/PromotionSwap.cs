@@ -68,7 +68,11 @@ public sealed class PromotionSwap(IClock clock, string databaseFile) : IComponen
             written.Add(answer);
         }
 
-        await RecordAsync(runId, started, written, cancellation);
+        // The step's row stands under the night's own run beside its other stages, on a night that answered a press.
+        if (written.Count > 0)
+        {
+            await RecordAsync(runId, started, written, cancellation);
+        }
 
         return (written, wroteFrom is null ? null : started);
     }
@@ -203,7 +207,7 @@ public sealed class PromotionSwap(IClock clock, string databaseFile) : IComponen
         await using var command = connection.CreateCommand();
 
         command.CommandText = AppendRun;
-        command.Parameters.AddWithValue("$run_id", runId + "-" + Stage);
+        command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", Instant(started));
         command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));

@@ -40,9 +40,10 @@ public partial class FixtureExpectations
         Assert.All(answered.Answers, answer => Assert.False(answer.Applied));
         Assert.Null(answered.WroteFrom);
         Assert.Equal(before, (await registrar.RowsAsync()).Count);
-        Assert.Equal(["promotion-swap|ok|3"], Query(store, "SELECT stage || '|' || outcome || '|' || rows_written FROM run_log WHERE run_id = 'night-test-promotion-swap';"));
+        Assert.Equal(["promotion-swap|ok|3"], Query(store, "SELECT stage || '|' || outcome || '|' || rows_written FROM run_log WHERE run_id = 'night-test' AND stage = 'promotion-swap';"));
 
-        // A night run again answers nothing twice.
+        // A night run again answers nothing twice, and a night that answered no press writes no row.
         Assert.Empty((await new PromotionSwap(clock, store.DatabaseFile).NightAsync("night-again", new DateOnly(2027, 2, 8))).Answers);
+        Assert.Empty(Query(store, "SELECT stage FROM run_log WHERE run_id = 'night-again' AND stage = 'promotion-swap';"));
     }
 }
