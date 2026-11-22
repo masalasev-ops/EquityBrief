@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html - a case's long-history figures name the long test they come from, at the 24.22 correction
+Corrects: a case's long-history figures said nothing of which month's long test they came from, while the cases step runs before the month's long test and so reads the long test of the month before.
+Was:
+> ARCHITECTURE.html, section 15's row "A case": "... and over the long history's years from 2019 beside the running revision's; each condition met ..."
+Now:
+> ARCHITECTURE.html, "A case": "... and over the long history's years from 2019 beside the running revision's, from the 24.22 correction of 2026-11-22 named by the month of the long test they come from and the day its run started, which the stored case's figures carry; each condition met ..."
+Why: the operator's answers of 2026-11-22, item 8, kept as Appendix AA of the phase 24 plan's file: "The case for promotion says which month's long test each long-history figure comes from, for example "From the long test of x". It shows the new figure, with its date, once that month's long test finishes. A stored case records which long test it used."
+
 ### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the monthly run stores each case standing and the local run writes its words, at 24.22
 Decision: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
 Was:

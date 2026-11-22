@@ -112,6 +112,36 @@ public partial class ReadSurface
             ["ABCD", "EFGH"]);
     }
 
+    // On the operator's word of 2026-11-22, item 8: each long-history figure says which month's long test it comes from, with
+    // the day the run started, and the stored figures carry the run, so a later long test changes the figures; a case no long
+    // test judged names none.
+    [Fact]
+    public void ACasesLongHistoryFigureNamesTheLongTestItCameFromAndItsStoredFiguresCarryTheRun()
+    {
+        var one = ConstructedCase() with { LongTestMonth = "2026-11", LongTestRun = "loop-rules-long-SML-20261109T095723Z" };
+        PromotionRowView[] rows = [new("SML", "S&P 600", "pullback", false, 7, new DateOnly(2026, 11, 16), one.RunningSame, [one])];
+        var page = new SinglePageApp().CaseRegion(new PromotionPageView(new DateOnly(2027, 2, 5), null, rows, 1214, 3));
+
+        Assert.Equal("From the long test of November 2026, run on 9 Nov 2026", SinglePageApp.LongTestLine(one));
+        Assert.Contains("<small data-part=\"long-test\">From the long test of November 2026, run on 9 Nov 2026</small>", page, StringComparison.Ordinal);
+        Assert.Null(SinglePageApp.LongTestLine(ConstructedCase()));
+        Assert.DoesNotContain("data-part=\"long-test\"", new SinglePageApp().CaseRegion(new PromotionPageView(new DateOnly(2027, 2, 5), null, [rows[0] with { Variants = [ConstructedCase()] }], 1214, 3)), StringComparison.Ordinal);
+
+        var stored = PromotionCases.Figures(one);
+        var read = PromotionCases.FromFigures(stored)!;
+
+        Assert.Equal("loop-rules-long-SML-20261109T095723Z", read.LongTestRun);
+        Assert.Equal("2026-11", read.LongTestMonth);
+        Assert.NotEqual(PromotionCases.FiguresKey(stored), PromotionCases.FiguresKey(PromotionCases.Figures(one with { LongTestRun = "loop-rules-long-SML-20261205T120000Z", LongTestMonth = "2026-12" })));
+        Assert.Null(PromotionCases.FromFigures(PromotionCases.Figures(ConstructedCase()))!.LongTestRun);
+
+        // The long test a case reads is the one the index's long rule rows were stored by, its month and its run.
+        RuleTestRow[] longRules = [new("loop-rules-long-SML-20261109T095723Z", "2026-11", "pullback", "the rule", "live", "words", "against", "per $1", 900, 12, 0.09, true, true, 12, 9, 0.08, true, true, null)];
+
+        Assert.Equal(("2026-11", "loop-rules-long-SML-20261109T095723Z"), PromotionCases.LongTestOf(longRules));
+        Assert.Null(PromotionCases.LongTestOf([]));
+    }
+
     [Fact]
     public void ACaseDrawsTheOperatorsTitleCodesFiguresAndWordsHoldingNoDigitAndItsButtonsRefusedInsideTheFreeze()
     {

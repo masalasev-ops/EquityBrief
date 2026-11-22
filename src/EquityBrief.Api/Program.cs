@@ -3915,9 +3915,9 @@ app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreL
         foreach (var reading in Universes.Offered)
         {
             var accounts = await PaperAccountsAsync(read, reading, on, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
-            var (_, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
+            var (longRules, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
 
-            rows.AddRange(CaseScreen.Rows(reading.Code, reading.Name, accounts, longYears, on, await CaseOwnExitsAsync(read, reading, on, register, accounts)));
+            rows.AddRange(CaseScreen.Rows(reading.Code, reading.Name, accounts, longYears, on, await CaseOwnExitsAsync(read, reading, on, register, accounts), longRules));
         }
     }
 

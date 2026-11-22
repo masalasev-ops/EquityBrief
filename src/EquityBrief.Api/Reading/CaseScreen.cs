@@ -14,7 +14,8 @@ public static class CaseScreen
         PaperAccounts accounts,
         IReadOnlyList<RuleTestYearRow> longYears,
         DateOnly night,
-        IReadOnlyDictionary<string, OwnExitView>? ownExits = null) =>
+        IReadOnlyDictionary<string, OwnExitView>? ownExits = null,
+        IReadOnlyList<RuleTestRow>? longRules = null) =>
         PromotionCases.Rows(
             index,
             indexName,
@@ -28,5 +29,6 @@ public static class CaseScreen
                 .ToDictionary(
                     exit => exit.Key,
                     exit => (exit.Value.OwnMean!.Value * 100 / PromotionRule.TradingMonths(exit.Value.Since, exit.Value.Through ?? night), exit.Value.LiveMean!.Value * 100 / PromotionRule.TradingMonths(exit.Value.Since, exit.Value.Through ?? night)),
-                    StringComparer.Ordinal));
+                    StringComparer.Ordinal),
+            longRules is null ? null : PromotionCases.LongTestOf(longRules));
 }

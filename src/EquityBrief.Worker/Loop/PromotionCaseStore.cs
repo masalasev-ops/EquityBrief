@@ -72,8 +72,8 @@ public sealed class PromotionCaseStore(IClock clock, string databaseFile, string
         {
             var name = Core.Candidates.OwnStepCandidate.NameOf(index);
             var worked = await PaperWork.WorkAsync(reads, index, name, index == PaperFiguresRun.Indices[0], night, settings);
-            var (_, longYears) = await reads.RuleTestsAsync(index, LongTest.Long);
-            var standing = PromotionCases.Standing(PromotionCases.Rows(index, name, worked.Sources, worked.Views, worked.Sessions, longYears, night));
+            var (longRules, longYears) = await reads.RuleTestsAsync(index, LongTest.Long);
+            var standing = PromotionCases.Standing(PromotionCases.Rows(index, name, worked.Sources, worked.Views, worked.Sessions, longYears, night, longTest: PromotionCases.LongTestOf(longRules)));
 
             cases.AddRange(standing);
             said.Add(FormattableString.Invariant($"{standing.Count} on the {name}"));

@@ -108,7 +108,7 @@ public sealed partial class SinglePageApp
         html.Append("<div class=\"lm-wide\" data-part=\"figures\"><h4>The figures</h4>");
         html.Append($"<div class=\"tbl-wrap\"><table class=\"lm-table lm-narrow\"><thead><tr><th></th><th class=\"r\">The variant</th><th class=\"r\">{Escaped(RevisionView.Named(one.Revision))}, running since {Day(one.RevisionFrom)}</th></tr></thead><tbody>");
         html.Append($"<tr data-row=\"same\"><td>Same nights since {Day(one.Same.From)}, {(one.Book ? "points a month" : "per $1 risked")}</td><td class=\"r num\" data-h=\"The variant\">{Escaped(Record(one.Book, one.Same))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(Record(one.Book, one.RunningSame))}</td></tr>");
-        html.Append($"<tr data-row=\"long\"><td>Long history, chosen on 2005 to 2018, judged from 2019</td><td class=\"r num\" data-h=\"The variant\">{Escaped(LongFigure(one.Book, one.Long))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(LongFigure(one.Book, one.RunningLong))}</td></tr>");
+        html.Append($"<tr data-row=\"long\"><td>Long history, chosen on 2005 to 2018, judged from 2019{(LongTestLine(one) is { } test ? $"<br><small data-part=\"long-test\">{Escaped(test)}</small>" : string.Empty)}</td><td class=\"r num\" data-h=\"The variant\">{Escaped(LongFigure(one.Book, one.Long))}</td><td class=\"r num\" data-h=\"{Escaped(RevisionView.Named(one.Revision))}\">{Escaped(LongFigure(one.Book, one.RunningLong))}</td></tr>");
         html.Append($"</tbody></table></div><p class=\"lm-small\" data-part=\"conditions\">{Escaped(ConditionsLine(one))}</p></div>");
         html.Append($"<div data-part=\"picks\"><h4>What its picks looked like</h4><p>{Escaped(PicksLine(one))}</p></div>");
         var words = view.Words is not null && view.Words.TryGetValue(CaseKey(one.Index, one.Family, one.Variant), out var written) ? written : null;
@@ -153,6 +153,22 @@ public sealed partial class SinglePageApp
             : $"<p class=\"ai-quote\" data-words=\"code\">{Escaped(code)}<small>{Escaped(CodeWords)}</small></p>";
 
     public static string Written(CaseWordsLine line) => $"Written on {Day(line.Written)} by {line.Model}";
+
+    // Which long test the long history's figures come from: its month, and the day its run started where the run's name
+    // carries it, none where no long test judged the variant.
+    public static string? LongTestLine(PromotionCaseView one)
+    {
+        if (one.LongTestMonth is not { } month
+            || !DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var first))
+        {
+            return null;
+        }
+
+        var stamp = one.LongTestRun?.Split('-')[^1];
+        var ran = stamp is { Length: >= 8 } && DateOnly.TryParseExact(stamp[..8], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? $", run on {Day(day)}" : string.Empty;
+
+        return $"From the long test of {first.ToString("MMMM yyyy", CultureInfo.InvariantCulture)}{ran}";
+    }
 
     public static string PromoteLine(int revision) =>
         $"This variant becomes {RevisionView.Named(revision + 1).ToLowerInvariant()}; {RevisionView.Named(revision).ToLowerInvariant()} runs on as a variant, each keeping its own record.";
