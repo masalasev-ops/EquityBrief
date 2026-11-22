@@ -39,10 +39,6 @@ public sealed partial class ReadApi
 
     const string NewestMonth = "SELECT MAX(month) FROM promotion_case;";
 
-    const string InsertPress = @"
-        INSERT INTO promotion_press (index_code, family, variant, press, undoes, month, pressed_at)
-        VALUES ($index, $family, $variant, $press, $undoes, $month, $pressed_at);";
-
     // From 24.23 a press of Promote, Keep or Undo on a case, written as the operator's word for the next night to answer and
     // never edited. Inside the rule freeze every press is refused with nothing written. Promote stands only on a variant whose
     // case stands at the newest monthly run, one waiting a setup an index; Keep is recorded and changes nothing; Undo names a

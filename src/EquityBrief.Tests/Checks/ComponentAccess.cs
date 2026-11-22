@@ -307,6 +307,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Case words"),
     ];
 
+    // The night's swap of a running revision and its variant on the operator's press.
+    internal static string[] SwapRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Promotion swap"),
+        CheckReach.Key(Scope.MatrixTable, "Promotion swap"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -407,6 +414,7 @@ public partial class ComponentAccess
             .. JudgePickerRows,
             .. PaperReadsRows,
             .. CaseRows,
+            .. SwapRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

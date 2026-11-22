@@ -216,6 +216,11 @@ public partial class ArchitectureConformance
         .. ComponentAccess.CaseRows,
         .. SchemaColumns.CaseStoreRows,
         .. FixtureExpectations.CaseClaims,
+
+        // And the promotion swap: its catalogue, matrix and store rows and section 18's row of a Promote no longer standing.
+        .. ComponentAccess.SwapRows,
+        .. SchemaColumns.SwapStoreRows,
+        .. FixtureExpectations.SwapClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

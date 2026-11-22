@@ -73,6 +73,10 @@ public static class PromotionSwaps
     public static string UndoWaiting(DateOnly night) =>
         $"Undone before it ran: nothing changed, and the night of {Day(night)} lists as before.";
 
+    // An applied Undo as the night wrote it: the revision it made from that night, back on the settings the promotion replaced.
+    public static string Undone(int revision, DateOnly night) =>
+        $"Undone: revision {revision.ToString(CultureInfo.InvariantCulture)} from the night of {Day(night)}, back on the settings the promotion replaced, each record carried back.";
+
     public static string UndoApplied(DateOnly night) =>
         $"Waiting: the promotion is undone from the night of {Day(night)}, each record carried back.";
 

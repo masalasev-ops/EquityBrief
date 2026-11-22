@@ -36,11 +36,6 @@ public sealed class PromotionSwap(IClock clock, string databaseFile) : IComponen
 
     public const string NotApplied = "the promotion it undoes never ran, so there is nothing to undo";
 
-    const string Unanswered = @"
-        SELECT press.id, press.index_code, press.family, press.variant, press.press, press.undoes, press.month, press.pressed_at
-        FROM promotion_press AS press LEFT JOIN promotion_swap AS answer ON answer.press_id = press.id
-        WHERE answer.press_id IS NULL ORDER BY press.id;";
-
     const string InsertAnswer = @"
         INSERT INTO promotion_swap (press_id, index_code, family, applied, words, revision, promoted, running, replaced, carries, night, swapped_at, run_id)
         VALUES ($press_id, $index_code, $family, $applied, $words, $revision, $promoted, $running, $replaced, $carries, $night, $swapped_at, $run_id);";
@@ -153,7 +148,7 @@ public sealed class PromotionSwap(IClock clock, string databaseFile) : IComponen
 
         return await SwapAsync(press, live, replacedName, replacedRow, promoted, live, back, (revisionNow?.Number ?? 1) + 1, session, runId,
             $"undone on the operator's press {press.Id.ToString(CultureInfo.InvariantCulture)}: the promotion of press {applied.PressId.ToString(CultureInfo.InvariantCulture)} swapped back, each record carried back",
-            PromotionSwaps.UndoApplied(session), cancellation);
+            PromotionSwaps.Undone((revisionNow?.Number ?? 1) + 1, session), cancellation);
     }
 
     // The swap at one instant through the registrar: the row whose settings become the running revision's and the running

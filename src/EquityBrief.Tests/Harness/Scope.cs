@@ -4032,6 +4032,26 @@ internal static class Scope
             Verdict.Pass,
             "recorded answers holding a number, a ticker of the members and a company's name each refused with its cause and asked once more, a second refusal kept with its cause, a kept case asked nothing again, and the page drawing code's sentences where no answer was kept",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Promotion swap")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the register, presses and swaps it reads and the swaps and run log it writes, each reconciled against the row, and over a constructed store a press is refused inside the freeze, a Promote swaps both rules carrying both records and an Undo swaps them back",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Promotion swap")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Promotion presses")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Promotion swaps")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A Promote the night answers whose variant or running revision no longer stands")] = new Scoped(
+            Verdict.Pass,
+            "a Promote whose variant retired before the night and one naming no variant each answered without a swap, a Keep answered with nothing changed, the register's rows the same, and a night run again answering nothing twice",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A filer that files no operating income for a member's four newest quarters")] = new Scoped(
             Verdict.Pass,
             "each cause and each fallback line worked by hand over a constructed filer, the same line read for every quarter compared and named on the card and the report; a filer covered by neither line saying so; the refresh keeping the two lines apart from the filed facts and leaving them as they were; the fill reading the kept answers and asking for a filer that filed since; and no source a rule's version pins among those the pages' fallback writes",

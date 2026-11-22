@@ -4030,6 +4030,12 @@ public sealed partial class ReadApi : IComponent
         INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
         VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";
 
+    // From 24.23 the operator's word on a case for promotion, the case page's presses' one write.
+    // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+    const string InsertPress = @"
+        INSERT INTO promotion_press (index_code, family, variant, press, undoes, month, pressed_at)
+        VALUES ($index, $family, $variant, $press, $undoes, $month, $pressed_at);";
+
     const string DeleteUnfollowed = @"
         DELETE FROM taken_trade
         WHERE ticker = $ticker AND taken_at = $taken_at AND followed_through IS NULL AND exit_date IS NULL;

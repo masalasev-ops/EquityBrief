@@ -56,6 +56,9 @@ public sealed record PaperAccountSource(
     // A variant's settings that differ from its running revision, each a plain sentence; none for any other account.
     public IReadOnlyList<ChangeLine> Differences { get; init; } = [];
 
+    // From 24.23 whether its same trades were carried to it by a promotion's swap rather than reproduced by a replay.
+    public bool CarriedBySwap { get; init; }
+
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
     public bool Keeps(PaperRow row) =>
@@ -706,6 +709,7 @@ public static class PaperBooks
                     Earlier = account.Earlier is null ? null : [.. account.Earlier.Where(one => !Carried(one.Trade))],
                     Same = same,
                     SameSince = same.Length == 0 ? account.SameSince : new[] { account.SameSince, into.Min(carry => carry.Since) }.OfType<DateOnly>().Min(),
+                    CarriedBySwap = same.Length > 0,
                 };
             }),
         ];
