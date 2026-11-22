@@ -123,19 +123,12 @@ public sealed partial class MarkRenderer
     // The take-profit a trade's row draws, as a mark the checks read to find one trade drawn with two exits on a page.
     public static string TakeProfitMark(decimal? price) => price is { } at ? at.ToString("0.00", Invariant) : "none";
 
-    // The one change a variant is named by: the setting it was registered to try, which is any it differs in but the plan
-    // where it differs in more, as a plain sentence.
-    public static ChangeLine? NamedChange(PaperAccountView variant) =>
-        variant.Differences.FirstOrDefault(change => change.Key != "hooks") ?? variant.Differences.FirstOrDefault();
+    // The one change a variant is named by, its name and the settings it differs in beside it, worked in the core.
+    public static ChangeLine? NamedChange(PaperAccountView variant) => PaperNames.NamedChange(variant);
 
-    // A variant named by its one change as a sentence.
-    public static string VariantName(PaperAccountView variant) =>
-        NamedChange(variant)?.Sentence ?? Capitalised((variant.Changes ?? variant.Name).Replace(" · ", "; ", StringComparison.Ordinal));
+    public static string VariantName(PaperAccountView variant) => PaperNames.VariantName(variant);
 
-    // The settings a variant differs in beside the one it is named by, which it carries until it is registered again on the
-    // running revision's plan.
-    public static IReadOnlyList<ChangeLine> AlsoDiffers(PaperAccountView variant) =>
-        NamedChange(variant) is { } named ? [.. variant.Differences.Where(change => !ReferenceEquals(change, named))] : [];
+    public static IReadOnlyList<ChangeLine> AlsoDiffers(PaperAccountView variant) => PaperNames.AlsoDiffers(variant);
 
     // The revision Show draws: the running box, the plan, what changed from the one before, its tiles and its four tabs.
     public string RevisionCard(PaperPageView page, PaperAccountView head, RevisionView? revision, PaperLink link)

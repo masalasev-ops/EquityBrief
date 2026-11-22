@@ -5,44 +5,6 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
 
-// One variant against its setup's running revision on an index, as the case for promotion reads it: the index's code and
-// name, the setup and whether it is a book, the running revision's number and first session, the variant's account key, its
-// one change as a sentence and the settings it differs in, both records over the same nights and over the long history, the
-// rule's three conditions, the picks each listed a night over the same nights and how many of the variant's were the
-// revision's too, and tonight's picks of each.
-public sealed record PromotionCaseView(
-    string Index,
-    string IndexName,
-    string Family,
-    bool Book,
-    int Revision,
-    DateOnly RevisionFrom,
-    string Variant,
-    string VariantName,
-    IReadOnlyList<string> Changes,
-    PromotionRecord Same,
-    PromotionRecord RunningSame,
-    PromotionLong? Long,
-    PromotionLong? RunningLong,
-    PromotionConditions Conditions,
-    int Sessions,
-    int Shared,
-    IReadOnlyList<string> Tonight,
-    IReadOnlyList<string> RunningTonight);
-
-// One running revision on an index as the table under the cases reads it, with each variant beside it, and for a book its
-// own exit's points a month beside the book's over the same nights, none where none is walked.
-public sealed record PromotionRowView(
-    string Index,
-    string IndexName,
-    string Family,
-    bool Book,
-    int? Revision,
-    DateOnly? RevisionFrom,
-    PromotionRecord? Running,
-    IReadOnlyList<PromotionCaseView> Variants,
-    (double Own, double Book)? OwnExit = null);
-
 // The case for promotion's page: the night it is read for, the day the rule freeze ends while the day falls inside it, every
 // running revision with its variants, and the ideas the monthly runs have tested to date with those that passed.
 public sealed record PromotionPageView(DateOnly? Night, DateOnly? FrozenUntil, IReadOnlyList<PromotionRowView> Rows, int Tested, int Passed)

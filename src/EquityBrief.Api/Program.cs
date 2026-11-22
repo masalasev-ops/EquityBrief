@@ -3905,7 +3905,7 @@ app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocat
 app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
 {
     var night = await read.NewestNightAsync();
-    var rows = new List<PromotionRowView>();
+    var rows = new List<EquityBrief.Core.Loop.PromotionRowView>();
 
     if (night is { } on)
     {
