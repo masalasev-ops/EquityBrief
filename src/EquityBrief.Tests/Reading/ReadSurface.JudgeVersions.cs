@@ -120,7 +120,7 @@ public partial class ReadSurface
         Assert.Contains("<b>0</b> trades closed<span>0 of 300 needed for a firm verdict</span>", drawn, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2), drawn, StringComparison.Ordinal);
         Assert.Equal("Its record counts version 2's picks alone, from the night of 23 Nov 2026. Each earlier version's picks are bought and walked to their exits in an account of their own, drawn apart under its number and never added to the record.", SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 23), 2));
-        Assert.Contains("The AI stock picker's picks tonight (1)", drawn, StringComparison.Ordinal);
+        Assert.Contains("The AI stock picker's picks tonight on the S&P 500 (1)", drawn, StringComparison.Ordinal);
 
         // No pick is drawn without an account that buys it: each card is tonight's under the record, or an earlier version's
         // saying what its account did, and every pick stored is drawn.
