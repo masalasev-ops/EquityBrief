@@ -3921,6 +3921,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "Paper reads")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the trades, fills, register, taken trades, rule tests, member readings, closes and fund closes it reads and that it writes nothing, each reconciled against the row, and the page and the worker read back the same figures through it over constructed stores",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Paper reads")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Judge pins")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",

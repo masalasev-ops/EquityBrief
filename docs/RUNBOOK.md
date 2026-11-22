@@ -1779,6 +1779,13 @@ Each card on Tonight carries a Taken press with an optional fill price and date.
 
 From 19.4 the same three settings walk every paper account on Paper trading, the menu's link in the Account page's place, which `#/account` still opens; the line at its top names them and Change the account opens their form. Each family's live or provisional list, each registered variant's own list or book and your own taken trades are an account each, sized as a card sizes its plan and walked a session at a time when the page is read, and nothing stores a figure of one. From the 19.4 correction of 2026-10-22 the page reads from the top: a tile a family's live or provisional rule with its return beside the index's fund, and the chart beneath; what those rules bought, open and closed, with where each open trade stands and the listed stocks not bought; what one family's variants did differently, the family chosen by its select; a rule's scorecard, one rule at a time, its test years and its record since it went live drawn as two halves and never added together (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together); and your own trades. Each choice is kept in the link, so a view is a link, and Past picks draws any account's trades from its selector. With no settings kept every account is walked on the example account the page names at its top, and saving your own replaces it.
 
+From 24.21 the accounts are worked by one function in the core over one reader in the data project, and the worker reads and works them the same way. To print every account's figures on each index for a stored night as Paper trading draws them, its trades and those ended, its walk's return, its open and closed trades, the day it counts from, its verdict and its record's count, writing nothing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- paper-figures --session 2026-11-20
+dotnet run --project src/EquityBrief.Worker -- paper-figures --session 2026-11-20 --index MID
+```
+
 Each night, after the cards, the follower follows every open taken trade over the stored closes under its rule's own management, replaces a provisional fill with its session's stored open, ends a trade at its stop, target, cap, its book's sale, your recorded exit or its last close as a member, and writes your record of each family on each index to `taken_record`; its row on the run page says how many it followed and ended. Past picks lists your trades for the chosen index under Your trades. A trade whose fill's session or card's night has no stored bar stays open until the bars arrive.
 
 ### What could hit a pick

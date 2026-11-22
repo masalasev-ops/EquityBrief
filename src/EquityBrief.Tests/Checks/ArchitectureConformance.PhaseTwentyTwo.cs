@@ -208,6 +208,9 @@ public partial class ArchitectureConformance
 
         // And every member's readings on every session: its two stores and the History page's row.
         .. FixtureExpectations.SessionReadingRows,
+
+        // And the one reader Paper trading's accounts are read through: its catalogue and matrix rows.
+        .. ComponentAccess.PaperReadsRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

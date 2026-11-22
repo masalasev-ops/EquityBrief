@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Paper;
 using Microsoft.Data.Sqlite;
@@ -10,9 +11,50 @@ namespace EquityBrief.Data;
 // round trip a trade pays where its table stores none, the closes a position is marked by, and the index fund's closes. It
 // computes none of the accounts, and writes nothing.
 // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
-public sealed partial class PaperReads(string databaseFile) : IPaperReads
+public sealed partial class PaperReads(string databaseFile) : IPaperReads, IComponent
 {
     const string PageList = PaperBooks.PageList;
+
+    public static ComponentAccess Access => new(
+        Stores:
+        [
+            new StoreTouch(Store.Membership, Touch.Read),
+            new StoreTouch(Store.ListedName, Touch.Read),
+            new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
+            new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
+            new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.ForwardReturn, Touch.Read),
+            new StoreTouch(Store.RulePick, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.FamilyTrade, Touch.Read),
+            new StoreTouch(Store.ListRule, Touch.Read),
+            new StoreTouch(Store.HeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.HeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.IndexFamilyNight, Touch.Read),
+            new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
+            new StoreTouch(Store.IndexRuleTrade, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.DipTrade, Touch.Read),
+            new StoreTouch(Store.QualityNight, Touch.Read),
+            new StoreTouch(Store.QualityHolding, Touch.Read),
+            new StoreTouch(Store.ImprovingTrade, Touch.Read),
+            new StoreTouch(Store.TradeFill, Touch.Read),
+            new StoreTouch(Store.TakenTrade, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.LoopRule, Touch.Read),
+            new StoreTouch(Store.LoopRuleYear, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
+            new StoreTouch(Store.RunLog, Touch.Read),
+        ],
+        Feeds: []);
 
     static DateOnly Day(string stored) => DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 

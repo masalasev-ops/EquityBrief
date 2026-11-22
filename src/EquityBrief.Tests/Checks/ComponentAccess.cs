@@ -291,6 +291,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Judge picker"),
     ];
 
+    // The one reader Paper trading's accounts are read through.
+    internal static string[] PaperReadsRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Paper reads"),
+        CheckReach.Key(Scope.MatrixTable, "Paper reads"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -389,6 +396,7 @@ public partial class ComponentAccess
             .. JudgeRows,
             .. FallbackRows,
             .. JudgePickerRows,
+            .. PaperReadsRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
@@ -1030,8 +1038,9 @@ public partial class ComponentAccess
         // filings, which keep the archive's answers in a folder the command names, and from 23.3 the long schedule filings
         // and the long day files, which keep the trust's filings and the provider's day files and lists in the long history's
         // folder the command names, and from 23.6 the long history reader and the long ledger reader, and from 23.9 the
-        // sector splits reader, which read the store and write nothing.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // sector splits reader, which read the store and write nothing, and the paper reads, the one reader Paper trading's
+        // accounts are read through, which writes nothing.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "PaperReads", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(
