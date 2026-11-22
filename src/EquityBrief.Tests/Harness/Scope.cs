@@ -4958,6 +4958,23 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed account of $10,000, the second pick's 60 shares worked by hand above the cash the first left, its card read back not bought for want of cash and its result counted in the record's two closed trades and its $1.50 per $1 risked",
             ByReadSurface),
+        // The picker's page from its approved mockup.
+        [CheckReach.Key("15.26 The AI stock picker", "Its three accounts")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of three indices, each index's page read back with the three tiles in the selector's order and the index read alone marked showing, the S&P 500's and the S&P 600's one open and none closed with two picked tonight and the S&P 400's, which marked none, not started, each worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "Tonight's picks one at a time")] = new Scoped(
+            Verdict.Pass,
+            "the same store's S&P 500 page read back with a chip for each pick in rank order and the second marked past the cash, each pick's place and its arrows round from the last to the first, its radio inputs choosing one card at a time, and each card's two tabs with the plan as one ladder; and the S&P 400's page drawing no carousel",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "Where each fact stands")] = new Scoped(
+            Verdict.Pass,
+            "each named fact's bar read back filling the tenth worked by hand among its own index's members alone, 9 and 4 of the S&P 500's four and 9 and 5 of the S&P 600's five where read among both the first of these would be 5, a fact shown none of and a word drawing no bar, and everything else folded under its count and grouped in the groups' order with every field of the sheet in one group",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "Its own rules")] = new Scoped(
+            Verdict.Pass,
+            "each of the three indices' pages read back with its own rules' region naming the index and reading that it has no rule of its own yet",
+            ByReadSurface),
         // 24.17, the operator's answers of 2026-11-21.
         [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = new Scoped(
             Verdict.Pass,
@@ -8033,6 +8050,10 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI stock picker", "The night's marks")] = "24.24",
         [CheckReach.Key("15.26 The AI stock picker", "A fixed 5")] = "24.24",
         [CheckReach.Key("15.26 The AI stock picker", "A pick past the cash")] = "24.24",
+        [CheckReach.Key("15.26 The AI stock picker", "Its three accounts")] = "24.25",
+        [CheckReach.Key("15.26 The AI stock picker", "Tonight's picks one at a time")] = "24.25",
+        [CheckReach.Key("15.26 The AI stock picker", "Where each fact stands")] = "24.25",
+        [CheckReach.Key("15.26 The AI stock picker", "Its own rules")] = "24.25",
         [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "A case")] = "24.17",
         [CheckReach.Key("15.27 The case for promotion", "No case")] = "24.17",

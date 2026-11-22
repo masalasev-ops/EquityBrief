@@ -124,6 +124,9 @@ public static class JudgeFacts
 
     public const int Tenths = 10;
 
+    // The key a member's stored fields keep its tenths under, which the picker's page reads them back from.
+    public const string TenthsKey = "tenths";
+
     // How a figure's tenth is shown after it.
     public static string TenthWords(int tenth) => FormattableString.Invariant($" (tenth {tenth} of {Tenths})");
 

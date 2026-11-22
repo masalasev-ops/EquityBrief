@@ -224,6 +224,9 @@ public partial class ArchitectureConformance
 
         // And the picker within each index: section 17's and section 18's rows and the page's four rows.
         .. FixtureExpectations.JudgeIndexRows,
+
+        // And the picker's page from its mockup: its four rows.
+        .. Reading.ReadSurface.PickerPageRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

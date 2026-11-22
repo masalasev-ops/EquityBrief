@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html - the AI stock picker's page built from its approved mockup, at 24.25
+Decision: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
+Was:
+> ARCHITECTURE.html, section 15.26's Reads: "... from 24.24 the index chosen under Universe alone: its picker version's runs and picks, its members, its live rules and its fund (see: ...). Every account is worked ..."; no rows "Its three accounts", "Tonight's picks one at a time", "Where each fact stands" and "Its own rules"
+Now:
+> ARCHITECTURE.html, section 15.26's Reads: "... its members, its live rules and its fund (see: ...); and from 24.25 each fact's tenth among its index's stocks as the facts' store holds it, and the other two indices' picker accounts for their tiles. Every account is worked ..."; and the rows "Its three accounts", "Tonight's picks one at a time", "Where each fact stands" and "Its own rules"
+Why: the operator's approval of 2026-11-22 of `prompts/2026-11-22-ai-stock-picker-page-mockup.html`, kept word for word as Appendix Z of the phase 24 plan's file: the three index tiles, tonight's picks as a carousel with "Why it picked it" and "The plan" tabs, each named fact placed among that index's stocks with its tenth bar and aligned columns, "Everything else it saw" folded and grouped, and the picker's own rules reading "No rule of its own yet" on each index until it writes one.
+
 ### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the AI stock picker picks within each index, at 24.24
 Decision: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
 Was:

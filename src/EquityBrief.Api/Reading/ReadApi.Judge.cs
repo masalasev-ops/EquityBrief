@@ -54,6 +54,10 @@ public sealed record JudgePickRow(
     public bool InQuarter { get; init; } = true;
 
     public string RunId { get; init; } = string.Empty;
+
+    // The tenth each of its sheet's figures stood in among its index's members that night, by key, none on a pick made
+    // before the picker placed its facts.
+    public IReadOnlyDictionary<string, int> Tenths { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
 }
 
 // The AI stock picker's page reads its runs, its picks and the members' sessions from its first night, all from the store opened
@@ -201,6 +205,7 @@ public sealed partial class ReadApi
                 RunId = reader.GetString(15),
                 RunIndex = reader.IsDBNull(19) ? null : reader.GetString(19),
                 InQuarter = reader.GetInt64(20) == 1,
+                Tenths = reader.IsDBNull(18) ? new Dictionary<string, int>(StringComparer.Ordinal) : TenthsOf(reader.GetString(18)),
             });
         }
 
@@ -224,6 +229,26 @@ public sealed partial class ReadApi
         }
 
         return sheet;
+    }
+
+    // A member's stored tenths, each figure's place among its index's members by its key, from the object its fields keep
+    // them under.
+    static IReadOnlyDictionary<string, int> TenthsOf(string json)
+    {
+        var tenths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        if (System.Text.Json.Nodes.JsonNode.Parse(json) is System.Text.Json.Nodes.JsonObject fields && fields[Core.Judge.JudgeFacts.TenthsKey] is System.Text.Json.Nodes.JsonObject placed)
+        {
+            foreach (var (key, value) in placed)
+            {
+                if (value is System.Text.Json.Nodes.JsonValue number && number.TryGetValue(out int tenth))
+                {
+                    tenths[key] = tenth;
+                }
+            }
+        }
+
+        return tenths;
     }
 
     // Every member's sessions from a day on, each session's open and close as statistics, oldest first.

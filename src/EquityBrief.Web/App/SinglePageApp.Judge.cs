@@ -37,9 +37,14 @@ public sealed record JudgeVersionView(int Number, DateOnly First, DateOnly Last,
 }
 
 // One fact of a pick's sheet as its card draws it: its words, its value as the judge was shown it, and a plain comparison
-// where its value's sign says one.
+// where its value's sign says one; its field's key, and the tenth it stood in among its index's stocks that night, none where
+// it was not placed among them.
 public sealed record JudgeFactView(string Words, string Value, string? Comparison)
 {
+    public string Key { get; init; } = string.Empty;
+
+    public int? Tenth { get; init; }
+
     // The fields whose value is a signed figure against something, and what a value above and below it says.
     static readonly Dictionary<string, (string Up, string Down)> Signed = new(StringComparer.Ordinal)
     {
@@ -67,6 +72,10 @@ public sealed record JudgeFactView(string Words, string Value, string? Compariso
             ? value[0] == '+' ? words.Up : value[0] == '-' ? words.Down : null
             : null;
 }
+
+// One index's tile of the picker's accounts: the index, its account's return since its first session, none before it holds
+// two sessions, its trades still open and those closed, and its picks tonight.
+public sealed record JudgeTile(string Index, double? Return, int Open, int Closed, int Tonight);
 
 // One account's line on the chart: its name and its value on each session.
 public sealed record JudgeLineView(string Name, IReadOnlyList<(DateOnly Session, decimal Value)> Values);
@@ -114,6 +123,9 @@ public sealed record JudgeView(
     public int? Marked { get; init; }
 
     public JudgeVersionView? FixedFive { get; init; }
+
+    // The three indices' tiles in the selector's order, or the chosen index's alone where the page draws no tiles.
+    public IReadOnlyList<JudgeTile> Tiles { get; init; } = [];
 }
 
 // The AI stock picker's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
@@ -155,19 +167,27 @@ public sealed partial class SinglePageApp
         region.Append(Cards.Masthead("AI stock picker: " + chosen.Titled, $"<span class=\"m-screen\">AI stock picker: {Escaped(chosen.Titled)}</span>", view.Night is { } night ? "Computed for " + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "Not run yet"));
         region.Append(selector);
         region.Append(Cards.Computed("AI stock picker", $"<p data-summary>{Escaped(JudgeLede)}</p>{RunLine(view)}{CountedFromLine(view)}", title: "Your local AI picks its own stocks, in its own paper account", region: "judge-lede"));
+        if (view.Tiles.Count > 1)
+        {
+            region.Append(Cards.Computed("Its three accounts", IndexTiles(view.Tiles, chosen), title: "The AI stock picker in each index", lede: Escaped(TilesLede), region: "judge-tiles"));
+        }
+
+        region.Append(Cards.Computed("Tonight, " + chosen.Name, $"<p class=\"count-line\" data-summary>{TonightWords(view, chosen)}</p><p class=\"count-note\">{Escaped(TonightNote)}</p>" + Carousel(view.Picks, view.Score, chosen), title: $"The AI stock picker's {Escaped(CapWord(chosen))} picks tonight ({view.Picks.Count})", stamp: view.Night is { } on ? "<span class=\"stamp computed\">Computed for " + on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "</span>" : null, region: "judge-picks"));
+        region.Append(Cards.Computed("Its own rules, " + chosen.Name, OwnRules(chosen), title: $"The picker's own {Escaped(CapWord(chosen))} rules", lede: Escaped(OwnRulesLede(chosen)), region: "judge-rules"));
         region.Append(Cards.Computed("Scoreboard", EmptyRecord(view) ?? Scoreboard(view), title: "How its live record stands", region: "judge-score"));
         region.Append(Cards.Computed("Four accounts", (EmptyRecord(view) ?? $"<p data-summary>The picker's account beside the rules', random picks' and the index's, each from {(view.RecordNumber is { } number ? $"version {number}'s" : "the picker's")} first night.</p>" + JudgeChart(view.Lines, view.Band, "The four accounts' returns since the picker started")) + ApartCharts(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
-        region.Append(Cards.Computed("Tonight", $"<p data-summary>{TonightWords(view, chosen)}</p>" + PickCards(view.Picks, view.Score, null), title: $"The AI stock picker's picks tonight on the {Escaped(chosen.Name)} ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand. A pick the account has no cash for is shown as not bought, and its result is still recorded.", region: "judge-picks"));
         region.Append(Cards.Computed("Where the AI looked", LookedSummary(view) + Looked(view), title: "How its picks compare with the rules', since it started", region: "judge-looked"));
 
         if (view.FixedFive is { } five)
         {
-            region.Append(Cards.Computed(VersionWords(five), $"<p class=\"judge-version\" data-version=\"fixed-five\" data-summary>{Escaped(FixedFiveLine)} {Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>" + JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account") + PickCards(five.Picks, five.Score, five), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
+            region.Append(Cards.Computed(VersionWords(five), $"<p class=\"judge-version\" data-version=\"fixed-five\" data-summary>{Escaped(FixedFiveLine)} {Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>" + JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account") + PickCards(five.Picks, five.Score, five, "fixed-five", chosen), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
         }
 
         foreach (var earlier in view.Earlier)
         {
-            region.Append(Cards.Computed(VersionWords(earlier), VersionSummary(earlier, view.RecordNumber) + PickCards(earlier.Picks, earlier.Score, earlier), title: VersionWords(earlier) + ": its own account, apart from the record", region: string.Create(CultureInfo.InvariantCulture, $"judge-version-{earlier.Number}")));
+            var scope = string.Create(CultureInfo.InvariantCulture, $"version-{earlier.Number}");
+
+            region.Append(Cards.Computed(VersionWords(earlier), VersionSummary(earlier, view.RecordNumber) + PickCards(earlier.Picks, earlier.Score, earlier, scope, chosen), title: VersionWords(earlier) + ": its own account, apart from the record", region: "judge-" + scope));
         }
 
         if (view.Replayed is { } replayed)
@@ -290,83 +310,246 @@ public sealed partial class SinglePageApp
         return html.ToString();
     }
 
-    // The cards of the record's newest night, or from the 24.14 correction of 2026-11-21 of an earlier version, each of those
-    // saying what that version's account did with it and its prices worked from the price it paid once bought.
-    static string PickCards(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, JudgeVersionView? version)
+    // An earlier version's cards, or its variant's, each saying what that version's account did with it and its prices worked
+    // from the price it paid once bought.
+    static string PickCards(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, JudgeVersionView version, string scope, UniverseChoice chosen) =>
+        picks.Count == 0
+            ? string.Empty
+            : "<div class=\"judge-ideas\">" + string.Concat(picks.Select((pick, at) => PickCard(pick, score, version, string.Create(CultureInfo.InvariantCulture, $"judge-{scope}-{at + 1}"), chosen))) + "</div>";
+
+    // Tonight's picks as a carousel: a chip for each pick in rank order, a pick its account had no cash for marked on its
+    // chip, the place and the arrows of the pick shown, and one card at a time. Radio inputs choose the card, so it works
+    // with no script; a night of one pick, or more than the carousel holds, draws its cards one under another.
+    static string Carousel(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, UniverseChoice chosen)
     {
         if (picks.Count == 0)
         {
             return string.Empty;
         }
 
-        var html = new StringBuilder("<div class=\"home-ideas judge-ideas\">");
+        var cards = picks.Select((pick, at) => PickCard(pick, score, null, string.Create(CultureInfo.InvariantCulture, $"judge-tonight-{at + 1}"), chosen)).ToArray();
 
-        foreach (var pick in picks)
+        if (picks.Count == 1 || picks.Count > CarouselHolds)
         {
-            var held = pick.Held is { Skipped: null } taken ? taken : null;
-            var from = held?.Paid ?? pick.LastClose;
-            var stop = held?.Stop ?? pick.Stop;
-            var target = held?.Target ?? pick.Target;
-            var risk = from - stop;
-            var moves = JudgeMenu.HoldOf(pick.Hold)?.StopMoves;
-            var whole = string.Equals(pick.Shape, JudgeMenu.Whole, StringComparison.Ordinal);
-            var night = pick.Night is { } on ? "on the night of " + on.ToString("d MMM", CultureInfo.InvariantCulture) : "tonight";
-
-            // From 24.14 Home's pick card: its head and tags, the sentence in quotes, the facts the judge named and the rest of
-            // its sheet folded, the price boxes, the judge's record and the gain and loss bar.
-            html.Append($"<article class=\"home-idea judge-card\" data-ticker=\"{Escaped(pick.Ticker)}\">");
-            html.Append($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\"><a href=\"{MarkRenderer.ChartRoute}{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></div><div class=\"home-co\">{Escaped(pick.Company ?? string.Empty)}</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span></div>");
-            html.Append(CultureInfo.InvariantCulture, $"<p class=\"home-verdict judge-saw\"><b>The AI stock picker's pick, ranked {pick.Rank} of {pick.Of} {night}.</b> It saw {Escaped(pick.Sector is null or JudgeFacts.NotOnFile ? "no sector on file" : pick.Sector)}, {Escaped(SizeWords(pick.Size))}, with no name, ticker or date.</p>");
-
-            if (version is not null)
-            {
-                html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
-            }
-            else if (pick.Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash })
-            {
-                html.Append($"<p class=\"judge-since\" data-cash>{Escaped(NoCashLine)}</p>");
-            }
-
-            html.Append("<p class=\"facts-h\">Why the AI picked it, in its words</p>");
-            html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as the local model wrote it.</small></p>");
-
-            if (pick.Named is { } named)
-            {
-                html.Append("<p class=\"facts-h\">The AI's reasons: the facts it named, with their values</p>");
-                html.Append("<ul class=\"ai-facts\" data-facts=\"named\">").Append(string.Concat(named.Select(fact => FactItem(fact, "why")))).Append("</ul>");
-                html.Append(CultureInfo.InvariantCulture, $"<details class=\"all-facts\"><summary>Everything else it saw ({pick.Rest.Count} facts)</summary><ul class=\"ai-facts\" data-facts=\"rest\">").Append(string.Concat(pick.Rest.Select(fact => FactItem(fact, string.Empty)))).Append("</ul></details>");
-            }
-            else
-            {
-                html.Append($"<p class=\"facts-h\" data-facts=\"before\">{Escaped(JudgeBeforeNamed)}</p>");
-                html.Append("<ul class=\"ai-facts\" data-facts=\"sheet\">").Append(string.Concat(pick.Rest.Select(fact => FactItem(fact, string.Empty)))).Append("</ul>");
-            }
-
-            html.Append("<div class=\"home-prices\">");
-            html.Append(held is not null
-                ? $"<div><span>Bought at</span><b>${Figures.Price(held.Paid)}</b><span class=\"sale-note judge-buy\">At the open on {held.Bought.ToString("ddd d MMM", CultureInfo.InvariantCulture)}. Last close before it ${Figures.Price(pick.LastClose)}.</span></div>"
-                : $"<div><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close ${Figures.Price(pick.LastClose)}.</span></div>");
-            html.Append(CultureInfo.InvariantCulture, $"<div><span>Sell if it closes below</span><b class=\"stop\">${Figures.Price(stop)}</b><span class=\"sale-note judge-stop\">{moves:0.##} typical daily move{(moves == 1 ? string.Empty : "s")} under the price it {(held is null ? "pays" : "paid")}.</span></div>");
-            html.Append($"<div data-sale=\"target\"><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
-
-            if (!whole)
-            {
-                html.Append($"<div data-sale=\"trail\"><span>The other half</span><b class=\"aim\">Trails</b><span class=\"sale-note\">Sells on a close under a give-up price that rises behind its highest close, ${Figures.Price(held?.Trail ?? pick.GiveUp ?? risk)} under it. Its stop moves up to the price it paid once the first half sells.</span></div>");
-            }
-
-            html.Append($"<div data-sale=\"limit\"><span>Otherwise sell after</span><b class=\"aim judge-hold\">{Escaped(pick.Hold)}</b></div>");
-            html.Append("</div>");
-            html.Append($"<p class=\"home-cond\">{(held is null ? "The prices are worked from the last close until it is bought, then again from the price it actually paid." : "The prices are worked from the price it paid.")} {Escaped(JudgeMenuLine)}</p>");
-            html.Append(CultureInfo.InvariantCulture, $"<div class=\"setup-record\"><span class=\"rec-h\">{(version is null ? "The AI stock picker's record" : Escaped(VersionWords(version)) + ": its own account")}</span><span>{(score.Closed == 0 ? $"Too early to tell: <b>0</b> of {score.Needed} trades closed." : $"<b>{score.Closed}</b> of {score.Needed} trades closed{(score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked" : string.Empty)}.")} {(version is null ? "It is measured against the rules, 1,000 random picks and holding the index, with the same money, sizing and costs." : "Kept apart from the record, with the same money, sizing and costs.")}</span><span class=\"rec-sub\">{(version is null ? "The picker's record over every pick it made, not this stock's chance." : "This version's record over every pick it made, not this stock's chance.")}</span></div>");
-            html.Append($"<div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.00\"><div class=\"risk\" style=\"flex:1\"></div><div class=\"reward\" style=\"flex:2\"></div></div>");
-            html.Append($"<div class=\"home-odds\">Risks $1 to make about $2.00{(whole ? string.Empty : " on the first half")}</div>");
-            html.Append("</article>");
+            return "<div class=\"judge-ideas\">" + string.Concat(cards) + "</div>";
         }
 
-        html.Append("</div>");
+        static string Slide(int at) => string.Create(CultureInfo.InvariantCulture, $"judge-slide-{at + 1}");
+
+        var html = new StringBuilder("<div class=\"judge-car\" data-carousel>");
+
+        for (var at = 0; at < picks.Count; at++)
+        {
+            html.Append($"<input type=\"radio\" class=\"judge-slide\" name=\"judge-slide\" id=\"{Slide(at)}\"{(at == 0 ? " checked" : string.Empty)}>");
+        }
+
+        html.Append("<div class=\"car-head\"><div class=\"car-chips\">");
+
+        for (var at = 0; at < picks.Count; at++)
+        {
+            var unfunded = picks[at].Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash };
+
+            html.Append(CultureInfo.InvariantCulture, $"<label class=\"car-chip{(unfunded ? " skip" : string.Empty)}\" for=\"{Slide(at)}\">{Escaped(picks[at].Ticker)}<span>{picks[at].Rank}{(unfunded ? ", not bought: no cash" : string.Empty)}</span></label>");
+        }
+
+        html.Append("</div><div class=\"car-navs\">");
+
+        for (var at = 0; at < picks.Count; at++)
+        {
+            html.Append(CultureInfo.InvariantCulture, $"<div class=\"car-nav\"><span>{at + 1} of {picks.Count}</span><label for=\"{Slide((at + picks.Count - 1) % picks.Count)}\" aria-label=\"Previous pick\">&#8249;</label><label for=\"{Slide((at + 1) % picks.Count)}\" aria-label=\"Next pick\">&#8250;</label></div>");
+        }
+
+        html.Append("</div></div><div class=\"judge-slides\">").Append(string.Concat(cards)).Append("</div></div>");
 
         return html.ToString();
     }
+
+    // The most picks the carousel holds, the most an index's version picks a night.
+    public const int CarouselHolds = JudgePrompt.MostPicks;
+
+    // One pick's card: its place among the night's picks, the stock, what the AI saw, and two tabs, why it picked it and the
+    // plan code set, chosen by radio inputs so they work with no script.
+    static string PickCard(JudgeCardView pick, JudgeScoreboard score, JudgeVersionView? version, string id, UniverseChoice chosen)
+    {
+        var html = new StringBuilder();
+        var place = pick.Night is { } on
+            ? string.Create(CultureInfo.InvariantCulture, $"Pick {pick.Rank} of {pick.Of} on the night of ") + on.ToString("d MMM", CultureInfo.InvariantCulture)
+            : string.Create(CultureInfo.InvariantCulture, $"Pick {pick.Rank} of {pick.Of} tonight, ") + chosen.Name;
+
+        html.Append($"<article class=\"home-idea judge-card\" data-ticker=\"{Escaped(pick.Ticker)}\">");
+        html.Append($"<div class=\"home-idea-h\"><div><div class=\"judge-rank\">{Escaped(place)}</div><div class=\"home-ticker\"><a href=\"{MarkRenderer.ChartRoute}{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></div><div class=\"home-co\">{Escaped(pick.Company ?? string.Empty)}</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span></div>");
+        html.Append($"<p class=\"judge-saw\">It saw: {Escaped(pick.Sector is null or JudgeFacts.NotOnFile ? "no sector on file" : pick.Sector)}, {Escaped(SizeWords(pick.Size))}. No name, ticker or date.</p>");
+
+        if (version is not null)
+        {
+            html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
+        }
+        else if (pick.Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash })
+        {
+            html.Append($"<p class=\"judge-since\" data-cash>{Escaped(NoCashLine)}</p>");
+        }
+
+        html.Append($"<input type=\"radio\" class=\"judge-tab\" name=\"{id}-tab\" id=\"{id}-why\" value=\"why\" checked><input type=\"radio\" class=\"judge-tab\" name=\"{id}-tab\" id=\"{id}-plan\" value=\"plan\">");
+        html.Append($"<nav class=\"judge-tabs\" aria-label=\"Choose what the card shows\"><label for=\"{id}-why\" data-tab=\"why\">{Escaped(WhyTab)}</label><label for=\"{id}-plan\" data-tab=\"plan\">{Escaped(PlanTab)}</label></nav>");
+        html.Append("<div class=\"judge-panel\" data-tab=\"why\">").Append(WhyPanel(pick, chosen)).Append("</div>");
+        html.Append("<div class=\"judge-panel\" data-tab=\"plan\">").Append(PlanPanel(pick, score, version)).Append("</div>");
+        html.Append("</article>");
+
+        return html.ToString();
+    }
+
+    public const string WhyTab = "Why it picked it";
+
+    public const string PlanTab = "The plan";
+
+    // Why it picked it: its sentence in quotes, the facts it named each with where it stands among its index's stocks, and
+    // the rest of what it saw folded and grouped; a pick made before it named its facts shows everything it saw, grouped.
+    static string WhyPanel(JudgeCardView pick, UniverseChoice chosen)
+    {
+        var html = new StringBuilder();
+
+        html.Append($"<p class=\"facts-h\">{Escaped(WhyTab)}</p>");
+        html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as your local model wrote it.</small></p>");
+
+        if (pick.Named is { } named)
+        {
+            html.Append($"<p class=\"facts-h\">The facts it named, and where each stands among the {Escaped(chosen.Name)} stocks</p>");
+            html.Append(FactTable(named, "named", "why", chosen));
+            html.Append($"<p class=\"tenth-cap\">{Escaped(TenthCaption(chosen))}</p>");
+            html.Append(CultureInfo.InvariantCulture, $"<details class=\"all-facts\"><summary>Everything else it saw ({pick.Rest.Count} facts), grouped</summary>").Append(Grouped(pick.Rest, "rest", chosen)).Append("</details>");
+        }
+        else
+        {
+            html.Append($"<p class=\"facts-h\" data-facts=\"before\">{Escaped(JudgeBeforeNamed)}</p>");
+            html.Append(Grouped(pick.Rest, "sheet", chosen));
+        }
+
+        return html.ToString();
+    }
+
+    // The plan code set: the buy at the next open, the take-profit, the half that trails where it does, the stop and the time
+    // limit as one ladder, the risk against the reward, how the prices are worked and the record it is counted in.
+    static string PlanPanel(JudgeCardView pick, JudgeScoreboard score, JudgeVersionView? version)
+    {
+        var held = pick.Held is { Skipped: null } taken ? taken : null;
+        var from = held?.Paid ?? pick.LastClose;
+        var stop = held?.Stop ?? pick.Stop;
+        var target = held?.Target ?? pick.Target;
+        var risk = from - stop;
+        var moves = JudgeMenu.HoldOf(pick.Hold)?.StopMoves;
+        var whole = string.Equals(pick.Shape, JudgeMenu.Whole, StringComparison.Ordinal);
+        var html = new StringBuilder();
+
+        html.Append("<p class=\"facts-h\">The plan code set</p><div class=\"judge-ladder\">");
+        html.Append(held is not null
+            ? $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Bought at</span><b>${Figures.Price(held.Paid)}</b><span class=\"sale-note judge-buy\">At the open on {held.Bought.ToString("ddd d MMM", CultureInfo.InvariantCulture)}. Last close before it ${Figures.Price(pick.LastClose)}.</span></div>"
+            : $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close ${Figures.Price(pick.LastClose)}.</span></div>");
+        html.Append($"<div class=\"lad-row\" data-sale=\"target\"><i class=\"dot tp\"></i><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
+
+        if (!whole)
+        {
+            html.Append($"<div class=\"lad-row\" data-sale=\"trail\"><i class=\"dot tp\"></i><span>The other half</span><b class=\"aim\">Trails</b><span class=\"sale-note\">Sells on a close under a give-up price that rises behind its highest close, ${Figures.Price(held?.Trail ?? pick.GiveUp ?? risk)} under it. Its stop moves up to the price it paid once the first half sells.</span></div>");
+        }
+
+        html.Append(CultureInfo.InvariantCulture, $"<div class=\"lad-row\" data-sale=\"stop\"><i class=\"dot sl\"></i><span>Sell if it closes below</span><b class=\"stop\">${Figures.Price(stop)}</b><span class=\"sale-note judge-stop\">{moves:0.##} typical daily move{(moves == 1 ? string.Empty : "s")} under the price it {(held is null ? "pays" : "paid")}.</span></div>");
+        html.Append($"<div class=\"lad-row\" data-sale=\"limit\"><i class=\"dot\"></i><span>Otherwise sell after</span><b class=\"aim judge-hold\">{Escaped(pick.Hold)}</b></div>");
+        html.Append($"<div class=\"judge-rr\"><div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.00\"><div class=\"risk\" style=\"flex:1\"></div><div class=\"reward\" style=\"flex:2\"></div></div><span class=\"home-odds\">Risks $1 to make about $2.00{(whole ? string.Empty : " on the first half")}</span></div>");
+        html.Append("</div>");
+        html.Append($"<p class=\"home-cond\">{(held is null ? "The prices are worked from the last close until it is bought, then again from the price it actually paid." : "The prices are worked from the price it paid.")} {Escaped(JudgeMenuLine)}</p>");
+        html.Append(CultureInfo.InvariantCulture, $"<div class=\"setup-record\"><span class=\"rec-h\">{(version is null ? "The AI stock picker's record" : Escaped(VersionWords(version)) + ": its own account")}</span><span>{(score.Closed == 0 ? $"Too early to tell: <b>0</b> of {score.Needed} trades closed." : $"<b>{score.Closed}</b> of {score.Needed} trades closed{(score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked" : string.Empty)}.")} {(version is null ? "It is measured against the rules, 1,000 random picks and holding the index, with the same money, sizing and costs." : "Kept apart from the record, with the same money, sizing and costs.")}</span><span class=\"rec-sub\">{(version is null ? "The picker's record over every pick it made, not this stock's chance." : "This version's record over every pick it made, not this stock's chance.")}</span></div>");
+
+        return html.ToString();
+    }
+
+    // The groups everything else it saw is folded under, each holding its fields in the sheet's order; a field no group
+    // names falls to the last.
+    public static IReadOnlyList<(string Name, IReadOnlyList<string> Keys)> FactGroups { get; } =
+    [
+        ("Price and trend", ["return_month", "return_quarter", "return_twelve_less_one", "strength", "high_ratio", "close_over_fifty", "close_over_long", "rsi", "volume_ratio", "volatility_month", "depth", "since_high", "tightness", "reward_to_risk", "stretch_days", "gap_days"]),
+        ("The business", ["size", "business_score", "revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change", "cash_over_income", "profit", "coverage", "return_on_assets", "return_on_assets_change", "leverage_fall", "share_fall", "value_place"]),
+        ("Earnings and analysts", ["surprise", "estimate_revision_month", "release_results", "release_outlook", "release_tone", "release_demand"]),
+        ("Insiders, short interest and news", ["insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale", "short_interest_share", "news"]),
+        ("Market and sector", ["sector", "sector_month", "sector_quarter", "breadth", "vix_over_median"]),
+    ];
+
+    public const string OtherFacts = "Other facts";
+
+    static string Grouped(IReadOnlyList<JudgeFactView> facts, string kind, UniverseChoice chosen)
+    {
+        var html = new StringBuilder();
+        var named = FactGroups.SelectMany(group => group.Keys).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var (name, keys) in FactGroups.Append((OtherFacts, [])))
+        {
+            var held = name == OtherFacts
+                ? facts.Where(fact => !named.Contains(fact.Key)).ToArray()
+                : facts.Where(fact => keys.Contains(fact.Key, StringComparer.Ordinal)).ToArray();
+
+            if (held.Length > 0)
+            {
+                html.Append($"<p class=\"grp\">{Escaped(name)}</p>").Append(FactTable(held, kind, string.Empty, chosen));
+            }
+        }
+
+        return html.ToString();
+    }
+
+    // Facts as a table of aligned columns: the words, the value, the tenth's bar where it was placed and the comparison.
+    static string FactTable(IEnumerable<JudgeFactView> facts, string kind, string row, UniverseChoice chosen) =>
+        $"<table class=\"judge-facts\" data-facts=\"{kind}\"><colgroup><col class=\"l\"><col class=\"v\"><col class=\"b\"><col class=\"c\"></colgroup><tbody>"
+        + string.Concat(facts.Select(fact => $"<tr class=\"{row}\" data-fact=\"{Escaped(fact.Key)}\"><td class=\"l\">{Escaped(fact.Words)}</td><td class=\"v\">{Escaped(fact.Value)}</td><td class=\"b\">{TenthBar(fact.Tenth, chosen)}</td><td class=\"c\">{Escaped(fact.Comparison ?? string.Empty)}</td></tr>"))
+        + "</tbody></table>";
+
+    // A figure's place among its index's stocks: ten cells, lowest tenth on the left, its own tenth filled; nothing for a
+    // fact that was not placed.
+    public static string TenthBar(int? tenth, UniverseChoice chosen)
+    {
+        if (tenth is not { } held)
+        {
+            return string.Empty;
+        }
+
+        var cells = string.Concat(Enumerable.Range(1, JudgeFacts.Tenths).Select(cell => cell == held ? "<i class=\"on\"></i>" : "<i></i>"));
+
+        return string.Create(CultureInfo.InvariantCulture, $"<div class=\"tenth\" data-tenth=\"{held}\" role=\"img\" aria-label=\"Tenth {held} of {JudgeFacts.Tenths} among the {Escaped(chosen.Name)} stocks, lowest on the left\">{cells}</div>");
+    }
+
+    public static string TenthCaption(UniverseChoice chosen) =>
+        $"Each bar: where the stock sits among the {chosen.Name} stocks, lowest tenth on the left. A fact with no bar is a word, or one figure for every stock of the index.";
+
+    // Tonight's line under the count of marks: the cap, the pick past the cash, and the buy at the open.
+    public static string TonightNote { get; } = string.Create(CultureInfo.InvariantCulture, $"Up to {JudgePrompt.MostPicks} a night in each index. A pick the account has no cash for is shown and marked \"not bought\", so you can see what it missed. Each buys at the next open, at whatever price it opens.");
+
+    public const string TilesLede = "It picks small caps against small caps, mid caps against mid caps and large caps against large caps. Each index has its own account, measured against that index's rules, random picks from the same index and that index's fund.";
+
+    // The three indices' tiles, each its account's return, its trades open and closed and its picks tonight, the index the
+    // page reads marked as showing; each opens the page for its index.
+    static string IndexTiles(IReadOnlyList<JudgeTile> tiles, UniverseChoice chosen)
+    {
+        var html = new StringBuilder("<div class=\"idx-tiles\">");
+
+        foreach (var tile in tiles)
+        {
+            var of = Universes.ByCode(tile.Index) ?? Universes.Large;
+            var showing = of == chosen;
+
+            html.Append(CultureInfo.InvariantCulture, $"<a href=\"{JudgeRoute}?{Universes.Query}={of.Word}\" data-index=\"{Escaped(of.Code)}\"{(showing ? " class=\"on\" aria-current=\"page\"" : string.Empty)}><span>{Escaped(of.Name)}, {Escaped(of.Cap)}s{(showing ? " (showing)" : string.Empty)}</span><b>{(tile.Return is { } made ? Figures.Share(made) : "Not started")}</b><span>{tile.Open} open · {tile.Closed} closed · picked {tile.Tonight} tonight</span></a>");
+        }
+
+        return html.Append("</div>").ToString();
+    }
+
+    // The picker's own rules for the index the page reads: none yet on any index.
+    public const string NoOwnRule = "No rule of its own yet.";
+
+    public static string OwnRulesLede(UniverseChoice chosen) =>
+        $"Rules the AI stock picker writes from the {chosen.Possessive} 2005 to 2018, each tested by code and kept only if it held up. Each index keeps its own rules.";
+
+    static string OwnRules(UniverseChoice chosen) =>
+        $"<p class=\"empty\" data-rules=\"none\" data-summary>{Escaped(NoOwnRule)} Each rule code keeps for the {Escaped(chosen.Name)} will show here as a row that unfolds into five tabs: How it chooses, Why each step, How it did, Example trades and What changed.</p>";
+
+    // The size of company an index holds as a word before a noun.
+    static string CapWord(UniverseChoice chosen) => chosen.Cap.Replace(' ', '-');
 
     public const string JudgeBeforeNamed = "Made before the picker named its facts: everything it saw";
 
@@ -388,9 +571,6 @@ public sealed partial class SinglePageApp
             { } held => $"Bought on {Day(held.Bought)} at ${Figures.Price(held.Paid)} and still open in {account}.",
         };
     }
-
-    static string FactItem(JudgeFactView fact, string kind) =>
-        $"<li class=\"{kind}\"><span>{Escaped(fact.Words)}</span><b>{Escaped(fact.Value)}</b>{(fact.Comparison is { } said ? $"<span class=\"cmp\">{Escaped(said)}</span>" : string.Empty)}</li>";
 
     static string SizeWords(string? size) => size switch
     {

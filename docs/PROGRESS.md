@@ -21526,3 +21526,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1716 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open.
+
+### 24.25 - the picker's page built from the approved mockup: three index tiles, tonight one pick at a time, each fact's tenth, its own rules   2026-11-22
+
+Queue:      done, 24.0 to 24.24 and the 24.4 correction, 24.19 done, its correction open; in progress, 24.25; next, 24.26,
+            the notebook, the grammar and the one tester.
+Ruled:      the operator's approval of 2026-11-22 of `prompts/2026-11-22-ai-stock-picker-page-mockup.html`, kept word for
+            word as Appendix Z of the plan's file. No new decision.
+Built:      the picker's page opens on three tiles, one for each index's account in the selector's order: its return since
+            its first session, "Not started" before it has bought; its trades open and closed; its picks tonight; the index
+            read marked showing and each tile opening its index's page. Tonight's picks stand one at a time: a chip for each
+            in rank order, a pick past the cash marked on its chip, the place and the arrows of the pick shown, all chosen by
+            radio inputs so they work with no script. Each card has two tabs, "Why it picked it" and "The plan": the first
+            holds the sentence and the facts it named in a table of aligned columns, each with a bar of ten cells filling the
+            tenth its figure stood in among its index's stocks as the night stored it, and everything else it saw folded
+            under its count and grouped by kind; the second holds the plan as one ladder, the risk against the reward and the
+            record. A region for the picker's own rules reads "No rule of its own yet" on each index. The scoreboard, the four
+            accounts and where it looked stand as they were. An earlier version's and a fixed 5's cards take the same tabs.
+            Section 15.26's Reads and four rows, the guide and the changelog.
+Measured:   read back over a constructed store of three indices, migrated fresh in the scratchpad and never the operator's,
+            at 1440 and a true 390 in both palettes, with a pick's plan tab opened at 390: no page wider than its screen, 390
+            of 390 and 1425 of 1425. The first read-back drew the empty cells of each bar in the dark palette in the card's own
+            colour, so only the filled cell showed; they now take a share of the ink and show in both.
+Tests:      2 new: each named fact's bar filling the tenth worked by hand among its own index's members alone, a fact shown
+            none of and a word drawing no bar, and everything else grouped in the groups' order with every field in one
+            group; and the three tiles, the carousel's chips, arrows and tabs and each index's own rules over the same store.
+            Four tests read the new markup in place of the old.
+Claims:     1705, four of the plan's three: where each fact stands a row of its own beside the carousel's.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each property's own effect taken out at its one site. m1 the bar filling the cell
+            before its tenth: red, 8 drawn for 9; m2 the facts placed among the three indices together: red, 10 drawn for 9;
+            m3 the own rules' line taken out: red; m4 the showing mark on every tile but the one read: red; m5 a pick past the
+            cash unmarked on its chip: red; m6 the groups in reverse order: red. Each filtered to its test and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3947 of 3947 tests ran with none failed, migrations 0 to 160 with none
+            pending, schema version 160, against `data-ci` and never `data`; the phase report 68 tables, 1705 claims, 1705
+            passing, none out of scope and none unexamined, 1720 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open.

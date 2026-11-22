@@ -3233,7 +3233,7 @@ static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> c
 // it without the rules' accounts, which it does not draw. From 24.24 worked for one index: its members, its live rules and
 // its fund alone.
 // see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
-async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, UniverseChoice within, bool withRules = true, DateOnly? drawnNight = null)
+async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, UniverseChoice within, bool withRules = true, DateOnly? drawnNight = null, bool tiles = false)
 {
     var settings = (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example;
     var runs = await read.JudgeRunsAsync();
@@ -3274,7 +3274,22 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     decimal? RoundTrip(string ticker, DateOnly night, decimal buy) =>
         costs.TryGetValue((ticker, night), out var percent) ? EquityBrief.Core.Cards.PaperAccount.RoundTripOf(buy, null, null, null, percent, true, null) : null;
 
-    return JudgeScreen.Build(within.Code, runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip, drawnNight: drawnNight);
+    var view = JudgeScreen.Build(within.Code, runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip, drawnNight: drawnNight);
+
+    // The page's three index tiles: the chosen index's from its own view, and each other index's account worked the same
+    // way with no random account, rule or fund, which its tile does not draw.
+    // see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
+    if (!tiles)
+    {
+        return view;
+    }
+
+    return view with
+    {
+        Tiles = [.. Universes.Offered.Select(universe => universe == within
+            ? view.Tiles[0]
+            : JudgeScreen.Build(universe.Code, runs, picks, bars, typicals, members, [], [], [], settings, RoundTrip, draws: 0).Tiles[0])],
+    };
 }
 
 async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)
@@ -3903,7 +3918,7 @@ app.MapGet("/screens/judge", async (HttpRequest request, ReadApi read, SinglePag
     var within = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.JudgeRoute) : string.Empty;
 
-    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within), selector), "text/html; charset=utf-8");
+    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within, tiles: true), selector), "text/html; charset=utf-8");
 });
 
 // From 24.17 the case for promotion under the Improvement loop: every running revision on each index against its variants over
