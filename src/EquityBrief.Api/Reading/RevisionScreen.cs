@@ -40,7 +40,7 @@ public static class RevisionScreen
                     ? account.Key
                     : account.Revisions.LastOrDefault(revision => revision.From <= placed) is { } earlier ? EarlierKey(account.Key, earlier.Number) : account.Key;
 
-            string RevisionAt(DateOnly placed) => PaperScreen.VersionAt(account.Revisions, placed);
+            string RevisionAt(DateOnly placed) => PaperBooks.VersionAt(account.Revisions, placed);
 
             foreach (var row in rows)
             {
@@ -141,12 +141,12 @@ public static class RevisionScreen
     public static IReadOnlyList<NameTradeView> NameTrades(string ticker, IReadOnlyList<PlannedTradeRow> planned, IReadOnlyList<CandidateRow> register, bool large, string indexName, DateOnly night, decimal? close)
     {
         var rows = new List<NameTradeView>();
-        using var reading = PaperScreen.ReadingNight(night);
+        using var reading = PaperBooks.ReadingNight(night);
 
         foreach (var row in planned.Where(one => one.Live && one.Ticker == ticker && one.Listed <= night && !one.NotFilled && (one.Fill is null || one.EndedOn is null)).GroupBy(one => (one.Family, one.Listed)).Select(group => group.First()))
         {
             var lineage = RuleRegister.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
-            var revision = PaperScreen.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
+            var revision = PaperBooks.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
             var waiting = row.Fill is null;
             var stop = PlanScreen.StopOf(row);
             var take = PlanScreen.TakeProfitOf(row);

@@ -33,11 +33,11 @@ public partial class ReadSurface
 
         // The flagged version marked with 2025, the cutoff of 2025-01-31's year, and not with the tone variant's sentence;
         // the two asking no flag unmarked; and with no cutoff stated none is marked with a year.
-        var toned = PaperScreen.Toned(sources, register, new DateOnly(2025, 1, 31));
+        var toned = PaperBooks.Toned(sources, register, new DateOnly(2025, 1, 31));
 
         Assert.Equal([null, 2025, null], toned.Select(source => source.JudgedFrom));
         Assert.All(toned, source => Assert.False(source.ReadsReleases));
-        Assert.All(PaperScreen.Toned(sources, register), source => Assert.Null(source.JudgedFrom));
+        Assert.All(PaperBooks.Toned(sources, register), source => Assert.Null(source.JudgedFrom));
 
         RuleTestRow Test(string rule, string standing, int better, int counted) =>
             new("loop-rules-MID", "2026-11", "improving", rule, standing, rule, "the live Fundamentals rule", "points", 21, 7, 1, false, false, counted, better, -0.01, false, false, null);
@@ -47,7 +47,7 @@ public partial class ReadSurface
             Test("the Fundamentals rule, a flag first", PaperAccountView.Variant, 0, 1),
             Test("the Fundamentals rule, held at 6", PaperAccountView.Variant, 1, 4),
         ];
-        var views = PaperScreen.Views(toned, tests, [], null, [], new DateOnly(2026, 11, 2), (_, _) => null, _ => null);
+        var views = PaperBooks.Views(toned, tests, [], null, [], new DateOnly(2026, 11, 2), (_, _) => null, _ => null);
         var page = new PaperPageView(views, [], [], [], new PaperNotBought([]), [], null);
         var html = WebUtility.HtmlDecode(new MarkRenderer().PaperScorecard(page, new PaperLink("MID"), "improving"));
 
@@ -61,7 +61,7 @@ public partial class ReadSurface
         Assert.Contains("0 of 1<span class=\"pv-note\" data-judged-from=\"2025\">from 2025 alone; the years before read by a model trained after them</span>", Row("v1"), StringComparison.Ordinal);
         Assert.DoesNotContain("data-judged-from", Row("v2"), StringComparison.Ordinal);
         Assert.Contains("1 of 4", Row("v2"), StringComparison.Ordinal);
-        Assert.DoesNotContain(PaperScreen.ToneNote, html, StringComparison.Ordinal);
+        Assert.DoesNotContain(PaperBooks.ToneNote, html, StringComparison.Ordinal);
         Assert.Equal(1, html.Split("data-judged-from").Length - 1);
     }
 }

@@ -16,6 +16,10 @@ public static class RuleRegister
     // night is read on no night before it.
     public static DateTimeOffset PastTheNight(DateOnly night) => new(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
+    // A rule's name as a key a page's link and an account carry: lower case, each run of other characters one hyphen.
+    public static string Slug(string candidate) =>
+        System.Text.RegularExpressions.Regex.Replace(candidate.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+
     // A variant's tab on a card: its number and its one change as a sentence, the setting other than the plan where it
     // differs in more; the same settings where it differs in none.
     // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it

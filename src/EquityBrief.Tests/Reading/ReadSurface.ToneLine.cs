@@ -23,7 +23,7 @@ public partial class ReadSurface
     {
         const string Sentence = "Its history before 2025 does not count: the model that read those releases was trained after them. Its record from today is what counts.";
 
-        Assert.Equal(Sentence, PaperScreen.ToneNote);
+        Assert.Equal(Sentence, PaperBooks.ToneNote);
 
         var registered = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.Zero);
         CandidateRow[] register =
@@ -42,11 +42,11 @@ public partial class ReadSurface
             Source("v2", PaperAccountView.Variant, "the drift rule, its stop held further"),
         ];
 
-        var toned = PaperScreen.Toned(sources, register);
+        var toned = PaperBooks.Toned(sources, register);
 
         Assert.Equal([false, true, false], toned.Select(source => source.ReadsReleases));
 
-        var views = PaperScreen.Views(toned, [], [], null, [], new DateOnly(2026, 10, 30), (_, _) => null, _ => null);
+        var views = PaperBooks.Views(toned, [], [], null, [], new DateOnly(2026, 10, 30), (_, _) => null, _ => null);
         var page = new PaperPageView(views, [], [], [], new PaperNotBought([]), [], null);
         var marks = new MarkRenderer();
         var link = new PaperLink("GSPC");
@@ -93,7 +93,7 @@ public partial class ReadSurface
             Source("pv1", "pullback", PaperAccountView.Variant),
         ];
 
-        var views = PaperScreen.Views(sources, [], [], null, [], new DateOnly(2026, 10, 30), (_, _) => null, _ => null);
+        var views = PaperBooks.Views(sources, [], [], null, [], new DateOnly(2026, 10, 30), (_, _) => null, _ => null);
         var page = new PaperPageView(views, [], [], [], new PaperNotBought([]), [], null);
         var marks = new MarkRenderer();
         var link = new PaperLink("GSPC");

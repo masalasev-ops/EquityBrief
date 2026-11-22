@@ -2712,7 +2712,7 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             ticker => accounts.Standings?.GetValueOrDefault(ticker),
             link.Show,
             variants,
-            PaperScreen.Fund(reading.Code),
+            PaperBooks.Fund(reading.Code),
             accounts.Fund ?? (_ => null),
             accounts.Combined,
             accounts.Books)
@@ -3126,7 +3126,7 @@ async Task<IResult> HomeAsync(
             combined.Walk.Return,
             fund,
             progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed),
-            PaperScreen.Fund(reading.Code),
+            PaperBooks.Fund(reading.Code),
             combined.Since);
     }
 
@@ -3204,7 +3204,7 @@ async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Pro
     // From the 23.10 correction of 2026-11-13 an order no price filled counts toward no rule's record.
     // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var planned = await read.PlannedTradesAsync(reading.Code, night);
-    var sources = PlanScreen.Accounts(PaperScreen.Accounts(
+    var sources = PlanScreen.Accounts(PaperBooks.Accounts(
         large,
         reading.Name,
         night,
@@ -3212,7 +3212,7 @@ async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Pro
         indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings),
         await read.PaperRowsAsync(reading.Code),
         large ? PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [],
-        PaperScreen.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code),
+        PaperBooks.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code),
         large ? await read.FamilyReplaysAsync() : [],
         TonightScreen.ReadAsOf(indexNight, night)), planned);
 
@@ -3278,7 +3278,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
                 .Select(one => (one.Trade.Ticker, one.Trade.Bought, EquityBrief.Core.Judge.JudgeAccounts.ResultOf(one.Trade))));
         }
 
-        var fund = nights.Length == 0 ? new Dictionary<DateOnly, decimal>() : await read.FundClosesAsync(PaperScreen.Fund(universe.Code), first);
+        var fund = nights.Length == 0 ? new Dictionary<DateOnly, decimal>() : await read.FundClosesAsync(PaperBooks.Fund(universe.Code), first);
 
         funds.Add(session => fund.TryGetValue(session, out var close) ? close : null);
     }
@@ -3304,7 +3304,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     // The register read as the night's page reads it, as of the instant a night run again read it at, on the S&P 500 off
     // its own index's night as on the S&P 400 and 600.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    var sources = PlanScreen.Accounts(PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night)), planned);
+    var sources = PlanScreen.Accounts(PaperBooks.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperBooks.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night)), planned);
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
@@ -3318,17 +3318,17 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         .Distinct(StringComparer.Ordinal).ToArray();
     var closes = await read.ClosesAsync(tickers, earliest);
 
-    sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
+    sources = PaperBooks.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
 
     // From 21.9 a rule standing at the graded exposure sizes a night's trades at half where its exposure held one switch.
     // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
-    sources = PaperScreen.Halved(sources, register, await read.ExposureNightsAsync(reading.Code, PaperScreen.ExposedNights(sources, register)));
+    sources = PaperBooks.Halved(sources, register, await read.ExposureNightsAsync(reading.Code, PaperBooks.ExposedNights(sources, register)));
 
     // From 21.14 the drift's tone variant carries the line saying its history before the local model's cutoff does not count,
     // and from 21.17 a Fundamentals rule asking a flag first too, each with the cutoff's year its verdict is judged from.
-    sources = PaperScreen.Toned(sources, register, await read.ModelCutoffAsync());
+    sources = PaperBooks.Toned(sources, register, await read.ModelCutoffAsync());
 
-    var fund = await read.FundClosesAsync(PaperScreen.Fund(reading.Code), from);
+    var fund = await read.FundClosesAsync(PaperBooks.Fund(reading.Code), from);
     var (tests, years) = await read.RuleTestsAsync(reading.Code);
     var sessions = await read.SessionsFromAsync(earliest);
     var stocks = await read.PaperStocksAsync(tickers, night);
@@ -3337,7 +3337,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
 
     decimal? Fund(DateOnly session) => fund.TryGetValue(session, out var close) ? close : null;
 
-    var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
+    var views = PaperBooks.Views(sources, tests, years, settings, sessions, night, Close, Fund);
     var standings = await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks);
     var stillWaiting = PlanScreen.StillWaiting(planned, night);
 
@@ -3392,7 +3392,7 @@ async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi re
         var last = heavy.Trades.Select(one => (DateOnly?)one.Trade.ListedOn).Max();
         var next = last is null ? null : EquityBrief.Core.Families.HeavyweightRule.NextRebalance(night, last, settings);
 
-        lines[heavy.Family] = new PaperBookLine(PaperScreen.HeavyweightSells(settings.SoldUnderAverage, next), standings);
+        lines[heavy.Family] = new PaperBookLine(PaperBooks.HeavyweightSells(settings.SoldUnderAverage, next), standings);
     }
 
     if (heads.Any(account => account.Family == EquityBrief.Core.Families.QualityRule.Name))
@@ -3400,7 +3400,7 @@ async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi re
         var card = await QualityCardAsync(read, reading.Code, night, new Dictionary<string, UniverseCell>(StringComparer.Ordinal));
 
         lines[EquityBrief.Core.Families.QualityRule.Name] = new PaperBookLine(
-            PaperScreen.QualitySells(card.NextReshuffle),
+            PaperBooks.QualitySells(card.NextReshuffle),
             card.Cells.ToDictionary(cell => cell.Ticker, cell => cell.Tonight, StringComparer.Ordinal));
     }
 
@@ -3410,8 +3410,8 @@ async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi re
         var setting = TonightScreen.SettingOf((await read.ImprovingNightAsync(reading.Code, night, rule))?.Settings);
 
         lines[EquityBrief.Core.Families.ImprovingRule.Name] = new PaperBookLine(
-            PaperScreen.FundamentalsSells(setting.HoldInNine, setting.Sessions),
-            (await read.ImprovingResultsAsync(reading.Code, night, rule)).ToDictionary(row => row.Ticker, row => PaperScreen.FundamentalsTonight(row.PassedChecks, row.Applied, setting.HoldInNine), StringComparer.Ordinal));
+            PaperBooks.FundamentalsSells(setting.HoldInNine, setting.Sessions),
+            (await read.ImprovingResultsAsync(reading.Code, night, rule)).ToDictionary(row => row.Ticker, row => PaperBooks.FundamentalsTonight(row.PassedChecks, row.Applied, setting.HoldInNine), StringComparer.Ordinal));
     }
 
     return lines;

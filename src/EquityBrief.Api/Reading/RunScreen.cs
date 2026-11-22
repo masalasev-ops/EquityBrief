@@ -1696,8 +1696,7 @@ public static class RunScreen
     }
 
     // A version's name as a link carries it: its words in lower case with every run of anything else one dash.
-    public static string Slug(string candidate) =>
-        Regex.Replace(candidate.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+    public static string Slug(string candidate) => RuleRegister.Slug(candidate);
 
     // The settings a candidate was registered with, read from its register row.
     static IReadOnlyDictionary<string, double> Settings(string parameters)

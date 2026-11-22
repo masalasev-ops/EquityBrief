@@ -576,7 +576,7 @@ public partial class ReadSurface
             Held(After, "NEW", new DateOnly(2026, 11, 11)),
         ];
 
-        var sources = PaperScreen.Accounts(true, "S&P 500", night, register, null, rows, [], []);
+        var sources = PaperBooks.Accounts(true, "S&P 500", night, register, null, rows, [], []);
         var head = sources.Single(account => account.Family == QualityRule.Name && account.Standing == PaperAccountView.Live);
         var groups = TradeGroups.Of(sources, night, (_, _) => 110m, register, "GSPC", QualityRule.Name);
 
@@ -592,9 +592,9 @@ public partial class ReadSurface
         // Each named by the version that listed it: BEFORE and SHUT before the family's first registration, AFTER by the
         // earlier words' registration of 25 Oct; and the stock's page naming the earlier version that holds it.
         Assert.Equal(
-            [("AFTER", "Revision 1"), ("BEFORE", PaperScreen.BeforeRegistration), ("SHUT", PaperScreen.BeforeRegistration)],
+            [("AFTER", "Revision 1"), ("BEFORE", PaperBooks.BeforeRegistration), ("SHUT", PaperBooks.BeforeRegistration)],
             (head.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Version)).OrderBy(one => one.Ticker, StringComparer.Ordinal));
-        Assert.Equal(PaperScreen.BeforeRegistration, Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).Version);
+        Assert.Equal(PaperBooks.BeforeRegistration, Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).Version);
         Assert.True(Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).BeforeFirstRegistration);
         Assert.False(Assert.Single(TradeGroups.EarlierHoldings(sources, "AFTER", night)).BeforeFirstRegistration);
         Assert.Contains("An earlier version of", Assert.Single(TradeGroups.EarlierHoldings(sources, "AFTER", night)).Words("Quality at a fair price"), StringComparison.Ordinal);
@@ -622,9 +622,9 @@ public partial class ReadSurface
 
         Assert.Contains(
             ">An earlier version of Quality at a fair price still holds this stock, bought on 26 Oct 2026, before the rule was first registered. It counts among the system's trades and not toward this version's verdict.</p>",
-            Line(QualityRule.Name, PaperScreen.BeforeRegistration, before: true),
+            Line(QualityRule.Name, PaperBooks.BeforeRegistration, before: true),
             StringComparison.Ordinal);
-        Assert.DoesNotContain("under before", Line(QualityRule.Name, PaperScreen.BeforeRegistration, before: true), StringComparison.Ordinal);
+        Assert.DoesNotContain("under before", Line(QualityRule.Name, PaperBooks.BeforeRegistration, before: true), StringComparison.Ordinal);
     }
 
     [Fact]

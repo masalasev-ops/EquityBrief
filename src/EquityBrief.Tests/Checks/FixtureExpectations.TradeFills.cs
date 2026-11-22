@@ -229,7 +229,7 @@ public partial class FixtureExpectations
             new("list pullback", "pullback", "BBB", new DateOnly(2026, 10, 5), 1, 100, 95, new DateOnly(2026, 10, 7), 1.6, false, null, null, 101, new DateOnly(2026, 10, 6), 101),
         ];
 
-        var account = EquityBrief.Api.Reading.PaperScreen.Accounts(false, "S&P 400", night, [], null, rows, [], []).Single(one => one.Family == "pullback" && one.Standing == PaperAccountView.Provisional);
+        var account = PaperBooks.Accounts(false, "S&P 400", night, [], null, rows, [], []).Single(one => one.Family == "pullback" && one.Standing == PaperAccountView.Provisional);
 
         // The start is the first night the list kept a trade, as it was before entries moved to the open.
         Assert.Equal(first, account.Since);
