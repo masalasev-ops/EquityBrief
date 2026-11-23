@@ -42,7 +42,7 @@ public partial class PlainWords
         (TonightPage, "22.6", ["market-strip", "one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "quality", "improving", "words"], true),
         (FundamentalsPage, "22.8", ["chart-page-fundamentals", "fundamentals"], false),
         (PaperPage, "21.13", ["account", "paper-chart", "paper-revision", "paper-variants", "paper-scorecard", "paper-yours"], true),
-        (LoopPage, "21.13", ["loop-none", "loop-headline", "loop-passed", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm", "loop-long", "loop-survivors", "loop-research", "loop-notebook", "loop-ranges", "loop-idea-box"], true),
+        (LoopPage, "21.13", ["loop-none", "loop-headline", "loop-passed", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm", "loop-long", "loop-survivors", "loop-research", "loop-notebook", "loop-ranges", "loop-idea-box", "loop-stuck"], true),
         (LedgerPage, "21.13", ["ledger-none", "ledger-pullback", "ledger-breakout", "ledger-drift", "ledger-dip", "ledger-heavyweight", "ledger-quality", "ledger-improving", "ledger-fundamentals", "ledger-path", "reading-links", "release-answers"], true),
         (JudgePage, "24.6", ["judge-lede", "judge-score", "judge-chart", "judge-picks", "judge-looked", "judge-replayed"], true),
     ];

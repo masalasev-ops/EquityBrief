@@ -453,9 +453,9 @@ public partial class ArchitectureConformance
         // Promote whose variant no longer stands, and 1701 with the picker within each index's section 17 and 18 rows and its
         // page's four, and 1705 with the picker's page from its mockup, and 1712 with the notebook, the grammar and the one
         // tester, and 1721 with the survivors, and 1729 with the researcher, and 1730 with the earlier version's picks, and
-        // 1736 with the buy range, and 1743 with the idea box.
+        // 1736 with the buy range, and 1743 with the idea box, and 1745 with never stuck.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1743),
+            (789, 853, 6, 4, 855, 876, 1745),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

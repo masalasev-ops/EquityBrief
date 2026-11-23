@@ -184,6 +184,9 @@ public partial class FixtureExpectations
             // Section 18's row of an idea the box cannot read.
             .. IdeaBoxClaims,
 
+            // Section 18's row of a month in which no idea passes.
+            .. NeverStuckClaims,
+
             // 24.24: section 17's row of the picker within each index and section 18's row of a night with no stock marked.
             .. JudgeIndexClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.

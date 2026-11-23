@@ -250,6 +250,9 @@ public partial class ArchitectureConformance
 
         // And the idea box: its worker's catalogue and matrix rows, its three stores, section 18's row and the Loop page's card.
         .. FixtureExpectations.IdeaBoxRows,
+
+        // And never stuck: the Loop page's card and section 18's row.
+        .. FixtureExpectations.NeverStuckRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported
