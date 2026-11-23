@@ -71,6 +71,41 @@ public sealed record JudgeFactView(string Words, string Value, string? Compariso
         Signed.TryGetValue(key, out var words) && value.Length > 0
             ? value[0] == '+' ? words.Up : value[0] == '-' ? words.Down : null
             : null;
+
+    // The page's own label where the stored one does not say what the reading measures, the stored text kept as the
+    // picker was shown it.
+    static readonly Dictionary<string, string> Labels = new(StringComparer.Ordinal)
+    {
+        ["share_fall"] = "Share count against a year before",
+    };
+
+    public static string LabelOf(string key, string words) => Labels.TryGetValue(key, out var own) ? own : words;
+
+    // The fields whose value is a change, which reads "no change" where it rounds to nothing.
+    static readonly HashSet<string> Changes = new(StringComparer.Ordinal)
+    {
+        "return_month", "return_quarter", "return_twelve_less_one", "estimate_revision_month", "revenue_growth", "growth_change",
+        "gross_margin_change", "operating_margin_change", "return_on_assets_change", "sector_month", "sector_quarter", "share_fall",
+    };
+
+    public const string NoChange = "no change";
+
+    // A fact's value as the page draws it from the text the picker was shown: a unit of one in the singular; a change that
+    // rounds to nothing "no change" and any other zero with no sign; and the share count's change as fewer or more shares,
+    // since the reading is higher where the shares fell.
+    public static string ValueOf(string key, string shown)
+    {
+        var value = System.Text.RegularExpressions.Regex.Replace(shown, @"(?<![\d.])([+-]?1(?:\.0)?) (point|trading day|insider|typical daily move)s\b", "$1 $2");
+
+        if (System.Text.RegularExpressions.Regex.IsMatch(value, @"^[+-]?0(?:\.0+)?(?:%| points?)$"))
+        {
+            return Changes.Contains(key) ? NoChange : value.TrimStart('+', '-');
+        }
+
+        return key == "share_fall" && System.Text.RegularExpressions.Regex.Match(value, @"^([+-])(\d+(?:\.\d+)?)%$") is { Success: true } share
+            ? share.Groups[2].Value + (share.Groups[1].Value == "+" ? "% fewer" : "% more")
+            : value;
+    }
 }
 
 // One index's tile of the picker's accounts: the index, its account's return since its first session, none before it holds
@@ -403,13 +438,14 @@ public sealed partial class SinglePageApp
     public const string PlanTab = "The plan";
 
     // Why it picked it: its sentence in quotes, the facts it named each with where it stands among its index's stocks, and
-    // the rest of what it saw folded and grouped; a pick made before it named its facts shows everything it saw, grouped.
+    // the rest of what it saw folded and grouped; a pick made before it named its facts folds everything it saw, grouped,
+    // under its count.
     static string WhyPanel(JudgeCardView pick, UniverseChoice chosen)
     {
         var html = new StringBuilder();
 
         html.Append($"<p class=\"facts-h\">{Escaped(WhyTab)}</p>");
-        html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as your local model wrote it.</small></p>");
+        html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\" <small>Its sentence, as your local model wrote it.</small></p>");
 
         if (pick.Named is { } named)
         {
@@ -420,8 +456,7 @@ public sealed partial class SinglePageApp
         }
         else
         {
-            html.Append($"<p class=\"facts-h\" data-facts=\"before\">{Escaped(JudgeBeforeNamed)}</p>");
-            html.Append(Grouped(pick.Rest, "sheet", chosen));
+            html.Append(CultureInfo.InvariantCulture, $"<details class=\"all-facts\" data-facts=\"before\"><summary>{Escaped(BeforeNamedWords(pick.Rest.Count))}</summary>").Append(Grouped(pick.Rest, "sheet", chosen)).Append("</details>");
         }
 
         return html.ToString();
@@ -551,7 +586,11 @@ public sealed partial class SinglePageApp
     // The size of company an index holds as a word before a noun.
     static string CapWord(UniverseChoice chosen) => chosen.Cap.Replace(' ', '-');
 
-    public const string JudgeBeforeNamed = "Made before the picker named its facts: everything it saw";
+    public const string JudgeBeforeNamed = "made before the picker named its facts";
+
+    // The fold of a pick made before the picker named its facts: everything it saw, counted.
+    public static string BeforeNamedWords(int facts) =>
+        string.Create(CultureInfo.InvariantCulture, $"Everything it saw ({facts} facts): {JudgeBeforeNamed}");
 
     // What an earlier version's account did with a pick: waiting for its open, skipped and why, bought and still open, or
     // bought and sold with its result per $1 risked.

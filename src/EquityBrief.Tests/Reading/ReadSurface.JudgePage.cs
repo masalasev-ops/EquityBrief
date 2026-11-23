@@ -100,7 +100,7 @@ public partial class ReadSurface
         Assert.Contains("The AI stock picker's large-cap picks tonight (2)", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"judge-rank\">Pick 1 of 2 tonight, S&P 500</div><div class=\"home-ticker\">", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as your local model wrote it.</small></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\" <small>Its sentence, as your local model wrote it.</small></p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"judge-saw\">It saw: Industrials, a large company. No name, ticker or date.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close $100.00.</span>", page, StringComparison.Ordinal);
         Assert.Contains("The prices are worked from the last close until it is bought, then again from the price it actually paid.", page, StringComparison.Ordinal);
@@ -339,14 +339,15 @@ public partial class ReadSurface
         Assert.Contains("<tr class=\"\" data-fact=\"gap_days\"><td class=\"l\">Gap up into the night</td><td class=\"v\">not on file</td>", bbb, StringComparison.Ordinal);
         Assert.DoesNotContain(SinglePageApp.JudgeBeforeNamed, bbb, StringComparison.Ordinal);
 
-        // CCC, picked with no facts stored: its sentence, then its whole sheet under the mark, nothing folded.
+        // CCC, picked with no facts stored: its sentence, then its whole sheet folded under its count and the mark.
         var ccc = Blocks(page, "<article class=\"home-idea judge-card\" data-ticker=\"CCC\">.*?</article>").Single();
+        var sheet = JudgeFacts.In(JudgeRound.Sheet).Count();
 
         Assert.Contains("\"Picked before the facts were stored.\"", ccc, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"facts-h\" data-facts=\"before\">{SinglePageApp.JudgeBeforeNamed}</p>", ccc, StringComparison.Ordinal);
+        Assert.Contains($"<details class=\"all-facts\" data-facts=\"before\"><summary>Everything it saw ({sheet} facts): made before the picker named its facts</summary>", ccc, StringComparison.Ordinal);
         Assert.Contains("<tr class=\"\" data-fact=\"rsi\"><td class=\"l\">Momentum (RSI)</td><td class=\"v\">40 of 100</td>", ccc, StringComparison.Ordinal);
         Assert.DoesNotContain("data-facts=\"named\"", ccc, StringComparison.Ordinal);
-        Assert.DoesNotContain("<details", ccc, StringComparison.Ordinal);
+        Assert.Single(Blocks(ccc, "<details"));
 
         // The record counts the version of 20 Nov alone: AAA's closed trade is not in it, and the page says from when; from
         // the 24.14 correction AAA's trade stands in version 1's own account apart.
