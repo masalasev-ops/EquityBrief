@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/RUNBOOK.md - a provider row no snapshot and no name dates, at a correction to the 24.19 correction
+Decision: A provider span no snapshot and no name dates continues its code's latest dated span ending by its own end
+Was:
+> RUNBOOK.md: "and a code the provider dates twice reads as one span (see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index). Whether every current member's long history reaches its newest bar is read"
+Now:
+> RUNBOOK.md: the same, with "a row of it no snapshot and no name dates continuing its latest dated span" and its citation
+Why: WAB, a member tonight, read as no S&P 500 span once the spans were written again on the live store, its undated row taking its dated one into it.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - renames in one ratio and the spans the nights' own, at the 24.19 correction
 Decision: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
 Decision: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index

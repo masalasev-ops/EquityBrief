@@ -22133,3 +22133,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the lists before the store run; the fetch's list and call count to the operator, holding only the real gaps; the
             spans written again before the table's store run; cause D and the table's missing rows traced over the copy.
+
+### 24.19 - correction: a provider row no snapshot and no name dates continues its code's dated span   2026-11-23
+
+Queue:      done, the 24.19 correction's second part, merged as PR 765; in progress, this correction to it; next, the
+            spans written again on the live store, 24.35's S&P 400 and 600 half, then the fetch's list and the one pin
+            move's statement to the operator.
+Corrects:   the 24.19 correction's second part. `long-prices --spans` on the live store after its merge wrote 5,109 spans
+            again as 5,120, and `--behind` then named one member where it had named 14, 18 and 37: WAB, holding no S&P 500
+            span. The provider closed WAB on 2026-11-13 and listed it again in a row with no start date; no IVV snapshot holds
+            it, since it joined in 2019, and no name dates it, and the second part's reading of a code's rows that overlap or
+            meet as one took its dated row of 2019-02-27 to 2026-11-13 into the undated one, leaving the two with no start.
+            One decision made here.
+Built:      a provider row no snapshot and no name dates starts where its code's latest dated span ending by its own end
+            stops, so the two meet and read as one; a row a snapshot or a name dates, and a row of a code with no dated span
+            ending by its end, read as before.
+Measured:   on the live store, read only: 193 provider rows of the S&P 500 carry no start. The codes among them that no IVV
+            snapshot holds and that carry a dated row as well are AMCR, EXE, IR, KDP, LUMN, MRP, MRP_old, PARA, RAL, RAL_old,
+            TMUS and WAB; of these a dated span ends by the undated row's end for IR, LUMN, MRP, MRP_old, PARA, RAL, RAL_old
+            and WAB, the rows this correction can move where no name dates them.
+Tests:      none new; the provider rows' test gains a code closed and listed again with no start, read as one span from
+            its dated start with no end, by hand.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: the guard this correction adds taken out at its one site. m1 an undated row no
+            snapshot and no name dates left undated: red, the code read as no span. Filtered to its test and reverted
+            before anything was committed.
+Claims:     1752, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3996 of 3996 tests ran with none failed, migrations 0 to 167 with
+            none pending, schema version 167, against `data-ci` and never `data`; the phase report 68 tables, 1752 claims, 1752
+            passing, none out of scope and none unexamined, 1767 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the spans written again on the live store after the merge and `--behind` read again; the rest as the second
+            part carried it.

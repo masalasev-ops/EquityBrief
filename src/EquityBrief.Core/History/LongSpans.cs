@@ -15,8 +15,9 @@ public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Lef
 // there, one away at two snapshots or more reads as two spans; a code two funds hold at one quarter end reads in the larger
 // index. Before 2012 the S&P 500 reads IVV's snapshots, and from 2012 the provider's dates, or from the day after IVV's last
 // schedule where the prices' count of the two sets them more than its margin apart, a span with no start date taking
-// the first snapshot holding its company, read by its code and where no snapshot holds the code by its name; a code's own
-// provider spans that overlap or meet are one span; two spans the provider files under two codes with one name as written
+// the first snapshot holding its company, read by its code and where no snapshot holds the code by its name, and where neither
+// does, from the end of its code's latest dated span ending by its own end; a code's own provider spans that overlap or meet
+// are one span; two spans the provider files under two codes with one name as written
 // and the same dates are one company's and read as the first code, two classes of shares never. From the first night that
 // read the S&P 400's or 600's members, that index's spans are the nights' own.
 // see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
@@ -92,7 +93,25 @@ public static class LongSpans
             var ivv = snapshots.GetValueOrDefault("GSPC") ?? new Dictionary<DateOnly, IReadOnlySet<string>>();
             DateOnly[] periods = [.. ivv.Keys.Order()];
 
+            DateOnly? Dated(ProviderSpan span) =>
+                span.Joined
+                ?? periods.Where(period => ivv[period].Contains(span.Ticker)).Select(period => (DateOnly?)period).FirstOrDefault()
+                ?? (span.Name is { } name && firstHeldByName?.TryGetValue(HoldingMatcher.NameKey(name), out var held) == true ? held : null);
+
+            // A span no snapshot and no name dates continues its code's latest dated span ending by its own end, so a code the
+            // provider closed and listed again with no start reads as one span.
+            // see: A provider span no snapshot and no name dates continues its code's latest dated span ending by its own end
+            ProviderSpan Continued(ProviderSpan span) =>
+                Dated(span) is not null ? span : span with
+                {
+                    Joined = provider
+                        .Where(other => other.Ticker == span.Ticker && other.Joined is not null && other.Left is { } ended && !(span.Left < ended))
+                        .Select(other => other.Left)
+                        .Max(),
+                };
+
             var once = provider
+                .Select(Continued)
                 .GroupBy(span => span.Ticker, StringComparer.Ordinal)
                 .SelectMany(Runs)
                 .Where(span => !(span.Left <= cutover))
@@ -101,9 +120,7 @@ public static class LongSpans
 
             foreach (var span in once)
             {
-                var first = span.Joined
-                    ?? periods.Where(period => ivv[period].Contains(span.Ticker)).Select(period => (DateOnly?)period).FirstOrDefault()
-                    ?? (span.Name is { } name && firstHeldByName?.TryGetValue(HoldingMatcher.NameKey(name), out var held) == true ? held : null);
+                var first = Dated(span);
 
                 if (first is { } joined)
                 {
