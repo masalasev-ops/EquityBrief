@@ -21791,9 +21791,9 @@ Measured:   read back over the C: copy of the store, which holds the night of 20
             stand in the scratchpad's `picker-index-before` and `picker-index-after`; those after the Monday night follow it.
 Tests:      2 new: a store where only the earlier version picked, every tile and every tonight not started, the five once in
             their own region each naming its index, folded once all are sold; and one where each index's version picked, each
-            index showing its own alone with the tile and heading counting the same. Six older tests stored their nights with
-            no index, the earlier version's shape, and gained their index; two read their cards in tonight's region, the
-            index's "fixed 5" drawing them too.
+            index showing its own alone with the tile and heading counting the same. Seven older tests stored their nights with
+            no index, the earlier version's shape, and gained their index; three read their cards outside the index's "fixed
+            5", which draws them too.
 Claims:     1730, one new: the row of the earlier version's picks.
 Pins:       none moved.
 Mutated:    the rule, stated before the run: each guard the correction adds taken out at its one site. m1 a run with no index
