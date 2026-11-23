@@ -2721,7 +2721,8 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 - about 6 at 24.36, the reviewer's catalogue and matrix rows, its store, its step and the card's row;
 - about 6 at 24.37, the books' grammar rows and section 17's list;
 - about 9 at 24.38, the reader's catalogue and matrix rows, its stores, section 17's and 18's rows, the coverage row and the premium's card;
-- about 4 at 24.39; about 3 at 24.40; about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44.
+- about 4 at 24.39, the box's press, its two rows on the Loop page and section 18's row of an idea the box cannot read;
+- about 3 at 24.40; about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44.
 
 Restated on the operator's word of 2026-11-22, kept word for word as Appendix Z of the plan's file, from the count on main at 8b18a85a: 1,683 claims and 1,683 PASS there, the checkpoints landed by then having added 51 where they counted 60, and the stages still to come counting about 108, so about 1,791 after 24.44, the range above leaving room for the rest to land anywhere from about a third of their count to about 60 more than it.
 

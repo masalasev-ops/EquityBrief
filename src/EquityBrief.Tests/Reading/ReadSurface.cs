@@ -259,6 +259,9 @@ public partial class ReadSurface
             // The buy range's widths on the Improvement loop page.
             .. BuyRangeRows,
 
+            // The idea box on the Improvement loop page.
+            .. IdeaBoxRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

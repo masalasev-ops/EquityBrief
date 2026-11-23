@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - the idea box, at 24.39
+Decision: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+Was:
+> ARCHITECTURE.html, the researcher's catalogue row: "long setups, setups, notebook, reading pins, research asks, research ideas, run log, local model" | ... | "from 24.28 builds for each setup ..."; its matrix row reading nothing of the watch list's group
+> ARCHITECTURE.html, the read API's catalogue row writing "... loop decisions, promotion presses, session marks" and its words opening "from the 23.4 correction the marking page's confirm ..."
+> ARCHITECTURE.html: no idea box reader in the catalogue or the matrix; no stores of ideas typed, idea box answers or ideas confirmed; no idea box card on the Loop page; no section 18 row of an idea the box cannot read
+> SCHEMA.md: no `idea_box`, `idea_box_answer` or `idea_box_confirm`
+> RUNBOOK.md: no idea box
+> BUILD_PLAN.md, the claims' counts: "- about 4 at 24.39; about 3 at 24.40; about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44."
+Now:
+> BUILD_PLAN.md: "- about 4 at 24.39, the box's press, its two rows on the Loop page and section 18's row of an idea the box cannot read;" on a line of its own, the later counts on the next as they stood
+> ARCHITECTURE.html, the researcher reading "... research ideas, idea box answers, ideas confirmed, run log, local model" and its words opening "from 24.39 places the lines the operator confirmed in the idea box first, tested under the box as their source; from 24.28 builds ..."; its matrix row reading the watch list's group
+> ARCHITECTURE.html, the read API writing "... session marks, ideas typed, ideas confirmed" and its words opening with the idea box's press and confirm
+> ARCHITECTURE.html: the idea box reader's catalogue and matrix rows; the stores of ideas typed, idea box answers and ideas confirmed; the Loop page's idea box card; section 18's row of an idea the box cannot read
+> SCHEMA.md: the three tables, the presses' two by the read surface and the answers by the box's worker, none updated or deleted
+> RUNBOOK.md: "The idea box, from 24.39", the press, the confirm and the `idea-box --press <id>` verb by hand
+Why: the operator's second brief of phase 24 of 2026-11-16, item 11, kept word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, built at 24.39 ahead of 24.30 to 24.38, which wait on the 24.19 correction or on the operator's word on the pullbacks' search.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - every buy has a range, at 24.29
 Decision: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
 Was:

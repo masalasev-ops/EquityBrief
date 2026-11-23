@@ -1224,6 +1224,15 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .lm-table .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .lm-narrow{max-width:640px}
 .notebook-table .idea-line,.survivors-table .idea-line{display:block;margin-top:4px;font:12.5px ui-monospace,Consolas,monospace;color:var(--soft);overflow-wrap:anywhere}
+.idea-box .idea-press{display:grid;gap:8px;max-width:640px;margin:0 0 8px}
+.idea-box .idea-press label{font-weight:600}
+.idea-box .idea-press textarea{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);color:var(--ink)}
+.idea-box .idea-press button{justify-self:start}
+.idea-box-ideas{margin:12px 0 0;padding-left:22px}
+.idea-box-ideas li{margin:0 0 14px}
+.idea-box-ideas .idea-words{margin:2px 0 4px;font-weight:600}
+.idea-box-ideas .idea-line{display:block;margin:4px 0 8px;font:12.5px ui-monospace,Consolas,monospace;color:var(--soft);overflow-wrap:anywhere}
+.idea-box-ideas .idea-press{margin:0}
 .lm-freeze{margin:0 0 12px;padding:8px 12px;border:1px solid var(--warn);background:var(--warn-fill);border-radius:6px;font-size:14px;color:var(--ink)}
 .lm-case{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
 .lm-case > div{border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--surface)}

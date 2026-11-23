@@ -122,6 +122,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
 | `buy_range_width` | RangeWidthTest | none | none |
+| `idea_box` | ReadApi | none | none |
+| `idea_box_answer` | IdeaBoxReader | none | none |
+| `idea_box_confirm` | ReadApi | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2895,6 +2898,50 @@ Grain: one row per index, setup, width and years of a widths test run, from 24.2
 Primary key: `run_id`, `index_code`, `family`, `width`, `years`.
 
 **Inserted by the widths test alone, and never updated or deleted** (see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index). A run is written whole once its walks end, by hand and never by a night. Read by the read surface for the Improvement loop page alone; no plan, rule, pick or version reads it, and no width is used before the operator approves one.
+
+### idea_box
+Grain: one row per idea the operator typed in the idea box, from 24.39.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the press, which the box's worker is started with |
+| `words` | TEXT | the words as typed, trimmed and cut at the longest the box takes |
+| `pressed_at` | TEXT | UTC instant it was written |
+
+Primary key: `id`.
+
+### idea_box_answer
+Grain: one row per answer the local model gave a press, from 24.39.
+
+| Column | Type | Notes |
+|---|---|---|
+| `press_id` | INTEGER | the press |
+| `attempt` | INTEGER | the answer's place, 1 and on, an answer that could not be read followed by the one asked once more |
+| `outcome` | TEXT | `understood`, `none` where the words hold no idea the grammar can say, or `refused` |
+| `cause` | TEXT | why it was refused, null otherwise |
+| `line` | TEXT | the canonical grammar line code wrote from the answer's choices, null unless understood |
+| `reason` | TEXT | the model's one sentence of what it understood, holding no digit, null unless understood |
+| `prompt_key` | TEXT | the instruction's version and the prompt, hashed |
+| `pin` | INTEGER | the local run's pin it was asked under |
+| `version` | TEXT | the instruction's version |
+| `answer` | TEXT | the answer as sent, null where the runtime gave none |
+| `seconds` | REAL | the model's time for the answer |
+| `asked_at` | TEXT | UTC instant it was written |
+
+Primary key: `press_id`, `attempt`.
+
+### idea_box_confirm
+Grain: one row per press the operator confirmed, from 24.39.
+
+| Column | Type | Notes |
+|---|---|---|
+| `press_id` | INTEGER | the press |
+| `line` | TEXT | the line its newest answer was read into, as confirmed |
+| `confirmed_at` | TEXT | UTC instant it was written |
+
+Primary key: `press_id`.
+
+**`idea_box` and `idea_box_confirm` are inserted by the read surface's two presses alone, and `idea_box_answer` by the idea box's worker alone, and none is ever updated or deleted** (see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm). A press carrying the page's own header writes the words; a confirm carrying it writes the newest answer's line only where that answer understood an idea and the press holds no confirm. Read by the read surface for the Improvement loop page, by the box's worker for the words and the attempts before, and by the researcher for the confirmed lines, which its next run tests first.
 
 ### loop_run
 Grain: one row per tester run on an index.

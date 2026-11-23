@@ -867,6 +867,9 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.ReleaseAnswerEdge, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read | Touch.Insert),
             new StoreTouch(Store.PromotionPress, Touch.Insert),
+            new StoreTouch(Store.IdeaBox, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.IdeaBoxAnswer, Touch.Read),
+            new StoreTouch(Store.IdeaBoxConfirm, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopApplied, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.LoopAlarm, Touch.Read),
@@ -4035,6 +4038,12 @@ public sealed partial class ReadApi : IComponent
     const string InsertPress = @"
         INSERT INTO promotion_press (index_code, family, variant, press, undoes, month, pressed_at)
         VALUES ($index, $family, $variant, $press, $undoes, $month, $pressed_at);";
+
+    // From 24.39 the idea box's two writes, the words typed and a confirm of the line they were read into.
+    // see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+    const string InsertIdea = "INSERT INTO idea_box (words, pressed_at) VALUES ($words, $pressed_at) RETURNING id;";
+
+    const string InsertConfirm = "INSERT INTO idea_box_confirm (press_id, line, confirmed_at) VALUES ($id, $line, $confirmed_at);";
 
     const string DeleteUnfollowed = @"
         DELETE FROM taken_trade
