@@ -72,7 +72,15 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
         };
     }
 
-    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default)
+    // The notebook's row each line this run tested was written to, by its canonical line.
+    public IReadOnlyDictionary<string, long> Written { get; private set; } = new Dictionary<string, long>(StringComparer.Ordinal);
+
+    // The lines a run given a deadline started no walk for once it had passed, by their canonical line.
+    public IReadOnlySet<string> Unstarted { get; private set; } = new HashSet<string>(StringComparer.Ordinal);
+
+    // Each line tested, and where the run is given an instant to stop starting by, each line not yet walked at that instant
+    // left untested; the lines walked are judged together as one run.
+    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default, DateTimeOffset? stopStartingAt = null)
     {
         if (!Sources.Contains(source, StringComparer.Ordinal))
         {
@@ -153,6 +161,11 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                     continue;
                 }
 
+                if (stopStartingAt is { } deadline && clock.UtcNow >= deadline)
+                {
+                    continue;
+                }
+
                 var idea = ideas[at];
                 var setups = await SetupsAsync(idea, cancellation);
                 var cuts = IdeaTester.CutsOf(setups.Select(one => one.Setup), ReadingsOf(idea));
@@ -173,6 +186,22 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                 throughs[at] = through;
                 output.WriteLine(FormattableString.Invariant($"{Verb}: {idea.Canonical}: {setups.Count} setup(s) offered, {walked.Length} bought, {figures[at].EarlyPicks} with a result to 2018 and {figures[at].LatePicks} from 2019"));
             }
+        }
+
+        // The lines no walk started for, once the deadline had passed, are left untested and judged in no run.
+        var kept = Enumerable.Range(0, ideas.Count).Where(at => figures[at] is not null).ToArray();
+
+        Unstarted = ideas.Where((_, at) => figures[at] is null).Select(idea => idea.Canonical).ToHashSet(StringComparer.Ordinal);
+
+        if (kept.Length < ideas.Count)
+        {
+            output.WriteLine(FormattableString.Invariant($"{Verb}: {ideas.Count - kept.Length} line(s) not started before the run's deadline, left for the next run"));
+            (ideas, figures, throughs, chosenOn, rows) = ([.. kept.Select(at => ideas[at])], [.. kept.Select(at => figures[at])], [.. kept.Select(at => throughs[at])], [.. kept.Select(at => chosenOn[at])], new long[kept.Length]);
+        }
+
+        if (ideas.Count == 0)
+        {
+            return 2;
         }
 
         var verdicts = IdeaTester.Verdicts(figures);
@@ -229,6 +258,8 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
 
             await transaction.CommitAsync(cancellation);
         }
+
+        Written = ideas.Select((idea, at) => (idea.Canonical, rows[at])).ToDictionary(one => one.Canonical, one => one.Item2, StringComparer.Ordinal);
 
         // Each idea that passed runs by itself from that night: registered as its setup's variant or queued.
         // see: A passed idea registers by itself as its setup's variant where it has room or a variant past its minimum makes room, and queues where none can go

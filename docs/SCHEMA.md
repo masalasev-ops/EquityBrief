@@ -118,6 +118,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `survivor` | SurvivorDesk | none | none |
 | `survivor_state` | SurvivorDesk | none | none |
 | `survivor_pick` | SurvivorDesk | none | none |
+| `research_ask` | Researcher | none | none |
+| `research_failure` | Researcher | none | none |
+| `research_idea` | Researcher | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2806,6 +2809,65 @@ Grain: one row per survivor, session and stock it was walked to while it queued,
 Primary key: `survivor_id`, `session_date`, `ticker`.
 
 **Inserted by the survivors' desk alone, and never updated or deleted** (see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens). A survivor is written when the tester passes it and admitted at once; a state is written where it differs from the survivor's last, so a survivor queued for one reason night after night holds one row for it; and a queued survivor's picks are stored each night it queues, its record walked from them when the page is read. Read by the read surface for the Improvement loop page alone, and drawn among no buys anywhere.
+
+### research_ask
+Grain: one row per ask of the researcher's week, from 24.28.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the week's run |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup its prompt is for |
+| `round` | INTEGER | 1, or 2 where the week answered nowhere was asked once more whole |
+| `ask` | INTEGER | the setup's ask, 1 to 3 |
+| `prompt_key` | TEXT | the instruction's version and the prompt, hashed |
+| `pin` | INTEGER | the local run's pin it was asked under |
+| `version` | TEXT | the instruction's version |
+| `prompt` | TEXT | the prompt as sent |
+| `outcome` | TEXT | `answered` or `refused` |
+| `cause` | TEXT | why it was refused, null where answered |
+| `answer` | TEXT | the answer as sent, null where the runtime gave none |
+| `seconds` | REAL | the model's time for the answer kept |
+| `asked_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`, `index_code`, `family`, `round`, `ask`.
+
+### research_failure
+Grain: one row per row of a setup's failure list a week read, from 24.28.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the week's run |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup |
+| `population` | TEXT | `early`, its closed picks of 2005 to 2018, or `live`, those since the rules restarted |
+| `reading` | TEXT | the catalogue reading |
+| `highest` | INTEGER | 1 for its highest three tenths, 0 for its lowest |
+| `picks` | INTEGER | the closed picks holding the reading |
+| `losers` | INTEGER | those of them a loser |
+| `in_band` | INTEGER | the picks standing in the band |
+| `losers_in_band` | INTEGER | the losers standing in the band |
+
+Primary key: `run_id`, `index_code`, `family`, `population`, `reading`, `highest`.
+
+### research_idea
+Grain: one row per idea a week placed, from 24.28.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the week's run |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup |
+| `rank` | INTEGER | its place among the setup's ideas that week |
+| `line` | TEXT | its canonical grammar line |
+| `reason` | TEXT | the model's one sentence, holding no digit |
+| `outcome` | TEXT | `tested`, `held` where the notebook held its line already, or `waiting` for next week's tests |
+| `notebook_id` | INTEGER | the notebook's row of its test, null where it was not tested |
+| `written_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`, `index_code`, `family`, `rank`.
+
+**Inserted by the researcher alone, and never updated or deleted** (see: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word). A week's asks are written as each round ends, its failure lists and ideas with its row once its tests have run, an idea left waiting read again by the next week before any new one. Read by the read surface for the Improvement loop page and by the researcher.
 
 ### loop_run
 Grain: one row per tester run on an index.

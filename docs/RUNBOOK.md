@@ -1680,6 +1680,28 @@ On macOS the job runs every hour at five past and twenty to, and the script runs
 
 Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.localrun.plist`. The Run page's Local model region names each run once it has run.
 
+**The researcher's week, from 24.28.** Each Sunday at 13:00 UTC, 8 am Eastern in winter, the local run's weekly form builds each setup's failure list on each index, asks the local model for up to three ideas a setup under the local run's pin and lock, and sends at most 10 of the week's lines to the one tester as one run, the rest waiting a week (see: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word). No night runs on a Sunday, so it has the store to itself; it waits for the local model's lock where the early slot still holds it, and starts no test once 8 hours have passed since it started. Before its first week, and after any change to its instruction, measure the model's time over constructed inputs, which asks each setup once and writes nothing:
+
+```
+tools/localrun.ps1 --research --measure
+tools/localrun.ps1 --research
+```
+
+A week the model answers nowhere is asked once more whole and then written failed on its row; the next Sunday runs regardless. The Improvement loop page's research card draws the newest week. Its task:
+
+```powershell
+$root     = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
+              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
+              -ExecutionTimeLimit (New-TimeSpan -Hours 10)
+$research = New-ScheduledTaskAction -Execute 'powershell.exe' `
+              -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"& '$root\tools\localrun.ps1' --research *>> '$root\data\localrun.log'`"" `
+              -WorkingDirectory $root
+$at       = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 8:00am
+$at.StartBoundary = '2026-11-29T13:00:00Z'
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief research' -Action $research -Trigger $at -Settings $settings
+```
+
 ### The AI stock picker's facts and its naming test
 
 From 24.3 the picker's fact writer writes, for a stored night, every member's short row and full sheet as the AI stock picker is shown them, under the field list's version (see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price). To see one member's row and sheet, writing nothing:

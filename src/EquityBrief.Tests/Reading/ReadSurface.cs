@@ -250,6 +250,9 @@ public partial class ReadSurface
             // The survivors and the queue on the Improvement loop page.
             .. SurvivorRows,
 
+            // This week's research on the Improvement loop page.
+            .. WeeklyResearchRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

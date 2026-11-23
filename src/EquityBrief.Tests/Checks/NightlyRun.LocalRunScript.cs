@@ -47,7 +47,7 @@ public partial class NightlyRun
         var none = checkout.CheckWith("localrun", null);
 
         Assert.Equal(1, none.ExitCode);
-        Assert.Contains("localrun: name a form, --slot early, --slot late, --pin or --twice", none.StandardError, StringComparison.Ordinal);
+        Assert.Contains("localrun: name a form, --slot early, --slot late, --pin, --twice or --research", none.StandardError, StringComparison.Ordinal);
 
         // On a branch holding a commit of its own: main's commit is built and the branch's is not, the line naming the
         // branch.

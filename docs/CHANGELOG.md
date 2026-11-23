@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - the researcher, weekly, at 24.28
+Decision: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word
+Was:
+> CLAUDE.md, the nightly run's hard rule: "... and calls the local model on the operator's own machine, its requests and its calls on its own run and never on the night's, on the operator's rulings of 2026-10-18, and the night's ask for every member's estimate trend ..."
+> ARCHITECTURE.html: no catalogue or matrix row "Researcher"; no store rows "Research asks", "Research failures" and "Research ideas"; no row "This week's research" in section 15.20; "The notebook": "from 24.26 a card after the long history, from 24.27 after the survivors, holding ..."; no row "The researcher's week" in section 17; no row "A week the researcher's model answers nothing" in section 18
+> SCHEMA.md: no `research_ask`, `research_failure` or `research_idea` in the ownership summary and no tables of them
+> RUNBOOK.md: no paragraph on the researcher's week and its task
+> BUILD_PLAN.md, 24.28: "... (see: The Sunday run's added model time ...). The monthly engines keep proposing into the same notebook, and the idea generator's decision is superseded here. Writes the researcher's catalogue and matrix rows, its store, the runbook's schedule, section 17's cap, section 18's rows, the superseding decision, `CLAUDE.md`'s hard rule on the local model, the roster's rows and the changelog." and its done condition opening "a prompt holds no name, ticker, date or figure from 2019 on"
+Now:
+> CLAUDE.md: "... on the operator's rulings of 2026-10-18, and from 24.28 its weekly form on Sundays, the researcher, which calls the local model under the same pin and asks nothing of a network, on the operator's brief of 2026-11-16, and the night's ask ..."
+> ARCHITECTURE.html: the catalogue and matrix rows "Researcher"; the three store rows; section 15.20's row "This week's research" and "The notebook" "... from 24.28 after the week's research ..."; section 17's row "The researcher's week"; section 18's row "A week the researcher's model answers nothing"
+> SCHEMA.md: the three tables inserted by Researcher and taking inserts alone
+> RUNBOOK.md: "The researcher's week, from 24.28." with `tools/localrun.ps1 --research --measure`, `--research` and its Sunday task
+> BUILD_PLAN.md, 24.28: the researcher measured as the run's one part at its first week, the picker's own rules and the judge's review measured at 24.31 and 24.33 before each joins; the idea generator's decision standing for the monthly generator beside the researcher's; the local run's weekly form with one idea an ask; what it writes as built; and its done condition reading "a prompt holds no name, ticker, date or figure of the later years"
+Why: the operator's second brief of phase 24 of 2026-11-16, item 10, and their changes of that day, kept word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, and their change of 2026-11-21 kept as its Appendix X. The figures the researcher reads from the nights since the restart are from 2026 and stand in the brief's failure lists, so the done condition names the later years, 2019 to the restart, which the decision keeps from the model; the generator runs unchanged, so its decision is not superseded; and the runtime holds a flat object's keys to its schema and an array's later items to none, measured on 2026-11-23, so each ask answers one idea.
+
 ### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - survivors run by themselves, at 24.27
 Decision: A passed idea registers by itself as its setup's variant where it has room or a variant past its minimum makes room, and queues where none can go
 Was:

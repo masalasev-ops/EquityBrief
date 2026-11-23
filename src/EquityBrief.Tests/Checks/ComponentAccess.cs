@@ -330,6 +330,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Survivor desk"),
     ];
 
+    // The weekly researcher.
+    internal static string[] ResearcherRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Researcher"),
+        CheckReach.Key(Scope.MatrixTable, "Researcher"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -433,6 +440,7 @@ public partial class ComponentAccess
             .. SwapRows,
             .. NotebookRows,
             .. SurvivorRows,
+            .. ResearcherRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
