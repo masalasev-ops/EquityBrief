@@ -1234,9 +1234,9 @@ public sealed class LongPricePull : IComponent
         return codes;
     }
 
-    // After the write that read the answers asked again, each code an ask was for has its member sessions on every index that
-    // still hold no price written as held none, a run of sessions the calendar holds back to back a row, a run already held
-    // changing nothing; each code with its runs and sessions, on the run log.
+    // After the write that read the answers asked again, each code an ask was for has its member sessions on every index through
+    // the store's newest stored session that still hold no price written as held none, a run of sessions the calendar holds back
+    // to back a row, a run already held changing nothing; each code with its runs and sessions, on the run log.
     // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
     public static async Task<IReadOnlyList<(string Ticker, int Runs, int Sessions)>> HeldNoneAsync(string databaseFile, string folder, string runId, IClock clock, CancellationToken cancellation = default)
     {
@@ -1245,7 +1245,7 @@ public sealed class LongPricePull : IComponent
             ?? throw new ArgumentException("the folder keeps no asks to mark");
         var forCodes = again.Asks.Select(ask => ask.For).ToHashSet(StringComparer.Ordinal);
         var reader = new LongHistoryReader(databaseFile);
-        var through = await reader.NewestSessionAsync(cancellation);
+        var through = await reader.NewestStoredSessionAsync(cancellation);
         var missing = new SortedDictionary<string, SortedSet<DateOnly>>(StringComparer.Ordinal);
         var calendar = new SortedSet<DateOnly>();
 

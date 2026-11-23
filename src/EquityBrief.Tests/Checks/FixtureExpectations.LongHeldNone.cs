@@ -85,4 +85,48 @@ public partial class FixtureExpectations
         Assert.Contains($"held none HOL 3 member session(s) from {days[3]} to {days[5]} the provider holds no price for", lists.ToString());
         Assert.Contains("3 the provider holds no price for, 0 still with no price", lists.ToString());
     }
+
+    // On the operator's answers of 2026-11-23 at 16:50: ALL is priced by the long prices on all ten sessions, as an answer asked in
+    // the day carries a session the night has not stored, and HOL on the first nine, the store's own bars holding HOL's ninth and
+    // nothing later. Asked again, HOL's tenth session is past the store's newest stored session and is marked nothing.
+    [Fact]
+    public async Task TheMarkingStopsAtTheStoresNewestStoredSession()
+    {
+        using var store = new TemporaryStore().Migrated();
+        string[] days = [.. Enumerable.Range(0, 14).Select(at => new DateOnly(2010, 1, 4).AddDays(at)).Where(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)).Select(day => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))];
+
+        store.Execute("INSERT INTO long_market_bar (series, session_date, open, high, low, close, run_id) VALUES " + string.Join(", ", days.Select(day => $"('GSPC', '{day}', '1000', '1000', '1000', '1000', 'r')")) + ";");
+        store.Execute($"INSERT INTO long_span (index_code, ticker, joined, \"left\", read_from, run_id) VALUES ('MID', 'HOL', '{days[0]}', NULL, 'fund', 'r'), ('MID', 'ALL', '{days[0]}', NULL, 'fund', 'r');");
+        store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES "
+            + string.Join(", ", days[..^1].Select((day, at) => LongBarRow("HOL", day, 10m + at)).Concat(days.Select((day, at) => LongBarRow("ALL", day, 20m + at)))) + ";");
+        store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('HOL', '{days[^2]}', '18', '18', '18', '18', 1000, 'bulk', '2010-01-14T21:10:00Z', '18');");
+
+        var folder = Path.Combine(store.Root, "capture");
+        var clock = FixedClock.At(new DateTimeOffset(2026, 11, 24, 4, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, LongPricePull.AgainFile), System.Text.Json.JsonSerializer.Serialize(new LongAgain(clock.UtcNow, [new LongAsk("HOL", "HOL")])));
+
+        Assert.Equal(DateOnly.ParseExact(days[^2], "yyyy-MM-dd", CultureInfo.InvariantCulture), await new LongHistoryReader(store.DatabaseFile).NewestStoredSessionAsync());
+        Assert.Empty(await LongPricePull.HeldNoneAsync(store.DatabaseFile, folder, "long-held-none-test", clock));
+        Assert.Equal(0L, (long)One(store, "SELECT COUNT(*) FROM long_held_none;")!);
+    }
+
+    // Migration 169 removes the five rows marked for 2026-11-23 and nothing else, and the table refuses a delete after it as
+    // before.
+    [Fact]
+    public void MigrationOneSixtyNineRemovesTheFiveRowsMarkedPastTheStoreAlone()
+    {
+        using var store = new TemporaryStore();
+
+        new EquityBrief.Data.Migrations.MigrationRunner([.. EquityBrief.Data.Migrations.SchemaMigrations.All.Where(migration => migration.Version <= 168)]).Apply(store.DatabaseFile);
+        store.Execute("INSERT INTO long_held_none (ticker, first_session, last_session, sessions, asked_at, run_id) VALUES "
+            + string.Join(", ", new[] { "HOS", "LUMN", "PRG", "WEN", "WWW" }.Select(code => $"('{code}', '2026-11-23', '2026-11-23', 1, '2026-11-23T21:18:24Z', 'long-held-none-20261123T213949Z')"))
+            + ", ('HOS', '2020-03-02', '2020-03-06', 5, '2026-11-23T21:18:24Z', 'long-held-none-20261123T213949Z'), ('SIX', '2026-11-23', '2026-11-23', 1, '2026-11-23T21:18:24Z', 'long-held-none-other');");
+
+        new EquityBrief.Data.Migrations.MigrationRunner([.. EquityBrief.Data.Migrations.SchemaMigrations.All]).Apply(store.DatabaseFile);
+
+        Assert.Equal("HOS 2020-03-02,SIX 2026-11-23", (string)One(store, "SELECT group_concat(ticker || ' ' || first_session, ',') FROM (SELECT ticker, first_session FROM long_held_none ORDER BY ticker);")!);
+        Assert.Throws<SqliteException>(() => store.Execute("DELETE FROM long_held_none;"));
+    }
 }
