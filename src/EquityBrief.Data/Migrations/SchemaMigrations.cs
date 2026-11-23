@@ -784,7 +784,73 @@ public static class SchemaMigrations
         new Migration(161, "create notebook", CreateNotebook),
         new Migration(162, "rebuild notebook as a strict table", NotebookStrict),
         new Migration(163, "create survivor, survivor_state and survivor_pick", CreateSurvivors),
+        new Migration(164, "create research_ask, research_failure and research_idea", CreateResearch),
     ];
+
+    // The researcher's week: each setup's asks of the local model on each round, up to three, with its prompt, its outcome
+    // and its answer as sent; each setup's failure list over the early years and the nights since the restart, a row a reading and end of its
+    // tenths; and each idea it answered, its line, its sentence and what became of it, tested with the notebook's row, held
+    // already or waiting for next week. Every table takes inserts alone, so an idea's week stands as it was found.
+    // see: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word
+    const string CreateResearch = @"
+        CREATE TABLE research_ask (
+            run_id       TEXT NOT NULL,
+            index_code   TEXT NOT NULL CHECK (index_code IN ('GSPC', 'MID', 'SML')),
+            family       TEXT NOT NULL,
+            round        INTEGER NOT NULL CHECK (round IN (1, 2)),
+            ask          INTEGER NOT NULL CHECK (ask BETWEEN 1 AND 3),
+            prompt_key   TEXT NOT NULL,
+            pin          INTEGER NOT NULL,
+            version      TEXT NOT NULL,
+            prompt       TEXT NOT NULL,
+            outcome      TEXT NOT NULL CHECK (outcome IN ('answered', 'refused')),
+            cause        TEXT,
+            answer       TEXT,
+            seconds      REAL,
+            asked_at     TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, round, ask)
+        ) STRICT;
+
+        CREATE TABLE research_failure (
+            run_id         TEXT NOT NULL,
+            index_code     TEXT NOT NULL CHECK (index_code IN ('GSPC', 'MID', 'SML')),
+            family         TEXT NOT NULL,
+            population     TEXT NOT NULL CHECK (population IN ('early', 'live')),
+            reading        TEXT NOT NULL,
+            highest        INTEGER NOT NULL CHECK (highest IN (0, 1)),
+            picks          INTEGER NOT NULL,
+            losers         INTEGER NOT NULL,
+            in_band        INTEGER NOT NULL,
+            losers_in_band INTEGER NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, population, reading, highest)
+        ) STRICT;
+
+        CREATE TABLE research_idea (
+            run_id       TEXT NOT NULL,
+            index_code   TEXT NOT NULL CHECK (index_code IN ('GSPC', 'MID', 'SML')),
+            family       TEXT NOT NULL,
+            rank         INTEGER NOT NULL,
+            line         TEXT NOT NULL,
+            reason       TEXT NOT NULL,
+            outcome      TEXT NOT NULL CHECK (outcome IN ('tested', 'held', 'waiting')),
+            notebook_id  INTEGER,
+            written_at   TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, rank)
+        ) STRICT;
+
+        CREATE TRIGGER research_ask_takes_inserts_alone_on_change BEFORE UPDATE ON research_ask
+        BEGIN SELECT RAISE(ABORT, 'research_ask takes inserts alone.'); END;
+        CREATE TRIGGER research_ask_takes_inserts_alone_on_removal BEFORE DELETE ON research_ask
+        BEGIN SELECT RAISE(ABORT, 'research_ask takes inserts alone.'); END;
+        CREATE TRIGGER research_failure_takes_inserts_alone_on_change BEFORE UPDATE ON research_failure
+        BEGIN SELECT RAISE(ABORT, 'research_failure takes inserts alone.'); END;
+        CREATE TRIGGER research_failure_takes_inserts_alone_on_removal BEFORE DELETE ON research_failure
+        BEGIN SELECT RAISE(ABORT, 'research_failure takes inserts alone.'); END;
+        CREATE TRIGGER research_idea_takes_inserts_alone_on_change BEFORE UPDATE ON research_idea
+        BEGIN SELECT RAISE(ABORT, 'research_idea takes inserts alone: a later week is a row of its own.'); END;
+        CREATE TRIGGER research_idea_takes_inserts_alone_on_removal BEFORE DELETE ON research_idea
+        BEGIN SELECT RAISE(ABORT, 'research_idea takes inserts alone.'); END;
+    ";
 
     // The notebook rebuilt as a strict table, so a value of the wrong type is refused: its triggers dropped with it, its rows
     // copied across first in the order written, and the triggers made again on the new table.

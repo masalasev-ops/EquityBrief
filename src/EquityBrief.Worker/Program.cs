@@ -4104,9 +4104,11 @@ static IConfiguration Configuration() => WorkerConfiguration.Build();
 // on this run's own rows. A refusal at the settings or a model that does not answer stops it before any call,
 // written as its own row where the store is there to hold it.
 // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
-// The local run, as tools/localrun starts it at its two slots and by hand: '--slot early' or '--slot late', '--pin' or
-// '--twice', one form a run. A profile the settings cannot read refuses before the store is opened.
+// The local run, as tools/localrun starts it at its two slots and by hand: '--slot early' or '--slot late', '--pin',
+// '--twice' or '--research', the researcher's week, with '--measure' its model time over constructed inputs and nothing
+// written, one form a run. A profile the settings cannot read refuses before the store is opened.
 // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
+// see: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word
 static async Task<int> LocalRunVerb(string[] args)
 {
     var configuration = Configuration();
@@ -4116,10 +4118,12 @@ static async Task<int> LocalRunVerb(string[] args)
     var slot = Argument(args, "--slot");
     var pin = args.Contains("--pin");
     var twice = args.Contains("--twice");
+    var research = args.Contains("--research");
+    var measure = args.Contains("--measure");
 
-    if ((slot is null ? 0 : 1) + (pin ? 1 : 0) + (twice ? 1 : 0) != 1 || (slot is not null && !LocalSlots.All.Contains(slot)))
+    if ((slot is null ? 0 : 1) + (pin ? 1 : 0) + (twice ? 1 : 0) + (research ? 1 : 0) != 1 || (slot is not null && !LocalSlots.All.Contains(slot)) || (measure && !research))
     {
-        Console.Error.WriteLine("local-run: name one form, '--slot early', '--slot late', '--pin' or '--twice'.");
+        Console.Error.WriteLine("local-run: name one form, '--slot early', '--slot late', '--pin', '--twice' or '--research', '--measure' with '--research' alone.");
 
         return 1;
     }
@@ -4142,6 +4146,14 @@ static async Task<int> LocalRunVerb(string[] args)
         Console.Error.WriteLine("local-run: " + refused.Message);
 
         return 1;
+    }
+
+    if (research)
+    {
+        var researcher = new EquityBrief.Worker.Loop.Researcher(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot);
+        var asked = measure ? await researcher.MeasureAsync(Console.Out) : await researcher.RunAsync(Console.Out);
+
+        return asked.Outcome is LocalRun.Finished ? 0 : 1;
     }
 
     // A slot fetches its members' results releases from the SEC before it reads, under the archive's contact.

@@ -137,6 +137,11 @@ public enum Store
     Survivor,
     SurvivorState,
     SurvivorPick,
+
+    // The researcher's asks of the local model, each setup's failure lists, and the ideas it answered with what became of each.
+    ResearchAsk,
+    ResearchFailure,
+    ResearchIdea,
     FilingDay,
     InsiderTrade,
     InsiderRead,

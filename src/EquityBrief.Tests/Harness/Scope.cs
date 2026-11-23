@@ -4108,6 +4108,34 @@ internal static class Scope
             Verdict.Pass,
             "a time limit, a cap, no cap and the loose gates each queued with why, a name the running revision's never written or retired, and over a constructed store a queued survivor walked on the night and written once for its reason on two nights",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Researcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long setups, setups, notebook and reading pins it reads, its three tables and the run log, and the local model, each reconciled against the row; over a constructed store a week refused everywhere asked twice and written failed, and a week whose one idea the notebook holds testing nothing",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Researcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Research asks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a week asked twice holds its rounds' asks apart",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Research failures")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and the page reads a stored row's shares",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Research ideas")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and an idea the notebook holds written held",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The researcher's week")] = new Scoped(
+            Verdict.Pass,
+            "a failure list worked by hand over a hundred constructed picks, a band of 20 under the least left out and the larger gap first; the week's lines chosen by hand with ten tested, the waited first and every setup's strongest before any second; and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A week the researcher's model answers nothing")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store every ask refused, the week asked once more whole, 24 asks kept over two rounds, nothing tested and its row failed; an answer that is not one object asked once more and read; and eleven answers outside the grammar or holding a digit each refused with its cause",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "The AI stock picker within each index")] = new Scoped(
             Verdict.Pass,
             "the best quarter of the marked rounded up and held to 5 worked by hand on both sides of each bound, an index of 12 marked picking 3 and a fixed 5 taking 5 with no question of its own, 40 marked ranked by three questions of 14, 13 and 13 and then one of their best, a label marked twice read once and a ranking longer than asked keeping its first, a constructed index's figures placed in their tenths among its own members alone, and a short night's order with a version past the off-peak run's first slot written not run, each through recorded answers",
@@ -5335,6 +5363,10 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = new Scoped(
             Verdict.Pass,
             "over a constructed store of four survivors on two indices, the S&P 600's page read back with its counts, its two queued in the order they passed with the nights each was walked, a record so far worked by hand from the stored bars at +$2.50 per $1 and one still open, why each waits and the rule for making room, and its retired one with why, the S&P 500's absent; and an empty store saying none has passed",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, "This week's research")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of two weeks, the newest read back on the S&P 600 with its counts, its ideas by setup each sentence above its line, a tested one's verdict and why, a held and a waiting one, and the pullback's failure list at 42% of its losers against 30% of its picks worked by hand, the other lists saying none is listed; the older week and the S&P 500's ideas absent; a failed week saying so; and an empty store saying the researcher has not run",
             ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
@@ -8136,6 +8168,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The long history")] = "23.8",
         [CheckReach.Key(LoopPage, "The notebook")] = "24.26",
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = "24.27",
+        [CheckReach.Key(LoopPage, "This week's research")] = "24.28",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

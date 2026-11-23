@@ -14,6 +14,8 @@
 #   tools/localrun --slot late      the late slot, ending before the night's window
 #   tools/localrun --pin            write a new reading version from the model's file, the runtime and the prompt
 #   tools/localrun --twice          read every stored results release twice and state how many were answered alike
+#   tools/localrun --research       the researcher's week, as the scheduler calls it each Sunday at 13:00Z
+#   tools/localrun --research --measure   the researcher's model time over constructed inputs, nothing written
 #   tools/localrun ... --check      print what a run would build and run, and run nothing
 set -euo pipefail
 
@@ -39,7 +41,7 @@ for argument in "$@"; do
 done
 
 if [ "${#pass[@]}" = 0 ]; then
-    echo "localrun: name a form, --slot early, --slot late, --pin or --twice" >&2
+    echo "localrun: name a form, --slot early, --slot late, --pin, --twice or --research" >&2
     exit 1
 fi
 

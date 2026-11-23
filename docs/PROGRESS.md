@@ -21712,3 +21712,56 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open, whose one pin move before the run of 2027-02-06 now also teaches every price family a
             time limit and a cap a night; migrations 162 and 163 on the operator's store after the merge.
+
+### 24.28 - the researcher, weekly: each setup's failure list put to the local model, its ideas tested ten a week   2026-11-23
+
+Queue:      done, 24.0 to 24.27 and the 24.4, 24.14 and 24.26 corrections, 24.19 done, its correction open; in progress,
+            24.28; next, 24.29, reading recipes.
+Ruled:      the operator's second brief of phase 24 of 2026-11-16, item 10, their changes of that day and their change of
+            2026-11-21 kept as Appendix X of the plan's file. One new decision; the idea generator's stands beside it, since
+            the generator runs unchanged.
+Built:      the researcher, the local run's weekly form, `tools/localrun --research`, each Sunday at 13:00 UTC. For each of
+            the four setups on each index it builds the rule's failure list, which readings go with its losers, over its own
+            closed picks of 2005 to 2018 and of the nights since the restart, the tenths those of the event's setups to 2018;
+            puts it to the pinned local model with the ideas the notebook holds for the setup, the later years as one word and
+            no ticker, date or later figure; and asks for up to three ideas one at a time, each a flat object of closed
+            choices from the grammar's lists, a band one of the 44 the grammar reads, and one sentence holding no digit, each
+            later ask shown the lines given. Code writes each line with the setup's own time limit and five a night. An answer
+            outside the grammar is asked once more, a week answered nowhere is asked once more whole and then written failed,
+            and at most 10 lines go to the one tester as one run, those that waited first, the run starting no walk after 8
+            hours. The tester gained that deadline and hands back the notebook rows it wrote. Migration 164, three tables
+            taking inserts alone. `--measure` asks constructed inputs and writes nothing. The Improvement loop page's research
+            card. The decision, the catalogue, matrix and store rows, section 15.20's, 17's and 18's rows, SCHEMA, CLAUDE.md's
+            hard rule, the runbook with the Sunday task, the guide and the changelog. This checkpoint amends its own done
+            condition: a prompt holds no figure of the later years, where it read "from 2019 on", since the brief's failure
+            lists read the nights since the restart, which are from 2026.
+Measured:   first an answer of up to three ideas as one array: LM Studio held the array's first item to the schema and not
+            the later ones, which came back as free text, and six of twelve were cut off at 900 tokens; so each ask now answers
+            one idea as a flat object, which the runtime holds whole. On the C: copy of the store migrated to 164, the model
+            free and the card at 250 W: `--measure` asked 34 times over the twelve setups, 34 answered, 119 s of the model,
+            about 3.5 s an ask; a whole week by hand, 487 s: the twelve setups answered, the model 164 s, ten lines tested in
+            235 s, two near misses and eight failed, 21 left waiting. The researcher is the Sunday run's one part, about 8
+            minutes of its 8 hours; the picker's own rules and the judge's review are measured at 24.31 and 24.33. Nothing
+            written on the operator's store.
+Tests:      6 new: a failure list worked by hand over a hundred constructed picks; an answer read into the line by hand and
+            eleven refused with their cause, a repeated reading passed over, the schema's 44 bands each one the grammar parses;
+            the prompt over a constructed store holding no ticker, no year and no later figure, the later years one word; the
+            week's lines chosen by hand; a week refused everywhere asked twice and written failed, and an idea the notebook
+            holds written held with nothing tested; and the Loop page's research card read back.
+Claims:     1729, eight of the plan's eight: the researcher's catalogue and matrix rows, its three stores, section 17's and
+            section 18's rows and the Loop page's research card, its schedule landing as the runbook's words.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.28 adds taken out at its one site. m1 a band under 30 picks
+            listed: red; m2 the list ordered by the smallest gap first: red; m3 the notebook's later edge in the prompt in the
+            early edge's place: red; m4 the sentence's digit check taken out: red; m5 the band of all ten tenths offered: red;
+            m6 a line the notebook holds chosen for testing: red in two tests; m7 the cap of ten ignored: red; m8 a week
+            answered nowhere not asked again: red; m9 the card drawing every week's ideas: red. Each filtered to its tests and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3967 of 3967 tests ran with none failed, migrations 0 to 164 with
+            none pending, schema version 164, against `data-ci` and never `data`; the phase report 68 tables, 1729 claims, 1729
+            passing, none out of scope and none unexamined, 1744 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; migration 164 on the operator's store after the merge; the Sunday task registered by
+            the operator, as the runbook gives it. Put to the operator: the waiting list grows by up to 26 ideas a week against
+            10 tested, and the rehearsal's ideas leaned on the same two readings across setups.

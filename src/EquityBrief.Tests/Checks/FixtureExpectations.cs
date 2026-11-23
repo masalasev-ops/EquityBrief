@@ -175,6 +175,9 @@ public partial class FixtureExpectations
             // Section 17's row of making room for a survivor and section 18's row of one that cannot register yet.
             .. SurvivorClaims,
 
+            // Section 17's row of the researcher's week and section 18's row of a week its model answers nothing.
+            .. ResearchClaims,
+
             // 24.24: section 17's row of the picker within each index and section 18's row of a night with no stock marked.
             .. JudgeIndexClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.
