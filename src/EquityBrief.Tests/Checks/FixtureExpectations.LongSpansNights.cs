@@ -58,7 +58,9 @@ public partial class FixtureExpectations
     // A code the provider dates twice, once to 2026-10-14 and once from 2017 with no end, reads as one span with no end; two
     // classes of one company's shares named by their class stay two codes, and two codes under one name as written and the
     // same dates read as the first. Before, the two rows of one code met at the day the provider's dates are read from and
-    // the one that ended was kept, and the classes read as one.
+    // the one that ended was kept, and the classes read as one. A code the provider closed on 2026-11-13 and listed again with
+    // no start, which no snapshot and no name dates, reads as one span from 2019 with no end; before, the undated row took the
+    // dated one into it and the two read as none.
     [Fact]
     public void AProvidersTwoRowsOfOneCodeReadAsOneSpanAndShareClassesStayTwo()
     {
@@ -74,6 +76,8 @@ public partial class FixtureExpectations
                 new ProviderSpan("TWOW", new DateOnly(2021, 8, 3), new DateOnly(2021, 8, 4), "Two Co"),
                 new ProviderSpan("GAP", null, new DateOnly(2018, 11, 13), "Gap Co"),
                 new ProviderSpan("GAP", new DateOnly(2022, 10, 3), null, "Gap Co"),
+                new ProviderSpan("WAG", new DateOnly(2019, 2, 27), new DateOnly(2026, 11, 13), "Wag Corp"),
+                new ProviderSpan("WAG", null, null, "Wag Corp"),
             ],
             providerFrom: from);
 
@@ -82,6 +86,7 @@ public partial class FixtureExpectations
         Assert.Contains(new LongSpan("GSPC", "FOXA", new DateOnly(2019, 3, 19), null, LongSpans.FromProvider), spans);
         Assert.Single(spans, span => span.Ticker is "TWO" or "TWOW");
         Assert.Equal([(new DateOnly(2022, 10, 3), (DateOnly?)null)], spans.Where(span => span.Ticker == "GAP").Select(span => (span.Joined, span.Left)));
+        Assert.Equal([(new DateOnly(2019, 2, 27), (DateOnly?)null)], spans.Where(span => span.Ticker == "WAG").Select(span => (span.Joined, span.Left)));
     }
 
     // The S&P 400's fund holds AAA, BBB and CCC at its last quarter end; the nights from 2026-10-02 hold AAA throughout, CCC to
