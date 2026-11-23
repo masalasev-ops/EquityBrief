@@ -253,6 +253,9 @@ public partial class ArchitectureConformance
 
         // And never stuck: the Loop page's card and section 18's row.
         .. FixtureExpectations.NeverStuckRows,
+
+        // And the 24.19 correction: the marks ruled's store and the History page's row of the marks to rule.
+        .. FixtureExpectations.LongCorrectionRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

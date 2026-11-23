@@ -5244,6 +5244,14 @@ internal static class Scope
             Verdict.Pass,
             "each unexplained jump and unsettled end read back with its sessions, median volume, filings and proposed mark over a constructed store, and the confirm writing only what was chosen under the page's header, a second word keeping the first",
             ByReadSurface),
+        [CheckReach.Key("15.25 History", "History ends the evidence leaves to you")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a mark a stock trades on past whose filer stops while its price carries on is listed as the long reader lists it, one whose filer files on both sides is not; a ruling from a script refused, one the page does not offer refused, one written once and a second keeping the first; and the reader reading the ruled mark through",
+            ByReadSurface),
+        [CheckReach.Key(StoresTable, "Marks ruled")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a ruling is written once with what the filer and the price said, only for a mark the page lists",
+            ByMigration),
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,
@@ -8227,6 +8235,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
         [CheckReach.Key("15.25 History", "Marks owed")] = "23.4",
+        [CheckReach.Key("15.25 History", "History ends the evidence leaves to you")] = "24.19",
         [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
         [CheckReach.Key("15.25 History", "Every member on every session")] = "24.19",
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",

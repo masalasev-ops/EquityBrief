@@ -38,6 +38,7 @@ public sealed class LongHistoryReader : IComponent
             new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
+            new StoreTouch(Store.MarkRuling, Touch.Read),
             new StoreTouch(Store.LongPrint, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
@@ -97,19 +98,9 @@ public sealed class LongHistoryReader : IComponent
             held.Add((row.IsDBNull(1) ? null : Day(row.GetString(1)), row.IsDBNull(2) ? null : Day(row.GetString(2))));
         }
 
-        var marks = new Dictionary<string, List<SessionMark>>(StringComparer.Ordinal);
+        var marks = await MarksAsync(connection, cancellation);
 
-        await foreach (var row in RowsAsync(connection, "SELECT ticker, session_date, kind, says FROM session_mark ORDER BY ticker, session_date;", [], cancellation))
-        {
-            var ticker = row.GetString(0);
-
-            if (!marks.TryGetValue(ticker, out var held))
-            {
-                marks[ticker] = held = [];
-            }
-
-            held.Add(new SessionMark(Day(row.GetString(1)), row.GetString(2), row.GetString(3)));
-        }
+        lastJoinsFound.Clear();
 
         var prints = new Dictionary<string, SortedSet<DateOnly>>(StringComparer.Ordinal);
 
@@ -152,33 +143,52 @@ public sealed class LongHistoryReader : IComponent
         }
 
         var splitDays = await Bars.SplitDays.ReadAsync(connection, [.. Bars.SplitDays.NightTables, "long_split"], cancellation);
-        var names = new List<SweepName>();
-        var fingerprint = new System.Text.StringBuilder();
+        var calendar = await CalendarAsync(connection, stamp, cancellation);
+        var companies = await CompaniesAsync(connection, cancellation);
+        var settled = await SettledAsync(connection, marks, calendar, stamp, cancellation);
+        var parts = new List<LongPart>();
         var read = 0;
 
         foreach (var (ticker, held) in spans.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            var longBars = LongLedger.Marked(await BarsAsync(connection, "long_bar", ticker, stamp, cancellation), marks.GetValueOrDefault(ticker) ?? []);
-            var stored = LongLedger.Marked(await BarsAsync(connection, "bar", ticker, stamp, cancellation), marks.GetValueOrDefault(ticker) ?? []);
-            var series = SweepHistory.Merged(longBars, stored);
+            var own = marks.GetValueOrDefault(ticker) ?? [];
+            var series = await SeriesAsync(connection, ticker, own, stamp, cancellation);
+            var readThrough = settled.GetValueOrDefault(ticker)?.Outcome == LongMarks.ReadThrough;
+            var end = readThrough ? null : own.Where(mark => mark.Kind == SessionMarking.HistoryEnds).Select(mark => (DateOnly?)mark.Session).Min();
 
-            fingerprint.Append(ticker).Append(':').Append(series.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
-                .Append(series.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
+            foreach (var (bars, partSpans) in LongMarks.Parts(series, own, held, readThrough))
+            {
+                var after = end is { } mark && partSpans.Any(span => span.Joined is { } joined && joined > mark) ? end : null;
+                var upTo = end is not null && after is null ? end : null;
 
-            names.Add(new SweepName(
-                ticker,
-                series,
-                held,
-                [.. (prints.GetValueOrDefault(ticker) ?? [])],
-                sectors.GetValueOrDefault(ticker),
-                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
-                SplitsStored: splitDays.GetValueOrDefault(ticker)));
+                parts.Add(await RenamedAsync(connection, ticker, bars, partSpans, (after, upTo), companies, marks, calendar, stamp, cancellation));
+            }
 
             if (++read % 250 == 0)
             {
                 progress?.Invoke(FormattableString.Invariant($"long history: read {read} of {spans.Count} code(s) on {index}"));
             }
         }
+
+        var names = new List<SweepName>();
+        var fingerprint = new System.Text.StringBuilder();
+
+        foreach (var part in parts)
+        {
+            fingerprint.Append(part.Ticker).Append(':').Append(part.Bars.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
+                .Append(part.Bars.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
+
+            names.Add(new SweepName(
+                part.Ticker,
+                part.Bars,
+                LongRenames.Without(part.Spans, NotCounted(part, parts, companies, calendar), calendar),
+                [.. (prints.GetValueOrDefault(part.Ticker) ?? [])],
+                sectors.GetValueOrDefault(part.Ticker),
+                [.. (surprises.GetValueOrDefault(part.Ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
+                SplitsStored: splitDays.GetValueOrDefault(part.Ticker)));
+        }
+
+        lastJoins = [.. lastJoinsFound];
 
         var sessions = SweepHistory.Sessions(names);
         var (indexNights, withoutBar, namesWithout, namesMissing) = Missing(names, sessions);
@@ -365,6 +375,347 @@ public sealed class LongHistoryReader : IComponent
 
         return new LongIncome(income, years, LongProfit.FirstCheckedYear(years));
     }
+
+    // Every odd history-ends mark through the session given, each with what its filer and its prices say and what the reader
+    // does with it, over every index's spans.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    public async Task<IReadOnlyList<SettledMark>> OddMarksAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var stamp = Text(through);
+        var marks = await MarksAsync(connection, cancellation);
+        var settled = await SettledAsync(connection, marks, await CalendarAsync(connection, stamp, cancellation), stamp, cancellation);
+
+        return [.. settled.Values.OrderBy(mark => mark.Ticker, StringComparer.Ordinal)];
+    }
+
+    // Every pair of codes the reader joins on an index through the session given, and every pair of one company's codes it
+    // leaves apart for being priced together, each with the member sessions it covers.
+    // see: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
+    public async Task<IReadOnlyList<LongJoin>> JoinsAsync(string index, DateOnly through, CancellationToken cancellation = default)
+    {
+        await ReadAsync(index, through, null, cancellation);
+
+        return [.. lastJoins];
+    }
+
+    IReadOnlyList<LongJoin> lastJoins = [];
+
+    public const string ListsVerb = "long-history-lists";
+
+    // What the reader reads on an index against what it read before the marks were read span by span and renames joined:
+    // each odd mark and its outcome, each pair joined and each left apart, each code whose member sessions hold a price they
+    // held none of, each code's member sessions not counted for its company being counted under another code, and each
+    // code's member sessions still holding no price, by whether its span runs past its last price. It writes nothing.
+    public async Task ListsAsync(string index, DateOnly through, TextWriter output, CancellationToken cancellation = default)
+    {
+        var inputs = await ReadAsync(index, through, null, cancellation);
+
+        foreach (var mark in await OddMarksAsync(through, cancellation))
+        {
+            output.WriteLine(FormattableString.Invariant($"{ListsVerb}: mark {mark.Ticker} {Text(mark.Mark)} on {string.Join(" ", mark.Indices)}: its filer {mark.Filer}, its price {mark.Price}; {mark.Outcome}{(mark.Ruled ? " on the operator's ruling" : string.Empty)}"));
+        }
+
+        foreach (var join in lastJoins.OrderBy(join => join.Ticker, StringComparer.Ordinal).ThenBy(join => join.Other, StringComparer.Ordinal))
+        {
+            output.WriteLine(join.Test is { } test
+                ? FormattableString.Invariant($"{ListsVerb}: joined {join.Ticker} with {join.Other}, {test}, {join.Sessions} member session(s) priced from it")
+                : FormattableString.Invariant($"{ListsVerb}: apart {join.Ticker} and {join.Other}, priced together, {join.Sessions} member session(s) it would have priced"));
+        }
+
+        await using var connection = await OpenAsync(cancellation);
+
+        var stamp = Text(through);
+        var marks = await MarksAsync(connection, cancellation);
+        var calendar = inputs.Sessions;
+        var byTicker = inputs.Names.GroupBy(name => name.Ticker, StringComparer.Ordinal);
+        var (back, without, past, notCounted) = (0L, 0L, 0L, 0L);
+
+        foreach (var code in byTicker)
+        {
+            var held = code.SelectMany(name => name.Spans).ToArray();
+            var spans = new List<(DateOnly? Joined, DateOnly? Left)>();
+
+            await foreach (var row in RowsAsync(connection, "SELECT joined, \"left\" FROM long_span WHERE index_code = $index AND ticker = $ticker;", [("$index", index), ("$ticker", code.Key)], cancellation))
+            {
+                spans.Add((Day(row.GetString(0)), row.IsDBNull(1) ? null : Day(row.GetString(1))));
+            }
+
+            var before = LongLedger.Marked(await BarsAsync(connection, "long_bar", code.Key, stamp, cancellation), marks.GetValueOrDefault(code.Key) ?? []);
+            var stored = LongLedger.Marked(await BarsAsync(connection, "bar", code.Key, stamp, cancellation), marks.GetValueOrDefault(code.Key) ?? []);
+            var then = SweepHistory.Merged(before, stored).Select(bar => bar.Session).ToHashSet();
+            var memberDays = calendar.Where(session => Holds(spans, session)).ToArray();
+            var priced = code.Select(name => (Days: name.Bars.Select(bar => bar.Session).ToHashSet(), name.Spans)).ToArray();
+            var now = memberDays.Where(session => priced.Any(one => Holds(one.Spans, session) && one.Days.Contains(session))).ToArray();
+            var returned = now.Where(session => !then.Contains(session)).ToArray();
+            var dropped = memberDays.Count(session => !Holds(held, session));
+            var missing = memberDays.Where(session => Holds(held, session) && !now.Contains(session)).ToArray();
+
+            if (returned.Length > 0)
+            {
+                back += returned.Length;
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: back {code.Key} {returned.Length} member session(s) from {Text(returned[0])} to {Text(returned[^1])}, years {string.Join(" ", returned.Select(session => session.Year).Distinct())}; spans {string.Join(", ", spans.Select(span => $"{(span.Joined is { } j ? Text(j) : "-")} to {(span.Left is { } l ? Text(l) : "-")}"))}"));
+            }
+
+            if (dropped > 0)
+            {
+                notCounted += dropped;
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: once {code.Key} {dropped} member session(s) counted under another code of its company"));
+            }
+
+            if (missing.Length > 0)
+            {
+                var last = priced.SelectMany(one => one.Days).DefaultIfEmpty().Max();
+                var runsPast = missing.Count(session => last == default || session > last);
+
+                without += missing.Length;
+                past += runsPast;
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: without {code.Key} {missing.Length} member session(s) with no price from {Text(missing[0])} to {Text(missing[^1])}, {runsPast} of them after its last price{(last == default ? ", which it holds none of" : " of " + Text(last))}"));
+            }
+        }
+
+        output.WriteLine(FormattableString.Invariant($"{ListsVerb}: {DecisionCardsName(index)} through {stamp}: {back} member session(s) priced that were not, {notCounted} counted under another code of their company, {without} still with no price, {past} of them after their code's last price"));
+    }
+
+    static string DecisionCardsName(string index) => index switch
+    {
+        "GSPC" => "the S&P 500",
+        "MID" => "the S&P 400",
+        _ => "the S&P 600",
+    };
+
+    static async Task<Dictionary<string, List<SessionMark>>> MarksAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var marks = new Dictionary<string, List<SessionMark>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, session_date, kind, says FROM session_mark ORDER BY ticker, session_date;", [], cancellation))
+        {
+            var ticker = row.GetString(0);
+
+            if (!marks.TryGetValue(ticker, out var held))
+            {
+                marks[ticker] = held = [];
+            }
+
+            held.Add(new SessionMark(Day(row.GetString(1)), row.GetString(2), row.GetString(3)));
+        }
+
+        return marks;
+    }
+
+    // The sessions through the session given: the S&P 500's own from the long pull, and the store's bars' after its newest.
+    static async Task<DateOnly[]> CalendarAsync(SqliteConnection connection, string through, CancellationToken cancellation)
+    {
+        var sessions = new SortedSet<DateOnly>();
+
+        await foreach (var row in RowsAsync(connection, "SELECT session_date FROM long_market_bar WHERE series = 'GSPC' AND session_date <= $through;", [("$through", through)], cancellation))
+        {
+            sessions.Add(Day(row.GetString(0)));
+        }
+
+        var newest = sessions.Count == 0 ? "0000-00-00" : Text(sessions.Max);
+
+        await foreach (var row in RowsAsync(connection, "SELECT DISTINCT session_date FROM bar WHERE session_date > $newest AND session_date <= $through;", [("$newest", newest), ("$through", through)], cancellation))
+        {
+            sessions.Add(Day(row.GetString(0)));
+        }
+
+        return [.. sessions];
+    }
+
+    // Each code's company: the codes the store files under one filer, and a code with its delisted spellings, linked as one.
+    static async Task<LongCompanies> CompaniesAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var filers = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var codes = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var query in new[]
+        {
+            "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;",
+            "SELECT ticker, cik FROM company WHERE cik IS NOT NULL;",
+            "SELECT DISTINCT ticker, cik FROM long_filing;",
+        })
+        {
+            await foreach (var row in RowsAsync(connection, query, [], cancellation))
+            {
+                var cik = row.GetString(1).TrimStart('0');
+
+                if (!filers.TryGetValue(cik, out var held))
+                {
+                    filers[cik] = held = new HashSet<string>(StringComparer.Ordinal);
+                }
+
+                held.Add(row.GetString(0));
+            }
+        }
+
+        foreach (var query in new[] { "SELECT DISTINCT ticker FROM long_bar;", "SELECT DISTINCT ticker FROM bar;" })
+        {
+            await foreach (var row in RowsAsync(connection, query, [], cancellation))
+            {
+                codes.Add(row.GetString(0));
+            }
+        }
+
+        return LongCompanies.Of(filers.ToDictionary(pair => pair.Key, pair => (IEnumerable<string>)pair.Value, StringComparer.Ordinal), codes);
+    }
+
+    // Each odd history-ends mark on a code, settled by its filer's reports and its traded prices around it; a mark that is
+    // not odd is not held here and ends its span.
+    async Task<Dictionary<string, SettledMark>> SettledAsync(SqliteConnection connection, IReadOnlyDictionary<string, List<SessionMark>> marks, IReadOnlyList<DateOnly> calendar, string through, CancellationToken cancellation)
+    {
+        var settled = new Dictionary<string, SettledMark>(StringComparer.Ordinal);
+        var ruled = new Dictionary<(string, DateOnly), string>();
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, session_date, ruling FROM mark_ruling;", [], cancellation))
+        {
+            ruled[(row.GetString(0), Day(row.GetString(1)))] = row.GetString(2);
+        }
+
+        foreach (var (ticker, held) in marks)
+        {
+            if (held.Where(mark => mark.Kind == SessionMarking.HistoryEnds).Select(mark => (DateOnly?)mark.Session).Min() is not { } end)
+            {
+                continue;
+            }
+
+            var spans = new List<(string Index, DateOnly Joined, DateOnly? Left)>();
+
+            await foreach (var row in RowsAsync(connection, "SELECT index_code, joined, \"left\" FROM long_span WHERE ticker = $ticker;", [("$ticker", ticker)], cancellation))
+            {
+                spans.Add((row.GetString(0), Day(row.GetString(1)), row.IsDBNull(2) ? null : Day(row.GetString(2))));
+            }
+
+            var traded = (await SeriesAsync(connection, ticker, held, through, cancellation)).Where(bar => bar.Volume > 0).ToArray();
+
+            if (!LongMarks.Odd(end, spans, [.. traded.Select(bar => bar.Session)]))
+            {
+                continue;
+            }
+
+            var filings = new List<(DateOnly, string)>();
+
+            await foreach (var row in RowsAsync(connection, "SELECT filed, form FROM long_filing WHERE ticker = $ticker;", [("$ticker", ticker)], cancellation))
+            {
+                filings.Add((Day(row.GetString(0)), row.GetString(1)));
+            }
+
+            var filer = LongMarks.FilerOf(end, filings);
+            var price = LongMarks.PriceOf(traded, end, calendar);
+
+            // A mark the evidence leaves to the operator reads as they ruled it on the marking page.
+            var outcome = LongMarks.Settle(filer, price) is var found && found == LongMarks.ToOperator && ruled.TryGetValue((ticker, end), out var ruling) ? ruling : found;
+
+            settled[ticker] = new SettledMark(ticker, end, [.. spans.Select(span => span.Index).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)], filer, price, outcome)
+            {
+                Ruled = outcome != found,
+            };
+        }
+
+        return settled;
+    }
+
+    // A code's prices, the long pull's and the store's at the store's scale, the sessions before a start left out and a bad
+    // print skipped; its history-ends mark is read by the parts.
+    static async Task<SweepBar[]> SeriesAsync(SqliteConnection connection, string ticker, IReadOnlyList<SessionMark> marks, string through, CancellationToken cancellation)
+    {
+        var kept = marks.Where(mark => mark.Kind != SessionMarking.HistoryEnds).ToArray();
+        var longBars = LongMarks.Parts(await BarsAsync(connection, "long_bar", ticker, through, cancellation), kept, [], true)[0].Bars;
+        var stored = LongMarks.Parts(await BarsAsync(connection, "bar", ticker, through, cancellation), kept, [], true)[0].Bars;
+
+        return SweepHistory.Merged(longBars, stored);
+    }
+
+    // A part of a code's history with the prices another code of its company holds on its member sessions it holds none of,
+    // joined where the two pass the rename test; the other code's prices read only on the part's side of its mark.
+    async Task<LongPart> RenamedAsync(
+        SqliteConnection connection,
+        string ticker,
+        SweepBar[] bars,
+        (DateOnly? Joined, DateOnly? Left)[] spans,
+        (DateOnly? After, DateOnly? UpTo) side,
+        LongCompanies companies,
+        IReadOnlyDictionary<string, List<SessionMark>> marks,
+        IReadOnlyList<DateOnly> calendar,
+        string through,
+        CancellationToken cancellation)
+    {
+        var held = bars.Select(bar => bar.Session).ToHashSet();
+        var missing = calendar.Where(session => !held.Contains(session) && spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session))).ToHashSet();
+        var joined = new HashSet<DateOnly>();
+        var with = new List<(string, string)>();
+
+        if (missing.Count == 0)
+        {
+            return new LongPart(ticker, bars, spans, joined, with);
+        }
+
+        foreach (var other in companies.Linked(ticker))
+        {
+            var theirs = (await SeriesAsync(connection, other, marks.GetValueOrDefault(other) ?? [], through, cancellation))
+                .Where(bar => (side.After is not { } after || bar.Session > after) && (side.UpTo is not { } upTo || bar.Session <= upTo))
+                .ToArray();
+
+            if (!theirs.Any(bar => missing.Contains(bar.Session)))
+            {
+                continue;
+            }
+
+            if (LongRenames.Test(bars, theirs) is not { } test)
+            {
+                lastJoinsFound.Add(new LongJoin(ticker, other, null, theirs.Count(bar => missing.Contains(bar.Session))));
+
+                continue;
+            }
+
+            var (together, taken) = LongRenames.Joined(bars, theirs);
+
+            bars = together;
+            joined.UnionWith(taken);
+            missing.ExceptWith(taken);
+            with.Add((other, test));
+            lastJoinsFound.Add(new LongJoin(ticker, other, test, taken.Count(session => spans.Any(span => (span.Joined is not { } start || start <= session) && (span.Left is not { } left || left > session)))));
+        }
+
+        return new LongPart(ticker, bars, spans, joined, with);
+    }
+
+    readonly List<LongJoin> lastJoinsFound = [];
+
+    // The member sessions a part is not counted on: those it holds no price of its own for, its bar missing or taken from
+    // another code, where another code of its company is a member holding a price of its own.
+    static HashSet<DateOnly> NotCounted(LongPart part, IReadOnlyList<LongPart> parts, LongCompanies companies, IReadOnlyList<DateOnly> calendar)
+    {
+        var notCounted = new HashSet<DateOnly>();
+        var others = parts.Where(other => !ReferenceEquals(other, part) && other.Ticker != part.Ticker && companies.Same(part.Ticker, other.Ticker)).ToArray();
+
+        if (others.Length == 0)
+        {
+            return notCounted;
+        }
+
+        var own = part.Bars.Where(bar => !part.Joined.Contains(bar.Session)).Select(bar => bar.Session).ToHashSet();
+        var ownOf = others.Select(other => other.Bars.Where(bar => !other.Joined.Contains(bar.Session)).Select(bar => bar.Session).ToHashSet()).ToArray();
+
+        foreach (var session in calendar.Where(session => !own.Contains(session) && Holds(part.Spans, session)))
+        {
+            for (var at = 0; at < others.Length; at++)
+            {
+                if (ownOf[at].Contains(session) && Holds(others[at].Spans, session))
+                {
+                    notCounted.Add(session);
+
+                    break;
+                }
+            }
+        }
+
+        return notCounted;
+    }
+
+    static bool Holds(IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> spans, DateOnly session) =>
+        spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session));
 
     // Each code's surprises: the pulled ones where the pull holds the day, and the long calendar's on every other day it
     // holds a percent for.

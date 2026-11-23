@@ -787,7 +787,29 @@ public static class SchemaMigrations
         new Migration(164, "create research_ask, research_failure and research_idea", CreateResearch),
         new Migration(165, "create buy_range_width", CreateBuyRangeWidths),
         new Migration(166, "create idea_box, idea_box_answer and idea_box_confirm", CreateIdeaBox),
+        new Migration(167, "create mark_ruling", CreateMarkRuling),
     ];
+
+    // The operator's ruling on a history-ends mark the evidence leaves to them, written by the read surface's confirm on the
+    // marking page: read through as misdated, or kept as a code another company took. It takes inserts alone, so a mark is
+    // ruled once and stands as ruled.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    const string CreateMarkRuling = @"
+        CREATE TABLE mark_ruling (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ruling        TEXT NOT NULL CHECK (ruling IN ('read through', 'kept')),
+            filer         TEXT NOT NULL,
+            price         TEXT NOT NULL,
+            ruled_at      TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        CREATE TRIGGER mark_ruling_takes_inserts_alone_on_change BEFORE UPDATE ON mark_ruling
+        BEGIN SELECT RAISE(ABORT, 'mark_ruling takes inserts alone: a mark is ruled once.'); END;
+        CREATE TRIGGER mark_ruling_takes_inserts_alone_on_removal BEFORE DELETE ON mark_ruling
+        BEGIN SELECT RAISE(ABORT, 'mark_ruling takes inserts alone.'); END;
+    ";
 
     // The idea box: each idea the operator typed, written by the read surface's press; each answer the local model gave it,
     // written by the idea box's worker; and each line the operator confirmed, written by the read surface's confirm. Every

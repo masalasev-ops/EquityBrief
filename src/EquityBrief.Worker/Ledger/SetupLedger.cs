@@ -101,7 +101,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerReading, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
-            new StoreTouch(Store.SessionReading, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.SessionReading, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SessionReadingYear, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.LongFiling, Touch.Read),
@@ -320,6 +320,11 @@ public sealed partial class SetupLedger : IComponent
         VALUES ($index, $year, $rows, $sessions, $night_sessions, $first, $last, $counted_at);";
 
     const string SessionRowsOn = "SELECT ticker, readings, source FROM session_reading WHERE index_code = $index AND session_date = $session ORDER BY ticker;";
+
+    // From the 24.19 correction a session's rows the build worked, which the build written again clears in the chunk's own
+    // transaction before writing the session whole, a night's own rows left as they stand.
+    // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
+    const string ClearBuiltSession = "DELETE FROM session_reading WHERE index_code = $index AND session_date = $session AND source = 'build';";
 
     // From 23.6 the long build's writes, which only `ledger-build --long` runs: each setup under both readings, the standing
     // setups left open whose prices stop at their last price, and each family's years under both readings, the last two

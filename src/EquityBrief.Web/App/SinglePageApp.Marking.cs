@@ -19,8 +19,19 @@ public sealed record MarkingRow(string Kind, string Ticker, DateOnly Session, st
 // One long ledger setup counted as no result, its edge past 20 risks either way.
 public sealed record OutlyingRow(string Index, string Family, string Ticker, DateOnly Session, double Edge);
 
+// From the 24.19 correction one history-ends mark the evidence leaves to the operator: a code that trades on past it inside a
+// span, or with spans of one index on both sides, whose filer and prices do not agree or whose filer is not on file; the
+// indices its spans are on, what each test says, its evidence, and the ruling given, none where it has none.
+public sealed record MarkToRule(string Ticker, DateOnly Session, IReadOnlyList<string> Indices, string Filer, string Price, MarkEvidence Evidence, string? Ruled)
+{
+    public string Key => Ticker + "|" + Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
+
 // What the marking page draws.
-public sealed record MarkingView(IReadOnlyList<MarkingRow> Jumps, IReadOnlyList<MarkingRow> Ends, IReadOnlyList<OutlyingRow> Outlying);
+public sealed record MarkingView(IReadOnlyList<MarkingRow> Jumps, IReadOnlyList<MarkingRow> Ends, IReadOnlyList<OutlyingRow> Outlying)
+{
+    public IReadOnlyList<MarkToRule> ToRule { get; init; } = [];
+}
 
 // From the 23.4 correction the marking page: every unexplained jump and every end no filing settles with its evidence and a
 // proposed mark, which the operator confirms in one press, changes one at a time, or leaves, and the long ledger's setups
@@ -60,6 +71,7 @@ public sealed partial class SinglePageApp
 
         Table(body, "Unexplained jumps", "jumps", view.Jumps, endsByKey, holdsTheChoice: true);
         Table(body, "Ends no filing settles", "ends", view.Ends, jumpsByKey, holdsTheChoice: false);
+        ToRule(body, view.ToRule);
         body.Append("<p><button type=\"submit\" name=\"all\" value=\"1\">Confirm every mark as chosen above</button></p>");
         body.Append("</form>");
 
@@ -140,6 +152,56 @@ public sealed partial class SinglePageApp
                     body.Append(Invariant($"<br><span class=\"muted\" data-one-mark=\"{Escaped(row.Key)}\">One mark covers this jump and its end in the table below, which proposes: {Escaped(partner.ProposedSays)}</span>"));
                 }
 
+                body.Append(Invariant($"<br><button type=\"submit\" name=\"only\" value=\"{Escaped(row.Key)}\">Confirm this one</button>"));
+            }
+
+            body.Append("</td></tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+    }
+
+    // From the 24.19 correction the history-ends marks the evidence leaves to the operator: a code still trading after its mark,
+    // what its filer's reports and its prices say, the days around it and the filings beside it, and a choice of reading through
+    // it as misdated or keeping it as a code another company took; none chosen until the operator chooses.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    static void ToRule(StringBuilder body, IReadOnlyList<MarkToRule> rows)
+    {
+        body.Append(Invariant($"<h3>History ends the evidence leaves to you: {rows.Count:N0}</h3>"));
+        body.Append("<p class=\"card-note\">Each stock still trades after the day its history was marked to end. Read through: one company carries on, and its history reads past the mark. Kept: another company took the code, and the later spans read only the prices after it.</p>");
+
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"to-rule\"><thead><tr><th>#</th><th>Stock</th><th>Day</th><th>Its filer and its price</th><th>The days around it</th><th>Filings beside it</th><th>Ruling</th></tr></thead><tbody>");
+
+        var number = 0;
+
+        foreach (var row in rows)
+        {
+            number++;
+
+            var around = string.Join(" ", row.Evidence.Around.Select(one => one.Session == row.Session
+                ? Invariant($"<b>{one.Close:0.00} ({Volume(one.Volume)})</b>")
+                : Invariant($"{one.Close:0.00} ({Volume(one.Volume)})")));
+            var filings = row.Evidence.Filings.Count == 0
+                ? "none"
+                : string.Join("; ", row.Evidence.Filings.Select(filing => Invariant($"{Escaped(filing.Form)}{(filing.Items is { } items ? " " + Escaped(items) : string.Empty)} {filing.Filed:yyyy-MM-dd}")));
+
+            body.Append(FormattableString.Invariant($"<tr data-rule=\"{Escaped(row.Key)}\"><td class=\"n\">{number}</td><td>{Escaped(row.Ticker)}<br><span class=\"muted\">{Escaped(string.Join(", ", row.Indices.Select(index => LongIndices.FirstOrDefault(one => one.Index == index).Name ?? index)))}</span></td><td class=\"n\">{row.Session:yyyy-MM-dd}</td>"));
+            body.Append(Invariant($"<td>Its filer {Escaped(row.Filer)}; its price {Escaped(row.Price)}</td><td class=\"muted\">{around}</td><td>{filings}</td><td>"));
+
+            if (row.Ruled is { } ruled)
+            {
+                body.Append(Invariant($"ruled: {Escaped(ruled)}"));
+            }
+            else
+            {
+                body.Append(FormattableString.Invariant($"<select name=\"r|{Escaped(row.Key)}\" aria-label=\"Ruling for {Escaped(row.Ticker)} {row.Session:yyyy-MM-dd}\">"));
+                body.Append("<option value=\"\" selected>not ruled yet</option>");
+                body.Append(Invariant($"<option value=\"{LongMarks.ReadThrough}\">{LongMarks.ReadThrough}</option><option value=\"{LongMarks.Kept}\">{LongMarks.Kept}</option></select>"));
                 body.Append(Invariant($"<br><button type=\"submit\" name=\"only\" value=\"{Escaped(row.Key)}\">Confirm this one</button>"));
             }
 

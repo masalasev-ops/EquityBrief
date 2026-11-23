@@ -2680,7 +2680,7 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 
 **What is the operator's.** Any spend, named with its amount; the picker's fields, what it is never shown and its menu, with each empty field kept or dropped; the loop's mockup; the picker's mockup of its own rules and the judge's review; the pullbacks' registered list before their search; the start of the readings for every stock on every session, and the 24.19 correction's fix and any store run it needs; each index's naming test of the picker; each replay of the picker; the filing text's requests before the first; promotion or keeping at each monthly run from 2027-02-06; and a pin move a replay carries in which any trade differs (see: A pin move a replay carries with every trade the same registers no live rule, and one moving a trade comes to the operator first).
 
-**The claims phase 24 predicts.** 1,632 claims and 1,632 PASS on main at 6c7a22b7. After 24.45 about 1,809, within 1,720 to 1,860:
+**The claims phase 24 predicts.** 1,632 claims and 1,632 PASS on main at 6c7a22b7. After 24.45 about 1,811, within 1,720 to 1,860:
 - none at 24.0, which adds section 20's row and no row of a table the harness reads;
 - none at 24.1, a mockup in `prompts/`;
 - about 2 at 24.2, section 18's row and 15.20's row;
@@ -2701,7 +2701,7 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 - about 5 at 24.17, the page's rows, section 17's floors and section 18's row;
 - none at 24.18, the rename landing as words of rows that stood and the word check as a clause of its roster row;
 - about 6 at 24.19, the table's catalogue and matrix rows, its store and the History page's row;
-- none at 24.19 correction, its fixes landing as code under the rows 24.19 landed;
+- about 2 at 24.19 correction, the marks ruled's store and the History page's row of the marks the evidence leaves to the operator, its other fixes landing as code under the rows 24.19 landed;
 - none at 24.20, a mockup in `prompts/`;
 - about 2 at 24.21, the shared accounts' catalogue row and its check's row;
 - about 6 at 24.22, the cases' and the words' catalogue and matrix rows, their stores and section 18's row of a reply refused;

@@ -7,6 +7,26 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - the long reader's marks span by span, renames, a company counted once, the table's own readings and the marks ruled, at the 24.19 correction
+Decision: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+Decision: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
+Decision: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
+Was:
+> ARCHITECTURE.html, the long history reader's row: "under its marks, the sessions before a start and after a history's end left out and a bad print skipped"; its reads ending "... bar store, session marks, long prints, ..."
+> ARCHITECTURE.html, the read API's row writing "... promotion presses, session marks, ideas typed, ideas confirmed" and its words opening with the idea box's press
+> ARCHITECTURE.html, the store of every member's readings on every session: its contents ending "... whether the build worked them or a night stored them"
+> ARCHITECTURE.html: no store of marks ruled; no 15.25 row of history ends the evidence leaves to the operator
+> SCHEMA.md: "| `session_reading` | SetupLedger | SetupLedger | none |" and "written by the setup ledger alone, its insert and its updater, and deleted by nothing"; no `mark_ruling`
+> RUNBOOK.md: no long history lists and no word of the corrected reader
+> BUILD_PLAN.md: "- none at 24.19 correction, its fixes landing as code under the rows 24.19 landed;" and "After 24.45 about 1,809"
+Now:
+> ARCHITECTURE.html, the reader: "the sessions before a start left out and a bad print skipped, and from the 24.19 correction a history's end ending only the spans that joined on or before it ..." with the rename test and a company counted once; reading marks ruled
+> ARCHITECTURE.html, the read API writing marks ruled and its words opening with the marking page's ruling; the table's store reading its seven readings its own way; the store of marks ruled; 15.25's row "History ends the evidence leaves to you"
+> SCHEMA.md: `session_reading` deleted by the setup ledger alone, the build written again with `--again`; `mark_ruling` written once by the read surface
+> RUNBOOK.md: the corrected reader and `long-history-lists --index`
+> BUILD_PLAN.md: "- about 2 at 24.19 correction, the marks ruled's store and the History page's row ..." and "After 24.45 about 1,811"
+Why: the operator's answers of 2026-11-22 and 2026-11-23 on the 24.19 correction, kept word for word as Appendices AA, AB, AC and AE of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: a mark ends only its span, odd marks settled by evidence with the rest on the marking page, the strict rename test with its one exception, each company counted once, and the table-only reader.
+
 ### 2026-11-23 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - the 24.19 correction's order, 24.35 taught the live pullback plan, and 24.45 the full design search, at the 24.0 planning amendment
 Was:
 > BUILD_PLAN.md, 24.19: no order of the correction's steps, no rename test, no year limit from 2027

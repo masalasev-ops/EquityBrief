@@ -38,6 +38,7 @@ public enum Store
     TickerJoin,
     ListedName,
     SessionMark,
+    MarkRuling,
     DataCheck,
     LongSnapshot,
     LongHolding,
