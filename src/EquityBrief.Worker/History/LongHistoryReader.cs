@@ -78,6 +78,25 @@ public sealed class LongHistoryReader : IComponent
         return newest ?? throw new InvalidOperationException("the store holds no long price and no bar");
     }
 
+    // The newest session the store's own bars hold, or the long prices' newest where it holds no bar, so a session an answer
+    // asked in the day carries before the night stores it is never read as one a code holds no price for.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    public async Task<DateOnly> NewestStoredSessionAsync(CancellationToken cancellation = default)
+    {
+        await using (var connection = await OpenAsync(cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT MAX(session_date) FROM bar;", [], cancellation))
+            {
+                if (!row.IsDBNull(0))
+                {
+                    return Day(row.GetString(0));
+                }
+            }
+        }
+
+        return await NewestSessionAsync(cancellation);
+    }
+
     // One index's long history through the session given: every code its long spans hold, each over its own spans, none a
     // survivor.
     public async Task<SweepHistoryInputs> ReadAsync(string index, DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default)

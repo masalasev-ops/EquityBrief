@@ -7,6 +7,17 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/SCHEMA.md and docs/RUNBOOK.md - the marking of sessions held none stops at the store's newest stored session, at a correction to the 24.19 correction
+Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+Was:
+> SCHEMA.md, `long_held_none`: "never updated or deleted, its triggers refusing both; the long price pull's write removes none of it"; "`--held-none <folder>` reads each such code's member sessions on every index that still hold no price, as the long history's lists read them, and writes them here."
+> SCHEMA.md, the ownership summary: "| `long_held_none` | LongPricePull | none | none |"; "The migration runner writes the schema and inserts nothing, so it owns no row in the table below."
+> RUNBOOK.md: "`--held-none` then marks each code an ask was for with its member sessions on every index still without a price"
+Now:
+> SCHEMA.md: the marking reads through the newest session `bar` holds, and migration 169 removes the five rows written past it, SchemaMigrations named as the table's one delete in the ownership summary and beside the migration runner's sentence
+> RUNBOOK.md: the marking reads through the store's newest stored session
+Why: the first marking read through the newest session the long prices held, 2026-11-23, which answers asked that day carried for 17 codes before the night stored it, and marked that session for HOS, LUMN, PRG, WEN and WWW; the operator's answers of 2026-11-23 at 16:50, item 4, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - codes asked again and the sessions the provider holds no price for, at a correction to the 24.19 correction
 Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
 Was:

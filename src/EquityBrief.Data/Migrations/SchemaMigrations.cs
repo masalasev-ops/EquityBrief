@@ -789,7 +789,22 @@ public static class SchemaMigrations
         new Migration(166, "create idea_box, idea_box_answer and idea_box_confirm", CreateIdeaBox),
         new Migration(167, "create mark_ruling", CreateMarkRuling),
         new Migration(168, "create long_held_none", CreateLongHeldNone),
+        new Migration(169, "remove the five long_held_none rows marked past the store's newest stored session", RemoveHeldNonePastTheStore),
     ];
+
+    // The five rows the first marking wrote for 2026-11-23, a session the answers asked that day carried for other codes and the
+    // store's own bars did not yet hold, removed on the operator's word of 2026-11-23 with the removal trigger set aside for this
+    // one statement alone and put back as it stood.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    const string RemoveHeldNonePastTheStore = @"
+        DROP TRIGGER long_held_none_takes_inserts_alone_on_removal;
+        DELETE FROM long_held_none
+        WHERE ticker IN ('HOS', 'LUMN', 'PRG', 'WEN', 'WWW')
+          AND first_session = '2026-11-23' AND last_session = '2026-11-23' AND sessions = 1
+          AND run_id = 'long-held-none-20261123T213949Z';
+        CREATE TRIGGER long_held_none_takes_inserts_alone_on_removal BEFORE DELETE ON long_held_none
+        BEGIN SELECT RAISE(ABORT, 'long_held_none takes inserts alone.'); END;
+    ";
 
     // The member sessions of a code the long price pull asked the provider for again and still holds no price of, a run of
     // them a row, written once after the write that read the answer. It takes inserts alone, so a code is never asked for

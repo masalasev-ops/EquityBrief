@@ -22237,3 +22237,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the fetch: the gap codes WOLF_old2 for CREE, VTLE for LPI, VRE for CLI, ROCC for PVAC, DOC_old2 for DOC_old1,
             WW_old for WTW_old and SIX again, and the hole codes, one ask each, off-peak as the operator ordered; what each
             ask filled reported after the write; DDR, whose prices the rename test keeps apart from SITC's, to the operator.
+
+### 24.19 - correction: the marking of sessions held none stops at the store's newest stored session, and its five wrong rows removed   2026-11-23
+
+Queue:      done, PRs 765 to 768, the fetch run and reported; in progress, this correction; next, the operator's correction
+            to Home's region of stocks that met the rules again, then Fox and DDR, the delisted spellings asked once, the
+            table's check measured again, then 24.35's S&P 400 and 600 half.
+Ruled:      the operator's answers of 2026-11-23 at 16:50, item 4, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`. No new decision.
+Built:      `--held-none` reads each code's member sessions through the newest session the store's own bars hold, or the long
+            prices' newest where it holds no bar, where it read through the long prices' newest: the answers asked on
+            2026-11-23 carried that session for 17 codes before the night stored it, and HOS, LUMN, PRG, WEN and WWW were
+            marked held none for it. Migration 169 removes those five rows alone, the removal trigger set aside for its one
+            statement and put back as it stood.
+Measured:   on the live store before the migration, the five rows each 2026-11-23 alone, one session, run
+            `long-held-none-20261123T213949Z`; `bar` newest 2026-11-20, `long_bar` newest 2026-11-23.
+Tests:      2 new: over a constructed store whose long prices carry a session past the store's own bars, a code asked again
+            is marked nothing for it; and migration 169 over the five rows, one earlier run of one of their codes and another
+            code's row for the same day removes the five alone, the table refusing a delete after it.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: the guard this correction adds taken out at its one site. m1 the marking read
+            through the long prices' newest again: red, the code marked for the session past the store. Filtered to its test
+            and reverted before anything was committed.
+Claims:     1753, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4004 of 4004 tests ran with none failed, migrations 0 to 169 with
+            none pending, schema version 169, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    nothing new.

@@ -26,7 +26,7 @@ One SQLite file under the configured data root. One year of bars for five hundre
 
 Operations are Insert, Update and Delete. A table may have different owners for different operations; it may never have two owners for one operation.
 
-**Creating or altering a table is not one of the three.** The migration runner writes the schema and inserts nothing, so it owns no row in the table below. What a migration may do to a bar table is `bar-append-only`'s business, and that check reads every migration.
+**Creating or altering a table is not one of the three.** The migration runner writes the schema and inserts nothing, so it owns no row in the table below, but for migration 169's removal of five `long_held_none` rows, which the table names as SchemaMigrations' delete. What a migration may do to a bar table is `bar-append-only`'s business, and that check reads every migration.
 
 **The suite is exempt.** It writes to throwaway stores in temporary directories, because a check that reads the live store is a check whose result depends on last night. `writer-ownership` reads the shipped source, and nothing in the suite reaches the configured data root.
 
@@ -208,7 +208,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_split` | LongPricePull | none | LongPricePull |
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
-| `long_held_none` | LongPricePull | none | none |
+| `long_held_none` | LongPricePull | none | SchemaMigrations |
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
@@ -574,7 +574,7 @@ Grain: one row per code and run of its member sessions the provider was asked fo
 
 Primary key: `ticker`, `first_session`.
 
-**Written once by the long price pull's `--held-none` after the write that read the answers asked again, a run already held changing nothing, and never updated or deleted, its triggers refusing both; the long price pull's write removes none of it** (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again). `long-prices --capture --into <folder> --again <codes>` asks each code named again, whether or not the folder keeps its answer, each for its own member sessions or for those of the code named after it, and keeps the asks and their instant in the folder; it refuses, before asking anything, a code an ask is for that holds a row here. After `--write`, `--held-none <folder>` reads each such code's member sessions on every index that still hold no price, as the long history's lists read them, and writes them here. The long history's lists name these sessions as the provider holding no price for them, apart from those still without one; nothing else reads it.
+**Written once by the long price pull's `--held-none` after the write that read the answers asked again, a run already held changing nothing, and never updated or deleted, its triggers refusing both, but for migration 169's five rows; the long price pull's write removes none of it** (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again). `long-prices --capture --into <folder> --again <codes>` asks each code named again, whether or not the folder keeps its answer, each for its own member sessions or for those of the code named after it, and keeps the asks and their instant in the folder; it refuses, before asking anything, a code an ask is for that holds a row here. After `--write`, `--held-none <folder>` reads each such code's member sessions on every index through the newest session `bar` holds that still hold no price, as the long history's lists read them, and writes them here, so a session an answer asked in the day carries before the night stores it is never marked. Migration 169 removes the five rows the first marking wrote for 2026-11-23 past that session, HOS, LUMN, PRG, WEN and WWW, on the operator's answer of 2026-11-23 at 16:50, its removal trigger set aside for that one statement and put back as it stood. The long history's lists name these sessions as the provider holding no price for them, apart from those still without one; nothing else reads it.
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.
