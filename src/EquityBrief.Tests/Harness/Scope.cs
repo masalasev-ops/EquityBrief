@@ -5424,6 +5424,14 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store of ideas in every state, read back newest first: waiting, read into none, refused with its cause, understood above its line with the one Confirm, confirmed for the next Sunday and tested with its verdict; a press and a confirm from a script refused with nothing written; a press with nothing typed refused; a confirm written once and only of an understood idea; and an empty store saying no idea has been typed",
             ByReadSurface),
+        [CheckReach.Key(FailureTable, "A month in which no idea passes")] = new Scoped(
+            Verdict.Pass,
+            "the nearest misses worked by hand over constructed misses, the lowest adjusted p first and one with none left out; what the researcher tried next worked by hand, never an idea placed before the miss or on another setup or index; and the next week worked by hand on both sides of its hour, a failed week moving nothing",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "Never stuck")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of two monthly runs, the month read from the earlier: no idea passed, the nearest misses named closest first with what the researcher tried next or the day it reads it, an older miss and a farther one left out, a failed week counted beside the next week's day; an idea passed since saying so with no miss named; and an empty store saying there is no month to read",
+            ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
         [CheckReach.Key(CatalogueTable, "Sector splits reader")] = new Scoped(
@@ -8228,6 +8236,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "This week's research")] = "24.28",
         [CheckReach.Key(LoopPage, "Buy ranges")] = "24.29",
         [CheckReach.Key(LoopPage, "The idea box")] = "24.39",
+        [CheckReach.Key(LoopPage, "Never stuck")] = "24.40",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

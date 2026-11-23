@@ -262,6 +262,9 @@ public partial class ReadSurface
             // The idea box on the Improvement loop page.
             .. IdeaBoxRows,
 
+            // Never stuck on the Improvement loop page.
+            .. NeverStuckRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

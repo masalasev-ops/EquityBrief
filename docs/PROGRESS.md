@@ -21928,3 +21928,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    migration 166 on the operator's store after the merge; the operator's word on the pullbacks' search, 24.35, before
             it is built.
+
+### 24.40 - never stuck: a month with no idea passed names its nearest misses and what the researcher tried next, a failed week counted   2026-11-23
+
+Queue:      done, 24.0 to 24.29 and 24.39 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction
+            open; in progress, 24.40; next, 24.41 to 24.43 wait on the reviewer at 24.36 and the picker's versions, so the
+            next is the 24.19 correction on the operator's two answers and 24.35 on their word.
+Ruled:      the operator's second brief of phase 24 of 2026-11-16, item 15, kept word for word in the plan's file. One new
+            decision.
+Built:      the Improvement loop page's never stuck card, before the week's research. It reads the month from the monthly run
+            before the newest. Where no idea passed since, it says so and names the three near misses closest to the bar,
+            the lowest adjusted p-value first, each with what the researcher tried next on the same setup and index after the
+            miss, or the Sunday it reads it; where one passed, how many. It counts the researcher's weeks since and those
+            that failed, each asked once more before it was counted, beside the Sunday the next runs regardless. Code alone,
+            no model asked. The decision, section 15.20's and 18's rows, the plan's count at 24.40 on a line of its own, the
+            guide and the changelog.
+Tests:      2 new: the nearest misses, what the researcher tried next and the next week's day worked by hand over constructed
+            misses and ideas; and the card read back over a constructed store of two monthly runs, the month read from the
+            earlier, an older and a farther miss left out, a failed week counted, an idea passed since saying so, and an
+            empty store saying there is no month to read.
+Claims:     1745, two of the plan's three: the Loop page's card and section 18's row, the failed weeks and the next week's
+            day landing in the card's row.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.40 adds taken out at its one site. m1 the nearest misses ordered
+            with the highest p first: red in two tests; m2 what the researcher tried next read from an idea placed before the
+            miss: red; m3 the month read from the newest monthly run: red. Each filtered to its tests and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3979 of 3979 tests ran with none failed, migrations 0 to 166 with
+            none pending, schema version 166, against `data-ci` and never `data`; the phase report 68 tables, 1745 claims, 1745
+            passing, none out of scope and none unexamined, 1760 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the operator's word on the pullbacks' search, 24.35, before it is built.

@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html and docs/BUILD_PLAN.md - never stuck, at 24.40
+Decision: A month with no idea passed names its nearest misses and what the researcher tried next, and a failed week is counted and never stops the next
+Was:
+> ARCHITECTURE.html: no never stuck card on the Loop page; no section 18 row of a month in which no idea passes
+> BUILD_PLAN.md, the claims' counts: "- about 3 at 24.40; about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44."
+Now:
+> ARCHITECTURE.html: the Loop page's never stuck card before the week's research; section 18's row of a month in which no idea passes
+> BUILD_PLAN.md: "- about 3 at 24.40, the Loop page's rows and section 18's row;" on a line of its own, the later counts on the next as they stood
+Why: the operator's second brief of phase 24 of 2026-11-16, item 15, kept word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, built at 24.40 after 24.39 while 24.30 to 24.38 wait.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - the idea box, at 24.39
 Decision: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
 Was:
