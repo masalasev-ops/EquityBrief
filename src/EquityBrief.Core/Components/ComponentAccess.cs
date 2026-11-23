@@ -142,6 +142,9 @@ public enum Store
     ResearchAsk,
     ResearchFailure,
     ResearchIdea,
+
+    // The buy range's widths test, each index's figures for each width and the width its early years chose.
+    BuyRangeWidth,
     FilingDay,
     InsiderTrade,
     InsiderRead,

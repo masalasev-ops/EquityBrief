@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - every buy has a range, at 24.29
+Decision: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+Was:
+> ARCHITECTURE.html: no widths test in the catalogue or the matrix; no buy range widths store; no buy ranges card on the Loop page; no section 17 row of the buy range; no section 18 row of a pick that opens outside it
+> SCHEMA.md: no `buy_range_width`
+> BUILD_PLAN.md, 24.29: "... and nothing live changes before it; teaching the families a range is a pin move carried by the replay over two copies of the store or not landed. Every card's plan opens ... no "Below" line where no floor was chosen; no card says "at whatever price it opens" alone. Paper trading, ..."
+> BUILD_PLAN.md, 24.29's done condition: "... its choice read off 2005 to 2018 alone, asserted; each live rule's ranged variant registers with no live trade moved, asserted by the replay over two copies; the picker's ranged version is judged against its open-buying one through the case page, asserted; no card says "at whatever price it opens" alone, asserted; a pick not bought keeps its result and names its side, asserted; and one mutation of each property is shown red, the rule stated before the run."
+> RUNBOOK.md: no widths test
+Now:
+> ARCHITECTURE.html: the buy range widths test's catalogue and matrix rows; the buy range widths store; the Loop page's buy ranges card; section 17's row of the buy range, its widths, the order's 2 sessions and the fewest fills; section 18's row of a pick that opens outside its buy range
+> SCHEMA.md: `buy_range_width`, written by the widths test alone and never updated or deleted
+> BUILD_PLAN.md, 24.29: "... teaching the families a range lands in the one pin move planned before the run of 2027-02-06 with the 24.19 correction, as the operator ruled for the families' time limit and cap, carried by the replay over two copies of the store or not landed, each live rule's ranged variant registering from it with the approved width. ... its first line then "Buys at $b or less"; ... The cards' rows and the not-bought rows land with the first plan carrying an approved width."
+> BUILD_PLAN.md, 24.29's done condition: what 24.29 lands, the range's fills, the widths' choice, a pick not bought keeping its result and its side and a card's plan in the operator's words; carried and asserted where each lands, the live rules' ranged variants at the one pin move and the picker's ranged version and every card's range once the operator approves a width
+> RUNBOOK.md: "The buy range's widths, from 24.29", `buy-range-widths` and its `--index`
+Why: the operator's order and answers of 2026-11-22, kept word for word in `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`, the code built before the widths table runs over the rebuilt ledger; and their ruling of that day, Appendix AD of the plan's file, that the families are taught in the one pin move planned before the run of 2027-02-06 and not in a separate one, which the range's teaching joins. No width is chosen until the test runs, so no plan, card or registration can carry one yet.
+
 ### 2026-11-22 - docs/BUILD_PLAN.md, docs/DECISIONS.md and docs/ARCHITECTURE.html - 24.29, every buy has a range, and 24.29 to 24.43 one number on, at the 24.0 planning amendment
 Was:
 > BUILD_PLAN.md: no 24.29 of a buy range; reading recipes 24.29 and each stage after it one number lower, the phase report 24.43; "After 24.43 about 1,800"; "Pin moves at 24.29, 24.36 and 24.37"; no count at the buy range

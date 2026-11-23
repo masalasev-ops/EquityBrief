@@ -5372,6 +5372,30 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store of two weeks, the newest read back on the S&P 600 with its counts, its ideas by setup each sentence above its line, a tested one's verdict and why, a held and a waiting one, and the pullback's failure list at 42% of its losers against 30% of its picks worked by hand, the other lists saying none is listed; the older week and the S&P 500's ideas absent; a failed week saying so; and an empty store saying the researcher has not run",
             ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Buy range widths test")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long setups, setups, setup nights and candidate register it reads, its table and the run log, each reconciled against the row; and over constructed bars the walker it runs buys in a range only where given one, a pick not bought naming its side, its tally worked against the open's own edges",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Buy range widths test")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Buy range widths")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and the page reads a stored run's rows back",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The buy range")] = new Scoped(
+            Verdict.Pass,
+            "a range set from a close of 100 and a move of 2 worked by hand, its fills inside, above and below it worked by hand with the order filled on either session and not filled, the choice worked over constructed figures with a tie to the wider ceiling and a width under the fewest fills left out, and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pick that opens outside its buy range")] = new Scoped(
+            Verdict.Pass,
+            "over constructed bars a pick opening above its range and never coming back and one opening under its floor are each not bought with their side named, and the open's own edge on each is kept as missed or kept out of",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "Buy ranges")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of two runs, the newest read back on the S&P 600 with the width its early years chose, the open and each width over both years with what each bought, did not buy on each side, made a pick, missed and kept out of, the chosen rows marked, each setup folded beneath and a card's plan in the operator's words; the older run and the S&P 500's rows absent; and an empty store saying when the test runs",
+            ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
         [CheckReach.Key(CatalogueTable, "Sector splits reader")] = new Scoped(
@@ -8174,6 +8198,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The notebook")] = "24.26",
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = "24.27",
         [CheckReach.Key(LoopPage, "This week's research")] = "24.28",
+        [CheckReach.Key(LoopPage, "Buy ranges")] = "24.29",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

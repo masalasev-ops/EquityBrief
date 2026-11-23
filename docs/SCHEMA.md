@@ -121,6 +121,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `research_ask` | Researcher | none | none |
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
+| `buy_range_width` | RangeWidthTest | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2868,6 +2869,32 @@ Grain: one row per idea a week placed, from 24.28.
 Primary key: `run_id`, `index_code`, `family`, `rank`.
 
 **Inserted by the researcher alone, and never updated or deleted** (see: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word). A week's asks are written as each round ends, its failure lists and ideas with its row once its tests have run, an idea left waiting read again by the next week before any new one. Read by the read surface for the Improvement loop page and by the researcher.
+
+### buy_range_width
+Grain: one row per index, setup, width and years of a widths test run, from 24.29.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the test's run |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup walked, or `all` for every setup of the index together |
+| `width` | TEXT | the width as the table names it, as `1 / 2` or `1 / none`, or `the open` for the buy at the open with no range |
+| `ceiling` | REAL | the ceiling in typical daily moves above the last close, null for the open |
+| `floor` | REAL | the floor in typical daily moves under it, null for no floor and for the open |
+| `years` | TEXT | `early`, the setups of 2005 to 2018, or `late`, those from 2019 |
+| `offered` | INTEGER | the picks the open bought and walked to an end |
+| `bought` | INTEGER | those the range bought and walked to an end |
+| `above` | INTEGER | those not bought, opened above the range |
+| `below` | INTEGER | those not bought, opened under its floor |
+| `edge` | REAL | the edge after costs over the benchmark a pick offered, a pick not bought counting nought |
+| `missed` | REAL | the edges above nought the open made on the picks not bought, a pick offered |
+| `saved` | REAL | the edges under nought the open made on the picks not bought, as a positive figure, a pick offered |
+| `chosen` | INTEGER | 1 on the rows of the width the index's setups together chose on their early years, 0 on every other |
+| `written_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`, `index_code`, `family`, `width`, `years`.
+
+**Inserted by the widths test alone, and never updated or deleted** (see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index). A run is written whole once its walks end, by hand and never by a night. Read by the read surface for the Improvement loop page alone; no plan, rule, pick or version reads it, and no width is used before the operator approves one.
 
 ### loop_run
 Grain: one row per tester run on an index.

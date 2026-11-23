@@ -125,8 +125,21 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "case-words" => await CaseWordsVerb(),
     "notebook-fill" => await NotebookFillVerb(),
     "idea-test" => await IdeaTestVerb(args),
+    "buy-range-widths" => await BuyRangeWidthsVerb(args),
     _ => NoVerb(),
 };
+
+// The buy range's widths test over every index, or with '--index <code>' one, each width's figures written beside the
+// open's and the width each index's early years chose marked; no plan uses a width before the operator approves one.
+// see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+static async Task<int> BuyRangeWidthsVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Loop.RangeWidthTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(VerbArguments.Value(args, "--index"));
+}
 
 // Fills the notebook with every idea the store holds a test of, and the operator's two waiting for their shapes; a fill run
 // again writes only what it has not.
@@ -1331,7 +1344,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 96 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 97 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1621,6 +1634,7 @@ static int NoVerb()
         "'case-words' asks the local model for the case for and the case against of each case the newest monthly run stored that holds no words for its figures, as each local run slot does after its releases, " +
         "'notebook-fill' writes to the notebook every idea the monthly runs, the searches over the long history and the tests of the buy and sell points tested and the operator's two waiting for their shapes, nothing twice, " +
         "'idea-test --line <line>' or '--file <path>' tests each grammar line given over the long history, every line of the run judged together from 2019, and writes each to the notebook, '--source' naming who wrote it, " +
+        "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, registering nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
