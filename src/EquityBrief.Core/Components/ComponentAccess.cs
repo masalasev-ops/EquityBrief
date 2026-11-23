@@ -145,6 +145,11 @@ public enum Store
 
     // The buy range's widths test, each index's figures for each width and the width its early years chose.
     BuyRangeWidth,
+
+    // The idea box: each idea typed, each answer the local model gave it, and each line the operator confirmed.
+    IdeaBox,
+    IdeaBoxAnswer,
+    IdeaBoxConfirm,
     FilingDay,
     InsiderTrade,
     InsiderRead,

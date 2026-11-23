@@ -126,8 +126,41 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "notebook-fill" => await NotebookFillVerb(),
     "idea-test" => await IdeaTestVerb(args),
     "buy-range-widths" => await BuyRangeWidthsVerb(args),
+    "idea-box" => await IdeaBoxVerb(args),
     _ => NoVerb(),
 };
+
+// The idea box's worker for the press named with '--press <id>', as the box's press starts it and as it is run by hand: the
+// idea typed read by the pinned local model into one grammar line, under the local model's lock.
+// see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+static async Task<int> IdeaBoxVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!long.TryParse(VerbArguments.Value(args, "--press"), NumberStyles.None, CultureInfo.InvariantCulture, out var press))
+    {
+        Console.Error.WriteLine("idea-box: name the press with '--press <id>'.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("idea-box: " + refused.Message);
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.IdeaBoxReader(LmStudioReadingFeed.Live(settings), settings, SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot)
+        .RunAsync(press, Console.Out);
+}
 
 // The buy range's widths test over every index, or with '--index <code>' one, each width's figures written beside the
 // open's and the width each index's early years chose marked; no plan uses a width before the operator approves one.
@@ -1344,7 +1377,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 97 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 98 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1635,6 +1668,7 @@ static int NoVerb()
         "'notebook-fill' writes to the notebook every idea the monthly runs, the searches over the long history and the tests of the buy and sell points tested and the operator's two waiting for their shapes, nothing twice, " +
         "'idea-test --line <line>' or '--file <path>' tests each grammar line given over the long history, every line of the run judged together from 2019, and writes each to the notebook, '--source' naming who wrote it, " +
         "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, registering nothing, " +
+        "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

@@ -344,6 +344,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Buy range widths test"),
     ];
 
+    // The idea box's worker.
+    internal static string[] IdeaBoxRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Idea box reader"),
+        CheckReach.Key(Scope.MatrixTable, "Idea box reader"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -449,6 +456,7 @@ public partial class ComponentAccess
             .. SurvivorRows,
             .. ResearcherRows,
             .. RangeWidthRows,
+            .. IdeaBoxRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

@@ -54,6 +54,12 @@ public interface IDrainLauncher
     DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt) =>
         new(false, "TipRanks was not asked, because this surface holds no way to start the worker.");
 
+    // The idea box's worker for one press, which the Improvement loop page's box starts as a process of its own once the idea
+    // typed is written.
+    // see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+    DrainStart StartTheIdeaBox(long press) =>
+        new(false, "The local model was not asked, because this surface holds no way to start the worker.");
+
     // The drain writing one named request now, ahead of the queue, which the queue page's Write now press starts,
     // at the peak price where the press confirmed it.
     // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
@@ -177,6 +183,14 @@ public sealed class WorkerDrainLauncher(
 
     public DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt) =>
         Launch(AskTheRatings(ticker, askedAt), "TipRanks is being asked as a process of its own.", "the page keeps the ratings it drew");
+
+    // The verb that reads one press of the idea box, and its flag.
+    public const string IdeaBoxVerb = "idea-box";
+
+    public static IReadOnlyList<string> ReadTheIdea(long press) => [IdeaBoxVerb, "--press", press.ToString(CultureInfo.InvariantCulture)];
+
+    public DrainStart StartTheIdeaBox(long press) =>
+        Launch(ReadTheIdea(press), "The local model reads it as a process of its own, once it is free.", "the idea waits for the idea-box verb run by hand");
 
     // The flags match the worker's own, which this project cannot reference.
     public static IReadOnlyList<string> WriteNow(string ticker, bool atPeak) =>

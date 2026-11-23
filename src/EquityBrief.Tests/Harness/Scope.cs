@@ -5396,6 +5396,34 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store of two runs, the newest read back on the S&P 600 with the width its early years chose, the open and each width over both years with what each bought, did not buy on each side, made a pick, missed and kept out of, the chosen rows marked, each setup folded beneath and a card's plan in the operator's words; the older run and the S&P 500's rows absent; and an empty store saying when the test runs",
             ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Idea box reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the reading pins, the ideas typed and the answers it reads, the answers it writes, and the local model, each reconciled against the row; over a constructed store an unreadable answer asked once more and the next read into its line, both attempts written, and a press read already asked nothing",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Idea box reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Ideas typed")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a press from the page writes the words trimmed while one with nothing typed or from a script writes nothing",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Idea box answers")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a refused attempt and an understood one are written in order with their cause and line",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Ideas confirmed")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a confirm is written once and only of an idea its newest answer understood",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "An idea the box cannot read")] = new Scoped(
+            Verdict.Pass,
+            "a recorded answer read into its line by hand, and answers holding a digit, naming a setup or an index the grammar does not hold, naming a reading it cannot read, cut off or not one object each refused with its cause; an answer of no idea read as none; and the card drawing a refused idea with its cause and no Confirm",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "The idea box")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of ideas in every state, read back newest first: waiting, read into none, refused with its cause, understood above its line with the one Confirm, confirmed for the next Sunday and tested with its verdict; a press and a confirm from a script refused with nothing written; a press with nothing typed refused; a confirm written once and only of an understood idea; and an empty store saying no idea has been typed",
+            ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
         [CheckReach.Key(CatalogueTable, "Sector splits reader")] = new Scoped(
@@ -8199,6 +8227,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = "24.27",
         [CheckReach.Key(LoopPage, "This week's research")] = "24.28",
         [CheckReach.Key(LoopPage, "Buy ranges")] = "24.29",
+        [CheckReach.Key(LoopPage, "The idea box")] = "24.39",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

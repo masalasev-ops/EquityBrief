@@ -3974,6 +3974,43 @@ app.MapPost(SinglePageApp.CasePostRoute + "{index}/{family}", async (string inde
     return Said(written.Written, written.Line);
 });
 
+// From 24.39 the idea box's press: the words typed written and the box's worker started as a process of its own, which reads
+// them once the local model is free. Refused from anything but a page of this tool, and with nothing typed.
+// see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+app.MapPost(SinglePageApp.IdeaBoxRoute, async (HttpRequest request, ReadApi read, IDrainLauncher launcher) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was asked");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    if (await read.AskIdeaAsync(form?["words"].ToString()) is not { } press)
+    {
+        return Said(false, "Nothing was asked: type an idea first.");
+    }
+
+    var started = launcher.StartTheIdeaBox(press);
+
+    return Said(true, "Written. " + started.Line);
+});
+
+// The idea box's confirm: the line the newest answer was read into written as the operator's word, tested first in the next
+// Sunday run. Refused from anything but a page of this tool.
+// see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+app.MapPost(SinglePageApp.IdeaConfirmRoute + "{press}", async (long press, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was confirmed");
+    }
+
+    var written = await read.ConfirmIdeaAsync(press);
+
+    return Said(written.Written, written.Line);
+});
+
 // From 24.17 each book's own exit on an index as its card draws it, for the case for promotion's table: Quality at a fair
 // price's and the Fundamentals family's off their cards, and the sector heavyweights' from the live book's first night.
 // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
@@ -4142,7 +4179,7 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
 
     // The notebook beneath the page's own regions, its ideas on the index the page reads and the operator's own.
     // see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
-    var notebook = page.ResearchRegion(reading, await read.ResearchAsync(reading.Code)) + page.NotebookRegion(reading, await read.NotebookAsync(reading.Code)) + page.BuyRangeRegion(reading, await read.BuyRangesAsync(reading.Code));
+    var notebook = page.ResearchRegion(reading, await read.ResearchAsync(reading.Code)) + page.IdeaBoxRegion(await read.IdeaBoxAsync()) + page.NotebookRegion(reading, await read.NotebookAsync(reading.Code)) + page.BuyRangeRegion(reading, await read.BuyRangesAsync(reading.Code));
 
     // The survivors on the index, a registered one's record carried across its registration: its queued picks and its
     // variant's closed trades over the nights it shares with its running revision, as the case page reads them.

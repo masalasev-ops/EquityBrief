@@ -21884,3 +21884,47 @@ Carried:    the widths test, run by hand once the 24.19 correction has rebuilt t
             before anything uses a width; the live rules' ranged variants in the one pin move before the run of 2027-02-06;
             the picker's ranged version and every card's range once a width is approved; migration 165 on the operator's store
             after the merge.
+
+### 24.39 - the idea box: an idea typed is read by the local model into one line, shown, and tested only once confirmed   2026-11-23
+
+Queue:      done, 24.0 to 24.29 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction open; in
+            progress, 24.39, built ahead of its place since 24.30 to 24.34 and 24.36 to 24.38 wait on the 24.19 correction
+            and 24.35, the pullbacks' search, waits on the operator's word on how it runs; next, 24.40, never stuck.
+Ruled:      the operator's second brief of phase 24 of 2026-11-16, item 11, kept word for word in the plan's file. One new
+            decision.
+Built:      the idea box on the Improvement loop page. Its press, carrying the page's own header and refused with nothing
+            typed, writes the words and starts the idea box's worker, the worker's idea-box verb, as a process of its own. The
+            worker takes the local model's lock, checks the local run's pin and asks the pinned model once for the
+            researcher's closed choices with the setup and the index the words are about and one sentence holding no digit;
+            code writes the line from them as it writes the researcher's, an answer that cannot be read asked once more, every
+            attempt written with its row on the run log. The card shows each idea newest first where it stands, the model's
+            sentence above the line with a Confirm press where it understood one. The confirm writes the newest answer's line
+            once. The researcher places confirmed lines the notebook does not hold first in the next Sunday run, and the one
+            tester writes each under the idea box as its source, in the same run and at the same bar. Migration 166, three
+            tables taking inserts alone. The decision, the catalogue, matrix and store rows, the researcher's and the read
+            surface's rows, section 15.20's and 18's rows, SCHEMA, the plan's count at 24.39 on a line of its own, the
+            runbook, the guide and the changelog. The box read back at 1440 and at a true 390 in both palettes over a
+            constructed scratch store on the C: drive, with no sideways scroll.
+Measured:   nothing over the operator's store, and no ask of the local model on this machine: the press's first real ask is
+            the operator's own, its time on the run log.
+Tests:      3 new: an answer read into the line by hand and seven refused or read as none with their cause, the schema's
+            setup and index first; the worker over a constructed store writing an unreadable attempt and the next understood
+            with its run log row, a press read already asked nothing, and a confirmed line alone placed first under the box,
+            one the notebook holds not tested; and the card read back in every state with the press and the confirm refused
+            from a script, a press with nothing typed refused, and a confirm written once and only of an understood idea.
+            Two read-surface tests gained the box: the writing routes counted nineteen, and the scripts' presses write
+            nothing to its tables.
+Claims:     1743, seven of the plan's four: the worker's catalogue and matrix rows, its three stores, section 18's row and the
+            Loop page's card.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.39 adds taken out at its one site. m1 a confirm written without an
+            understood answer: red; m2 a confirm written again: red; m3 the press's header check taken out: red; m4 the
+            reader's setup and index check taken out: red; m5 a press read already asked again: red; m6 confirmed lines placed
+            after the lines that waited: red. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3977 of 3977 tests ran with none failed, migrations 0 to 166 with
+            none pending, schema version 166, against `data-ci` and never `data`; the phase report 68 tables, 1743 claims, 1743
+            passing, none out of scope and none unexamined, 1758 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    migration 166 on the operator's store after the merge; the operator's word on the pullbacks' search, 24.35, before
+            it is built.

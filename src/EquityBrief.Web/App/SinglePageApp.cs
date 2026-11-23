@@ -963,13 +963,15 @@ public sealed partial class SinglePageApp : IComponent
           const place = screen.querySelector('.marking-said');
           if (place) { place.innerHTML = said; }
         });
-        // The Loop page's presses, approve or decline of a proposal and approve of a restore: the form's fields sent with
-        // the page's own header, the page drawn again, and what the read surface said put in the line of what was pressed.
+        // The Loop page's presses, approve or decline of a proposal and approve of a restore, and from 24.39 the idea box's ask
+        // and confirm: the form's fields sent with the page's own header, the page drawn again, and what the read surface said
+        // put in the line of what was pressed.
         document.addEventListener('submit', async (event) => {
           const form = event.target;
-          if (!(form instanceof HTMLFormElement) || !form.classList.contains('loop-press')) { return; }
+          if (!(form instanceof HTMLFormElement) || !(form.classList.contains('loop-press') || form.classList.contains('idea-press'))) { return; }
           event.preventDefault();
-          const key = form.getAttribute('data-loop-key');
+          const keyOf = (one) => one.getAttribute('data-loop-key') ?? one.getAttribute('data-idea-key');
+          const key = keyOf(form);
           for (const button of form.querySelectorAll('button')) { button.disabled = true; }
           const response = await fetch(form.getAttribute('action'), {
             method: 'POST',
@@ -980,7 +982,7 @@ public sealed partial class SinglePageApp : IComponent
           const kept = scrollY;
           await show();
           scrollTo(0, kept);
-          const holder = Array.from(screen.querySelectorAll('.loop-decision')).find((one) => one.getAttribute('data-loop-key') === key);
+          const holder = Array.from(screen.querySelectorAll('.loop-decision, .idea-held')).find((one) => keyOf(one) === key);
           const place = holder ? holder.querySelector('.loop-said') : null;
           if (place) { place.innerHTML = said; } else { const top = screen.querySelector('section.loop'); if (top) { top.insertAdjacentHTML('afterbegin', said); } }
         });

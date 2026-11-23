@@ -15,7 +15,11 @@ namespace EquityBrief.Worker.Loop;
 
 // An idea of the week as the researcher placed it: its setup and index, its rank in its answer, none for one that waited
 // from an earlier week, its line and sentence, and whether it is tested this week, held already or waiting.
-public sealed record ResearchChoice(string Index, string Family, int Rank, string Line, string Reason, string Outcome);
+public sealed record ResearchChoice(string Index, string Family, int Rank, string Line, string Reason, string Outcome)
+{
+    // Whether the operator confirmed it in the idea box, which the tester writes under the box as its source.
+    public bool Boxed { get; init; }
+}
 
 // The researcher, the local run's weekly form. For each setup the grammar's events name on each index it builds the rule's
 // failure list, over its own closed picks of the early years and of the nights since the rules restarted, the tenths those
@@ -46,6 +50,8 @@ public sealed class Researcher(
             new StoreTouch(Store.ResearchAsk, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ResearchFailure, Touch.Insert),
             new StoreTouch(Store.ResearchIdea, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.IdeaBoxAnswer, Touch.Read),
+            new StoreTouch(Store.IdeaBoxConfirm, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.LocalModel]);
@@ -93,6 +99,11 @@ public sealed class Researcher(
 
     // The ideas earlier weeks left waiting, oldest first; one the notebook has tested since is passed over as held.
     const string WaitingSql = "SELECT line, reason, index_code, family FROM research_idea WHERE outcome = 'waiting' ORDER BY written_at, index_code, family, rank;";
+
+    // From 24.39 the lines the operator confirmed in the idea box, oldest first, each with what the model understood.
+    const string BoxedSql = @"
+        SELECT c.line, COALESCE((SELECT a.reason FROM idea_box_answer a WHERE a.press_id = c.press_id AND a.line = c.line ORDER BY a.attempt DESC LIMIT 1), 'the operator''s idea')
+        FROM idea_box_confirm c ORDER BY c.confirmed_at, c.press_id;";
 
     const string InsertAsk = @"
         INSERT INTO research_ask (run_id, index_code, family, round, ask, prompt_key, pin, version, prompt, outcome, cause, answer, seconds, asked_at)
@@ -153,8 +164,9 @@ public sealed class Researcher(
             .ToArray();
         var failed = answered.Length == 0;
 
-        var ideas = Choose(await WaitingAsync(cancellation), answered, await HeldAsync(cancellation), TestsAWeek);
+        var ideas = Choose(await WaitingAsync(cancellation), answered, await HeldAsync(cancellation), TestsAWeek, await BoxedAsync(cancellation));
         var chosen = ideas.Where(one => one.Outcome == Tested).Select(one => one.Line).ToArray();
+        var sources = ideas.Where(one => one.Boxed).ToDictionary(one => one.Line, _ => IdeaBoxSource, StringComparer.Ordinal);
 
         IReadOnlyDictionary<string, long> written = new Dictionary<string, long>(StringComparer.Ordinal);
         IReadOnlySet<string> unstarted = new HashSet<string>(StringComparer.Ordinal);
@@ -164,7 +176,7 @@ public sealed class Researcher(
         {
             var tester = new IdeaTestRun(clock, databaseFile, dataRoot, output);
 
-            await tester.RunAsync(chosen, "the researcher", cancellation, started.AddHours(CapHours));
+            await tester.RunAsync(chosen, "the researcher", cancellation, started.AddHours(CapHours), sources);
             written = tester.Written;
             unstarted = tester.Unstarted;
         }
@@ -185,14 +197,29 @@ public sealed class Researcher(
     // The week's lines: those earlier weeks left waiting first, oldest first, then each answer's ideas by their rank across
     // the setups, so every setup's strongest comes before any setup's second; at most the cap tested and the rest waiting, a
     // line the notebook holds or the week has already passed over as held.
+    // From 24.39 the lines the operator confirmed in the idea box and the notebook does not hold come before every other,
+    // oldest first.
+    // see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
     public static IReadOnlyList<ResearchChoice> Choose(
         IReadOnlyList<(string Line, string Reason, string Index, string Family)> waiting,
         IReadOnlyList<(string Index, string Family, IReadOnlyList<ResearchIdea> Ideas)> answered,
         IReadOnlySet<string> held,
-        int cap)
+        int cap,
+        IReadOnlyList<(string Line, string Reason, string Index, string Family)>? boxed = null)
     {
         var ideas = new List<ResearchChoice>();
         var tested = 0;
+
+        foreach (var (line, reason, index, family) in boxed ?? [])
+        {
+            if (!held.Contains(line) && ideas.All(earlier => earlier.Line != line))
+            {
+                var take = tested < cap;
+
+                ideas.Add(new ResearchChoice(index, family, 0, line, reason, take ? Tested : Waiting) { Boxed = true });
+                tested += take ? 1 : 0;
+            }
+        }
 
         void Place(string index, string family, int rank, string line, string reason, bool fromAnswer)
         {
@@ -507,6 +534,33 @@ public sealed class Researcher(
         }
 
         return held;
+    }
+
+    // The source a confirmed line of the idea box is tested and written under.
+    public const string IdeaBoxSource = "the idea box";
+
+    // The idea box's confirmed lines the grammar still reads, each with its setup and index from its line.
+    public async Task<List<(string Line, string Reason, string Index, string Family)>> BoxedAsync(CancellationToken cancellation = default)
+    {
+        var boxed = new List<(string, string, string, string)>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = BoxedSql;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (IdeaGrammar.Parse(reader.GetString(0)).Line is { } line)
+            {
+                boxed.Add((line.Canonical, reader.GetString(1), line.Index, line.Family));
+            }
+        }
+
+        return boxed;
     }
 
     async Task<List<(string Line, string Reason, string Index, string Family)>> WaitingAsync(CancellationToken cancellation)

@@ -181,6 +181,9 @@ public partial class FixtureExpectations
             // Section 17's row of the buy range and section 18's row of a pick that opens outside it.
             .. BuyRangeClaims,
 
+            // Section 18's row of an idea the box cannot read.
+            .. IdeaBoxClaims,
+
             // 24.24: section 17's row of the picker within each index and section 18's row of a night with no stock marked.
             .. JudgeIndexClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.

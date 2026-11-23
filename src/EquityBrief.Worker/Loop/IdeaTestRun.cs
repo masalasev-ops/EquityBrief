@@ -79,10 +79,11 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
     public IReadOnlySet<string> Unstarted { get; private set; } = new HashSet<string>(StringComparer.Ordinal);
 
     // Each line tested, and where the run is given an instant to stop starting by, each line not yet walked at that instant
-    // left untested; the lines walked are judged together as one run.
-    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default, DateTimeOffset? stopStartingAt = null)
+    // left untested; the lines walked are judged together as one run. From 24.39 a line may be written under a source of its
+    // own, named by its canonical line, the rest under the run's.
+    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default, DateTimeOffset? stopStartingAt = null, IReadOnlyDictionary<string, string>? sources = null)
     {
-        if (!Sources.Contains(source, StringComparer.Ordinal))
+        if (!Sources.Contains(source, StringComparer.Ordinal) || (sources?.Values.Any(one => !Sources.Contains(one, StringComparer.Ordinal)) ?? false))
         {
             output.WriteLine($"{Verb}: name '--source' as one of {string.Join(", ", Sources.Select(one => $"'{one}'"))}");
 
@@ -221,7 +222,7 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                 command.Transaction = transaction;
                 command.CommandText = Insert;
                 command.Parameters.AddWithValue("$entered_at", entered);
-                command.Parameters.AddWithValue("$source", source);
+                command.Parameters.AddWithValue("$source", sources?.GetValueOrDefault(idea.Canonical) ?? source);
                 command.Parameters.AddWithValue("$index_code", idea.Index);
                 command.Parameters.AddWithValue("$family", idea.Family);
                 command.Parameters.AddWithValue("$words", idea.Words);

@@ -45,10 +45,11 @@ public partial class ReadSurface
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        // Seventeen, stated in advance: the passes, the quote, the analysts, the ratings, the night's resume, the withdraw, the
+        // Nineteen, stated in advance: the passes, the quote, the analysts, the ratings, the night's resume, the withdraw, the
         // write now, the watch and unwatch, the account, the taken, not taken and exit presses, the Loop page's decide and restore,
-        // the marking page's confirm, and from 24.17 the case for promotion's Promote and Keep, which write nothing yet.
-        Assert.Equal(17, writes.Length);
+        // the marking page's confirm, from 24.17 the case for promotion's Promote and Keep, and from 24.39 the idea box's ask and
+        // confirm.
+        Assert.Equal(19, writes.Length);
 
         using var bare = host.Server.CreateClient();
 
@@ -72,7 +73,7 @@ public partial class ReadSurface
             }
         }
 
-        Assert.Equal(0L, Count(store, "loop_decision") + Count(store, "session_mark") + Count(store, "research_request") + Count(store, "taken_trade"));
+        Assert.Equal(0L, Count(store, "loop_decision") + Count(store, "session_mark") + Count(store, "research_request") + Count(store, "taken_trade") + Count(store, "idea_box") + Count(store, "idea_box_confirm"));
 
         // The browser a person presses with is let through to the route, which answers as it always did.
         Assert.True(WriteGuard.FromAPersonsBrowser(PageFactory.PageAgent));

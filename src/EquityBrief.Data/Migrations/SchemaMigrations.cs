@@ -786,7 +786,55 @@ public static class SchemaMigrations
         new Migration(163, "create survivor, survivor_state and survivor_pick", CreateSurvivors),
         new Migration(164, "create research_ask, research_failure and research_idea", CreateResearch),
         new Migration(165, "create buy_range_width", CreateBuyRangeWidths),
+        new Migration(166, "create idea_box, idea_box_answer and idea_box_confirm", CreateIdeaBox),
     ];
+
+    // The idea box: each idea the operator typed, written by the read surface's press; each answer the local model gave it,
+    // written by the idea box's worker; and each line the operator confirmed, written by the read surface's confirm. Every
+    // table takes inserts alone, so what was typed, what was understood and what was confirmed stand as they were.
+    // see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm
+    const string CreateIdeaBox = @"
+        CREATE TABLE idea_box (
+            id          INTEGER PRIMARY KEY,
+            words       TEXT NOT NULL,
+            pressed_at  TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE idea_box_answer (
+            press_id    INTEGER NOT NULL,
+            attempt     INTEGER NOT NULL,
+            outcome     TEXT NOT NULL CHECK (outcome IN ('understood', 'none', 'refused')),
+            cause       TEXT,
+            line        TEXT,
+            reason      TEXT,
+            prompt_key  TEXT NOT NULL,
+            pin         INTEGER,
+            version     TEXT NOT NULL,
+            answer      TEXT,
+            seconds     REAL,
+            asked_at    TEXT NOT NULL,
+            PRIMARY KEY (press_id, attempt)
+        ) STRICT;
+
+        CREATE TABLE idea_box_confirm (
+            press_id      INTEGER NOT NULL PRIMARY KEY,
+            line          TEXT NOT NULL,
+            confirmed_at  TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TRIGGER idea_box_takes_inserts_alone_on_change BEFORE UPDATE ON idea_box
+        BEGIN SELECT RAISE(ABORT, 'idea_box takes inserts alone.'); END;
+        CREATE TRIGGER idea_box_takes_inserts_alone_on_removal BEFORE DELETE ON idea_box
+        BEGIN SELECT RAISE(ABORT, 'idea_box takes inserts alone.'); END;
+        CREATE TRIGGER idea_box_answer_takes_inserts_alone_on_change BEFORE UPDATE ON idea_box_answer
+        BEGIN SELECT RAISE(ABORT, 'idea_box_answer takes inserts alone: a later answer is an attempt of its own.'); END;
+        CREATE TRIGGER idea_box_answer_takes_inserts_alone_on_removal BEFORE DELETE ON idea_box_answer
+        BEGIN SELECT RAISE(ABORT, 'idea_box_answer takes inserts alone.'); END;
+        CREATE TRIGGER idea_box_confirm_takes_inserts_alone_on_change BEFORE UPDATE ON idea_box_confirm
+        BEGIN SELECT RAISE(ABORT, 'idea_box_confirm takes inserts alone.'); END;
+        CREATE TRIGGER idea_box_confirm_takes_inserts_alone_on_removal BEFORE DELETE ON idea_box_confirm
+        BEGIN SELECT RAISE(ABORT, 'idea_box_confirm takes inserts alone.'); END;
+    ";
 
     // The buy range's widths test: each run's figures for each index, each setup the range is walked on and the index's setups
     // together, and each width with the buy at the open beside them, over the early years and from 2019, and the width each
