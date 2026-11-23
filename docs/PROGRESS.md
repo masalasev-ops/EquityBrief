@@ -22166,3 +22166,41 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the spans written again on the live store after the merge and `--behind` read again; the rest as the second
             part carried it.
+
+### 24.19 - correction: a moved close with no volume traded, and AM_old, BEL and PSD ended at their last price   2026-11-23
+
+Queue:      done, PRs 765 and 766, the spans written again on the live store with none behind; in progress, this
+            correction; next, the fetch on the operator's item 5, 24.35's S&P 400 and 600 half, then the one pin move's
+            statement to the operator.
+Ruled:      the operator's answers of 2026-11-23 at 14:00, items 1 and 2, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-2pm.md`. Two new decisions.
+Built:      a bar with no volume whose close moved from the bar before traded with its volume missing, and one whose close
+            stood did not; the long reader reads traded sessions so for a code's spans' ends, its odd marks and the rename
+            test, whose volumes are compared only on days both carry one. The every-session table's readings of a bar's
+            volume read none on such a session and its liquidity's mean leaves the day out. AM_old's, BEL's and PSD's spans
+            end at their last traded price on the operator's word, and the lists name each; the lists count the member
+            sessions past a code's last traded price apart from those counted under another code of its company.
+Measured:   on the live store, read only: 112,515 long bars carry no volume, 27,152 of them across 260 codes with a moved
+            close, SIX's 250 of 2015 and 987 of TIN_old's among them. On this morning's copy of the store with the spans
+            written again, the lists under this correction against the live store's under main: AM_old, BEL and PSD end
+            at their last traded price; TIN_old's 34 sessions end at its last close of 2012-02-10; SIX's 757 sessions on
+            the S&P 400 and 501 on the 600 stay without a price, its bars stopping at 2015-12-31; CBE's mark of 2009-09-08
+            reads through where it went to the operator; GBP's 63 sessions of 2005 and TTS's 31 of 2019 hold no price where
+            their spans ended before, the bars with no volume after them now traded. Still with no price: 5,482 on the S&P
+            500, 4,760 on the 400 and 6,159 on the 600, against 5,481, 4,892 and 6,278.
+Tests:      4 new: a moved and a standing close with no volume, by hand; two codes whose shared days carry no volume priced
+            together and their closes deciding; the table's volume readings none and its liquidity on such a day; and a
+            span the operator ended run to its last traded price.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched; the long price pull's ends read their
+            last session with volume as before.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 a moved close with
+            no volume read as not traded: red in three tests; m2 the operator's word not read: red; m3 the table's volume
+            readings left as worked: red. Each filtered to its tests and reverted before anything was committed.
+Claims:     1752, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4000 of 4000 tests ran with none failed, migrations 0 to 167 with
+            none pending, schema version 167, against `data-ci` and never `data`; the phase report 68 tables, 1752 claims, 1752
+            passing, none out of scope and none unexamined, 1767 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fetch, the operator's item 5; FOX's and FOXA's sessions, which the rename tests cannot join, to the
+            operator; the long price pull's ends read at their last session with volume until the operator rules the marks.

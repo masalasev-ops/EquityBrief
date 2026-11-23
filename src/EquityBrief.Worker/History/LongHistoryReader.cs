@@ -408,7 +408,8 @@ public sealed class LongHistoryReader : IComponent
 
     // What the reader reads on an index against what it read before the marks were read span by span and renames joined:
     // each odd mark and its outcome, each pair joined and each left apart, each code whose member sessions hold a price they
-    // held none of, each code's member sessions not counted for its company being counted under another code, and each
+    // held none of, each code's member sessions past its last traded price where its span ended, each code ended there on
+    // the operator's word, each code's member sessions not counted for its company being counted under another code, and each
     // code's member sessions still holding no price, by whether its span runs past its last price. It writes nothing.
     public async Task ListsAsync(string index, DateOnly through, TextWriter output, CancellationToken cancellation = default)
     {
@@ -432,7 +433,7 @@ public sealed class LongHistoryReader : IComponent
         var marks = await MarksAsync(connection, cancellation);
         var calendar = inputs.Sessions;
         var byTicker = inputs.Names.GroupBy(name => name.Ticker, StringComparer.Ordinal);
-        var (back, without, past, notCounted) = (0L, 0L, 0L, 0L);
+        var (back, without, past, notCounted, ended) = (0L, 0L, 0L, 0L, 0L);
 
         foreach (var code in byTicker)
         {
@@ -451,13 +452,29 @@ public sealed class LongHistoryReader : IComponent
             var priced = code.Select(name => (Days: name.Bars.Select(bar => bar.Session).ToHashSet(), name.Spans)).ToArray();
             var now = memberDays.Where(session => priced.Any(one => Holds(one.Spans, session) && one.Days.Contains(session))).ToArray();
             var returned = now.Where(session => !then.Contains(session)).ToArray();
-            var dropped = memberDays.Count(session => !Holds(held, session));
+            // A member session the reader's spans no longer hold is one past the code's last traded price, its span ended there,
+            // or one counted under another code of its company.
+            var lastOwn = code.SelectMany(name => LongTraded.Of(name.Bars)).Select(bar => (DateOnly?)bar.Session).Max();
+            var droppedDays = memberDays.Where(session => !Holds(held, session)).ToArray();
+            var endedDays = droppedDays.Count(session => lastOwn is { } lastDay && session > lastDay);
+            var dropped = droppedDays.Length - endedDays;
             var missing = memberDays.Where(session => Holds(held, session) && !now.Contains(session)).ToArray();
+
+            if (LongMarks.EndedOnTheWord.Contains(code.Key) && code.SelectMany(name => LongTraded.Of(name.Bars)).Select(bar => (DateOnly?)bar.Session).Max() is { } lastTraded)
+            {
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: ended {code.Key} at its last traded price of {Text(lastTraded)} on the operator's word, its spans {string.Join(", ", held.Select(span => $"{(span.Joined is { } j ? Text(j) : "-")} to {(span.Left is { } l ? Text(l) : "-")}"))}"));
+            }
 
             if (returned.Length > 0)
             {
                 back += returned.Length;
                 output.WriteLine(FormattableString.Invariant($"{ListsVerb}: back {code.Key} {returned.Length} member session(s) from {Text(returned[0])} to {Text(returned[^1])}, years {string.Join(" ", returned.Select(session => session.Year).Distinct())}; spans {string.Join(", ", spans.Select(span => $"{(span.Joined is { } j ? Text(j) : "-")} to {(span.Left is { } l ? Text(l) : "-")}"))}"));
+            }
+
+            if (endedDays > 0)
+            {
+                ended += endedDays;
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: past {code.Key} {endedDays} member session(s) after its last traded price of {Text(lastOwn!.Value)}, its span ended there"));
             }
 
             if (dropped > 0)
@@ -477,7 +494,7 @@ public sealed class LongHistoryReader : IComponent
             }
         }
 
-        output.WriteLine(FormattableString.Invariant($"{ListsVerb}: {DecisionCardsName(index)} through {stamp}: {back} member session(s) priced that were not, {notCounted} counted under another code of their company, {without} still with no price, {past} of them after their code's last price"));
+        output.WriteLine(FormattableString.Invariant($"{ListsVerb}: {DecisionCardsName(index)} through {stamp}: {back} member session(s) priced that were not, {ended} past their code's last traded price with its span ended there, {notCounted} counted under another code of their company, {without} still with no price, {past} of them after their code's last price"));
     }
 
     static string DecisionCardsName(string index) => index switch
@@ -589,7 +606,7 @@ public sealed class LongHistoryReader : IComponent
                 spans.Add((row.GetString(0), Day(row.GetString(1)), row.IsDBNull(2) ? null : Day(row.GetString(2))));
             }
 
-            var traded = (await SeriesAsync(connection, ticker, held, through, cancellation)).Where(bar => bar.Volume > 0).ToArray();
+            var traded = LongTraded.Of(await SeriesAsync(connection, ticker, held, through, cancellation)).ToArray();
 
             if (!LongMarks.Odd(end, spans, [.. traded.Select(bar => bar.Session)]))
             {
@@ -685,14 +702,17 @@ public sealed class LongHistoryReader : IComponent
 
     readonly List<LongJoin> lastJoinsFound = [];
 
-    // A part's spans the schedules ended past its last traded price, ended at that price where its filer's reports stop there
-    // or it runs a quarter at most; the filer's reports read only where a span runs on further.
+    // A part's spans the schedules ended past its last traded price, a session whose close moved with no volume traded, ended
+    // at that price where its filer's reports stop there, it runs a quarter at most or the operator ended its code there; the
+    // filer's reports read only where a span runs on further.
+    // see: A bar whose close moved with no volume traded with its volume missing
     static async Task<(DateOnly? Joined, DateOnly? Left)[]> EndedAsync(SqliteConnection connection, LongPart part, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
     {
-        var last = part.Bars.Where(bar => bar.Volume > 0).Select(bar => (DateOnly?)bar.Session).Max();
+        var last = LongTraded.Of(part.Bars).Select(bar => (DateOnly?)bar.Session).Max();
         var filings = new List<(DateOnly, string)>();
+        var onTheWord = LongMarks.EndedOnTheWord.Contains(part.Ticker);
 
-        if (last is { } lastDay && part.Spans.Any(span => span.Left is { } left && calendar.Count(session => session > lastDay && session < left) > LongMarks.QuarterSessions))
+        if (!onTheWord && last is { } lastDay && part.Spans.Any(span => span.Left is { } left && calendar.Count(session => session > lastDay && session < left) > LongMarks.QuarterSessions))
         {
             await foreach (var row in RowsAsync(connection, "SELECT filed, form FROM long_filing WHERE ticker = $ticker;", [("$ticker", part.Ticker)], cancellation))
             {
@@ -700,7 +720,7 @@ public sealed class LongHistoryReader : IComponent
             }
         }
 
-        return LongMarks.EndedAtLastPrice(part.Spans, last, calendar, day => LongMarks.FilerOf(day, filings) == LongMarks.FilerStops);
+        return LongMarks.EndedAtLastPrice(part.Spans, last, calendar, day => LongMarks.FilerOf(day, filings) == LongMarks.FilerStops, onTheWord);
     }
 
     // The member sessions a part is not counted on: those it holds no price of its own for, its bar missing or taken from

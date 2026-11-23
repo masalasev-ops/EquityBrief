@@ -88,15 +88,22 @@ public static class LongMarks
     // with no word from its filer: a quarter's, the schedules being a quarter apart.
     public const int QuarterSessions = 63;
 
+    // The codes whose spans past their last traded price end there on the operator's word, each company having left the
+    // market where its prices stop while its filer filed on or is not on file.
+    // see: The spans of AM_old, BEL and PSD past their last traded price end there on the operator's word
+    public static IReadOnlySet<string> EndedOnTheWord { get; } = new HashSet<string>(StringComparer.Ordinal) { "AM_old", "BEL", "PSD" };
+
     // A part's spans with each one the schedules ended, running past its code's last traded price, ended on the first session
-    // after that price where the sessions past it are a quarter's at most or the filer's reports stop there; a span still open,
-    // or one longer whose filer reports on, keeps its sessions and they stay without a price.
+    // after that price where the sessions past it are a quarter's at most, the filer's reports stop there or the operator
+    // ended its code there; a span still open, or one longer whose filer reports on, keeps its sessions and they stay without
+    // a price.
     // see: A member span past its code's last price ends there where its filer's reports stop or it runs a quarter at most
     public static (DateOnly? Joined, DateOnly? Left)[] EndedAtLastPrice(
         IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> spans,
         DateOnly? lastTraded,
         IReadOnlyList<DateOnly> calendar,
-        Func<DateOnly, bool> filerStops)
+        Func<DateOnly, bool> filerStops,
+        bool onTheWord = false)
     {
         if (lastTraded is not { } last)
         {
@@ -114,7 +121,7 @@ public static class LongMarks
 
                 var past = calendar.Where(session => session > last && session < left).ToArray();
 
-                return past.Length > 0 && (past.Length <= QuarterSessions || filerStops(last)) ? (span.Joined, (DateOnly?)past[0]) : span;
+                return past.Length > 0 && (onTheWord || past.Length <= QuarterSessions || filerStops(last)) ? (span.Joined, (DateOnly?)past[0]) : span;
             }),
         ];
     }

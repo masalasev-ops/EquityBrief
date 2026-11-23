@@ -69,11 +69,19 @@ public static partial class LongRenames
             return ratios.Count(ratio => Math.Abs(ratio / median - 1m) <= tolerance) >= share * ratios.Length;
         }
 
+        // The volumes are read on the shared days both carry one; where none does, the volume test has nothing on file and the
+        // closes decide.
+        decimal[] volumes = [.. Volumes(shared)];
+
         return Holds([.. traded.Select(pair => pair.Other.RawClose / pair.Own.RawClose)], CloseTolerance, CloseShare)
-            && Holds([.. shared.Select(pair => Shares(pair.Other.Volume) / pair.Own.Volume)], VolumeTolerance, VolumeShare)
+            && (volumes.Length == 0 || Holds(volumes, VolumeTolerance, VolumeShare))
             ? ConstantRatio
             : null;
     }
+
+    // The ratio of the two volumes on each shared day both carry one.
+    static IEnumerable<decimal> Volumes(IEnumerable<(SweepBar Own, SweepBar Other)> shared) =>
+        shared.Where(pair => pair.Own.Volume > 0 && pair.Other.Volume > 0).Select(pair => Shares(pair.Other.Volume) / pair.Own.Volume);
 
     // A code's bars with another code's on every session it holds none of, the other's put on the code's own scale: its
     // stored prices by their ratio over the last shared days, its traded prices and its volume by their median ratios.
@@ -86,7 +94,7 @@ public static partial class LongRenames
             ? (1m, 1m, 1m)
             : (Median(shared[^Math.Min(RatioDays, shared.Length)..].Select(pair => pair.Other.Close / pair.Own.Close)),
                 traded.Length == 0 ? 1m : Median(traded.Select(pair => pair.Other.RawClose / pair.Own.RawClose)),
-                Median(shared.Select(pair => Shares(pair.Other.Volume) / pair.Own.Volume)));
+                Volumes(shared).ToArray() is { Length: > 0 } volumes ? Median(volumes) : 1m);
         var taken = other.Where(bar => !held.Contains(bar.Session))
             .Select(bar => price == 1m && raw == 1m && volume == 1m
                 ? bar
@@ -96,12 +104,13 @@ public static partial class LongRenames
         return ([.. own.Concat(taken).OrderBy(bar => bar.Session)], taken.Select(bar => bar.Session).ToHashSet());
     }
 
-    // The sessions both codes traded on, each code's bar there, in order.
+    // The sessions both codes traded on, a session whose close moved with no volume among them, each code's bar there, in order.
+    // see: A bar whose close moved with no volume traded with its volume missing
     static (SweepBar Own, SweepBar Other)[] Shared(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other)
     {
-        var mine = own.Where(bar => bar.Volume > 0 && bar.Close > 0).ToDictionary(bar => bar.Session);
+        var mine = LongTraded.Of(own).Where(bar => bar.Close > 0).ToDictionary(bar => bar.Session);
 
-        return [.. other.Where(bar => bar.Volume > 0 && bar.Close > 0 && mine.ContainsKey(bar.Session)).OrderBy(bar => bar.Session).Select(bar => (mine[bar.Session], bar))];
+        return [.. LongTraded.Of(other).Where(bar => bar.Close > 0 && mine.ContainsKey(bar.Session)).OrderBy(bar => bar.Session).Select(bar => (mine[bar.Session], bar))];
     }
 
     // A count of shares as a decimal, so a ratio of two volumes is read exactly.
