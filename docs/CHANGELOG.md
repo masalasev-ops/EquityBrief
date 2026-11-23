@@ -21,6 +21,17 @@ Now:
 > RUNBOOK.md: the spans run's row naming each parting
 Why: FOX and FOXA ran from before Fox Corp listed with 110 sessions without a price, and DDR's sessions after its prices stop in 2021 held none; the operator's answers of 2026-11-23 at 16:50, items 1 and 2, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`.
 
+### 2026-11-23 - docs/ARCHITECTURE.html and docs/SCHEMA.md - each S&P 400 and 600 pullback setup stores its live rule's other gates, and the grammar says those rules' plans, at 24.35's second part
+Decision: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them
+Was:
+> ARCHITECTURE.html, the setup ledger's row: no store of a rule's other gates
+> ARCHITECTURE.html, the pullback search's row: the S&P 500's plan alone written as the grammar's lines
+> SCHEMA.md, `setup` and `long_setup`: no `other_pass`
+Now:
+> ARCHITECTURE.html: the ledger storing each such setup's other gates on the night and in its builds, and the search writing the two rules' plans
+> SCHEMA.md: `other_pass` on both tables from migration 170
+Why: the S&P 400's and 600's search waits for whether each index's live rule's other gates pass each pullback setup; the operator's answers of 2026-11-23 at 11:00, item 6, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-11am.md`.
+
 ### 2026-11-23 - docs/SCHEMA.md and docs/RUNBOOK.md - the marking of sessions held none stops at the store's newest stored session, at a correction to the 24.19 correction
 Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
 Was:

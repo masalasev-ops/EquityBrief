@@ -790,7 +790,17 @@ public static class SchemaMigrations
         new Migration(167, "create mark_ruling", CreateMarkRuling),
         new Migration(168, "create long_held_none", CreateLongHeldNone),
         new Migration(169, "remove the five long_held_none rows marked past the store's newest stored session", RemoveHeldNonePastTheStore),
+        new Migration(170, "add setup.other_pass and long_setup.other_pass", AddOtherPass),
     ];
+
+    // Whether the live rule's other gates pass a pullback setup of the S&P 400 or 600 on its session, its market check and
+    // every part but its own listing, as the night read them: null on every other family and index, and on a row written
+    // before it.
+    // see: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them
+    const string AddOtherPass = @"
+        ALTER TABLE setup ADD COLUMN other_pass INTEGER CHECK (other_pass IN (0, 1));
+        ALTER TABLE long_setup ADD COLUMN other_pass INTEGER CHECK (other_pass IN (0, 1));
+    ";
 
     // The five rows the first marking wrote for 2026-11-23, a session the answers asked that day carried for other codes and the
     // store's own bars did not yet hold, removed on the operator's word of 2026-11-23 with the removal trigger set aside for this

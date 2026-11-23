@@ -140,6 +140,13 @@ public static class Survivors
             return line.Multiple is { } fallBack ? band.TakingAtRisk(fallBack) : band;
         }
 
+        // From the operator's answers of 2026-11-23 half at the multiple and the rest at the first band or by the rule's sale,
+        // as the S&P 400's and 600's live pullback rules register theirs.
+        if (line.Shape is IdeaGrammar.HalfThenBand or IdeaGrammar.HalfThenRule)
+        {
+            return new PlanCombination(line.Entry, line.Window, stop, line.Shape == IdeaGrammar.HalfThenBand ? PlanPoints.FirstBand : PlanPoints.RuleSale).Halving(line.Multiple!.Value);
+        }
+
         var plan = new PlanCombination(line.Entry, line.Window, stop, PlanPoints.TimeLimit);
 
         return line.Shape switch
@@ -202,7 +209,7 @@ public static class Survivors
     // which a queued pick is stored without.
     public static double? PickResult(IdeaLine line, double typicalMove, IReadOnlyList<(double Open, double Close)> fromTheNight)
     {
-        if (line.Entry != PlanPoints.NextOpen || line.Shape == IdeaGrammar.FirstBand || fromTheNight.Count < 2 || !(typicalMove > 0))
+        if (line.Entry != PlanPoints.NextOpen || IdeaGrammar.SellsByPlace(line.Shape) || fromTheNight.Count < 2 || !(typicalMove > 0))
         {
             return null;
         }
