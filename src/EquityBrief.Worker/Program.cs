@@ -119,6 +119,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-pick" => await JudgePickRun(args),
     "judge-replay" => await JudgeReplayVerb(args),
     "split-causes" => await SplitCausesVerb(args),
+    "long-history-lists" => await LongHistoryListsVerb(args),
     "income-readings" => await IncomeReadingsVerb(args),
     "fallback-facts" => await FallbackFactsVerb(args),
     "paper-figures" => await PaperFiguresVerb(args),
@@ -319,6 +320,30 @@ static async Task<int> IncomeReadingsVerb(string[] args)
     {
         Console.Out.WriteLine("income-readings: " + line);
     }
+
+    return 0;
+}
+
+// Read-only: what the long history's reader reads on one index against what it read before, the lists the operator has
+// before the every-session table's store run. It writes nothing.
+// see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+static async Task<int> LongHistoryListsVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var at = Array.IndexOf(args, "--index");
+    var index = at >= 0 && at + 1 < args.Length ? args[at + 1] : string.Empty;
+
+    if (index is not ("GSPC" or "MID" or "SML"))
+    {
+        Console.Error.WriteLine(EquityBrief.Worker.History.LongHistoryReader.ListsVerb + ": name '--index' as GSPC, MID or SML");
+
+        return 2;
+    }
+
+    var reader = new EquityBrief.Worker.History.LongHistoryReader(store.DatabaseFile);
+
+    await reader.ListsAsync(index, await reader.NewestSessionAsync(), Console.Out);
 
     return 0;
 }
@@ -1377,7 +1402,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 98 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 99 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1660,6 +1685,7 @@ static int NoVerb()
         "'judge-replay' prints the AI stock picker's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
         "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
         "'split-causes' counts by cause every step and entry the split rule sets aside over the long history and the store's year, and with '--list' prints each, writing nothing, " +
+        "'long-history-lists --index <GSPC|MID|SML>' prints what the long history's reader reads on the index against what it read before its marks were read span by span and renames joined, writing nothing, " +
         "'income-readings' counts for a stored night each reading built on operating income on each index, the members it reads and those it does not for want of the line, " +
         "with '--facts <folder>' what each fallback line would add read from the SEC's answers kept there, and with '--list' each member, writing nothing, " +
         "'fallback-facts --kept <folder>' fills the two fallback lines once for every member's filer, from the answers kept there or asked again of the SEC, " +
@@ -2115,15 +2141,18 @@ static async Task<int> LedgerBuildRun(string[] args)
     // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
     if (args.Contains("--every-session", StringComparer.Ordinal))
     {
-        if (index is null || from is not null || through is not null)
+        var writtenAgain = args.Contains("--again", StringComparer.Ordinal);
+        DateOnly? againFrom = from is not null && DateOnly.TryParseExact(from, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var againDay) ? againDay : null;
+
+        if (index is null || (from is not null && (!writtenAgain || againFrom is null)) || through is not null)
         {
-            Console.Error.WriteLine("ledger-build: give '--every-session --index <GSPC, MID or SML>', with '--word' to write, its span being every session from 2005.");
+            Console.Error.WriteLine("ledger-build: give '--every-session --index <GSPC, MID or SML>', with '--word' to write, its span being every session from 2005, and with '--again' and '--from yyyy-MM-dd' to write it once more from that session.");
 
             return 1;
         }
 
         return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-            .SessionReadingsAsync(store.DataRoot, index, args.Contains("--word", StringComparer.Ordinal), Console.Out);
+            .SessionReadingsAsync(store.DataRoot, index, args.Contains("--word", StringComparer.Ordinal), Console.Out, again: writtenAgain, againFrom: againFrom);
     }
 
     // From 23.6 the long ledger over 2005 to 2018, its span its own.

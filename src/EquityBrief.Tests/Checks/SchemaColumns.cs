@@ -36,6 +36,9 @@ public class SchemaColumns
     // 22.38's one: the operator's word on a session of the pulled history.
     internal static string[] SessionMarkStoreRows => [CheckReach.Key(Scope.StoresTable, "Session marks")];
 
+    // The 24.19 correction's one: the operator's ruling on a history-ends mark the evidence leaves to them.
+    internal static string[] MarkRulingStoreRows => [CheckReach.Key(Scope.StoresTable, "Marks ruled")];
+
     // 22.41's one: the entry check's readings.
     internal static string[] EntryReadingStoreRows => [CheckReach.Key(Scope.StoresTable, "Entry readings")];
 
@@ -365,6 +368,7 @@ public class SchemaColumns
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,
             .. SessionMarkStoreRows,
+            .. MarkRulingStoreRows,
             .. DividendWaitStoreRows,
             .. LateBarAskStoreRows,
             .. EntryReadingStoreRows,

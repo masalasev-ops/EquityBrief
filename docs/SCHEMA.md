@@ -108,7 +108,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `setup_night` | SetupLedger | none | SetupLedger |
 | `ledger_summary` | SetupLedger | none | SetupLedger |
 | `ledger_reading` | SetupLedger | SetupLedger | SetupLedger |
-| `session_reading` | SetupLedger | SetupLedger | none |
+| `session_reading` | SetupLedger | SetupLedger | SetupLedger |
 | `session_reading_year` | SetupLedger | none | SetupLedger |
 | `promotion_case` | PromotionCaseStore | none | none |
 | `promotion_case_words` | CaseWords | none | none |
@@ -197,6 +197,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `series_state` | CorporateActionChecker | CorporateActionChecker, LateBarAsker | none |
 | `ticker_join` | TickerJoins | none | none |
 | `session_mark` | SessionMarks, ReadApi | none | none |
+| `mark_ruling` | ReadApi | none | none |
 | `data_check` | DataChecker | none | DataChecker |
 | `long_snapshot` | LongMembers | none | LongMembers |
 | `long_holding` | LongMembers | none | LongMembers |
@@ -379,6 +380,22 @@ Grain: one row per stock and session of its pulled history the operator gave the
 Primary key: `ticker`, `session_date`.
 
 **Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger). From 23.4 `long-prices --write` writes those ends by rule through SessionMarks' own writer inside its run's transaction, a session already marked changing nothing, and only where the provider's answer runs on past the session the filing gives (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list). From the 23.4 correction the read surface writes the marks the operator confirms on the marking page, each an unexplained jump or an end no filing settles the page lists, a kind the table holds, its words the proposal's where the mark is the one proposed and naming both where the operator chose another, the run named `marking-page-` and its instant, a session already marked changing nothing (see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm).
+
+### mark_ruling
+Grain: one row per stock and session of a history-ends mark the evidence leaves to the operator and they ruled on, from migration 167.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the mark's session |
+| `ruling` | TEXT | `read through`, the mark misdated and the history read past it, or `kept`, another company having taken the code |
+| `filer` | TEXT | what the filer's reports said when it was ruled |
+| `price` | TEXT | what the price said when it was ruled |
+| `ruled_at` | TEXT | UTC instant the ruling was recorded |
+
+Primary key: `ticker`, `session_date`.
+
+**Written once by the read surface's confirm on the marking page, a second ruling changing nothing, and never updated or deleted, its triggers refusing both** (see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices). A mark is listed for a ruling only where a stock trades on past it inside a member span, or one index holds spans on both sides of it, and its filer's reports and its prices do not agree or its filer is not on file; the confirm writes it only for a mark the page lists and a ruling of the two. The long history's reader reads a ruled mark as ruled in place of keeping it; nothing else reads it.
 
 ### data_check
 Grain: one row per stock, session, class and kind the data check found in the stock's pulled sessions.
@@ -2632,7 +2649,7 @@ Grain: one row per index, member and session from 2005, the members as they stoo
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**Every member's readings on every session, written by the setup ledger alone, its insert and its updater, and deleted by nothing** (see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then). `ledger-build --every-session --index` works each session the table holds no row of under the catalogue's version now over the long history reader's history, each member's readings as the night works them, and where `ledger_reading` holds the session copies the night's own rows instead; each night's step copies its own rows and those of the 14 days before it again in its own transaction, their insider, business and release readings having been rewritten in place since, and copies the night's rows once more in the transaction that reads their insider readings again, so a copied row is the night's as it stands. A row is replaced only by a later copy of the night's own row or by a build under another version. The readings are statistics, stored as text only because the catalogue's readings sit in one cell. Read by the build to go on from where it stopped and by its check, and by no night, card, rule or page.
+**Every member's readings on every session, written by the setup ledger alone, its insert, its updater and its one deleter** (see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then). From the 24.19 correction `ledger-build --every-session --index --again --word` writes every session the build worked once more, from the session `--from` names or the first, each cleared of its `build` rows and written whole in its chunk's own transaction, so a member the corrected reader no longer counts on a session leaves no row there; a session the nights stored keeps its `night` rows as they stand, and nothing else deletes a row (see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own). `ledger-build --every-session --index` works each session the table holds no row of under the catalogue's version now over the long history reader's history, each member's readings as the night works them, and where `ledger_reading` holds the session copies the night's own rows instead; each night's step copies its own rows and those of the 14 days before it again in its own transaction, their insider, business and release readings having been rewritten in place since, and copies the night's rows once more in the transaction that reads their insider readings again, so a copied row is the night's as it stands. A row is replaced only by a later copy of the night's own row or by a build under another version. The readings are statistics, stored as text only because the catalogue's readings sit in one cell. Read by the build to go on from where it stopped and by its check, and by no night, card, rule or page.
 
 ### session_reading_year
 Grain: one row per index and year of `session_reading`, from 24.19.

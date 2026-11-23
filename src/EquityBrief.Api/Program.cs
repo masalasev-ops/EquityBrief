@@ -4075,7 +4075,31 @@ app.MapPost(SinglePageApp.MarkingPostRoute, async (HttpRequest request, ReadApi 
         .Where(mark => mark.Kind.Length > 0 && mark.Key.Split('|') is { Length: 2 })
         .Select(mark => (Ticker: mark.Key.Split('|')[0], Session: mark.Key.Split('|')[1], mark.Kind))
         .ToArray();
+
+    // From the 24.19 correction the rulings on the marks the evidence leaves to the operator, each keyed "r|" and its mark.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    var rulings = form.Keys
+        .Where(key => key.StartsWith("r|", StringComparison.Ordinal) && (only.Length == 0 || key == "r|" + only))
+        .Select(key => (Key: key[2..], Ruling: form[key].ToString()))
+        .Where(mark => mark.Ruling.Length > 0 && mark.Key.Split('|') is { Length: 2 })
+        .Select(mark => (Ticker: mark.Key.Split('|')[0], Session: mark.Key.Split('|')[1], mark.Ruling))
+        .ToArray();
+
+    if (rulings.Length > 0 && marks.Length == 0)
+    {
+        var ruled = await read.RuleMarksAsync(rulings);
+
+        return Said(ruled.Written, ruled.Line);
+    }
+
     var written = await read.ConfirmMarksAsync(marks);
+
+    if (rulings.Length > 0)
+    {
+        var ruled = await read.RuleMarksAsync(rulings);
+
+        return Said(written.Written || ruled.Written, written.Line + " " + ruled.Line);
+    }
 
     return Said(written.Written, written.Line);
 });

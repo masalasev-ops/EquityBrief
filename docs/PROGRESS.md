@@ -21989,3 +21989,57 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures 
             version 166, against `data-ci` and never `data`.
 Carried:    the lists before the store run: every ticker the correction brings back, every pair joined with the exception's
             pairs named apart, and each mark's outcome.
+
+### 24.19 - correction, its first part: the long reader's marks span by span, renames by the strict test, a company counted once, the table's own seven readings, the marks left to the operator ruled on the marking page, and the lists   2026-11-23
+
+Queue:      done, 24.0 to 24.29, 24.39 and 24.40 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction
+            open; in progress, this first part of the correction; next, the lists to the operator, the fetch of the missing
+            prices on their word, the table's store run and the one pin move, then 24.35's grammar.
+Ruled:      the operator's answers of 2026-11-22 and 2026-11-23, kept word for word as Appendices AA, AB, AC and AE of the plan's
+            file. Three new decisions.
+Built:      the long history's reader reads a history-ends mark span by span: the bars on and before it belong to the spans
+            that joined on or before it, and the bars after it to the later spans, which read nothing before it. A mark a
+            stock trades past more than five sessions inside a span, or with one index's spans on both sides, is odd and
+            settled by evidence: read through where the code's filer files a quarterly or annual report on both sides and the
+            price carries on, kept where the filer stops and the price gaps or jumps, otherwise put to the operator on the
+            marking page, whose ruling the reader then reads. A session the provider fills with no volume is not traded. A
+            code's prices are joined with another code of its company, its filer's or its own delisted spelling and never
+            further, only where the two are never priced on the same day or carry the same close and volume on every shared
+            day; and a company is counted once on a session. The table's build reads the third and fourth alphas and the two
+            liquidity readings at the traded price and the three reach readings over the last 2,792 sessions, its check
+            rebuilding a row the same way, and `--again` writes every session it worked once more. The worker's
+            `long-history-lists --index` prints what the reader reads against what it read before, writing nothing. Migration
+            167, `mark_ruling`, insert-only.
+Measured:   the lists over a copy of the store of 2026-11-23, through 2026-11-20, each index's in under three minutes. Marks:
+            42 odd, 17 read through, 2 kept (IAA, STMP), 23 to the operator. Joined: the S&P 500 8 pairs, the S&P 600 3, one
+            of them, PRSC with MODV, by the same close and volume; 27, 19 and 40 pairs left apart for being priced together.
+            Member sessions priced that were not: 19,578, 31,981 and 29,708 on the S&P 500, 400 and 600; counted under another
+            code of their company: 3,414, 2 and 131; still with no price: 10,711, 15,976 and 29,334, of them 594, 593 and 908
+            holes inside a code's prices and the rest after its last price. Of the codes whose span runs more than five
+            sessions past their last price, 145, 293 and 562, a history-ends mark at the last price or a delisting or merger
+            filing beside it explains 116, 254 and 492; the rest, 29, 39 and 70, and the 16, 12 and 30 codes with holes, are
+            the ones to ask the provider. A first run joined Physicians Realty's delisted DOC with Healthpeak's HCP through the
+            code DOC alone; the link is now never followed past a code's own filer and spelling.
+Tests:      7 new: a mark ending only its span, a mark odd or not, a filer and a price read and settled, the rename test,
+            parting a span and a company's codes each worked by hand; the reader over a constructed store reading a reused
+            code's later span, a rename joined and a company counted once; the table's readings at the traded price and over
+            the fixed history by hand; and the marking page listing a mark the evidence leaves to the operator as the reader
+            lists it, a ruling written once and refused from a script or of another kind, the table refusing an update and a
+            delete, and the reader reading the ruled mark through.
+Claims:     1747, two more than counted: the marks ruled's store and the History page's row of the marks to rule, the plan's
+            line at the correction amended from none, which the plan's count records.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched, the table's ranks at the traded price
+            a class of their own beside the ledger's; the shared code the night reads takes the same fix in the one pin move
+            before the run of 2027-02-06.
+Mutated:    the rule, stated before the run: each guard this part adds taken out at its one site. m1 every mark read through:
+            red in three tests; m2 two codes priced together on different volumes joined: red; m3 no session left uncounted:
+            red; m4 liquidity at the stored close: red; m5 the reader ignoring a ruling: red. Each filtered to its tests and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3986 of 3986 tests ran with none failed, migrations 0 to 167 with
+            none pending, schema version 167, against `data-ci` and never `data`; the phase report 68 tables, 1747 claims, 1747
+            passing, none out of scope and none unexamined, 1762 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the lists to the operator, the 23 marks to rule on the marking page, the provider's fetch of about 196 codes'
+            missing prices on their word, cause D and the setups without a table row read again over the table written once
+            more on a copy, then the table's store run, the one pin move and the long ledger rebuilt.

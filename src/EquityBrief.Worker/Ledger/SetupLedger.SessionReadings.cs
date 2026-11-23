@@ -50,8 +50,11 @@ public sealed partial class SetupLedger
 
     // The build by hand, from a clean copy of main's commit: every session from 2005 on one index the table holds no row of
     // under the catalogue's version now, its count and its time stated first and nothing written without `word`; each chunk
-    // waiting for the night and holding the drain's lock while it writes, then each year of the index counted.
-    public async Task<int> SessionReadingsAsync(string dataRoot, string index, bool word, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null)
+    // waiting for the night and holding the drain's lock while it writes, then each year of the index counted. From the 24.19
+    // correction, with `again`, every session the build worked written once more from the session given or the first, each
+    // cleared of the build's rows and written whole in its chunk's transaction, a session the nights stored left as it stands;
+    // a build stopped part way is run again from the session its last chunk line names.
+    public async Task<int> SessionReadingsAsync(string dataRoot, string index, bool word, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null, bool again = false, DateOnly? againFrom = null)
     {
         var startedAt = clock.UtcNow;
         var pause = wait ?? Task.Delay;
@@ -78,7 +81,9 @@ public sealed partial class SetupLedger
 
         var stored = await SessionsAsync(connection, SessionsAtPin, [("$index", index), ("$pin", LedgerReadings.Version)], cancellation);
         var nights = await SessionsAsync(connection, NightSessionsOf, [("$index", index)], cancellation);
-        var toWrite = Enumerable.Range(first, last - first + 1).Where(at => !stored.Contains(calendar[at])).ToArray();
+        var toWrite = again
+            ? Enumerable.Range(first, last - first + 1).Where(at => !nights.Contains(calendar[at]) && (againFrom is not { } from || calendar[at] >= from)).ToArray()
+            : Enumerable.Range(first, last - first + 1).Where(at => !stored.Contains(calendar[at])).ToArray();
         var toWork = toWrite.Where(at => !nights.Contains(calendar[at])).ToArray();
         var sizeBefore = SizeNow();
 
@@ -140,6 +145,11 @@ public sealed partial class SetupLedger
                     copied++;
 
                     continue;
+                }
+
+                if (again)
+                {
+                    await ExecuteAsync(connection, transaction, ClearBuiltSession, [("$index", index), ("$session", session)], cancellation);
                 }
 
                 foreach (var (ticker, readings) in rows[item])
@@ -367,7 +377,7 @@ public sealed partial class SetupLedger
             // One row the build worked, rebuilt from the long history cut at its session.
             var picked = rows[random.Next(rows.Count)];
             var cut = LedgerPointInTime.Cut(inputs, session);
-            var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs);
+            var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, table: true);
 
             if (readingsThen is null)
             {
@@ -461,11 +471,16 @@ public sealed partial class SetupLedger
                 }
 
                 var bar = IndexNightRead.BarOf(one, at);
+                var readings = LedgerSetups.Readings(index, name, one, ownCloses.Value[name], bar, sessions[at], members, calendar, at, market, context, series);
 
-                rows.Add((one.Name.Ticker, ReadingsText(LedgerSetups.Readings(index, name, one, ownCloses.Value[name], bar, sessions[at], members, calendar, at, market, context, series))));
+                TableOwnReadings.Apply(readings, tradedRanks.Value, name, one, bar);
+                rows.Add((one.Name.Ticker, ReadingsText(readings)));
             }
 
             return rows;
         }
+
+        // The members' places at the traded price, which the table's third and fourth alphas read.
+        readonly Lazy<TradedRanks> tradedRanks = new(() => new TradedRanks(series, members));
     }
 }

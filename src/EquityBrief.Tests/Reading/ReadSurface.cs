@@ -280,6 +280,9 @@ public partial class ReadSurface
             // The 23.4 correction, the History page's marks owed.
             .. MarkingPageRows,
 
+            // The 24.19 correction, the History page's marks the evidence leaves to the operator.
+            .. MarkRulingRows,
+
             // 23.6, the History page's families by year.
             .. LongYearsRows,
 

@@ -54,10 +54,24 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, LedgerActions>? actions = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null) =>
-        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is { } read
-            ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series)
-            : null;
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null,
+        bool table = false)
+    {
+        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is not { } read)
+        {
+            return null;
+        }
+
+        var readings = LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series);
+
+        // From the 24.19 correction a row of the every-session table is rebuilt as the table reads its seven of its own.
+        if (table)
+        {
+            TableOwnReadings.Apply(readings, new TradedRanks(read.Series, read.Members), read.Name, read.Series[read.Name], read.Bar);
+        }
+
+        return readings;
+    }
 
     // One stock's setup of a family on the last session of a cut history as the build reads it: a swing family's from the
     // family's own loose gates over the cut, its own readings beside every setup's, and a heavyweights' setup's the

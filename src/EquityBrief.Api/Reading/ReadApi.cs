@@ -790,6 +790,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.SplitEvent, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.MarkRuling, Touch.Read | Touch.Insert),
             new StoreTouch(Store.DataCheck, Touch.Read),
             new StoreTouch(Store.LongSnapshot, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
@@ -4026,6 +4027,12 @@ public sealed partial class ReadApi : IComponent
     const string InsertMark = @"
         INSERT OR IGNORE INTO session_mark (ticker, session_date, kind, says, ruled, run_id)
         VALUES ($ticker, $session, $kind, $says, $ruled, $run_id);";
+
+    // From the 24.19 correction the operator's ruling on a history-ends mark the evidence leaves to them, a mark ruled once.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    const string InsertRuling = @"
+        INSERT OR IGNORE INTO mark_ruling (ticker, session_date, ruling, filer, price, ruled_at)
+        VALUES ($ticker, $session, $ruling, $filer, $price, $ruled_at);";
 
     // The operator's word on a loop proposal or a restore, the Loop page's presses' one write.
     // see: An approved change is applied by the night's own build on the index it was approved on alone

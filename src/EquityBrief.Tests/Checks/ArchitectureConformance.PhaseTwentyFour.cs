@@ -43,7 +43,7 @@ public partial class ArchitectureConformance
         ("24.16", [], []),
         ("24.17", [.. Reading.ReadSurface.PromotionCaseRows, .. FixtureExpectations.PromotionRuleClaims], []),
         ("24.18", [], []),
-        ("24.19", [.. FixtureExpectations.SessionReadingRows], []),
+        ("24.19", [.. FixtureExpectations.SessionReadingRows, .. FixtureExpectations.LongCorrectionRows], []),
         ("24.21", [.. ComponentAccess.PaperReadsRows], []),
         ("24.20", [], []),
         ("24.22", [.. ComponentAccess.CaseRows, .. SchemaColumns.CaseStoreRows, .. FixtureExpectations.CaseClaims], []),
@@ -76,7 +76,9 @@ public partial class ArchitectureConformance
     // draws no book's years, which each book's record box draws off the monthly run's lines, and the long test's years landed
     // as clauses of section 17's paragraph and the runbook's line, which stood. 24.16, none as counted. 24.17, five of five.
     // 24.18, none as counted. 24.19, three of six: the table's two stores and the History page's row, the setup ledger's
-    // catalogue and matrix rows standing with its new work landing as clauses of them. 24.21, two of two: the shared reader's
+    // catalogue and matrix rows standing with its new work landing as clauses of them; and from its correction two the plan
+    // counted under the correction, the marks ruled's store and the History page's row of the marks the evidence leaves to the
+    // operator, counted here since the correction lands under 24.19's heading. 24.21, two of two: the shared reader's
     // catalogue and matrix rows, its check's row landing as a clause of read-surface's roster row where the plan counted it.
     // The stored cases, seven of six: two writers' catalogue and matrix rows and two stores where the plan counted one pair.
     // The swap, five of three: its writer's catalogue and matrix rows, its two stores and section 18's row, where the plan
@@ -118,7 +120,7 @@ public partial class ArchitectureConformance
         ("24.16", 0),
         ("24.17", 0),
         ("24.18", 0),
-        ("24.19", -3),
+        ("24.19", -1),
         ("24.21", 0),
         ("24.20", 0),
         ("24.22", 1),
@@ -184,6 +186,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1745), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1747), (before, low, high, actual));
     }
 }
