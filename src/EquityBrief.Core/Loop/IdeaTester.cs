@@ -59,11 +59,11 @@ public static class IdeaTester
         return cuts;
     }
 
-    // The setups an idea buys: those holding every condition's band, and where it caps a night, the most of a night's in its
-    // order, a setup without the order's reading last and ties by ticker.
+    // The setups an idea buys: those its filter passes where it names one, holding every condition's band, and where it caps
+    // a night, the most of a night's in its order, a setup without the order's reading last and ties by ticker.
     public static IReadOnlyList<IdeaSetup> Selected(IdeaLine idea, IEnumerable<IdeaSetup> setups, IReadOnlyDictionary<string, double[]> cuts)
     {
-        var held = setups.Where(setup => idea.Conditions.All(condition =>
+        var held = setups.Where(setup => (idea.Filter is not { } filter || filter.Passes(setup.Readings)) && idea.Conditions.All(condition =>
             cuts.TryGetValue(condition.Reading, out var levels)
             && IdeaGrammar.Holds(condition, setup.Readings.TryGetValue(condition.Reading, out var value) ? value : null, levels)));
 

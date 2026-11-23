@@ -454,9 +454,10 @@ public partial class ArchitectureConformance
         // page's four, and 1705 with the picker's page from its mockup, and 1712 with the notebook, the grammar and the one
         // tester, and 1721 with the survivors, and 1729 with the researcher, and 1730 with the earlier version's picks, and
         // 1736 with the buy range, and 1743 with the idea box, and 1745 with never stuck, and 1747 with the 24.19 correction's
-        // marks ruled and the History page's row of the marks to rule.
+        // marks ruled and the History page's row of the marks to rule, and 1751 with the pullbacks' search's catalogue and
+        // matrix rows, section 17's grid and the Loop page's card.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1747),
+            (789, 853, 6, 4, 855, 876, 1751),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

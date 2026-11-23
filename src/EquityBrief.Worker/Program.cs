@@ -128,8 +128,21 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "idea-test" => await IdeaTestVerb(args),
     "buy-range-widths" => await BuyRangeWidthsVerb(args),
     "idea-box" => await IdeaBoxVerb(args),
+    "pullback-search" => await PullbackSearchVerb(args),
     _ => NoVerb(),
 };
+
+// The pullbacks' search on one index: its lines, their count and the time measured on the live setting's line printed, and
+// every line walked and judged together only with '--word'.
+// see: The pullbacks' search walks the swing filter's dials as grammar lines, chosen on 2005 to 2018 and judged together from 2019
+static async Task<int> PullbackSearchVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Loop.PullbackSearch(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(VerbArguments.Value(args, "--index") ?? "GSPC", args.Contains("--word", StringComparer.Ordinal));
+}
 
 // The idea box's worker for the press named with '--press <id>', as the box's press starts it and as it is run by hand: the
 // idea typed read by the pinned local model into one grammar line, under the local model's lock.
@@ -1402,7 +1415,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 99 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 100 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1693,6 +1706,7 @@ static int NoVerb()
         "'case-words' asks the local model for the case for and the case against of each case the newest monthly run stored that holds no words for its figures, as each local run slot does after its releases, " +
         "'notebook-fill' writes to the notebook every idea the monthly runs, the searches over the long history and the tests of the buy and sell points tested and the operator's two waiting for their shapes, nothing twice, " +
         "'idea-test --line <line>' or '--file <path>' tests each grammar line given over the long history, every line of the run judged together from 2019, and writes each to the notebook, '--source' naming who wrote it, " +
+        "'pullback-search --index GSPC' prints the pullbacks' search's lines, their count and the time measured on the live setting's line, and with '--word' walks them in two stages and writes each to the notebook, " +
         "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, registering nothing, " +
         "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +

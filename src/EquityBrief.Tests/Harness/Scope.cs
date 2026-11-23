@@ -5404,6 +5404,22 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store of two runs, the newest read back on the S&P 600 with the width its early years chose, the open and each width over both years with what each bought, did not buy on each side, made a pick, missed and kept out of, the chosen rows marked, each setup folded beneath and a card's plan in the operator's words; the older run and the S&P 500's rows absent; and an empty store saying when the test runs",
             ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Pullback search")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the candidate register, long setups and setups it reads and writes nothing of its own, reconciled against the row; and over a constructed register its lines, their count and the time are printed and nothing walked without the word, the 81 and the 14 walked with it",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Pullback search")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "The pullbacks' search")] = new Scoped(
+            Verdict.Pass,
+            "the first stage's 81 lines and the second's 14 counted, the choice worked by hand on the early years alone, the filter read over constructed setups at two settings, and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "The pullbacks' search")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of two runs, the newest read back on the S&P 500 with its counts and its settings best on the early years first, each with its figures and verdict; the older run, another index's, another kind of long search's and another source's rows absent; and an empty store saying when the search runs",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Idea box reader")] = new Scoped(
             Verdict.Pass,
             "the class declares the reading pins, the ideas typed and the answers it reads, the answers it writes, and the local model, each reconciled against the row; over a constructed store an unreadable answer asked once more and the next read into its line, both attempts written, and a press read already asked nothing",
@@ -8244,6 +8260,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = "24.27",
         [CheckReach.Key(LoopPage, "This week's research")] = "24.28",
         [CheckReach.Key(LoopPage, "Buy ranges")] = "24.29",
+        [CheckReach.Key(LoopPage, "The pullbacks' search")] = "24.35",
         [CheckReach.Key(LoopPage, "The idea box")] = "24.39",
         [CheckReach.Key(LoopPage, "Never stuck")] = "24.40",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",

@@ -259,6 +259,9 @@ public partial class ReadSurface
             // The buy range's widths on the Improvement loop page.
             .. BuyRangeRows,
 
+            // The pullbacks' search on the Improvement loop page.
+            .. PullbackSearchRows,
+
             // The idea box on the Improvement loop page.
             .. IdeaBoxRows,
 

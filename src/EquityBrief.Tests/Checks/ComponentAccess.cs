@@ -344,6 +344,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Buy range widths test"),
     ];
 
+    // The pullbacks' search.
+    internal static string[] PullbackSearchRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Pullback search"),
+        CheckReach.Key(Scope.MatrixTable, "Pullback search"),
+    ];
+
     // The idea box's worker.
     internal static string[] IdeaBoxRows =>
     [
@@ -456,6 +463,7 @@ public partial class ComponentAccess
             .. SurvivorRows,
             .. ResearcherRows,
             .. RangeWidthRows,
+            .. PullbackSearchRows,
             .. IdeaBoxRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
@@ -1099,8 +1107,9 @@ public partial class ComponentAccess
         // and the long day files, which keep the trust's filings and the provider's day files and lists in the long history's
         // folder the command names, and from 23.6 the long history reader and the long ledger reader, and from 23.9 the
         // sector splits reader, which read the store and write nothing, and the paper reads, the one reader Paper trading's
-        // accounts are read through, which writes nothing.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "PaperReads", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // accounts are read through, which writes nothing, and from 24.35 the pullback search, which reads the register and
+        // has the one tester walk and write its lines, writing nothing of its own.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "PaperReads", "PullbackSearch", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

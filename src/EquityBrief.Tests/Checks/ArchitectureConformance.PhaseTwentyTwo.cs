@@ -256,6 +256,9 @@ public partial class ArchitectureConformance
 
         // And the 24.19 correction: the marks ruled's store and the History page's row of the marks to rule.
         .. FixtureExpectations.LongCorrectionRows,
+
+        // And the pullbacks' search: its catalogue and matrix rows, section 17's grid and the Loop page's card.
+        .. FixtureExpectations.PullbackSearchRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

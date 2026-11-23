@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Core.Loop;
 
@@ -45,6 +46,9 @@ public sealed record IdeaLine(
     string? OrderBy,
     bool Highest)
 {
+    // From 24.35 the swing filter's dials a pullback's line keeps its setups by, none where it names none.
+    public IdeaFilter? Filter { get; init; }
+
     // The one spelling of the idea, its parts in the grammar's order and its conditions by reading, so two spellings of
     // one idea read as the same line.
     public string Canonical => string.Join(IdeaGrammar.Separator, Parts());
@@ -53,14 +57,26 @@ public sealed record IdeaLine(
     {
         yield return FormattableString.Invariant($"event {Family}({IdeaGrammar.WordOf(Index)}){(Loose ? " loose" : string.Empty)}");
 
+        if (Filter is { } filter)
+        {
+            yield return filter.Part;
+        }
+
         foreach (var condition in Conditions.OrderBy(one => one.Reading, StringComparer.Ordinal))
         {
             yield return condition.Line;
         }
 
-        yield return Entry == PlanPoints.NextOpen ? "buy next open" : FormattableString.Invariant($"buy at {Entry} within {Window} sessions");
+        yield return Entry == PlanPoints.NextOpen ? "buy next open"
+            : PlanPoints.DistanceOf(Entry) is { } distance ? FormattableString.Invariant($"buy {IdeaGrammar.Number(distance)} typical days under the close within {Window} sessions")
+            : FormattableString.Invariant($"buy at {Entry} within {Window} sessions");
         yield return "stop " + IdeaGrammar.Number(StopDays) + " typical days";
-        yield return Shape == IdeaGrammar.TimeOnly ? "take profit none" : FormattableString.Invariant($"take profit {Shape} at {IdeaGrammar.Number(Multiple!.Value)} risks");
+        yield return Shape switch
+        {
+            IdeaGrammar.TimeOnly => "take profit none",
+            IdeaGrammar.FirstBand => Multiple is { } fallBack ? FormattableString.Invariant($"take profit first band else {IdeaGrammar.Number(fallBack)} risks") : "take profit first band",
+            _ => FormattableString.Invariant($"take profit {Shape} at {IdeaGrammar.Number(Multiple!.Value)} risks"),
+        };
         yield return FormattableString.Invariant($"sell after {Sessions} sessions");
 
         if (Cap is { } cap)
@@ -76,17 +92,23 @@ public sealed record IdeaLine(
         {
             var family = IdeaGrammar.FamilyWords(Family);
             var only = Conditions.Count == 0 ? string.Empty : ", only where " + string.Join(" and ", Conditions.OrderBy(one => one.Reading, StringComparer.Ordinal).Select(one => one.Words));
-            var buy = Entry == PlanPoints.NextOpen ? "bought at the next open" : FormattableString.Invariant($"bought at {Entry} within {Window} sessions");
+            var buy = Entry == PlanPoints.NextOpen ? "bought at the next open"
+                : PlanPoints.DistanceOf(Entry) is { } distance ? FormattableString.Invariant($"bought {IdeaGrammar.Number(distance)} typical daily moves under the close, waiting up to {Window} sessions")
+                : FormattableString.Invariant($"bought at {Entry} within {Window} sessions");
             var stop = FormattableString.Invariant($"a stop {IdeaGrammar.Number(StopDays)} typical {(StopDays == 1 ? "day" : "days")} under the buy");
             var profit = Shape switch
             {
                 IdeaGrammar.Whole => FormattableString.Invariant($"the whole sold at {IdeaGrammar.Number(Multiple!.Value)} times the risk"),
                 IdeaGrammar.Half => FormattableString.Invariant($"half sold at {IdeaGrammar.Number(Multiple!.Value)} times the risk and the rest held to the time limit"),
+                IdeaGrammar.FirstBand => "the whole sold at the first price band above the buy where it turned down before"
+                    + (Multiple is { } fallBack ? FormattableString.Invariant($", or at {IdeaGrammar.Number(fallBack)} times the risk where no band stands above") : string.Empty),
                 _ => "no take-profit",
             };
             var cap = Cap is { } most ? FormattableString.Invariant($", at most {most} a night, {(Highest ? "highest" : "lowest")} {OrderBy} first") : string.Empty;
 
-            return FormattableString.Invariant($"{family}, {IdeaGrammar.IndexWords(Index)}{(Loose ? ", every setup its loose gates pass" : string.Empty)}{only}. {char.ToUpperInvariant(buy[0])}{buy[1..]}, {stop}, {profit}, sold after {Sessions} sessions{cap}.");
+            var filtered = Filter is { } filter ? ", where its swing filter reads " + filter.Words : string.Empty;
+
+            return FormattableString.Invariant($"{family}, {IdeaGrammar.IndexWords(Index)}{(Loose ? ", every setup its loose gates pass" : string.Empty)}{filtered}{only}. {char.ToUpperInvariant(buy[0])}{buy[1..]}, {stop}, {profit}, sold after {Sessions} sessions{cap}.");
         }
     }
 }
@@ -108,6 +130,14 @@ public static class IdeaGrammar
     public const string Half = "half";
 
     public const string TimeOnly = "none";
+
+    // The live pullback rule's sale: the whole at the first price band above the buy where the stock turned down before, read
+    // on the night it was picked, and where it names a multiple, at that multiple of the risk where no band stands above.
+    public const string FirstBand = "first band";
+
+    // The distances a buy under the close may name, in typical daily moves: every hundredth from a quarter to three, so the
+    // distance each live rule registered can be named.
+    public static IReadOnlyList<double> Distances { get; } = [.. Enumerable.Range(25, 276).Select(hundredths => hundredths / 100.0)];
 
     // The families an idea's event names, each a family whose setups the long history holds.
     public static IReadOnlyList<string> Families { get; } = PlanPoints.Families;
@@ -180,6 +210,7 @@ public static class IdeaGrammar
         int window = 0, sessions = 0;
         int? cap = null;
         double? stop = null, multiple = null;
+        IdeaFilter? filter = null;
         var conditions = new List<IdeaCondition>();
 
         foreach (var part in parts)
@@ -188,6 +219,15 @@ public static class IdeaGrammar
 
             switch (words[0])
             {
+                case "filter" when filter is null:
+                    if (IdeaFilter.Parse(part) is not { } read)
+                    {
+                        return (null, $"the filter names the swing filter's eight dials in order, each at a level the sweep's grid holds: \"{part}\"");
+                    }
+
+                    filter = read;
+                    break;
+
                 case "event" when family is null:
                 {
                     var named = words.Length > 1 ? words[1] : string.Empty;
@@ -229,9 +269,15 @@ public static class IdeaGrammar
                     {
                         (entry, window) = (string.Join(' ', words[2..^3]), within);
                     }
+                    else if (words.Length == 10 && words[2] == "typical" && words[3] is "day" or "days" && words[4] == "under" && words[5] == "the" && words[6] == "close"
+                        && words[7] == "within" && words[9] is "session" or "sessions" && DistanceIn(words[1]) is { } distance
+                        && int.TryParse(words[8], NumberStyles.None, CultureInfo.InvariantCulture, out var waiting) && Windows.Contains(waiting))
+                    {
+                        (entry, window) = (PlanPoints.DistanceEntry(distance), waiting);
+                    }
                     else
                     {
-                        return (null, $"the buy is the next open or a zone or the average within 5, 10 or 20 sessions: \"{part}\"");
+                        return (null, $"the buy is the next open, a zone or the average within 5, 10 or 20 sessions, or a quarter to three typical days under the close within 5, 10 or 20 sessions: \"{part}\"");
                     }
 
                     break;
@@ -258,9 +304,18 @@ public static class IdeaGrammar
                     {
                         (shape, multiple) = (words[2], times);
                     }
+                    else if (part == "take profit first band")
+                    {
+                        shape = FirstBand;
+                    }
+                    else if (words.Length == 7 && part.StartsWith("take profit first band else ", StringComparison.Ordinal) && words[6] is "risk" or "risks"
+                        && NumberOf(words[5]) is { } fallBack && Multiples.Contains(fallBack))
+                    {
+                        (shape, multiple) = (FirstBand, fallBack);
+                    }
                     else
                     {
-                        return (null, $"the take-profit is none, or the whole or half at {string.Join(", ", Multiples.Select(Number))} risks: \"{part}\"");
+                        return (null, $"the take-profit is none, the whole or half at {string.Join(", ", Multiples.Select(Number))} risks, or the first band, else one of those risks: \"{part}\"");
                     }
 
                     break;
@@ -303,9 +358,14 @@ public static class IdeaGrammar
 
         string? missing = family is null ? "the event" : entry is null ? "the buy" : stop is null ? "the stop" : shape is null ? "the take-profit" : sessions == 0 ? "the time limit" : null;
 
+        if (missing is null && filter is not null && (family != "pullback" || !loose))
+        {
+            return (null, "a filter reads the swing filter's dials over every pullback its loose gates pass, so it names the event pullback and loose");
+        }
+
         return missing is not null
             ? (null, $"the line names no {missing[4..]}")
-            : (new IdeaLine(family!, index!, loose, [.. conditions.OrderBy(one => one.Reading, StringComparer.Ordinal)], entry!, window, stop!.Value, shape!, multiple, sessions, cap, orderBy, highest), null);
+            : (new IdeaLine(family!, index!, loose, [.. conditions.OrderBy(one => one.Reading, StringComparer.Ordinal)], entry!, window, stop!.Value, shape!, multiple, sessions, cap, orderBy, highest) { Filter = filter }, null);
     }
 
     static IdeaCondition? ConditionOf(string[] words)
@@ -329,6 +389,10 @@ public static class IdeaGrammar
 
     static double? NumberOf(string word) =>
         double.TryParse(word, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value) ? value : null;
+
+    // A distance the grammar's list holds, read to the hundredth it names.
+    static double? DistanceIn(string word) =>
+        NumberOf(word) is { } value && Distances.FirstOrDefault(held => Math.Abs(held - value) < 1e-9) is var distance && distance > 0 ? distance : null;
 
     // The cut points between a reading's tenths over the early years' values: the nine values below which each of the
     // first nine tenths' share of them lies; none where fewer than ten values are read.

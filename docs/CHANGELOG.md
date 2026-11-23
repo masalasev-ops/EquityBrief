@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/RUNBOOK.md and docs/BUILD_PLAN.md - the pullbacks' search, at 24.35
+Decision: The pullbacks' search walks the swing filter's dials as grammar lines, chosen on 2005 to 2018 and judged together from 2019
+Was:
+> ARCHITECTURE.html: no pullback search in the catalogue or the matrix; no Loop page row of the pullbacks' search; no section 17 row of its grid
+> RUNBOOK.md: no pullbacks' search
+> BUILD_PLAN.md, 24.35: no state, its done condition standing alone
+Now:
+> ARCHITECTURE.html: the pullback search's catalogue and matrix rows; 15.20's row "The pullbacks' search"; section 17's row "The pullbacks' search" with its 3 levels, 81 settings, 14 more, the 15-session earnings window and the distances from 0.25 to 3
+> RUNBOOK.md: "The pullbacks' search, from 24.35", its two commands, what it prints and the grammar's new parts
+> BUILD_PLAN.md, 24.35: "Its state: the S&P 500's half built; the S&P 400's and 600's half waiting on the rebuilt ledger", which store it waits for and that it lands as the stage's second part
+Why: the operator's answers of 2026-11-23, items 3 to 6, kept word for word as Appendix AE of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`; the S&P 400's and 600's half waits because their live rules' other gates read the whole index on the night and no stored setup carries them.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - the long reader's marks span by span, renames, a company counted once, the table's own readings and the marks ruled, at the 24.19 correction
 Decision: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
 Decision: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
