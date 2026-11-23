@@ -5049,7 +5049,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "The earlier version's picks across all three indices")] = new Scoped(
             Verdict.Pass,
-            "over two constructed stores, the earlier version's three picks read back once under the tiles on every index's page and in no index's tonight, each card naming the S&P 500, 600 or 400 its stock belongs to and its own account, and folded into one line of its record once all its trades are sold",
+            "over a constructed store where only the earlier version picked and one where each index's version picked too, the earlier version's picks read back once under the tiles on every index's page and in no index's tonight, each card naming the S&P 500, 600 or 400 its stock belongs to and its own account, and folded into one line of its record once all its trades are sold",
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "Tonight's picks one at a time")] = new Scoped(
             Verdict.Pass,
