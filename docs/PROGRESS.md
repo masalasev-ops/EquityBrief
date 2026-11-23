@@ -22303,3 +22303,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the earlier decision on a stock met again stays where it stands, since a rule-pinned source cites it; the new one
             narrows its Home clause, for the operator.
+
+### 24.21 - correction: a stock met again is read off its live rule's trade, never a background version's   2026-11-23
+
+Queue:      done, the held-none marking's correction and Home's stocks met again; in progress, this correction; next, Fox and
+            DDR, the delisted spellings asked once, the table's check measured again, then 24.35's S&P 400 and 600 half.
+Ruled:      the operator's correction of 2026-11-23, kept word for word in
+            `prompts/2026-11-23-24.21-home-met-the-rules-again-correction.md`. No new decision.
+Built:      the trade a stock met again is held on is read with the live rule's first, by its name, as its comment always said
+            and its query never did. On the live store after PR 770 Home drew TGT and TJX as rows "Already held", bought 19 and
+            20 Nov: each read a background drift version's trade, bought at the open and filled, where the live drift rule's
+            order of 18 and 19 Nov still waits in the carousel. With the live rule's read first both are drawn on their waiting
+            cards with the mark, as AVY and RMD are.
+Measured:   on the live store, TGT's drift trades of 18 Nov, seven, and TJX's of 19 Nov, eight: every background version's
+            filled at the next open, and the live rule's under its plan with no fill.
+Tests:      1 moved: the waiting order's test holds a background version's filled trade of the same night beside the live
+            rule's order, its name sorting first, and the order is still drawn on its card.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: the ordering this correction adds taken out. m1 the trades read in name order
+            alone: red, the background version's fill read and the order drawn as held.
+Claims:     1753, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4008 of 4008 tests ran with none failed, migrations 0 to 169 with
+            none pending, schema version 169, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    nothing new.

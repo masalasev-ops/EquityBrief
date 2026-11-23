@@ -3936,15 +3936,18 @@ public sealed partial class ReadApi : IComponent
 
     // From the operator's order of 2026-11-14 the open trade a held card's stock is held on, its family's live rule's before
     // another's: its fill as the fill step priced it, and its stop and sale, each placed from that fill where a plan bought it.
+    // From the operator's correction of 2026-11-23 the live rule's trade is read first by its name, so a background version's
+    // trade filled at the open never stands for the live rule's order still waiting.
     // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
     const string HeldTrade = @"
-        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on FROM family_trade t
+        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on, substr(t.candidate, 1, length($live)) = $live AS live, t.candidate FROM family_trade t
         LEFT JOIN trade_fill f ON f.source = 'family_trade' AND f.index_code = 'GSPC' AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE $index = 'GSPC' AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
         UNION ALL
-        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on FROM index_rule_trade t
+        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on, substr(t.candidate, 1, length($live)) = $live AS live, t.candidate FROM index_rule_trade t
         LEFT JOIN trade_fill f ON f.source = 'index_rule_trade' AND f.index_code = t.index_code AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE t.index_code = $index AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
+        ORDER BY live DESC, candidate
         LIMIT 1;
     ";
 
@@ -3972,6 +3975,7 @@ public sealed partial class ReadApi : IComponent
         await using var command = connection.CreateCommand();
 
         command.CommandText = HeldTrade;
+        command.Parameters.AddWithValue("$live", EquityBrief.Core.Candidates.FamilyRecords.LivePrefix);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$family", family);
