@@ -27,11 +27,14 @@ public partial class NightlyRun
         Assert.Equal(EquityBrief.Worker.Nightly.LabelledByTheOffPeakRun, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{NewsLabeller.NightStage}';").Single());
         Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{NewsLabeller.NightStage}';"));
 
-        // The step comes after the report's, the store's copy's row after it, starting no copy, and from 24.4 the AI stock picker
-        // last, started once as a process of its own with no model call on the night's row.
+        // The step comes after the report's, the store's copy's row after it, starting no copy, then the queued survivors' row
+        // with no model call or request on it, and the AI stock picker last, started once as a process of its own with no model
+        // call on the night's row.
         Assert.Equal(
-            ["report", NewsLabeller.NightStage, StoreBackup.NightStage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
-            Texts(store, "SELECT stage FROM run_log WHERE run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0 ORDER BY rowid DESC LIMIT 4;").Reverse());
+            ["report", NewsLabeller.NightStage, StoreBackup.NightStage, EquityBrief.Worker.Loop.SurvivorDesk.Stage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
+            Texts(store, "SELECT stage FROM run_log WHERE run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0 ORDER BY rowid DESC LIMIT 5;").Reverse());
+        Assert.Equal("no survivor queued", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Loop.SurvivorDesk.Stage}';").Single());
+        Assert.Equal(0, Scalar(store, $"SELECT model_calls + network_requests FROM run_log WHERE stage = '{EquityBrief.Worker.Loop.SurvivorDesk.Stage}';"));
         Assert.Equal(1, launcher.JudgeStarts);
         Assert.Equal(NightLauncherForTheSuite.JudgeLine, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';").Single());
         Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';"));

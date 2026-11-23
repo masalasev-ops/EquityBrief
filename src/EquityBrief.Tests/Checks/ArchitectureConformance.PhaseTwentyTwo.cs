@@ -234,6 +234,10 @@ public partial class ArchitectureConformance
         .. SchemaColumns.NotebookStoreRows,
         .. FixtureExpectations.NotebookClaims,
         .. Reading.ReadSurface.NotebookRows,
+
+        // And the survivors: the desk's catalogue and matrix rows, its three stores, section 14's step, section 17's and
+        // section 18's rows and the Loop page's row.
+        .. FixtureExpectations.SurvivorRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

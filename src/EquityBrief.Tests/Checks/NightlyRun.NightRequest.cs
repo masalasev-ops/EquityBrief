@@ -151,13 +151,13 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Cards.DecisionCards.BookStage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
-            stages.Select(row => row.Stage).TakeLast(11));
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Cards.DecisionCards.BookStage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage, EquityBrief.Worker.Loop.SurvivorDesk.Stage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
+            stages.Select(row => row.Stage).TakeLast(12));
         Assert.True(
             stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Quarters.QuarterFetcher.Stage) is var asked && asked >= 0
                 && asked < stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Nights.NightClose.Stage));
-        Assert.Equal("ok", stages[^4].Outcome);
-        Assert.Equal(expected.GetProperty("line").GetString(), stages[^4].Detail);
+        Assert.Equal("ok", stages[^5].Outcome);
+        Assert.Equal(expected.GetProperty("line").GetString(), stages[^5].Detail);
         Assert.Equal(
             [["0", "0"]],
             StoreRows(store, "SELECT model_calls, network_requests FROM run_log WHERE run_id = 'night-with-request' AND stage = 'report';"));
@@ -327,7 +327,7 @@ public partial class NightlyRun
         Assert.Empty(StoreRows(store, "SELECT run_id FROM loop_applied;"));
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(0, launcher.Started);
-        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^4].Detail);
+        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^5].Detail);
 
         // And it asks for no member's quarters: what it would store is today's answer and not that
         // night's, so the step says so and writes no ask and no quarter.

@@ -21662,3 +21662,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             its figures stated in 24.27's entry below.
 Carried:    four older tables without STRICT, `long_search`, `plan_point`, `book_record` and `listed_name`, put to the operator;
             migration 162 on the operator's store after the merge.
+
+### 24.27 - survivors run by themselves: an idea that passes registers as its setup's variant or queues, walked each night   2026-11-22
+
+Queue:      done, 24.0 to 24.26 and the 24.4 and 24.14 corrections, 24.19 done, its correction open; in progress, 24.27 with
+            the 24.26 correction; next, 24.28, the researcher, weekly.
+Ruled:      the operator's second brief of phase 24 of 2026-11-16, item 13, their change of that day that a queued survivor
+            loses no nights, and their answer of 2026-11-22 kept as Appendix AD of the plan's file: a survivor whose line names a
+            time limit or a cap its setup cannot yet run queues until the one pin move before the run of 2027-02-06 teaches the
+            families both, and each family's own time limit joins the grammar's list. One new decision.
+Built:      the survivor desk. Each idea the one tester passes is written as a survivor with its line and the cut points it was
+            chosen at, and admitted at once: registered through the registrar as its setup's variant on its index, the running
+            revision's settings with each condition as a level its readings must meet, its plan and its order, where it can run
+            there and the setup holds fewer than nine; where it holds nine, the variant with the lowest result per $1 risked
+            over the nights it shares with the running revision, among those past 63 nights with a closed trade, retired first,
+            never the running revision; otherwise queued with why. A night step after the store copy's row walks each queued
+            survivor to the newest night's setups its line keeps, stores its picks with the night's close and typical move,
+            drawn among no buys, and admits it again, writing its row on a night with none queued too. Migration 163, its three
+            tables taking inserts alone. The grammar's time limits gain the drift's 60, so a line can name every family's own.
+            The Improvement loop's page shows the survivors: running in the background, the queue in the order it passed with
+            each record so far and why it waits, and those retired; the Run page groups the step's row after the store copy's.
+            The decision, the catalogue, matrix and store rows, section 14's step, section 15.20's, 17's and 18's rows, SCHEMA,
+            the runbook, the guide and the changelog; the build plan's 24.27 text amended to Appendix AD, no survivor on a new
+            event before 24.37 writes the first. This checkpoint amends its own done condition, adding that a survivor whose
+            line its setup cannot yet run is queued with why.
+Measured:   no idea has passed on the operator's store, so no survivor stands there and the night's row will say none is queued.
+Tests:      5 new: the admission by hand with room, nine held and the lowest past 63 nights retired before a lower one at 62,
+            one night younger the next lowest, and none past the minimum queuing with the nearest named; a time limit, a cap,
+            no cap and the loose gates each queued with why, and a running revision's name never written or retired; a
+            variant's settings and one record across a registration by hand, and a queued pick's result by hand at 2.5 risks; a
+            queued survivor walked on a constructed store, its pick stored once, its state written once for its reason, the
+            step's row counting each walk and the three tables refusing an update and a delete; the picks' table read by the
+            desk and the page alone; and the Loop page's survivors read back. Five night tests read the survivors' row or step
+            between the store copy's and the picker's.
+Claims:     1721, nine of the plan's six: the desk's catalogue and matrix rows, its three stores, section 14's step, section
+            17's row, section 18's row and the Loop page's row, where the plan counted one pair and one store.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.27 adds taken out at its one site. m1 a variant under 63 nights
+            retired to make room: red; m2 the highest result making room in place of the lowest: red; m3 a line's own time
+            limit registered where its setup cannot run it: red in two tests; m4 a running revision's name written or retired:
+            red; m5 the record leaving out the picks walked while queued: red in two tests; m6 a state written every night for
+            the same reason: red; m7 the page drawing every index's survivors: red; m8 the survivors' update trigger taken out:
+            red; m9 the night's step walking no survivor: red. Each filtered to its tests and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3961 of 3961 tests ran with none failed, migrations 0 to 163 with
+            none pending, schema version 163, against `data-ci` and never `data`; the phase report 68 tables, 1721 claims, 1721
+            passing, none out of scope and none unexamined, 1736 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open, whose one pin move before the run of 2027-02-06 now also teaches every price family a
+            time limit and a cap a night; migrations 162 and 163 on the operator's store after the merge.

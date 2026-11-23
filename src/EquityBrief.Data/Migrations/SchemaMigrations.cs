@@ -783,6 +783,7 @@ public static class SchemaMigrations
         new Migration(160, "rebuild judge_fact, judge_run and judge_pick for the picker within each index", PickWithinEachIndex),
         new Migration(161, "create notebook", CreateNotebook),
         new Migration(162, "rebuild notebook as a strict table", NotebookStrict),
+        new Migration(163, "create survivor, survivor_state and survivor_pick", CreateSurvivors),
     ];
 
     // The notebook rebuilt as a strict table, so a value of the wrong type is refused: its triggers dropped with it, its rows
@@ -839,6 +840,58 @@ public static class SchemaMigrations
         BEGIN
             SELECT RAISE(ABORT, 'notebook takes inserts alone: a row it holds is never written over.');
         END;
+    ";
+
+    // The survivors: each idea the one tester passed, with the line and the early years' cut points it is walked by; each
+    // state it reaches in order, queued, registered as its setup's variant under a name or retired, with why; and each pick
+    // it was walked to on a night it queued, its plan worked from the night's close and typical move. Every table takes
+    // inserts alone, so a survivor's record before its registration stands as it was walked.
+    // see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens
+    const string CreateSurvivors = @"
+        CREATE TABLE survivor (
+            id           INTEGER PRIMARY KEY,
+            notebook_id  INTEGER NOT NULL UNIQUE,
+            index_code   TEXT NOT NULL CHECK (index_code IN ('GSPC', 'MID', 'SML')),
+            family       TEXT NOT NULL,
+            line         TEXT NOT NULL,
+            cuts         TEXT NOT NULL,
+            passed_on    TEXT NOT NULL,
+            entered_at   TEXT NOT NULL,
+            run_id       TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE survivor_state (
+            survivor_id  INTEGER NOT NULL,
+            at           TEXT NOT NULL,
+            state        TEXT NOT NULL CHECK (state IN ('queued', 'registered', 'retired')),
+            candidate    TEXT,
+            why          TEXT NOT NULL,
+            run_id       TEXT NOT NULL,
+            PRIMARY KEY (survivor_id, at, state)
+        ) STRICT;
+
+        CREATE TABLE survivor_pick (
+            survivor_id  INTEGER NOT NULL,
+            session_date TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            last_close   TEXT NOT NULL,
+            typical_move REAL NOT NULL,
+            run_id       TEXT NOT NULL,
+            PRIMARY KEY (survivor_id, session_date, ticker)
+        ) STRICT;
+
+        CREATE TRIGGER survivor_takes_inserts_alone_on_change BEFORE UPDATE ON survivor
+        BEGIN SELECT RAISE(ABORT, 'survivor takes inserts alone.'); END;
+        CREATE TRIGGER survivor_takes_inserts_alone_on_removal BEFORE DELETE ON survivor
+        BEGIN SELECT RAISE(ABORT, 'survivor takes inserts alone.'); END;
+        CREATE TRIGGER survivor_state_takes_inserts_alone_on_change BEFORE UPDATE ON survivor_state
+        BEGIN SELECT RAISE(ABORT, 'survivor_state takes inserts alone: a new state is a row of its own.'); END;
+        CREATE TRIGGER survivor_state_takes_inserts_alone_on_removal BEFORE DELETE ON survivor_state
+        BEGIN SELECT RAISE(ABORT, 'survivor_state takes inserts alone.'); END;
+        CREATE TRIGGER survivor_pick_takes_inserts_alone_on_change BEFORE UPDATE ON survivor_pick
+        BEGIN SELECT RAISE(ABORT, 'survivor_pick takes inserts alone.'); END;
+        CREATE TRIGGER survivor_pick_takes_inserts_alone_on_removal BEFORE DELETE ON survivor_pick
+        BEGIN SELECT RAISE(ABORT, 'survivor_pick takes inserts alone.'); END;
     ";
 
     // The notebook: every idea ever tested, from any source, a row an idea, in plain words and as its grammar line where the

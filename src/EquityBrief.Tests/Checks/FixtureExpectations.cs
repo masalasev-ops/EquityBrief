@@ -172,6 +172,9 @@ public partial class FixtureExpectations
             // Section 17's row of the idea grammar and the one tester.
             .. NotebookClaims,
 
+            // Section 17's row of making room for a survivor and section 18's row of one that cannot register yet.
+            .. SurvivorClaims,
+
             // 24.24: section 17's row of the picker within each index and section 18's row of a night with no stock marked.
             .. JudgeIndexClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.

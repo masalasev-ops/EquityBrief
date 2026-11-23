@@ -118,7 +118,19 @@ public static class IdeaGrammar
 
     public static IReadOnlyList<double> Multiples { get; } = [1.5, 2, 3];
 
-    public static IReadOnlyList<int> SessionLimits { get; } = [5, 10, 20, 40, 63];
+    // The time limits a line may name: the grammar's own and each family's own, so a line can always name the limit its
+    // family runs today.
+    public static IReadOnlyList<int> SessionLimits { get; } = [.. new[] { 5, 10, 20, 40, 63 }.Concat(Families.Select(FamilyTimeLimit)).Distinct().Order()];
+
+    // The time limit each family's live rule runs today, which a survivor's variant runs until its family is taught a
+    // limit of its own.
+    public static int FamilyTimeLimit(string family) => family switch
+    {
+        "pullback" => EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap,
+        "breakout" => EquityBrief.Core.Families.BreakoutRule.CapSessions,
+        "drift" => EquityBrief.Core.Families.DriftRule.CapSessions,
+        _ => EquityBrief.Core.Families.DipRule.Provisional.TimeLimit,
+    };
 
     public static IReadOnlyList<int> Caps { get; } = [1, 3, 5, 10];
 

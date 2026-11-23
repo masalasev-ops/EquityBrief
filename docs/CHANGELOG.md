@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - survivors run by themselves, at 24.27
+Decision: A passed idea registers by itself as its setup's variant where it has room or a variant past its minimum makes room, and queues where none can go
+Was:
+> ARCHITECTURE.html: no catalogue or matrix row "Survivor desk"; no store rows "Survivors", "Survivor states" and "Survivor picks"; no step in section 14 between the store copy's row and the AI stock picker's; section 15.20's row "The notebook": "from 24.26 a card after the long history holding ..."; no row "Survivors and the queue" in section 15.20; no row "Making room for a survivor" in section 17; no row "A survivor that cannot register yet" in section 18
+> SCHEMA.md: no `survivor`, `survivor_state` or `survivor_pick` in the ownership summary and no tables of them
+> RUNBOOK.md, the notebook and the one tester: "... which the Improvement loop's page draws; nothing it writes registers or changes a rule (see: ...)."
+> BUILD_PLAN.md, 24.27: "... and the retirement is named on the page and in the notebook; ... On a new event it runs as a setup on test with its card on Tonight, marked as on test, its picks in no live count. ... Writes the register's form for a survivor, section 17's minimum, section 18's rows, the superseding decisions, the Loop page's rows and the changelog." and its done condition opening "a registration touching a live rule is refused, asserted; the retirement is worked by hand ..."
+Now:
+> ARCHITECTURE.html: the catalogue and matrix rows "Survivor desk"; the three store rows; section 14's step "From 24.27, walk each queued survivor to the night's setups its line keeps ..."; "The notebook": "from 24.26 a card after the long history, from 24.27 after the survivors, holding ..."; section 15.20's row "Survivors and the queue"; section 17's row "Making room for a survivor"; section 18's row "A survivor that cannot register yet"
+> SCHEMA.md: the three tables inserted by SurvivorDesk and taking inserts alone
+> RUNBOOK.md: "... which the Improvement loop's page draws (see: ...). From 24.27 each line it passes is written as a survivor and admitted at once, registered as its setup's variant on its index where it can run there and has room, or queued with why ...; nothing it writes changes a running revision (see: ...)."
+> BUILD_PLAN.md, 24.27: the retirement named on the page, in the register's retirement row and in a retired survivor's own states; a survivor whose line its setup cannot yet run queued until the one pin move before the run of 2027-02-06 teaches the families a time limit and a cap a night, the grammar holding each family's own time limit; no survivor on a new event before 24.37; what it writes as built; and its done condition gaining "a survivor whose line its setup cannot yet run is queued with why, asserted"
+Why: the operator's second brief of phase 24 of 2026-11-16, item 13, their change of that day that a queued survivor loses no nights, and their answer of 2026-11-22 kept as Appendix AD of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`; also under the decision "A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens". A new event is written first at 24.37, so 24.27 has none to run on test.
+
 ### 2026-11-22 - docs/SCHEMA.md - the notebook rebuilt as a strict table, at the 24.26 correction
 Corrects: migration 161 made the notebook a table without STRICT, so a figure of the wrong type would have been stored as written where the tables beside it refuse one.
 Was:

@@ -41,7 +41,7 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
 
     const string Insert = @"
         INSERT INTO notebook (entered_at, source, source_key, index_code, family, words, line, built_on, early_picks, early_edge, late_picks, late_edge, blocks, adjusted, bar, verdict, why, tested_on, run_id)
-        VALUES ($entered_at, $source, NULL, $index_code, $family, $words, $line, $built_on, $early_picks, $early_edge, $late_picks, $late_edge, $blocks, $adjusted, $bar, $verdict, $why, $tested_on, $run_id);";
+        VALUES ($entered_at, $source, NULL, $index_code, $family, $words, $line, $built_on, $early_picks, $early_edge, $late_picks, $late_edge, $blocks, $adjusted, $bar, $verdict, $why, $tested_on, $run_id) RETURNING id;";
 
     const string InsertRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -136,6 +136,8 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
 
         var figures = new IdeaFigures[ideas.Count];
         var throughs = new DateOnly[ideas.Count];
+        var chosenOn = new IReadOnlyDictionary<string, double[]>[ideas.Count];
+        var rows = new long[ideas.Count];
 
         foreach (var index in ideas.Select(idea => idea.Index).Distinct(StringComparer.Ordinal))
         {
@@ -154,7 +156,8 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                 var idea = ideas[at];
                 var setups = await SetupsAsync(idea, cancellation);
                 var cuts = IdeaTester.CutsOf(setups.Select(one => one.Setup), ReadingsOf(idea));
-                var chosen = IdeaTester.Selected(idea, setups.Select(one => one.Setup), cuts).ToHashSet();
+                chosenOn[at] = cuts;
+                var chosen =IdeaTester.Selected(idea, setups.Select(one => one.Setup), cuts).ToHashSet();
                 var combination = CombinationOf(idea);
                 var walked = setups.Where(one => chosen.Contains(one.Setup)).ToArray();
                 var picks = new IdeaPick[walked.Length];
@@ -206,7 +209,7 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                 command.Parameters.AddWithValue("$why", verdict.Why);
                 command.Parameters.AddWithValue("$tested_on", throughs[at].ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$run_id", runId);
-                await command.ExecuteNonQueryAsync(cancellation);
+                rows[at] = (long)(await command.ExecuteScalarAsync(cancellation))!;
 
                 output.WriteLine(FormattableString.Invariant($"{Verb}: {verdict.Verdict}: {verdict.Why} {idea.Canonical}"));
             }
@@ -225,6 +228,20 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
             }
 
             await transaction.CommitAsync(cancellation);
+        }
+
+        // Each idea that passed runs by itself from that night: registered as its setup's variant or queued.
+        // see: A passed idea registers by itself as its setup's variant where it has room or a variant past its minimum makes room, and queues where none can go
+        var desk = new SurvivorDesk(clock, databaseFile, dataRoot);
+
+        for (var at = 0; at < ideas.Count; at++)
+        {
+            if (verdicts[at].Verdict == IdeaTester.Passed)
+            {
+                var admitted = await desk.AdmitAsync(rows[at], ideas[at], chosenOn[at], throughs[at], runId, cancellation);
+
+                output.WriteLine($"{Verb}: survivor {admitted.Outcome}: {admitted.Why} {ideas[at].Canonical}");
+            }
         }
 
         return 0;

@@ -132,6 +132,11 @@ public enum Store
 
     // Every idea ever tested, from any source, taking inserts alone.
     Notebook,
+
+    // The ideas that passed, each state they reached and the picks a queued one was walked to.
+    Survivor,
+    SurvivorState,
+    SurvivorPick,
     FilingDay,
     InsiderTrade,
     InsiderRead,
