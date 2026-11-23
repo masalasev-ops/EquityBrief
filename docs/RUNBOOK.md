@@ -2319,7 +2319,7 @@ dotnet run --project src/EquityBrief.Worker -- long-prices --behind
 dotnet run --project src/EquityBrief.Worker -- long-prices --spans
 ```
 
-`--behind` names each current member whose spans end more than 2 sessions before its newest bar, by index, and exits 1 where any does; it writes nothing. `--spans` writes the spans again whole in one transaction and states the spans before and after on its run log row. `ledger-build --every-session --word` refuses while `--behind` names any member, so the spans are written again before each store run of the table. Run `--spans` while no writer runs.
+`--behind` names each current member whose spans end more than 2 sessions before its newest bar, by index, and exits 1 where any does; it writes nothing. `--spans` writes the spans again whole in one transaction and states the spans before and after on its run log row, with each code whose S&P 500 rows under two names it parted, where and on what evidence, and whether the earlier was left out. `ledger-build --every-session --word` refuses while `--behind` names any member, so the spans are written again before each store run of the table. Run `--spans` while no writer runs.
 
 The codes the operator names are asked of the provider again, each once, off-peak and while no writer runs, the asks written as `ASKED` for a code's own member sessions or `ASKED:FOR` where a company traded under another code before (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again):
 

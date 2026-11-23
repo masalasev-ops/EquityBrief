@@ -909,7 +909,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
     // The spans read again from what the store holds: the long history's matched holdings, the members pull's later ones and the
     // provider's dates of the S&P 500 from the day given, as the run that wrote the holdings read them.
     // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
-    public static async Task<IReadOnlyList<LongSpan>> SpansAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, DateOnly providerFrom, CancellationToken cancellation = default)
+    public static async Task<IReadOnlyList<LongSpan>> SpansAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, DateOnly providerFrom, CancellationToken cancellation = default, Func<ProviderSpan, ProviderSpan, string?>? partsThem = null, ICollection<LongParted>? parted = null)
     {
         var snapshots = new Dictionary<string, Dictionary<DateOnly, HashSet<string>>>(StringComparer.Ordinal);
         var provider = new List<ProviderSpan>();
@@ -992,7 +992,9 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             provider,
             firstHeldByName,
             providerFrom,
-            nights.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<ProviderSpan>)pair.Value, StringComparer.Ordinal));
+            nights.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<ProviderSpan>)pair.Value, StringComparer.Ordinal),
+            partsThem,
+            parted);
     }
 
     // The long history's spans as they stand against tonight's members: those of each index whose spans end more than the

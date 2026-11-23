@@ -104,6 +104,45 @@ public static partial class LongRenames
         return ([.. own.Concat(taken).OrderBy(bar => bar.Session)], taken.Select(bar => bar.Session).ToHashSet());
     }
 
+    // The links the operator made by hand: a code, the code whose prices it reads from the session given on, and that session,
+    // here SITE Centers' 8-K carrying item 5.03 of 2018-10-12, the charter amendment of its rename from DDR Corp.
+    // see: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's
+    public static IReadOnlyList<(string Ticker, string Later, DateOnly From)> ByHand { get; } = [("DDR", "SITC", new DateOnly(2018, 10, 12))];
+
+    // A code's bars before a hand link's session with the later code's from it on, the later's put on the code's own scale at
+    // the two codes' ratio on the last day both traded before it, and the sessions taken; none where the later code's first
+    // close there does not continue the code's last before it as the marks' price test reads a continuing price.
+    public static (SweepBar[] Bars, IReadOnlySet<DateOnly> Joined, string Test)? ByHandJoined(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other, DateOnly from, IReadOnlyList<DateOnly> calendar)
+    {
+        SweepBar[] before = [.. own.Where(bar => bar.Session < from)];
+        var shared = Shared(before, other.Where(bar => bar.Session < from).ToArray());
+
+        if (shared.Length == 0)
+        {
+            return null;
+        }
+
+        var (last, theirs) = shared[^1];
+        var price = theirs.Close / last.Close;
+        var raw = last.RawClose > 0 && theirs.RawClose > 0 ? theirs.RawClose / last.RawClose : 1m;
+        var volume = last.Volume > 0 && theirs.Volume > 0 ? Shares(theirs.Volume) / last.Volume : 1m;
+        SweepBar[] taken =
+        [
+            .. other.Where(bar => bar.Session >= from)
+                .Select(bar => bar with { High = bar.High / price, Low = bar.Low / price, Close = bar.Close / price, Open = bar.Open / price, RawClose = bar.RawClose / raw, Volume = (long)Math.Round(bar.Volume / volume) }),
+        ];
+        SweepBar[] together = [.. before.Concat(taken).OrderBy(bar => bar.Session)];
+        var traded = LongTraded.Of(together).ToArray();
+
+        if (taken.Length == 0 || traded.Where(bar => bar.Session < from).Select(bar => (DateOnly?)bar.Session).LastOrDefault() is not { } end
+            || LongMarks.PriceOf(traded, end, calendar) != LongMarks.Continues)
+        {
+            return null;
+        }
+
+        return (together, taken.Select(bar => bar.Session).ToHashSet(), FormattableString.Invariant($"linked by hand from {from:yyyy-MM-dd}, its first close there continuing the last before it"));
+    }
+
     // The sessions both codes traded on, a session whose close moved with no volume among them, each code's bar there, in order.
     // see: A bar whose close moved with no volume traded with its volume missing
     static (SweepBar Own, SweepBar Other)[] Shared(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other)

@@ -22329,3 +22329,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    nothing new.
+
+### 24.19 - correction: a code's provider rows parted only on evidence, Fox's old rows left to Twenty-First Century Fox, and DDR linked to SITC by hand   2026-11-23
+
+Queue:      done, Home's stocks met again and the live rule's trade read first; in progress, this correction; next, the spans
+            written again on the live store, the table's check measured again with the setups with no table row recounted,
+            then 24.35's S&P 400 and 600 half.
+Ruled:      the operator's answers of 2026-11-23 at 16:50, items 1 and 2, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`. Two new decisions.
+Built:      where a code's S&P 500 provider rows under two names meet, the long price pull's spans part them only on evidence:
+            its prices beginning more than 5 sessions after the earlier row's start, the marks' price test gapping or jumping
+            at the later row's start, or each name's filer known and different. Parted, the two read as two spans, the earlier
+            left out where the code holds no price over it; with no evidence, one span as before. `--spans` names each parting
+            on its row. The long reader reads DDR from SITC's prices from 2018-10-12, the day SITE Centers filed its rename's
+            charter amendment, on DDR's scale at the two codes' ratio on the last day both traded before it, where SITC's close
+            there continues DDR's last as the marks' price test reads a continuing price; its lists name the link as made by
+            hand, and DDR's own bars after it are not read.
+Measured:   on the live store, read only: FOXA's rows "21st Century Fox" from 2013-07-01 and "Fox Corp Class A" from
+            2019-03-19, its prices from 2019-03-12, and FOX's likewise; TFCF's and TFCFA's provider spans to 2019-03-20. DDR's
+            prices to 2021-09-30, SITC's from 2004, SITC's close 0.1576 of DDR's through July to September 2018 and stepping at
+            each quarter's dividend, 0.1101 in June 2017 to 0.2190 in September 2021; the provider's split table holds SITE
+            Centers' 1-for-4 on 2024-08-19 and none in 2018; the S&P 600's fund holds SITE Centers under DDR from 2020-09-30 to
+            2024-09-30. The spans are written again on the live store after the merge, with no writer running.
+Tests:      3 new: the span builder parting a code's rows only where the evidence does, FOXA from 2019-03-19, GOOGL one span
+            through its rename, a different filer two; the evidence read off a constructed store's prices, FOXA's beginning
+            at the later name, JMPS jumping a fifth and GOOGL continuing, and the spans written again with their row naming
+            the partings; and DDR's link by hand worked at 13.02 against DDR's last of 13.00, refused where SITC opens a fifth
+            higher.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the rows never
+            parted: red, FOXA from 2013 and the run's row naming nothing; m2 the prices beginning late not read as evidence:
+            red, FOXA read as one company; m3 the link's continuity not checked: red, the link made where SITC jumps. Each
+            filtered to its tests and reverted before anything was committed.
+Claims:     1753, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4011 of 4011 tests ran with none failed, migrations 0 to 169 with
+            none pending, schema version 169, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    LPI, PVAC, WTW_old and SIX, marked held none though the provider prices three of them under VTLE, ROCC and WW_old,
+            for the operator.

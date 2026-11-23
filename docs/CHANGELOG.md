@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a code's provider rows parted only on evidence, and DDR linked to SITC by hand, at a correction to the 24.19 correction
+Decision: A code's provider spans under two names part into two companies only on a different filer or the marks' price test, never on the names alone
+Decision: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's
+Was:
+> ARCHITECTURE.html, the long price pull's row: reads "historical price feed, long filings, long held none, long holdings, long snapshots, long spans, membership"; no parting of a code's rows
+> ARCHITECTURE.html, the long history reader's row: no link by hand
+> RUNBOOK.md: "`--spans` writes the spans again whole in one transaction and states the spans before and after on its run log row."
+> SCHEMA.md: the long price pull reading no `long_bar` or `long_market_bar`
+Now:
+> SCHEMA.md: the pull's spans reading `long_bar` for each code under two names and `long_market_bar`'s S&P 500 sessions
+> ARCHITECTURE.html: the pull reading long bars and long market bars and parting a code's rows only on the evidence; the reader reading DDR from SITC's prices from 2018-10-12 by hand
+> RUNBOOK.md: the spans run's row naming each parting
+Why: FOX and FOXA ran from before Fox Corp listed with 110 sessions without a price, and DDR's sessions after its prices stop in 2021 held none; the operator's answers of 2026-11-23 at 16:50, items 1 and 2, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`.
+
 ### 2026-11-23 - docs/SCHEMA.md and docs/RUNBOOK.md - the marking of sessions held none stops at the store's newest stored session, at a correction to the 24.19 correction
 Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
 Was:

@@ -724,10 +724,34 @@ public sealed class LongHistoryReader : IComponent
         string through,
         CancellationToken cancellation)
     {
-        var held = bars.Select(bar => bar.Session).ToHashSet();
-        var missing = calendar.Where(session => !held.Contains(session) && spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session))).ToHashSet();
         var joined = new HashSet<DateOnly>();
         var with = new List<(string, string)>();
+
+        // A link the operator made by hand reads the later code's prices from its session on in place of the code's own, where a
+        // member span runs past it and the later code's first close there continues the code's last; listed apart otherwise.
+        // see: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's
+        foreach (var (_, later, from) in LongRenames.ByHand.Where(link => link.Ticker == ticker && spans.Any(span => span.Left is not { } left || left > link.From)))
+        {
+            var theirs = (await SeriesAsync(connection, later, marks.GetValueOrDefault(later) ?? [], through, cancellation))
+                .Where(bar => (side.After is not { } after || bar.Session > after) && (side.UpTo is not { } upTo || bar.Session <= upTo))
+                .ToArray();
+            bool Member(DateOnly session) => spans.Any(span => (span.Joined is not { } start || start <= session) && (span.Left is not { } left || left > session));
+
+            if (LongRenames.ByHandJoined(bars, theirs, from, calendar) is { } linked)
+            {
+                bars = linked.Bars;
+                joined.UnionWith(linked.Joined);
+                with.Add((later, linked.Test));
+                lastJoinsFound.Add(new LongJoin(ticker, later, linked.Test, linked.Joined.Count(Member)));
+            }
+            else
+            {
+                lastJoinsFound.Add(new LongJoin(ticker, later, null, theirs.Count(bar => bar.Session >= from && Member(bar.Session))));
+            }
+        }
+
+        var held = bars.Select(bar => bar.Session).ToHashSet();
+        var missing = calendar.Where(session => !held.Contains(session) && spans.Any(span => (span.Joined is not { } begun || begun <= session) && (span.Left is not { } left || left > session))).ToHashSet();
 
         if (missing.Count == 0)
         {
