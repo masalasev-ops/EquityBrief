@@ -18,7 +18,7 @@ public partial class FixtureExpectations
 {
     // The correction's two rows: the marks ruled's store and the History page's row of the marks the evidence leaves to the
     // operator.
-    internal static string[] LongCorrectionRows => [.. SchemaColumns.MarkRulingStoreRows, .. Reading.ReadSurface.MarkRulingRows, .. LongSpansClaims];
+    internal static string[] LongCorrectionRows => [.. SchemaColumns.MarkRulingStoreRows, .. Reading.ReadSurface.MarkRulingRows, .. LongSpansClaims, .. SchemaColumns.LongHeldNoneStoreRows];
 
     // The correction's second part's row: section 17's renames and spans.
     internal static readonly string[] LongSpansClaims =

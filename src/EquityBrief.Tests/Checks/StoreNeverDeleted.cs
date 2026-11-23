@@ -148,6 +148,7 @@ public class StoreNeverDeleted
                 "LongMembers.cs: File.WriteAllTextAsync(file)",
                 "LongMembers.cs: File.WriteAllTextAsync(file)",
                 "LongPricePull.cs: File.Move(file + \".part\")",
+                "LongPricePull.cs: File.WriteAllTextAsync(Path.Combine(folder, AgainFile))",
                 "LongPricePull.cs: File.WriteAllTextAsync(Path.Combine(folder, CodesFile))",
                 "LongPricePull.cs: File.WriteAllTextAsync(Path.Combine(folder, FilersFile))",
                 "LongPricePull.cs: File.WriteAllTextAsync(file + \".part\")",

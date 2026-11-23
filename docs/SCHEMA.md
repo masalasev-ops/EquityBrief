@@ -208,6 +208,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_split` | LongPricePull | none | LongPricePull |
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
+| `long_held_none` | LongPricePull | none | none |
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
@@ -558,6 +559,22 @@ Grain: one row per code and filing of its company's filer.
 Primary key: `ticker`, `accession`.
 
 **The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull. From 23.5 the same write, and `long-prices --report-days` alone, writes again whole the `long_print` rows whose `read_from` is `8-K item 2.02`: one for each 8-K of `long_filing` carrying item 2.02, on the day it was filed, its timing unstated and no figure, for a gate reading a date alone (see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone). From 23.6 the long reader reads `long_bar` and `long_print`, the ledger's long build `long_market_bar` and `long_filing`, and the long ledger's measure `long_bar`, `long_market_bar` and `long_filing`, each by hand and none a night's (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From the operator's answer of 2026-11-17 the long reader reads `long_split` as well, by hand, for the only steps in a code's closes the long ledger's share check and its dollar volume floor take for a split (see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read).
+
+### long_held_none
+Grain: one row per code and run of its member sessions the provider was asked for again and holds no price of, from migration 168.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the code whose member sessions they are |
+| `first_session` | TEXT | the run's first session |
+| `last_session` | TEXT | its last |
+| `sessions` | INTEGER | the sessions in the run, the calendar holding them back to back |
+| `asked_at` | TEXT | UTC instant the capture asked the provider again |
+| `run_id` | TEXT | the run that marked it |
+
+Primary key: `ticker`, `first_session`.
+
+**Written once by the long price pull's `--held-none` after the write that read the answers asked again, a run already held changing nothing, and never updated or deleted, its triggers refusing both; the long price pull's write removes none of it** (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again). `long-prices --capture --into <folder> --again <codes>` asks each code named again, whether or not the folder keeps its answer, each for its own member sessions or for those of the code named after it, and keeps the asks and their instant in the folder; it refuses, before asking anything, a code an ask is for that holds a row here. After `--write`, `--held-none <folder>` reads each such code's member sessions on every index that still hold no price, as the long history's lists read them, and writes them here. The long history's lists name these sessions as the provider holding no price for them, apart from those still without one; nothing else reads it.
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.
