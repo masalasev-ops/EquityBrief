@@ -8,7 +8,8 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, the operator's order of 2026-11-14, item 1f: a guard over the family pages' constructed night of Friday
 // 2026-10-02, on which HELD met the pullback's rules again while its trade from the night before was still open. Home, Tonight
 // and a stock's page draw none of the words the order retired; nothing names tomorrow's open on a Friday; HELD's card is drawn
-// in a group of its own on Home and Tonight; and HELD reaches no pick count and no paper trade. Worked by hand: the pullback
+// in a group of its own on Tonight, and from the operator's correction of 2026-11-23 a row of its own on Home; and HELD reaches
+// no pick count and no paper trade. Worked by hand: the pullback
 // lists F1 to F5 and the breakout K1 and K2, seven new picks to buy at Monday's open; HELD was listed on 2026-10-01.
 // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
 public partial class ReadSurface
@@ -59,7 +60,8 @@ public partial class ReadSurface
 
         Assert.Contains($"<h5>{HeldAgainView.Group} (1)</h5>", group, StringComparison.Ordinal);
         Assert.Contains($"<b>{HeldAgainView.Label}</b>", group, StringComparison.Ordinal);
-        Assert.Contains("HELD met the pullback rules again tonight. Pullback bought it on 1 Oct and that trade is still open, so paper trading will not buy it again until it ends.", group, StringComparison.Ordinal);
+        // From the operator's correction of 2026-11-23 the day it bought it is the day its fill traded, 2 Oct.
+        Assert.Contains("HELD met the pullback rules again tonight. Pullback bought it on 2 Oct and that trade is still open, so paper trading will not buy it again until it ends.", group, StringComparison.Ordinal);
 
         // Its open trade beside it: listed 1 Oct, filled 2 Oct at 98.50, its stop and sale its rule's, tonight's close 100.00,
         // up (100.00 - 98.50) / 98.50 = 1.52%.

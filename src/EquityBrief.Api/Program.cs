@@ -3147,6 +3147,12 @@ async Task<IResult> HomeAsync(
         since = HomeSince.Of(tradesSince, dated, await read.ClosesOnAsync([.. tradesSince.Where(row => row.Listed == dated).Select(row => row.Ticker).Distinct()], through));
     }
 
+    // From the operator's correction of 2026-11-23 the company of each stock met again while a bought trade holds it, which its
+    // one-line row names.
+    var heldAgain = families.SelectMany(family => family.HeldAgain).ToArray();
+    string[] heldAgainOn = [.. heldAgain.Select(card => card.Ticker).Distinct(StringComparer.Ordinal)];
+    var heldNamed = heldAgainOn.Length == 0 ? null : await read.PaperStocksAsync(heldAgainOn, dated);
+
     var view = new HomeView(
         reading,
         dated,
@@ -3180,7 +3186,8 @@ async Task<IResult> HomeAsync(
         Since = since,
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
-        HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
+        HeldAgain = heldAgain,
+        HeldCompanies = heldAgainOn.Where(ticker => heldNamed is not null && heldNamed.TryGetValue(ticker, out var stock) && stock.Company is not null).ToDictionary(ticker => ticker, ticker => heldNamed![ticker].Company!, StringComparer.Ordinal),
 
         // From the operator's word of 2026-11-17 when the public copy was last uploaded and why the newest attempt failed, on
         // the app's Home alone and never the copy's.

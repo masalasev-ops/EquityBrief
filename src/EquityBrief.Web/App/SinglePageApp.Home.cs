@@ -71,6 +71,9 @@ public sealed record HomeView(
     // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
     public IReadOnlyList<DecisionCardView> HeldAgain { get; init; } = [];
 
+    // From the operator's correction of 2026-11-23 each such stock's company, which a held stock's one-line row names.
+    public IReadOnlyDictionary<string, string> HeldCompanies { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
     // From the operator's word of 2026-11-17 the public copy's newest upload and attempt, none on the copy's own Home.
     public SiteUploadView? Upload { get; init; }
 
@@ -544,21 +547,23 @@ public sealed partial class SinglePageApp
         // The orders earlier nights placed still waiting for their price, under tonight's ideas: cards nearest their buy price
         // first, in no count of tonight's buys.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders));
+        // From the operator's correction of 2026-11-23 a stock met again while its order waits is drawn once, on that order's card
+        // with the mark; one held on a bought trade is a row of its own beneath.
+        // see: On Home a stock its setup's rules met again is drawn once, on its waiting order's card or as a bought trade's one-line row
+        var (waitingAgain, heldAgain) = MetAgainOf(view);
+
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders, marks.Copying ? null : waitingAgain));
 
         // From 24.6 the AI stock picker's one line, its own account and never one of the rules' buys; from 24.15 on a past night that
         // night's picks, and none where the judge did not run that night.
-        if (view.Judge is { } judge && (view.Newest is null || judge.Night == view.Night))
+        if (view.Judge is { } judge && (view.Newest is null || judge.Night == view.Night || judge.AcrossNight?.Night == view.Night))
         {
             region.Append(JudgeHomeLine(judge, view.Newest is not null));
         }
 
-        // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
-        // own under tonight's ideas, each a full card, counted in none of the ideas.
-        // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
         if (!marks.Copying)
         {
-            region.Append(marks.HeldAgainGroup(view.HeldAgain));
+            region.Append(HeldAgainRows(heldAgain, view.Reading, view.HeldCompanies));
         }
 
         if (view.IdeasCount + view.Watching.Count > 0)
@@ -627,6 +632,47 @@ public sealed partial class SinglePageApp
         return MarkRenderer.ToBuyCounted(view.IdeasCount - onDip, onDip, view.Night) is { } counted
             ? "Tonight's ideas: " + counted
             : Invariant($"Tonight's ideas: {view.IdeasCount} {(view.IdeasCount == 1 ? "stock" : "stocks")} to buy {view.OpensOn} morning");
+    }
+
+    // From the operator's correction of 2026-11-23 the cards of the stocks met again tonight split in two: those whose earlier
+    // order still waits, which their order's card in the carousel carries, and the rest, each a row of its own.
+    // see: On Home a stock its setup's rules met again is drawn once, on its waiting order's card or as a bought trade's one-line row
+    public static (IReadOnlyList<DecisionCardView> Waiting, IReadOnlyList<DecisionCardView> Held) MetAgainOf(HomeView view)
+    {
+        DecisionCardView[] waiting = [.. view.HeldAgain.Where(card => view.StillWaiting.Any(order => MarkRenderer.AgainOf(order, [card]) is not null))];
+        DecisionCardView[] held = [.. view.HeldAgain.Where(card => card.HeldAgain is not null && !waiting.Contains(card))];
+
+        return (waiting, held);
+    }
+
+    // The rows of the stocks met again while a trade holds them: the stock and its company, the setup and the day it bought
+    // it, "Already held, not bought again" and the way to its trade on Paper trading; the heading counts them, and nothing is
+    // drawn where none is held.
+    public static string HeldAgainRows(IReadOnlyList<DecisionCardView> cards, UniverseChoice reading, IReadOnlyDictionary<string, string> companies)
+    {
+        if (cards.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var heading = cards.All(card => card.HeldAgain is { Bought: true }) ? HeldAgainView.Group : HeldAgainView.NoteGroup;
+        var paper = PaperRoute + (reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + reading.Word);
+        var body = new StringBuilder(Invariant($"<div class=\"held-again held-rows\" data-held-again=\"{cards.Count}\"><h5>{Escaped(heading)} ({cards.Count})</h5><ul class=\"held-list\">"));
+
+        foreach (var card in cards)
+        {
+            var held = card.HeldAgain!;
+            var setup = SetupFamilies.Named(held.Family)?.Label ?? held.Family;
+            var when = held.Bought
+                ? (held.BoughtOn ?? held.Night) is { } bought ? "bought " + bought.ToString("d MMM", CultureInfo.InvariantCulture) : "bought on an earlier night"
+                : held.Night is { } placed ? "order placed " + placed.ToString("d MMM", CultureInfo.InvariantCulture) : "order placed on an earlier night";
+
+            body.Append(Invariant($"<li class=\"held-row\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\" data-bought=\"{(held.Bought ? "true" : "false")}\"><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(card.Ticker)}\">{Escaped(card.Ticker)}</a>"));
+            body.Append(companies.TryGetValue(card.Ticker, out var company) ? Invariant($"<span class=\"held-co\">{Escaped(company)}</span>") : string.Empty);
+            body.Append(Invariant($"<span class=\"held-by\">{Escaped(setup)}, {Escaped(when)}</span><b class=\"held-label\">{Escaped(held.Labelled)}</b><a class=\"held-go\" href=\"{paper}\">See its trade on Paper trading</a></li>"));
+        }
+
+        return body.Append("</ul></div>").ToString();
     }
 
     // One of the day's three tiles: a dot and a word, so colour is never the only sign, and the line saying what it means.

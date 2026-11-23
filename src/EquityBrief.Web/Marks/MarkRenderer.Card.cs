@@ -129,12 +129,18 @@ public sealed record DecisionCardView(
 // last close; the card's label and its line in the operator's words.
 public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
 {
+    // "Already held" names a bought trade alone, on the operator's correction of 2026-11-23.
     public const string Label = "Already held, not bought again";
+
+    public const string WaitingLabel = "Its order still waits, not placed again";
 
     public const string Group = "Met the rules again, already held";
 
     // The group as the note beneath a setup's picks names it, in the operator's words of 2026-11-14.
     public const string NoteGroup = "Met the rules again";
+
+    // The mark a waiting order's chip and card carry where its stock met the rules again.
+    public const string AgainMark = "Met the rules again";
 
     public decimal? Fill { get; init; }
 
@@ -146,14 +152,35 @@ public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
 
     public decimal? LastClose { get; init; }
 
+    // Bought where the store holds its fill; an order not yet filled otherwise, which no page calls bought or held.
+    public bool Bought => Fill is not null;
+
+    public string Labelled => Bought ? Label : WaitingLabel;
+
     static string Setup(string family) => (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
 
     static string Capital(string words) => words.Length == 0 ? words : char.ToUpperInvariant(words[0]) + words[1..];
 
-    // "ROP met the earnings drift rules again tonight. Earnings drift bought it on 26 Oct and that trade is still open, so paper
-    // trading will not buy it again until it ends."
+    static string Day(DateOnly? day) => day?.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) ?? "an earlier night";
+
+    // "ROP met the earnings drift rules again tonight. Earnings drift bought it on 27 Oct and that trade is still open, so paper
+    // trading will not buy it again until it ends." and for an order not yet filled "AVY met the pullback rules again tonight.
+    // Pullback placed its order on 19 Nov and it has not been filled, so paper trading places no second one."
     public string Line(string ticker, string matched) =>
-        FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} bought it on {Night?.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) ?? "an earlier night"} and that trade is still open, so paper trading will not buy it again until it ends.");
+        Bought
+            ? FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} bought it on {Day(BoughtOn ?? Night)} and that trade is still open, so paper trading will not buy it again until it ends.")
+            : FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} placed its order on {Day(Night)} and it has not been filled, so paper trading places no second one.");
+
+    // On a waiting order's card: "Met the pullback rules again on the night of 20 Nov. Its order of 19 Nov at $178.10 stands;
+    // tonight's rules would have placed it at $176.02."
+    public static string WaitingLine(string matched, DateOnly night, DateOnly listed, decimal? price, decimal? tonight)
+    {
+        static string Dollars(decimal value) => "$" + value.ToString("#,##0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        return FormattableString.Invariant($"Met the {Setup(matched)} rules again on the night of {Day(night)}. Its order of {Day(listed)}")
+            + (price is { } at ? " at " + Dollars(at) : string.Empty)
+            + (tonight is { } placed ? " stands; tonight's rules would have placed it at " + Dollars(placed) + "." : " stands.");
+    }
 
     public static HeldAgainView? Of(string? stored)
     {
@@ -512,15 +539,16 @@ public sealed partial class MarkRenderer
     // its phrasings in the reader's words.
     static string Said(string stored) => ReaderWords.Plain(StoredWords(stored)).Replace("the Loop page", "the " + CheckUpName, StringComparison.Ordinal);
 
-    // Why it qualified: a ticked sentence for each step the setup passed, read from the card's first line.
-    static string WhyItQualified(DecisionCardView card)
+    // Why it qualified: a ticked sentence for each step the setup passed, read from the card's first line, under the heading
+    // given.
+    static string WhyItQualified(DecisionCardView card, string heading = "Why it qualified")
     {
         if (card.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.TrendName) is not { } passed)
         {
             return string.Empty;
         }
 
-        var body = new StringBuilder(Formatted($"<section class=\"card-why\" data-line=\"{passed.Number}\" data-verdict=\"{Escaped(passed.Verdict)}\"><h5>Why it qualified</h5><ul class=\"card-ticks\">"));
+        var body = new StringBuilder(Formatted($"<section class=\"card-why\" data-line=\"{passed.Number}\" data-verdict=\"{Escaped(passed.Verdict)}\"><h5>{Escaped(heading)}</h5><ul class=\"card-ticks\">"));
 
         foreach (var (step, said) in PassedSteps(card.Family, passed.Words))
         {

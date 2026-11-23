@@ -646,7 +646,10 @@ public sealed partial class MarkRenderer
 
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"held-again\" data-held-again=\"{cards.Count}\"><h5>{Escaped(HeldAgainView.Group)} ({cards.Count})</h5>");
+        // "Already held" in the heading only where every card's trade is bought.
+        var heading = cards.All(card => card.HeldAgain is not { Bought: false }) ? HeldAgainView.Group : HeldAgainView.NoteGroup;
+
+        body.Append(Invariant, $"<div class=\"held-again\" data-held-again=\"{cards.Count}\"><h5>{Escaped(heading)} ({cards.Count})</h5>");
 
         foreach (var card in cards)
         {
@@ -655,7 +658,7 @@ public sealed partial class MarkRenderer
                 continue;
             }
 
-            body.Append(Invariant, $"<div class=\"held-card\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\"><p class=\"held-label\"><b>{Escaped(HeldAgainView.Label)}</b></p><p class=\"held-line\">{Escaped(held.Line(card.Ticker, card.Family))}</p>");
+            body.Append(Invariant, $"<div class=\"held-card\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\" data-bought=\"{(held.Bought ? "true" : "false")}\"><p class=\"held-label\"><b>{Escaped(held.Labelled)}</b></p><p class=\"held-line\">{Escaped(held.Line(card.Ticker, card.Family))}</p>");
             body.Append(HeldTradeFacts(held));
             body.Append(DecisionCard(card, null, linked: true));
             body.Append("</div>");
@@ -671,7 +674,7 @@ public sealed partial class MarkRenderer
     {
         var facts = new List<(string Name, string Value)>
         {
-            ("Bought by", Capitalised((EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()) + (held.Night is { } listed ? ", listed " + listed.ToString("d MMM yyyy", Invariant) : string.Empty)),
+            (held.Bought ? "Bought by" : "Order placed by", Capitalised((EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()) + (held.Night is { } listed ? ", listed " + listed.ToString("d MMM yyyy", Invariant) : string.Empty)),
         };
 
         if (held.Fill is { } fill)
@@ -1016,12 +1019,29 @@ public sealed partial class MarkRenderer
             return Formatted($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Escaped(said)}</span>");
         }
 
-        // Stocks that qualified and are held back by a trade still open from an earlier night, named in the notes beneath.
+        // Stocks that qualified and are held back by a trade still open from an earlier night, named in the notes beneath; one
+        // whose order is not yet filled said apart, never as bought.
         if (card.HeldBack > 0)
         {
-            said += card.HeldBack == 1
-                ? " 1 stock qualified but was already bought on an earlier night and its trade is still open, named beneath."
-                : Formatted($" {card.HeldBack} stocks qualified but were already bought on earlier nights and their trades are still open, named beneath.");
+            var waiting = Math.Min(card.HeldBack, card.HeldAgain.Count(held => held.HeldAgain is { Bought: false }));
+            var bought = card.HeldBack - waiting;
+            var parts = new List<string>();
+
+            if (bought > 0)
+            {
+                parts.Add(bought == 1
+                    ? "1 stock qualified but was already bought on an earlier night and its trade is still open"
+                    : Formatted($"{bought} stocks qualified but were already bought on earlier nights and their trades are still open"));
+            }
+
+            if (waiting > 0)
+            {
+                parts.Add(waiting == 1
+                    ? "1 stock qualified but its order from an earlier night has not been filled"
+                    : Formatted($"{waiting} stocks qualified but their orders from earlier nights have not been filled"));
+            }
+
+            said += " " + Capital(string.Join(", and ", parts.Select((part, at) => at == 0 ? part : char.ToLowerInvariant(part[0]) + part[1..]))) + ", named beneath.";
         }
 
         if (card.RuleChoice?.Funnel is { Count: > 0 } funnel && EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel) is { } drop)
