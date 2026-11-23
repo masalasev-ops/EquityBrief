@@ -21807,3 +21807,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the shots of the three views after the Monday night, taken once it has run; the buy-range stage, stored on the
             operator's approval of its table and words.
+
+### 24.0 planning - amendment: 24.29, every buy has a range, and 24.29 to 24.43 one number on   2026-11-22
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.28 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction open; in
+            progress, this amendment with the 24.25 correction; next, 24.29's code, its widths table waiting on the 24.19
+            correction's rebuild of the long ledger.
+Ruled:      the operator's order of 2026-11-22 adding a stage of a buy range, and their answers that night to the changed
+            table and the stage's words: stored as 24.29, the widths table run over the long ledger after its rebuild through
+            the 24.19 correction's fixed reader and the code built before then; the range on next-open buys, the picker's
+            versions and the four price families, the dip's orders at a set price and the books' reshuffle buys left as they
+            are; and the words approved with two changes, "Opens above $b: waits up to 2 days for the price to come back to
+            $b, then not bought." and "Opens below $a: not bought.". Kept word for word in
+            `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`.
+Planned:    `BUILD_PLAN.md`'s 24.29, depending on the long ledger and the case page, both built, its widths table on the
+            ledger's rebuild; reading recipes and every stage after it one number on, to the phase report at 24.44, each
+            reference with them; about 7 claims at 24.29 and about 1,807 at the phase's end; a pin move at 24.29 carried by
+            the replay; four decisions' pointers moved with the numbers, the operator's quoted words kept; section 20's row
+            reading 24.0 to 24.44.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 24.25
+            correction's, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3969 of 3969 tests
+            ran with none failed, migrations 0 to 164 with none pending, schema version 164, against `data-ci` and never
+            `data`; the phase report 68 tables, 1730 claims, 1730 passing, none out of scope and none unexamined, 1745
+            placements and verdicts reconciled against a floor of 34, 57 checks on the roster run and passed.
+Carried:    the widths table, run once the 24.19 correction has rebuilt the long ledger and put to the operator before any
+            version or variant uses a width.

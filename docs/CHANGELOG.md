@@ -7,6 +7,17 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/BUILD_PLAN.md, docs/DECISIONS.md and docs/ARCHITECTURE.html - 24.29, every buy has a range, and 24.29 to 24.43 one number on, at the 24.0 planning amendment
+Was:
+> BUILD_PLAN.md: no 24.29 of a buy range; reading recipes 24.29 and each stage after it one number lower, the phase report 24.43; "After 24.43 about 1,800"; "Pin moves at 24.29, 24.36 and 24.37"; no count at the buy range
+> DECISIONS.md: the monitor "built at 24.33"; a picker version "made from the rule it wrote for that index at 24.32, or from the month's lessons at 24.41" and "24.32 and 24.41 build it this way"; "24.32 the check ...; 24.33 the review's lead ...; and 24.41 holds a lessons version"; "the AI stock picker's own rules from 24.31 and the AI judge's review from 24.33"
+> ARCHITECTURE.html, section 20's row of phase 24: "the build plan's phase 24 checkpoints, 24.0 to 24.40"
+Now:
+> BUILD_PLAN.md: "### 24.29 Every buy has a range, not just the next open" with its done condition, "about 7 at 24.29", the visible output "At 24.29 the widths table for each index, then every card's buy range.", reading recipes 24.30 and each later stage one on to the phase report at 24.44, every reference moved with it; "After 24.44 about 1,807"; "Pin moves at 24.29, 24.30, 24.37 and 24.38"
+> DECISIONS.md: each pointer one on, 24.34, 24.33 and 24.42, 24.32 and 24.34; the operator's own words quoting 24.34 kept as they said them
+> ARCHITECTURE.html: "24.0 to 24.44"
+Why: the operator's order of 2026-11-22 adding the stage and their answers of that day placing it at 24.29, its scope the next-open buys and its words, kept word for word in `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`; section 20's row had read 24.40 since the table reached 24.43.
+
 ### 2026-11-22 - docs/ARCHITECTURE.html - each index's picker page draws its own version's picks alone, at the 24.25 correction
 Corrects: on the operator's correction of 2026-11-22, kept word for word in `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`, the five picks the earlier version made across all 1,500 stocks on the night of 20 Nov were drawn as each index's picks: every tile said "picked 5 tonight", and the S&P 500's view called small and mid caps its large-cap picks.
 Was:
