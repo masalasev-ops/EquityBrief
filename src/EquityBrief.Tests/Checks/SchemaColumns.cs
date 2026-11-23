@@ -194,6 +194,9 @@ public class SchemaColumns
     // The ideas that passed, their standing and the picks of those queued.
     internal static string[] SurvivorStoreRows => [.. new[] { "Survivors", "Survivor states", "Survivor picks" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // The buy range's widths test.
+    internal static string[] BuyRangeStoreRows => [CheckReach.Key(Scope.StoresTable, "Buy range widths")];
+
     // The researcher's asks, failure lists and ideas.
     internal static string[] ResearchStoreRows => [.. new[] { "Research asks", "Research failures", "Research ideas" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
@@ -353,6 +356,7 @@ public class SchemaColumns
             .. NotebookStoreRows,
             .. SurvivorStoreRows,
             .. ResearchStoreRows,
+            .. BuyRangeStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,

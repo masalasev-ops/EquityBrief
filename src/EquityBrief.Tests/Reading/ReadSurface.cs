@@ -256,6 +256,9 @@ public partial class ReadSurface
             // This week's research on the Improvement loop page.
             .. WeeklyResearchRows,
 
+            // The buy range's widths on the Improvement loop page.
+            .. BuyRangeRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

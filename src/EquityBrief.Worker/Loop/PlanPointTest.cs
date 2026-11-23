@@ -106,6 +106,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         // From the second 23.10 correction of 2026-11-13, whether its sale placed no price above the fill, so it was held to its
         // stop or its time limit: the time limit alone, the staged sales with no level above it, the first band above with none.
         public bool NoPriceAbove { get; init; }
+
+        // Where it was walked buying in a range, the side of the range a pick not bought opened on; none for every other.
+        // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+        public string? NotBought { get; init; }
     }
 
     // From the 23.10 correction of 2026-11-13 a plan's fills over a group of setups: their mean move from the fill to the sale as
@@ -1217,6 +1221,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         public IReadOnlyList<Worked> Worked(FlaggedSetup setup) =>
             Placed(setup) is { } placed ? Walk(setup, placed) : [];
 
+        // The same buying in a range of the given widths where a combination buys at the next open, every other entry as it
+        // buys; each pick not bought names the side of its range it opened on.
+        public IReadOnlyList<Worked> WorkedInRange(FlaggedSetup setup, IReadOnlyList<PlanCombination> combinations, RangeWidths widths) =>
+            Placed(setup) is { } placed ? Walk(setup, placed, combinations, widths) : [];
+
         // How far under the pick's close an entry's level stands, in the stock's typical daily moves on the session; none where
         // the entry draws no level there.
         public double? DistanceOf(FlaggedSetup setup, string entry)
@@ -1235,7 +1244,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             return level is { } held && held < close ? (close - held) / typical : null;
         }
 
-        IReadOnlyList<Worked> Walk(FlaggedSetup setup, (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes) placed, IReadOnlyList<PlanCombination>? combinations = null)
+        IReadOnlyList<Worked> Walk(FlaggedSetup setup, (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes) placed, IReadOnlyList<PlanCombination>? combinations = null, RangeWidths? range = null)
         {
             var (name, bar, opens, lows, closes) = placed;
             var one = series[name];
@@ -1304,7 +1313,31 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                         : FormattableString.Invariant($"at the close of session {setup.Cap}"));
                 }
 
-                if ((pullback ? PlanPoints.PullbackFillOf(closes, opens, bar, combination.Window) : PlanPoints.FillOf(opens, lows, bar, level, combination.Window)) is not { } fill)
+                // A next-open buy walked in a range fills as the range fills it, and a pick it does not buy names its side; a night
+                // with no typical move sets no range and buys nothing.
+                // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+                var inRange = range is not null && combination.Entry == PlanPoints.NextOpen;
+                var ranged = inRange && BuyRanges.Of(closes[bar], typical, range!.Value) is { } buyRange ? BuyRanges.FillOf(opens, lows, bar, buyRange) : null;
+
+                if (inRange && ranged is null)
+                {
+                    worked.Add(NotTaken("no typical move to set its range by"));
+
+                    continue;
+                }
+
+                if (ranged?.NotBought is { } opened)
+                {
+                    worked.Add(NotTaken(BuyRanges.NotBoughtWords(opened)) with { NotBought = opened });
+
+                    continue;
+                }
+
+                var found = ranged is not null ? ranged.Fill
+                    : pullback ? PlanPoints.PullbackFillOf(closes, opens, bar, combination.Window)
+                    : PlanPoints.FillOf(opens, lows, bar, level, combination.Window);
+
+                if (found is not { } fill)
                 {
                     if (bar + 1 >= closes.Length)
                     {

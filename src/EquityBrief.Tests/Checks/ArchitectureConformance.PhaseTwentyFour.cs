@@ -22,7 +22,7 @@ public partial class ArchitectureConformance
     // clauses of section 15.20's route and the renamed row of choosing a variant; and 24.17's three regions of the case for
     // promotion, section 18's row of a press on a case and section 17's row of the rule; and none at 24.18, the AI stock
     // picker's rows renamed where they stood and the word check landing as a clause of banned-prose's roster row; and
-    // 24.19's two stores and the History page's row; and 24.27's survivors; and 24.28's researcher.
+    // 24.19's two stores and the History page's row; and 24.27's survivors; and 24.28's researcher; and 24.29's buy range.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -53,6 +53,7 @@ public partial class ArchitectureConformance
         ("24.26", [.. ComponentAccess.NotebookRows, .. SchemaColumns.NotebookStoreRows, .. FixtureExpectations.NotebookClaims, .. Reading.ReadSurface.NotebookRows], []),
         ("24.27", [.. FixtureExpectations.SurvivorRows], []),
         ("24.28", [.. FixtureExpectations.ResearchRows], []),
+        ("24.29", [.. FixtureExpectations.BuyRangeRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -88,6 +89,9 @@ public partial class ArchitectureConformance
     // row, section 18's row and the Loop page's row, where the plan counted the survivors' rows as one pair and one store.
     // The researcher, eight of eight: its catalogue and matrix rows, its three stores, section 17's and section 18's rows and
     // the Loop page's research card, its schedule landing as the runbook's words where the plan counted its store as one.
+    // The buy range, six of seven: the widths test's catalogue and matrix rows, its store, section 17's and section 18's rows
+    // and the Loop page's card, the cards' plan rows waiting for the operator's approval of a width and the one pin move, which
+    // land as words in rows that stand.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -118,6 +122,7 @@ public partial class ArchitectureConformance
         ("24.26", -1),
         ("24.27", 3),
         ("24.28", 0),
+        ("24.29", -1),
     ];
 
     [Fact]
@@ -171,6 +176,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1730), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1736), (before, low, high, actual));
     }
 }

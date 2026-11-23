@@ -337,6 +337,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Researcher"),
     ];
 
+    // The buy range's widths test.
+    internal static string[] RangeWidthRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Buy range widths test"),
+        CheckReach.Key(Scope.MatrixTable, "Buy range widths test"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -441,6 +448,7 @@ public partial class ComponentAccess
             .. NotebookRows,
             .. SurvivorRows,
             .. ResearcherRows,
+            .. RangeWidthRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

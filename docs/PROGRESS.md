@@ -21833,3 +21833,54 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 57 checks on the roster run and passed.
 Carried:    the widths table, run once the 24.19 correction has rebuilt the long ledger and put to the operator before any
             version or variant uses a width.
+
+### 24.29 - every buy has a range: the range's walk, its words and the widths test, the widths waiting on the rebuilt ledger   2026-11-23
+
+Queue:      done, 24.0 to 24.28 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction open; in
+            progress, 24.29; next, the 24.19 correction on the operator's two answers, which 24.30 and the stages reading
+            its table wait for.
+Ruled:      the operator's order of 2026-11-22 and their answers of that day, kept word for word in
+            `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`, and their ruling of that day kept as
+            Appendix AD of the plan's file, that the families are taught in the one pin move planned before the run of
+            2027-02-06. One new decision.
+Built:      the buy range in the core: a ceiling of 0.5, 1, 1.5 or 2 typical daily moves above the night's close and a floor
+            of 1 or 2 under it, or none; an open inside it buys at the open, one above it an order at the ceiling for 2
+            sessions filled as an order at a level fills, one under the floor nothing; the card's lines in the operator's
+            words, "Buys at $b or less" where no floor was chosen. The long history's walker buys in a range only where given
+            one, a pick not bought naming its side, and walks as before where it is given none. The widths test, the worker's
+            buy-range-widths verb, walks each setup whose live rule buys at the next open under that rule's own plan once at
+            the open and once at each width, keeps the open's edge on every pick not bought as missed or kept out of, and
+            chooses for each index on 2005 to 2018 alone at the fewest fills a recommendation rests on, the years from 2019
+            beside it. Migration 165, `buy_range_width`, taking inserts alone. The Improvement loop page's buy ranges card.
+            The decision, the catalogue, matrix and store rows, section 15.20's, 17's and 18's rows, SCHEMA, the runbook, the
+            guide and the changelog. This checkpoint amends its own done condition: the live rules' ranged variants register
+            in the one pin move before the run of 2027-02-06, carried by the replay over two copies, where the plan read a pin
+            move of its own, since the operator ruled the families are taught in that one move; and the picker's ranged
+            version, every card's range and the not-bought rows of Paper trading, Past picks and the picker's accounts land
+            once the operator approves a width, since no plan can carry one before.
+Measured:   nothing over the operator's store: the widths test waits for the long ledger rebuilt through the 24.19
+            correction's fixed reader, as the operator ruled. Nothing written on the operator's store.
+Tests:      5 new: a range set from the close and its fills worked by hand inside, above with the order filled on either
+            session and not filled, and below, with no floor and waiting; the card's lines in the operator's words and none
+            saying it buys at whatever price it opens; the tally, the choice and the table's rows worked by hand over
+            constructed figures, the later years moving nothing; the walker over constructed bars buying in a range only where
+            given one, each pick not bought naming its side and keeping the open's edge; and the Loop page's card read back,
+            the table taking inserts alone.
+Claims:     1736, six of the plan's seven: the widths test's catalogue and matrix rows, its store, section 17's and section
+            18's rows and the Loop page's card, the cards' rows waiting for an approved width and landing as words in rows that
+            stand.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.29 adds taken out at its one site. m1 the floor's check taken out:
+            red in two tests; m2 the order's sessions read as 1: red; m3 the choice read on the later years: red; m4 the
+            fewest fills taken out: red; m5 a pick not bought keeping no missed or kept-out edge: red in two tests; m6 the
+            walker's range ignored: red; m7 the card drawing every index's rows: red; m8 the above line losing "then not
+            bought.": red in two tests. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3974 of 3974 tests ran with none failed, migrations 0 to 165 with
+            none pending, schema version 165, against `data-ci` and never `data`; the phase report 68 tables, 1736 claims, 1736
+            passing, none out of scope and none unexamined, 1751 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the widths test, run by hand once the 24.19 correction has rebuilt the long ledger, its table put to the operator
+            before anything uses a width; the live rules' ranged variants in the one pin move before the run of 2027-02-06;
+            the picker's ranged version and every card's range once a width is approved; migration 165 on the operator's store
+            after the merge.

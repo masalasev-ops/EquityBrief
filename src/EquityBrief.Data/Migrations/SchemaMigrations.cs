@@ -785,7 +785,39 @@ public static class SchemaMigrations
         new Migration(162, "rebuild notebook as a strict table", NotebookStrict),
         new Migration(163, "create survivor, survivor_state and survivor_pick", CreateSurvivors),
         new Migration(164, "create research_ask, research_failure and research_idea", CreateResearch),
+        new Migration(165, "create buy_range_width", CreateBuyRangeWidths),
     ];
+
+    // The buy range's widths test: each run's figures for each index, each setup the range is walked on and the index's setups
+    // together, and each width with the buy at the open beside them, over the early years and from 2019, and the width each
+    // index's early years chose. It takes inserts alone, so a run stands as it was walked.
+    // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    const string CreateBuyRangeWidths = @"
+        CREATE TABLE buy_range_width (
+            run_id      TEXT NOT NULL,
+            index_code  TEXT NOT NULL CHECK (index_code IN ('GSPC', 'MID', 'SML')),
+            family      TEXT NOT NULL,
+            width       TEXT NOT NULL,
+            ceiling     REAL,
+            floor       REAL,
+            years       TEXT NOT NULL CHECK (years IN ('early', 'late')),
+            offered     INTEGER NOT NULL,
+            bought      INTEGER NOT NULL,
+            above       INTEGER NOT NULL,
+            below       INTEGER NOT NULL,
+            edge        REAL,
+            missed      REAL,
+            saved       REAL,
+            chosen      INTEGER NOT NULL CHECK (chosen IN (0, 1)),
+            written_at  TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, width, years)
+        ) STRICT;
+
+        CREATE TRIGGER buy_range_width_takes_inserts_alone_on_change BEFORE UPDATE ON buy_range_width
+        BEGIN SELECT RAISE(ABORT, 'buy_range_width takes inserts alone: a later run is a run of its own.'); END;
+        CREATE TRIGGER buy_range_width_takes_inserts_alone_on_removal BEFORE DELETE ON buy_range_width
+        BEGIN SELECT RAISE(ABORT, 'buy_range_width takes inserts alone.'); END;
+    ";
 
     // The researcher's week: each setup's asks of the local model on each round, up to three, with its prompt, its outcome
     // and its answer as sent; each setup's failure list over the early years and the nights since the restart, a row a reading and end of its
