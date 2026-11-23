@@ -22204,3 +22204,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the fetch, the operator's item 5; FOX's and FOXA's sessions, which the rename tests cannot join, to the
             operator; the long price pull's ends read at their last session with volume until the operator rules the marks.
+
+### 24.19 - correction: codes asked of the provider again, and the sessions it holds no price for marked held none   2026-11-23
+
+Queue:      done, PRs 765 and 766, the spans written again on the live store with none behind; in progress, the
+            moved-close correction and this one, stacked on it; next, the fetch itself off-peak, 24.35's S&P 400 and 600
+            half, then the one pin move's statement to the operator.
+Ruled:      the operator's answers of 2026-11-23 at 14:00, item 5, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-2pm.md`. One new decision.
+Built:      `long-prices --capture --into <folder> --again <codes>` asks each code named again, its prices, splits and
+            dividends, whether or not the folder keeps them, each for its own member sessions or another code's, a code the
+            pull does not hold added, and refuses before asking anything an ask for a code holding sessions marked held none;
+            the asks and their instant are kept in the folder. `--held-none <folder>` after the write marks each such code's
+            member sessions on every index still without a price, a run of back-to-back sessions a row, in `long_held_none`,
+            migration 168, which takes inserts alone and which no write of the long prices removes. The long history's lists
+            name those sessions as the provider holding no price for them, apart from those still without one.
+Measured:   nothing asked yet. The fetch is stated to the operator with its asks before it runs.
+Tests:      2 new: a code asked again whether or not the folder keeps it, the asks read as written, over a feed counting its
+            asks; and over a constructed store a code's three sessions without a price marked as one run once, a second
+            marking writing nothing, the table refusing an update and a delete, an ask for the code refused and another kept,
+            and the lists naming the three as held none.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 an ask for a code
+            held none not refused: red; m2 a code asked again left as the folder keeps it: red; m3 the lists not naming the
+            sessions held none: red. Each filtered to its tests and reverted before anything was committed.
+Claims:     1753, one more: the store of the sessions held none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4002 of 4002 tests ran with none failed, migrations 0 to 168 with
+            none pending, schema version 168, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fetch: the gap codes WOLF_old2 for CREE, VTLE for LPI, VRE for CLI, ROCC for PVAC, DOC_old2 for DOC_old1,
+            WW_old for WTW_old and SIX again, and the hole codes, one ask each, off-peak as the operator ordered; what each
+            ask filled reported after the write; DDR, whose prices the rename test keeps apart from SITC's, to the operator.

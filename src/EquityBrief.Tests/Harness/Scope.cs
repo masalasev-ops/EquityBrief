@@ -5252,6 +5252,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a ruling is written once with what the filer and the price said, only for a mark the page lists",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Long held none")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and over a constructed store a code asked again has its member sessions still without a price written as runs once, a second marking changing nothing, a code holding one refused when asked again, and the lists naming its sessions as held none",
+            ByMigration),
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,

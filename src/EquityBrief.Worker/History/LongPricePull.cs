@@ -15,6 +15,13 @@ namespace EquityBrief.Worker.History;
 // provider files it under where the pull holds one.
 public sealed record LongCode(string Ticker, IReadOnlyList<string> Names, string? Cik);
 
+// One code asked of the provider again, and the code whose member sessions its answer is for: itself, or the code its company
+// traded under before.
+public sealed record LongAsk(string Asked, string For);
+
+// The codes a capture asked again and the instant it asked them.
+public sealed record LongAgain(DateTimeOffset AskedAt, IReadOnlyList<LongAsk> Asks);
+
 // The filer a code was read to, the names it files under, whether one of them is the code's company's, and how it was found.
 public sealed record LongFiler(string Ticker, string? Cik, IReadOnlyList<string> Entity, bool IsTheCompany, string By);
 
@@ -74,11 +81,18 @@ public sealed class LongPricePull : IComponent
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.LongHeldNone, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.HistoricalPrice, Feed.SplitsAndDividends, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.FilingsArchive]);
 
     public const string Stage = "long-prices";
+
+    public const string HeldNoneStage = "long-held-none";
+
+    // The codes a capture asked again and when, each with the code whose member sessions its answer is for, kept in the folder
+    // so the marking after the write reads what was asked.
+    public const string AgainFile = "again.json";
 
     // The operator's word that the data check's counts over the long history have been read, which the long test and the searches
     // wait on.
@@ -245,9 +259,14 @@ public sealed class LongPricePull : IComponent
 
     // Asks the provider for everything not yet kept, each answer written as sent before the next is asked; the requests made. A
     // statement past the day's stop is refused before any request unless the operator said to go past it.
-    public static async Task<int> CaptureAsync(string folder, IReadOnlyList<LongCode> codes, ILongHistoryFeed feed, DateOnly through, bool pastTheStop, Action<string> progress, CancellationToken cancellation = default)
+    public static async Task<int> CaptureAsync(string folder, IReadOnlyList<LongCode> codes, ILongHistoryFeed feed, DateOnly through, bool pastTheStop, Action<string> progress, CancellationToken cancellation = default, IReadOnlySet<string>? again = null)
     {
-        var codesToAsk = codes.Count(code => !File.Exists(FileOf(folder, DividendsFolder, code.Ticker)));
+        // A code asked again has its prices, splits and dividends asked whether or not the folder keeps them, its answer
+        // replacing the one kept.
+        // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+        again ??= new HashSet<string>(StringComparer.Ordinal);
+
+        var codesToAsk = codes.Count(code => again.Contains(code.Ticker) || !File.Exists(FileOf(folder, DividendsFolder, code.Ticker)));
         var companies = codes.Count(code => code.Cik is null && !File.Exists(FileOf(folder, CompaniesFolder, code.Ticker)));
         var monthsToAsk = LongPrices.Months().Count(month => !File.Exists(FileOf(folder, PrintsFolder, Month(month.First))));
         var seriesToAsk = MarketSeries.Count(one => !File.Exists(FileOf(folder, MarketFolder, one)));
@@ -266,9 +285,9 @@ public sealed class LongPricePull : IComponent
 
         var before = feed.Requests;
 
-        async Task KeepAsync(string file, Func<Task<string>> ask)
+        async Task KeepAsync(string file, Func<Task<string>> ask, bool anew = false)
         {
-            if (File.Exists(file))
+            if (File.Exists(file) && !anew)
             {
                 return;
             }
@@ -306,9 +325,11 @@ public sealed class LongPricePull : IComponent
         foreach (var code in codes)
         {
             // The dividends are asked last, so a code whose dividends are kept has all three kept.
-            await KeepAsync(FileOf(folder, PricesFolder, code.Ticker), () => feed.PricesAsync(Asked(code.Ticker), LongPrices.From, through, cancellation));
-            await KeepAsync(FileOf(folder, SplitsFolder, code.Ticker), () => feed.SplitsAsync(Asked(code.Ticker), LongPrices.From, cancellation));
-            await KeepAsync(FileOf(folder, DividendsFolder, code.Ticker), () => feed.DividendsAsync(Asked(code.Ticker), LongPrices.From, cancellation));
+            var anew = again.Contains(code.Ticker);
+
+            await KeepAsync(FileOf(folder, PricesFolder, code.Ticker), () => feed.PricesAsync(Asked(code.Ticker), LongPrices.From, through, cancellation), anew);
+            await KeepAsync(FileOf(folder, SplitsFolder, code.Ticker), () => feed.SplitsAsync(Asked(code.Ticker), LongPrices.From, cancellation), anew);
+            await KeepAsync(FileOf(folder, DividendsFolder, code.Ticker), () => feed.DividendsAsync(Asked(code.Ticker), LongPrices.From, cancellation), anew);
 
             if (code.Cik is null)
             {
@@ -1165,6 +1186,152 @@ public sealed class LongPricePull : IComponent
     }
 
     public const string SpansStage = "long-spans";
+
+    // The asks named as ASKED or ASKED:FOR, a comma between each, FOR the code whose member sessions the answer is for where
+    // it is not the code asked.
+    public static IReadOnlyList<LongAsk> AsksOf(string named) =>
+    [
+        .. named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(one => one.Split(':', 2, StringSplitOptions.TrimEntries) is [var asked, var forCode] ? new LongAsk(asked, forCode) : new LongAsk(one, one))
+            .DistinctBy(ask => ask.Asked, StringComparer.Ordinal),
+    ];
+
+    // The codes whose member sessions the provider was asked for again and holds no price of.
+    public static async Task<IReadOnlySet<string>> HeldNoneCodesAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        var builder = StoreConnection.Builder(databaseFile);
+        builder.Mode = SqliteOpenMode.ReadOnly;
+
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellation);
+
+        var codes = new HashSet<string>(StringComparer.Ordinal);
+
+        await ReadAsync(connection, "SELECT DISTINCT ticker FROM long_held_none;", reader => codes.Add(reader.GetString(0)), cancellation);
+
+        return codes;
+    }
+
+    // The pull's codes with each code asked that it does not hold added, the asks and their instant kept in the folder;
+    // refused before anything is asked where a code an ask is for holds sessions marked held none.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    public static async Task<IReadOnlyList<LongCode>> AgainAsync(string databaseFile, string folder, IReadOnlyList<LongAsk> asks, DateTimeOffset askedAt, CancellationToken cancellation = default)
+    {
+        var refused = (await HeldNoneCodesAsync(databaseFile, cancellation)).Intersect(asks.Select(ask => ask.For), StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+
+        if (refused.Length > 0)
+        {
+            throw new ArgumentException(FormattableString.Invariant($"{string.Join(", ", refused)} hold(s) member sessions the provider was asked for again and holds no price of, and they are never asked for again"));
+        }
+
+        var codes = (await CodesAsync(databaseFile, cancellation)).ToList();
+        var held = codes.Select(code => code.Ticker).ToHashSet(StringComparer.Ordinal);
+
+        codes.AddRange(asks.Where(ask => !held.Contains(ask.Asked)).Select(ask => new LongCode(ask.Asked, [], null)));
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, AgainFile), JsonSerializer.Serialize(new LongAgain(askedAt, asks)), cancellation);
+
+        return codes;
+    }
+
+    // After the write that read the answers asked again, each code an ask was for has its member sessions on every index that
+    // still hold no price written as held none, a run of sessions the calendar holds back to back a row, a run already held
+    // changing nothing; each code with its runs and sessions, on the run log.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    public static async Task<IReadOnlyList<(string Ticker, int Runs, int Sessions)>> HeldNoneAsync(string databaseFile, string folder, string runId, IClock clock, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+        var again = JsonSerializer.Deserialize<LongAgain>(await File.ReadAllTextAsync(Path.Combine(folder, AgainFile), cancellation))
+            ?? throw new ArgumentException("the folder keeps no asks to mark");
+        var forCodes = again.Asks.Select(ask => ask.For).ToHashSet(StringComparer.Ordinal);
+        var reader = new LongHistoryReader(databaseFile);
+        var through = await reader.NewestSessionAsync(cancellation);
+        var missing = new SortedDictionary<string, SortedSet<DateOnly>>(StringComparer.Ordinal);
+        var calendar = new SortedSet<DateOnly>();
+
+        foreach (var index in LongSpans.Larger)
+        {
+            var (byCode, sessions) = await reader.MissingAsync(index, through, cancellation);
+
+            calendar.UnionWith(sessions);
+
+            foreach (var (ticker, days) in byCode.Where(pair => forCodes.Contains(pair.Key)))
+            {
+                if (!missing.TryGetValue(ticker, out var held))
+                {
+                    missing[ticker] = held = [];
+                }
+
+                held.UnionWith(days);
+            }
+        }
+
+        var place = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var marked = new List<(string Ticker, int Runs, int Sessions)>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+        await using var insert = connection.CreateCommand();
+
+        insert.Transaction = transaction;
+        insert.CommandText = InsertHeldNone;
+
+        var asked = again.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+        var written = 0;
+
+        foreach (var (ticker, days) in missing)
+        {
+            var runs = new List<(DateOnly First, DateOnly Last, int Count)>();
+
+            foreach (var day in days)
+            {
+                if (runs.Count > 0 && place.TryGetValue(day, out var at) && place.TryGetValue(runs[^1].Last, out var before) && at == before + 1)
+                {
+                    runs[^1] = (runs[^1].First, day, runs[^1].Count + 1);
+                }
+                else
+                {
+                    runs.Add((day, day, 1));
+                }
+            }
+
+            foreach (var run in runs)
+            {
+                insert.Parameters.Clear();
+                insert.Parameters.AddWithValue("$ticker", ticker);
+                insert.Parameters.AddWithValue("$first_session", Text(run.First));
+                insert.Parameters.AddWithValue("$last_session", Text(run.Last));
+                insert.Parameters.AddWithValue("$sessions", run.Count);
+                insert.Parameters.AddWithValue("$asked_at", asked);
+                insert.Parameters.AddWithValue("$run_id", runId);
+                written += await insert.ExecuteNonQueryAsync(cancellation);
+            }
+
+            marked.Add((ticker, runs.Count, days.Count));
+        }
+
+        await using (var run = connection.CreateCommand())
+        {
+            run.Transaction = transaction;
+            run.CommandText = AppendRun;
+            run.Parameters.AddWithValue("$run_id", runId);
+            run.Parameters.AddWithValue("$stage", HeldNoneStage);
+            run.Parameters.AddWithValue("$started_at", startedAt);
+            run.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            run.Parameters.AddWithValue("$rows", written);
+            run.Parameters.AddWithValue("$detail", FormattableString.Invariant($"{again.Asks.Count} code(s) asked again at {asked}: {marked.Sum(one => one.Sessions)} member session(s) of {marked.Count} code(s) still without a price marked held none in {written} new run(s)"));
+            await run.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return marked;
+    }
+
+    const string InsertHeldNone = @"
+        INSERT OR IGNORE INTO long_held_none (ticker, first_session, last_session, sessions, asked_at, run_id)
+        VALUES ($ticker, $first_session, $last_session, $sessions, $asked_at, $run_id);";
 
     const string SelectSpansRead = $"SELECT COUNT(*), (SELECT MIN(joined) FROM long_span WHERE read_from = '{LongSpans.FromProvider}') FROM long_span;";
 

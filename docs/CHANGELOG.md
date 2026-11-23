@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - codes asked again and the sessions the provider holds no price for, at a correction to the 24.19 correction
+Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+Was:
+> ARCHITECTURE.html, the long price pull's row: reads ending "long filings, long holdings, long snapshots, long spans, ..."; writes "long bars, long market bars, long prints, long splits, long dividends, long filings, run log"; no ask again
+> ARCHITECTURE.html, the long history reader's row: reads ending "long facts, filed facts, long filings"; no sessions held none
+> ARCHITECTURE.html, the stores: no long held none
+> SCHEMA.md: no `long_held_none`
+> RUNBOOK.md: no ask again and no `--held-none`
+Now:
+> ARCHITECTURE.html: the pull reading and writing long held none and asking codes named again, the reader reading it, and the store's row
+> SCHEMA.md: `long_held_none` with its writer and its notes
+> RUNBOOK.md: `long-prices --capture --again`, `--write`, `--held-none` and `--spans`
+Why: the operator's answers of 2026-11-23 at 14:00, item 5, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-2pm.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - a moved close with no volume traded, and three spans ended on the operator's word, at a correction to the 24.19 correction
 Decision: A bar whose close moved with no volume traded with its volume missing
 Decision: The spans of AM_old, BEL and PSD past their last traded price end there on the operator's word

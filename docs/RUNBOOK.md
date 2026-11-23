@@ -2321,6 +2321,17 @@ dotnet run --project src/EquityBrief.Worker -- long-prices --spans
 
 `--behind` names each current member whose spans end more than 2 sessions before its newest bar, by index, and exits 1 where any does; it writes nothing. `--spans` writes the spans again whole in one transaction and states the spans before and after on its run log row. `ledger-build --every-session --word` refuses while `--behind` names any member, so the spans are written again before each store run of the table. Run `--spans` while no writer runs.
 
+The codes the operator names are asked of the provider again, each once, off-peak and while no writer runs, the asks written as `ASKED` for a code's own member sessions or `ASKED:FOR` where a company traded under another code before (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again):
+
+```bash
+dotnet run --project src/EquityBrief.Worker -- long-prices --capture --into data/long-prices --again WOLF_old2:CREE,VTLE:LPI,ADCT_old
+dotnet run --project src/EquityBrief.Worker -- long-prices --write data/long-prices
+dotnet run --project src/EquityBrief.Worker -- long-prices --held-none data/long-prices
+dotnet run --project src/EquityBrief.Worker -- long-prices --spans
+```
+
+`--again` states its requests and weighted calls before the first, refuses an ask for a code holding sessions marked held none before asking anything, asks each code's prices, splits and dividends whether or not the folder keeps them, adds a code the pull does not hold and reads its filer, and keeps the asks and their instant in the folder's `again.json`. `--write` writes the six tables whole as always. `--held-none` then marks each code an ask was for with its member sessions on every index still without a price, a run of back-to-back sessions a row, and names each code with its sessions; the long history's lists name them as the provider holding no price for them from then on. `--spans` follows, since the write reads the spans again.
+
 **The sector splits, from 23.9.** Read by hand once the long ledger stands, writing no store row, asking nothing of anyone and calling no model:
 
 ```bash

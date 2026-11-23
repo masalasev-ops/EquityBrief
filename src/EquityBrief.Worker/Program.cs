@@ -1063,13 +1063,30 @@ static async Task<int> LongPricesRun(string[] args)
 
         Directory.CreateDirectory(folder);
 
-        var codes = await EquityBrief.Worker.History.LongPricePull.CodesAsync(store.DatabaseFile);
+        // '--again <ASKED[:FOR],...>' asks the codes named again whether or not the folder keeps them, each for its own member
+        // sessions or for those of the code after the colon, and refuses a code marked held none.
+        var asks = VerbArguments.Value(args, "--again") is { } named ? EquityBrief.Worker.History.LongPricePull.AsksOf(named) : [];
+        IReadOnlyList<EquityBrief.Worker.History.LongCode> codes;
+
+        try
+        {
+            codes = asks.Count > 0
+                ? await EquityBrief.Worker.History.LongPricePull.AgainAsync(store.DatabaseFile, folder, asks, clock.UtcNow)
+                : await EquityBrief.Worker.History.LongPricePull.CodesAsync(store.DatabaseFile);
+        }
+        catch (ArgumentException refusal)
+        {
+            Console.Error.WriteLine("long-prices: " + refusal.Message);
+
+            return 1;
+        }
+
         var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
         var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
 
         try
         {
-            var asked = await EquityBrief.Worker.History.LongPricePull.CaptureAsync(folder, codes, feed, clock.SessionDateAt(clock.UtcNow), args.Contains(ProviderStop.PastTheStop, StringComparer.Ordinal), Say);
+            var asked = await EquityBrief.Worker.History.LongPricePull.CaptureAsync(folder, codes, feed, clock.SessionDateAt(clock.UtcNow), args.Contains(ProviderStop.PastTheStop, StringComparer.Ordinal), Say, again: asks.Select(ask => ask.Asked).ToHashSet(StringComparer.Ordinal));
 
             Say(FormattableString.Invariant($"{asked:N0} request(s) to the provider"));
         }
@@ -1088,11 +1105,36 @@ static async Task<int> LongPricesRun(string[] args)
         return 0;
     }
 
+    // '--held-none <folder>' marks, after the write that read the answers asked again, each asked code's member sessions that
+    // still hold no price.
+    if (VerbArguments.Value(args, "--held-none") is { } askedFolder)
+    {
+        try
+        {
+            var marked = await EquityBrief.Worker.History.LongPricePull.HeldNoneAsync(store.DatabaseFile, askedFolder, FormattableString.Invariant($"long-held-none-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
+
+            foreach (var (ticker, runs, sessions) in marked)
+            {
+                Say(FormattableString.Invariant($"{ticker}: {sessions:N0} member session(s) in {runs} run(s) the provider holds no price for, marked held none"));
+            }
+
+            Say(FormattableString.Invariant($"{marked.Count:N0} code(s) asked again still hold member sessions without a price"));
+        }
+        catch (Exception refusal) when (refusal is ArgumentException or FileNotFoundException)
+        {
+            Console.Error.WriteLine("long-prices: " + refusal.Message);
+
+            return 1;
+        }
+
+        return 0;
+    }
+
     var write = VerbArguments.Value(args, "--write");
 
     if ((write ?? VerbArguments.Value(args, "--print")) is not { } kept)
     {
-        Console.Error.WriteLine("long-prices: give '--capture --into <folder>', '--write <folder>', '--print <folder>', '--spans', '--behind' or '--counts-read'.");
+        Console.Error.WriteLine("long-prices: give '--capture --into <folder>' with '--again <codes>' where it asks codes again, '--write <folder>', '--print <folder>', '--held-none <folder>', '--spans', '--behind' or '--counts-read'.");
 
         return 2;
     }
@@ -1704,7 +1746,9 @@ static int NoVerb()
         "and '--counts-read' recording the operator's word that the long data check's counts have been read, " +
         "'--report-days' writing again the report days read off 8-K filings carrying item 2.02, " +
         "'--spans' writing the long spans again from the store alone and '--behind' naming each current member whose spans end more " +
-        "than 2 sessions before its newest bar, failing where any does, " +
+        "than 2 sessions before its newest bar, failing where any does, '--capture --into <folder> --again <ASKED[:FOR],...>' asking " +
+        "the codes named again, each for its own member sessions or the code's after the colon, and refusing a code marked held none, " +
+        "and '--held-none <folder>' after the write marking each such code's member sessions still without a price, " +
         "'long-facts' asks the SEC once for each long filer's facts with '--capture --into <folder>', after stating what it asks, and with " +
         "'--write <folder>' writes the periods before the standing table's first whole, '--print <folder>' writing nothing, " +
         "and '--measure' reading each filing-based family's and the drift's first test year on each index, writing nothing, " +

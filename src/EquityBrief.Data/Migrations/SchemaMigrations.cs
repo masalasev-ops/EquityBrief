@@ -788,7 +788,29 @@ public static class SchemaMigrations
         new Migration(165, "create buy_range_width", CreateBuyRangeWidths),
         new Migration(166, "create idea_box, idea_box_answer and idea_box_confirm", CreateIdeaBox),
         new Migration(167, "create mark_ruling", CreateMarkRuling),
+        new Migration(168, "create long_held_none", CreateLongHeldNone),
     ];
+
+    // The member sessions of a code the long price pull asked the provider for again and still holds no price of, a run of
+    // them a row, written once after the write that read the answer. It takes inserts alone, so a code is never asked for
+    // them again.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    const string CreateLongHeldNone = @"
+        CREATE TABLE long_held_none (
+            ticker         TEXT NOT NULL,
+            first_session  TEXT NOT NULL,
+            last_session   TEXT NOT NULL,
+            sessions       INTEGER NOT NULL,
+            asked_at       TEXT NOT NULL,
+            run_id         TEXT NOT NULL,
+            PRIMARY KEY (ticker, first_session)
+        ) STRICT;
+
+        CREATE TRIGGER long_held_none_takes_inserts_alone_on_change BEFORE UPDATE ON long_held_none
+        BEGIN SELECT RAISE(ABORT, 'long_held_none takes inserts alone: a code is never asked for these sessions again.'); END;
+        CREATE TRIGGER long_held_none_takes_inserts_alone_on_removal BEFORE DELETE ON long_held_none
+        BEGIN SELECT RAISE(ABORT, 'long_held_none takes inserts alone.'); END;
+    ";
 
     // The operator's ruling on a history-ends mark the evidence leaves to them, written by the read surface's confirm on the
     // marking page: read through as misdated, or kept as a code another company took. It takes inserts alone, so a mark is

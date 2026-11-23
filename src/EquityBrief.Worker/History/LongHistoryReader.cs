@@ -49,6 +49,7 @@ public sealed class LongHistoryReader : IComponent
             new StoreTouch(Store.LongFact, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.LongFiling, Touch.Read),
+            new StoreTouch(Store.LongHeldNone, Touch.Read),
         ],
         Feeds: []);
 
@@ -433,7 +434,21 @@ public sealed class LongHistoryReader : IComponent
         var marks = await MarksAsync(connection, cancellation);
         var calendar = inputs.Sessions;
         var byTicker = inputs.Names.GroupBy(name => name.Ticker, StringComparer.Ordinal);
-        var (back, without, past, notCounted, ended) = (0L, 0L, 0L, 0L, 0L);
+        var (back, without, past, notCounted, ended, noneHeld) = (0L, 0L, 0L, 0L, 0L, 0L);
+        var heldNone = new Dictionary<string, List<(DateOnly First, DateOnly Last, string AskedAt)>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, first_session, last_session, asked_at FROM long_held_none;", [], cancellation))
+        {
+            if (!heldNone.TryGetValue(row.GetString(0), out var runs))
+            {
+                heldNone[row.GetString(0)] = runs = [];
+            }
+
+            runs.Add((Day(row.GetString(1)), Day(row.GetString(2)), row.GetString(3)));
+        }
+
+        lastMissing.Clear();
+        lastSessions = calendar;
 
         foreach (var code in byTicker)
         {
@@ -459,6 +474,23 @@ public sealed class LongHistoryReader : IComponent
             var endedDays = droppedDays.Count(session => lastOwn is { } lastDay && session > lastDay);
             var dropped = droppedDays.Length - endedDays;
             var missing = memberDays.Where(session => Holds(held, session) && !now.Contains(session)).ToArray();
+
+            if (missing.Length > 0)
+            {
+                lastMissing[code.Key] = missing;
+            }
+
+            // The sessions the provider was asked for again and holds no price of are named apart and never asked for again.
+            // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+            var runsHeldNone = heldNone.GetValueOrDefault(code.Key) ?? [];
+            var askedAgain = missing.Where(session => runsHeldNone.Any(run => session >= run.First && session <= run.Last)).ToArray();
+
+            if (askedAgain.Length > 0)
+            {
+                noneHeld += askedAgain.Length;
+                missing = [.. missing.Except(askedAgain)];
+                output.WriteLine(FormattableString.Invariant($"{ListsVerb}: held none {code.Key} {askedAgain.Length} member session(s) from {Text(askedAgain[0])} to {Text(askedAgain[^1])} the provider holds no price for, asked again {string.Join(", ", runsHeldNone.Select(run => run.AskedAt).Distinct(StringComparer.Ordinal))}"));
+            }
 
             if (LongMarks.EndedOnTheWord.Contains(code.Key) && code.SelectMany(name => LongTraded.Of(name.Bars)).Select(bar => (DateOnly?)bar.Session).Max() is { } lastTraded)
             {
@@ -494,7 +526,20 @@ public sealed class LongHistoryReader : IComponent
             }
         }
 
-        output.WriteLine(FormattableString.Invariant($"{ListsVerb}: {DecisionCardsName(index)} through {stamp}: {back} member session(s) priced that were not, {ended} past their code's last traded price with its span ended there, {notCounted} counted under another code of their company, {without} still with no price, {past} of them after their code's last price"));
+        output.WriteLine(FormattableString.Invariant($"{ListsVerb}: {DecisionCardsName(index)} through {stamp}: {back} member session(s) priced that were not, {ended} past their code's last traded price with its span ended there, {notCounted} counted under another code of their company, {noneHeld} the provider holds no price for, {without} still with no price, {past} of them after their code's last price"));
+    }
+
+    readonly Dictionary<string, DateOnly[]> lastMissing = new(StringComparer.Ordinal);
+
+    IReadOnlyList<DateOnly> lastSessions = [];
+
+    // Each code's member sessions on an index through the session given that hold no price, those the provider was asked for
+    // again among them, as the lists read them, and the index's sessions. It writes nothing.
+    public async Task<(IReadOnlyDictionary<string, DateOnly[]> Missing, IReadOnlyList<DateOnly> Sessions)> MissingAsync(string index, DateOnly through, CancellationToken cancellation = default)
+    {
+        await ListsAsync(index, through, TextWriter.Null, cancellation);
+
+        return (new Dictionary<string, DateOnly[]>(lastMissing, StringComparer.Ordinal), lastSessions);
     }
 
     static string DecisionCardsName(string index) => index switch
