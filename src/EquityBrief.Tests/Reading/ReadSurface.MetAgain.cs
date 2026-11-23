@@ -34,6 +34,16 @@ public partial class ReadSurface
             "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap, trail, plan, held_again) VALUES " +
             $"('MID', '{IndexNight}', 'breakout', 'M2', 0, '50', '47', NULL, 'The breakout on the S&P 400', '{{}}', '{lines}', NULL, 63, '3', '{plan}', '{{\"family\":\"breakout\",\"night\":\"2026-09-30\",\"index\":\"MID\"}}');");
 
+        // From the second correction of 2026-11-23 a background version's trade in M2 of the same night, bought at the open and
+        // filled, its name sorting before the live rule's: the live rule's order still waiting is the one read.
+        Assert.StartsWith(EquityBrief.Core.Candidates.FamilyRecords.LivePrefix, Strings(store, "SELECT candidate FROM index_rule_trade WHERE ticker = 'M2' AND session_date = '2026-09-30';").Single(), StringComparison.Ordinal);
+        store.Execute(
+            "INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk) VALUES " +
+            "('a background breakout rule', 'MID', 'breakout', 'M2', '2026-09-30', 1, '50', '47', NULL, '3', 63, 1.5, NULL);");
+        store.Execute(
+            "INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, filled_at) VALUES " +
+            "('index_rule_trade', 'MID', 'a background breakout rule', 'M2', '2026-09-30', '2026-10-01', '50', NULL, NULL, NULL, NULL, NULL, NULL, '2026-10-01T21:00:00Z');");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
