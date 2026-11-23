@@ -22043,3 +22043,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the lists to the operator, the 23 marks to rule on the marking page, the provider's fetch of about 196 codes'
             missing prices on their word, cause D and the setups without a table row read again over the table written once
             more on a copy, then the table's store run, the one pin move and the long ledger rebuilt.
+
+### 24.35 - the pullbacks' search: the grammar taught the live pullback rule's buy and sale and the swing filter's dials, the search's two stages, its list, count and time on the word, and its card   2026-11-23
+
+Queue:      done, 24.0 to 24.29, 24.39 and 24.40, the 24.19 correction's first part and the 24.4, 24.14, 24.25 and 24.26
+            corrections; in progress, this stage's S&P 500 half; next, the store of each pullback setup's other gates for
+            the S&P 400's and 600's half, then the correction's fetch, store run and pin move on the operator's word.
+Ruled:      the operator's answers of 2026-11-23, items 3 to 6, kept word for word as Appendix AE of the plan's file. One new
+            decision.
+Built:      the grammar's three new parts: a buy a distance under the close in hundredths of a typical move from a quarter to
+            three, waiting the grammar's windows; a sale at the first band above falling back to a multiple of the risk at the
+            risk alone, as registration 1974 states its sale and take-profit; and a filter naming the swing filter's eight
+            dials at the sweep's extended levels over every loose pullback, its earnings window held at 15 sessions, the stop's
+            distance worked from the setup's entry, stop and typical move. The tester gains a second stage, lines named from
+            the first stage's early-years figures and walked in the same run, every line judged in its one step-down, and a
+            timed walk of one line that writes nothing. The worker's `pullback-search --index GSPC` reads the live swing
+            filter, prints its 81 first-stage lines, their count with the second stage's 14 and the time measured on the live
+            setting's line, and walks only with `--word`; a survivor registers as the swing filter's variant with its dials as
+            the filter's settings, or queues reading a band strength or a dry-up left off. The Improvement loop page's card
+            draws the newest search on its index best on 2005 to 2018 first. Its lines go to the notebook as a search over
+            the long history, the notebook's own source, its card telling them apart by the filter in their line.
+Amended:    this stage amends its own done condition: the S&P 400's and 600's half waits for the rebuilt long ledger to store
+            whether each index's live rule's other gates pass each pullback setup, which those gates read over the whole index
+            on the night and no stored setup carries, and lands as the stage's second part; the plan's 24.35 states it.
+Tests:      6 new: the live rule's buy and sale parsed and planned as its registration plans them, and refusals by hand; the
+            filter over four constructed setups at two settings by hand; the two stages counted and the choice on the early
+            years worked by hand; over a constructed register the list, count and time printed and nothing walked without
+            the word, the 81 and the 14 walked with it and another index refused; a survivor's dials as the filter's
+            settings and three queued with their reasons; and the card read back over a constructed store.
+Claims:     1751, four of the plan's three: the catalogue and matrix rows, section 17's grid and the Loop page's card.
+Pins:       none moved. The grammar, the filter, the tester, the survivors' desk and the search are no file a rule pins.
+Mutated:    the rule, stated before the run: each property 24.35 adds taken out at its one site. m1 the first band falling back
+            at the turned-down price: red; m2 the earnings window not read: red; m3 the choice read off the later years: red;
+            m4 the search walking without the word: red; m5 the card ordered by the later years: red; m6 a survivor's strength
+            floor not set: red. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3992 of 3992 tests ran with none failed, migrations 0 to 167 with
+            none pending, schema version 167, against `data-ci` and never `data`; the phase report 68 tables, 1751 claims, 1751
+            passing, none out of scope and none unexamined, 1766 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the store of each pullback setup's other gates and the S&P 400's and 600's search with it; the search's run, its
+            list and time to the operator once the long ledger is rebuilt.

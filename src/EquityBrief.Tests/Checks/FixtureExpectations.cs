@@ -181,6 +181,9 @@ public partial class FixtureExpectations
             // Section 17's row of the buy range and section 18's row of a pick that opens outside it.
             .. BuyRangeClaims,
 
+            // Section 17's row of the pullbacks' search's grid.
+            .. PullbackSearchClaims,
+
             // Section 18's row of an idea the box cannot read.
             .. IdeaBoxClaims,
 

@@ -4,6 +4,7 @@ using EquityBrief.Core.Configuration;
 using EquityBrief.Core.History;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -35,7 +36,7 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
     public const string BuiltOn = "the long history from 2005, its levels chosen on 2005 to 2018 and judged from 2019";
 
     // The sources a line given by hand may name.
-    public static IReadOnlyList<string> Sources { get; } = ["the operator", "the researcher", "the idea box", "the picker"];
+    public static IReadOnlyList<string> Sources { get; } = ["the operator", "the researcher", "the idea box", "the picker", PullbackSearchView.Source];
 
     const string Tested = "SELECT line, MIN(tested_on) FROM notebook WHERE line IS NOT NULL GROUP BY line;";
 
@@ -56,20 +57,35 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
         + " ORDER BY session_date, ticker;";
 
     public static IReadOnlyList<string> ReadingsOf(IdeaLine idea) =>
-        [.. idea.Conditions.Select(condition => condition.Reading).Concat(idea.OrderBy is { } order ? [order] : []).Distinct(StringComparer.Ordinal).Where(IdeaGrammar.Readings.Contains)];
+        [.. idea.Conditions.Select(condition => condition.Reading).Concat(idea.OrderBy is { } order ? [order] : []).Concat(idea.Filter is null ? [] : IdeaFilter.Readings).Distinct(StringComparer.Ordinal).Where(IdeaGrammar.Readings.Contains)];
 
-    // The plan a line walks: its buy, its stop in typical days under the buy, sold on the time limit, and taking profit on the
-    // whole or on half at its multiple of the risk.
-    public static PlanCombination CombinationOf(IdeaLine idea)
+    // The plan a line walks, the one its survivor's variant registers.
+    public static PlanCombination CombinationOf(IdeaLine idea) => Survivors.PlanOf(idea);
+
+    // From 24.35 one line's walk timed and nothing written: the walker's read of its index and the line's own walk, with the
+    // setups its event offered and those it bought.
+    public async Task<(TimeSpan Read, TimeSpan Line, int Offered, int Bought)> MeasureAsync(string text, CancellationToken cancellation = default)
     {
-        var plan = new PlanCombination(idea.Entry, idea.Window, PlanPoints.TypicalStop(idea.StopDays), PlanPoints.TimeLimit);
-
-        return idea.Shape switch
+        if (IdeaGrammar.Parse(text) is not ({ } idea, _))
         {
-            IdeaGrammar.Whole => plan.TakingAtRisk(idea.Multiple!.Value),
-            IdeaGrammar.Half => plan.Halving(idea.Multiple!.Value),
-            _ => plan,
-        };
+            throw new ArgumentException("the line measured is not one the grammar reads", nameof(text));
+        }
+
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        var (walker, _, _) = await PlanPointTest.WalkerAsync(databaseFile, idea.Index, output.WriteLine, cancellation);
+        var read = timer.Elapsed;
+
+        timer.Restart();
+
+        var setups = await SetupsAsync(idea, cancellation);
+        var cuts = IdeaTester.CutsOf(setups.Select(one => one.Setup), ReadingsOf(idea));
+        var chosen = IdeaTester.Selected(idea, setups.Select(one => one.Setup), cuts).ToHashSet();
+        var combination = CombinationOf(idea);
+        var walked = setups.Where(one => chosen.Contains(one.Setup)).ToArray();
+
+        Parallel.For(0, walked.Length, new ParallelOptions { CancellationToken = cancellation }, one => walker.PicksUnder(walked[one].Flagged with { Cap = idea.Sessions }, [combination]));
+
+        return (read, timer.Elapsed, setups.Count, walked.Length);
     }
 
     // The notebook's row each line this run tested was written to, by its canonical line.
@@ -81,7 +97,7 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
     // Each line tested, and where the run is given an instant to stop starting by, each line not yet walked at that instant
     // left untested; the lines walked are judged together as one run. From 24.39 a line may be written under a source of its
     // own, named by its canonical line, the rest under the run's.
-    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default, DateTimeOffset? stopStartingAt = null, IReadOnlyDictionary<string, string>? sources = null)
+    public async Task<int> RunAsync(IReadOnlyList<string> lines, string source, CancellationToken cancellation = default, DateTimeOffset? stopStartingAt = null, IReadOnlyDictionary<string, string>? sources = null, Func<IReadOnlyList<(IdeaLine Line, IdeaFigures Figures)>, IReadOnlyList<string>>? then = null)
     {
         if (!Sources.Contains(source, StringComparer.Ordinal) || (sources?.Values.Any(one => !Sources.Contains(one, StringComparer.Ordinal)) ?? false))
         {
@@ -147,45 +163,80 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
         var throughs = new DateOnly[ideas.Count];
         var chosenOn = new IReadOnlyDictionary<string, double[]>[ideas.Count];
         var rows = new long[ideas.Count];
+        var walkers = new Dictionary<string, (PlanPointTest.Walker Walker, DateOnly Through, IReadOnlyList<DateOnly> Calendar)>(StringComparer.Ordinal);
 
-        foreach (var index in ideas.Select(idea => idea.Index).Distinct(StringComparer.Ordinal))
+        await WalkAsync(0);
+
+        // From 24.35 a run given a second stage names more lines from the first stage's lines and their figures, read on the
+        // early years alone by the stage's own choice; they are walked too, and every line of both stages is judged together.
+        if (then is not null)
         {
-            var (walker, through, calendar) = await PlanPointTest.WalkerAsync(databaseFile, index, output.WriteLine, cancellation);
-            var opens = calendar.ToList().FindIndex(session => session.Year >= IdeaTester.LateFrom);
-            int SessionOf(DateOnly day) => calendar.ToList().BinarySearch(day) is var at && at >= 0 ? at - opens : (~at) - opens;
-            var newest = SessionOf(through);
+            var first = ideas.Count;
 
-            for (var at = 0; at < ideas.Count; at++)
+            foreach (var text in then([.. ideas.Select((idea, at) => (idea, figures[at])).Where(pair => pair.Item2 is not null)]))
             {
-                if (ideas[at].Index != index)
+                if (IdeaGrammar.Parse(text) is ({ } idea, _) && !tested.ContainsKey(idea.Canonical) && ideas.All(one => one.Canonical != idea.Canonical))
                 {
-                    continue;
+                    ideas.Add(idea);
+                }
+            }
+
+            Array.Resize(ref figures, ideas.Count);
+            Array.Resize(ref throughs, ideas.Count);
+            Array.Resize(ref chosenOn, ideas.Count);
+            Array.Resize(ref rows, ideas.Count);
+            output.WriteLine(FormattableString.Invariant($"{Verb}: the second stage names {ideas.Count - first} line(s) more"));
+
+            await WalkAsync(first);
+        }
+
+        // The lines from the one given on walked over their index's setups, each index's walker read once a run.
+        async Task WalkAsync(int from)
+        {
+            foreach (var index in ideas.Skip(from).Select(idea => idea.Index).Distinct(StringComparer.Ordinal))
+            {
+                if (!walkers.TryGetValue(index, out var held))
+                {
+                    walkers[index] = held = await PlanPointTest.WalkerAsync(databaseFile, index, output.WriteLine, cancellation);
                 }
 
-                if (stopStartingAt is { } deadline && clock.UtcNow >= deadline)
+                var (walker, through, calendar) = held;
+                var opens = calendar.ToList().FindIndex(session => session.Year >= IdeaTester.LateFrom);
+                int SessionOf(DateOnly day) => calendar.ToList().BinarySearch(day) is var at && at >= 0 ? at - opens : (~at) - opens;
+                var newest = SessionOf(through);
+
+                for (var at = from; at < ideas.Count; at++)
                 {
-                    continue;
+                    if (ideas[at].Index != index)
+                    {
+                        continue;
+                    }
+
+                    if (stopStartingAt is { } deadline && clock.UtcNow >= deadline)
+                    {
+                        continue;
+                    }
+
+                    var idea = ideas[at];
+                    var setups = await SetupsAsync(idea, cancellation);
+                    var cuts = IdeaTester.CutsOf(setups.Select(one => one.Setup), ReadingsOf(idea));
+                    chosenOn[at] = cuts;
+                    var chosen = IdeaTester.Selected(idea, setups.Select(one => one.Setup), cuts).ToHashSet();
+                    var combination = CombinationOf(idea);
+                    var walked = setups.Where(one => chosen.Contains(one.Setup)).ToArray();
+                    var picks = new IdeaPick[walked.Length];
+
+                    Parallel.For(0, walked.Length, new ParallelOptions { CancellationToken = cancellation }, one =>
+                    {
+                        var pick = walker.PicksUnder(walked[one].Flagged with { Cap = idea.Sessions }, [combination]) is { Length: > 0 } read ? read[0] : null;
+
+                        picks[one] = new IdeaPick(walked[one].Setup.Session, pick?.Edge);
+                    });
+
+                    figures[at] = IdeaTester.FiguresOf(picks, SessionOf, newest, idea.Sessions);
+                    throughs[at] = through;
+                    output.WriteLine(FormattableString.Invariant($"{Verb}: {idea.Canonical}: {setups.Count} setup(s) offered, {walked.Length} bought, {figures[at].EarlyPicks} with a result to 2018 and {figures[at].LatePicks} from 2019"));
                 }
-
-                var idea = ideas[at];
-                var setups = await SetupsAsync(idea, cancellation);
-                var cuts = IdeaTester.CutsOf(setups.Select(one => one.Setup), ReadingsOf(idea));
-                chosenOn[at] = cuts;
-                var chosen =IdeaTester.Selected(idea, setups.Select(one => one.Setup), cuts).ToHashSet();
-                var combination = CombinationOf(idea);
-                var walked = setups.Where(one => chosen.Contains(one.Setup)).ToArray();
-                var picks = new IdeaPick[walked.Length];
-
-                Parallel.For(0, walked.Length, new ParallelOptions { CancellationToken = cancellation }, one =>
-                {
-                    var pick = walker.PicksUnder(walked[one].Flagged with { Cap = idea.Sessions }, [combination]) is { Length: > 0 } read ? read[0] : null;
-
-                    picks[one] = new IdeaPick(walked[one].Setup.Session, pick?.Edge);
-                });
-
-                figures[at] = IdeaTester.FiguresOf(picks, SessionOf, newest, idea.Sessions);
-                throughs[at] = through;
-                output.WriteLine(FormattableString.Invariant($"{Verb}: {idea.Canonical}: {setups.Count} setup(s) offered, {walked.Length} bought, {figures[at].EarlyPicks} with a result to 2018 and {figures[at].LatePicks} from 2019"));
             }
         }
 
@@ -308,6 +359,13 @@ public sealed class IdeaTestRun(IClock clock, string databaseFile, string dataRo
                 {
                     values[readings[at]] = reader.GetDouble(9 + at);
                 }
+            }
+
+            // From 24.35 the stop's distance a filter reads, in the setup's typical moves at its entry: the ledger anchors a
+            // pullback at its close and stops it that many typical moves under it.
+            if (idea.Filter is not null && Price(3) is { } entry && Price(4) is { } stopAt && values.TryGetValue(IdeaFilter.MoveShare, out var share) && share > 0 && entry > 0)
+            {
+                values[IdeaFilter.StopMoves] = (entry - stopAt) / (share * entry);
             }
 
             rows.Add((

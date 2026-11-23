@@ -41,6 +41,18 @@ public static class Survivors
     {
         var limit = IdeaGrammar.FamilyTimeLimit(line.Family);
 
+        // From 24.35 a filter's line is the S&P 500 swing filter at other dials, which its variant registers as its settings,
+        // and the filter takes every member it fires on; the band strength it states none of.
+        if (line.Filter is { } filter)
+        {
+            return line.Index != "GSPC" ? "its index's rule reads other gates beside the swing filter's dials, which its variants hold at the live rule's"
+                : filter.Band != 0 ? "the swing filter states no band strength, and the line reads one"
+                : double.IsPositiveInfinity(filter.DryUp) ? "the swing filter states a dry-up ceiling, and the line reads none"
+                : line.Sessions != limit ? string.Create(CultureInfo.InvariantCulture, $"its setup sells on its own time limit of {limit} sessions, and the line sells after {line.Sessions}")
+                : line.Cap is not null ? "the swing filter takes every member it fires on, and the line caps a night"
+                : null;
+        }
+
         if (line.Loose)
         {
             return "its setup's variants buy only what its live setting passes, and the line reads every setup its loose gates pass";
@@ -83,6 +95,28 @@ public static class Survivors
             settings[name] = value;
         }
 
+        // From 24.35 a filter's dials as the swing filter's settings, the market gate off where the breadth is.
+        if (line.Filter is { } filter)
+        {
+            settings["strengthFloor"] = filter.Strength;
+            settings["depthLow"] = filter.DepthLow;
+            settings["depthHigh"] = filter.DepthHigh;
+            settings["dryUpCeiling"] = filter.DryUp;
+            settings["arrivalSessions"] = filter.Arrival;
+            settings["rewardToRiskFloor"] = filter.Reward;
+            settings["stopLow"] = filter.StopLow;
+            settings["stopHigh"] = filter.StopHigh;
+
+            if (double.IsNegativeInfinity(filter.Breadth))
+            {
+                settings[Candidates.SwingFilterRule.MarketGateParameter] = 0;
+            }
+            else
+            {
+                settings["breadthFloor"] = filter.Breadth;
+            }
+        }
+
         if (line.OrderBy is { } order)
         {
             settings[RuleHooks.ScorePrefix + order] = line.Highest ? 1 : -1;
@@ -92,10 +126,21 @@ public static class Survivors
     }
 
     // The plan a line buys and sells by: its buy, its stop in typical days under the buy, sold on its time limit, taking
-    // profit on the whole or on half at its multiple of the risk.
+    // profit on the whole or on half at its multiple of the risk; or from 24.35 sold at the first band above the buy, the live
+    // pullback rule's sale, falling back to its multiple of the risk where no band stands above, as that rule registers it:
+    // its sale the first band and its take-profit the multiple of the risk alone.
     public static PlanCombination PlanOf(IdeaLine line)
     {
-        var plan = new PlanCombination(line.Entry, line.Window, PlanPoints.TypicalStop(line.StopDays), PlanPoints.TimeLimit);
+        var stop = PlanPoints.TypicalStop(line.StopDays);
+
+        if (line.Shape == IdeaGrammar.FirstBand)
+        {
+            var band = new PlanCombination(line.Entry, line.Window, stop, PlanPoints.FirstBand);
+
+            return line.Multiple is { } fallBack ? band.TakingAtRisk(fallBack) : band;
+        }
+
+        var plan = new PlanCombination(line.Entry, line.Window, stop, PlanPoints.TimeLimit);
 
         return line.Shape switch
         {
@@ -153,11 +198,11 @@ public static class Survivors
 
     // A queued pick walked under its line from the night it was stored: bought at the next open, stopped its typical days
     // under the price it paid, taking profit as its line says and sold on its time limit, its result in the risk it took
-    // before costs; none while its walk is still open, and none for a line buying at a level, which a queued pick is
-    // stored without.
+    // before costs; none while its walk is still open, and none for a line buying at a level or selling at the first band,
+    // which a queued pick is stored without.
     public static double? PickResult(IdeaLine line, double typicalMove, IReadOnlyList<(double Open, double Close)> fromTheNight)
     {
-        if (line.Entry != PlanPoints.NextOpen || fromTheNight.Count < 2 || !(typicalMove > 0))
+        if (line.Entry != PlanPoints.NextOpen || line.Shape == IdeaGrammar.FirstBand || fromTheNight.Count < 2 || !(typicalMove > 0))
         {
             return null;
         }
