@@ -18,6 +18,16 @@ Now:
 > RUNBOOK.md: the marking reads through the store's newest stored session
 Why: the first marking read through the newest session the long prices held, 2026-11-23, which answers asked that day carried for 17 codes before the night stored it, and marked that session for HOS, LUMN, PRG, WEN and WWW; the operator's answers of 2026-11-23 at 16:50, item 4, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-4-50pm.md`.
 
+### 2026-11-23 - docs/ARCHITECTURE.html - a stock met again drawn once on Home, "already held" for a bought trade alone, and the picker's Home line counting the night's picks, at a correction to 24.21
+Decision: On Home a stock its setup's rules met again is drawn once, on its waiting order's card or as a bought trade's one-line row
+Was:
+> A family's card: "each such card under its label with a line naming the setup holding it and the night that trade was listed; its open trade beside it: ... the group counted in no pick or trade or order count and bought by nothing, and drawn on Home beneath tonight's ideas as well; a line saying why"
+> Home's Tonight's ideas: "the orders from earlier nights still waiting drawn under the ideas as cards nearest their buy price first (see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first); every buy a card"
+Now:
+> A family's card: the line naming the day it bought it, "already held" for a bought trade alone, an order not yet filled labelled and said apart with the heading "Met the rules again", and on Home drawn as Home's ideas say
+> Home's Tonight's ideas: a stock met again while its order waits drawn once on that order's card with the mark, the line, tonight's checklist and the order's plan alone; one held on a bought trade a one-line row; and the AI stock picker's line counting the night's picks whichever version made them
+Why: Home called four waiting orders held and bought, drew each twice and drew two plans for one stock, and its picker line said 0 on a night the earlier version picked five; the operator's correction of 2026-11-23, kept word for word in `prompts/2026-11-23-24.21-home-met-the-rules-again-correction.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - codes asked again and the sessions the provider holds no price for, at a correction to the 24.19 correction
 Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
 Was:

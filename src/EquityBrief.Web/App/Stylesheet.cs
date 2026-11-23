@@ -1748,6 +1748,19 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-plan .buy{color:var(--ink)} .home-prices.wo-plan div[data-plan]{flex-wrap:wrap}
 .wo-placed{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)}
 .wo-card .home-plan{margin-top:auto}
+/* A waiting order whose stock met the rules again, and the stocks met again while a bought trade holds them, from the operator's correction of 2026-11-23 */
+.wo-again{display:inline-block;font:600 11px var(--sans);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 7px;white-space:nowrap}
+.wo-chip .wo-again{margin-left:6px}
+.wo-again-line{margin:0;font-size:13.5px;line-height:1.45;color:var(--ink)}
+.wo-card .card-why{margin:0}
+.wo-card .card-why h5{margin:0 0 4px;font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.held-rows{margin:16px 0 4px}
+.held-rows h5{margin:0 0 6px;font:600 16px var(--sans);color:var(--ink)}
+.held-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--hair-2)}
+.held-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:14px;color:var(--ink-2)}
+.held-row a.home-ticker{text-decoration:none;color:var(--ink);font-weight:600}
+.held-row .held-label{color:var(--ink);font-weight:600}
+.held-row .held-go{margin-left:auto}
 @media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
 @media (max-width:600px){.wo-track{grid-auto-columns:84%}}
 /* Paper trading by revisions */

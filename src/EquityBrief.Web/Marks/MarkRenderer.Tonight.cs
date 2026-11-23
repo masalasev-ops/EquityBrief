@@ -26,6 +26,9 @@ public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileV
     // the setup that matched.
     public IReadOnlyList<(string Ticker, string Family)> HeldAgain { get; init; } = [];
 
+    // From the operator's correction of 2026-11-23 those of them whose earlier order is not yet filled, never said as held.
+    public IReadOnlySet<string> NotFilled { get; init; } = new HashSet<string>(StringComparer.Ordinal);
+
     // From the operator's answers of 2026-11-16 how many of tonight's new picks are bought only if the price dips to the buy price.
     public int OnDip { get; init; }
 }
@@ -266,7 +269,7 @@ public sealed partial class MarkRenderer
                 ? "Every setup found something new tonight."
                 : Capitalised(Listed([.. quietSetups.Select((label, at) => at == 0 ? label : at == quietSetups.Count - 1 ? "the " + label.ToLowerInvariant() : label.ToLowerInvariant())])) + " found nothing tonight."
             : view.HeldAgain.Count > 0
-                ? "No new picks. " + string.Join(" ", view.HeldAgain.Select(held => FormattableString.Invariant($"{held.Ticker} met the {(EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()} rules again but is already held; its card is below.")))
+                ? "No new picks. " + string.Join(" ", view.HeldAgain.Select(held => FormattableString.Invariant($"{held.Ticker} met the {(EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()} rules again but {(view.NotFilled.Contains(held.Ticker) ? "its earlier order has not been filled" : "is already held")}; its card is below.")))
                 : line.Passed is 0
                     ? Formatted($"No {line.Index} stock met all the rules of any of the {setups} setups tonight.")
                     : "No setup found anything new.";

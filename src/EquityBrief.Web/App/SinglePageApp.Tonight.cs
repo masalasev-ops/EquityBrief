@@ -53,7 +53,7 @@ public sealed partial class SinglePageApp
         // The buys' title names the session they are bought at, as their sentences do: Monday's buys on a Friday.
         var opens = MarkRenderer.OpenDay(night);
 
-        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought) { HeldAgain = [.. families.SelectMany(family => family.HeldAgain.Select(card => (card.Ticker, card.Family)))], OnDip = points.Count(point => MarkRenderer.WaitsForAPrice(point, line.Groups)) }), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
+        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought) { HeldAgain = [.. families.SelectMany(family => family.HeldAgain.Select(card => (card.Ticker, card.Family)))], NotFilled = families.SelectMany(family => family.HeldAgain).Where(card => card.HeldAgain is { Bought: false }).Select(card => card.Ticker).ToHashSet(StringComparer.Ordinal), OnDip = points.Count(point => MarkRenderer.WaitsForAPrice(point, line.Groups)) }), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
         region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, PlanlessBuys(universe, improving, heavyweights, quality, longRecords), line.Groups), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 

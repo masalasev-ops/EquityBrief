@@ -177,6 +177,10 @@ public sealed record JudgeView(
 
     public bool AcrossOpen { get; init; }
 
+    // From the operator's correction of 2026-11-23 the night the earlier version picked across the three indices and how many it
+    // picked, where the index's own version has picked on no later night; none otherwise.
+    public (DateOnly Night, int Picked)? AcrossNight { get; init; }
+
     // The tile of the index the page reads.
     public JudgeTile? Own => Tiles.FirstOrDefault(tile => tile.Index == Index);
 }
@@ -264,12 +268,21 @@ public sealed partial class SinglePageApp
 
     // The line Home draws for the judge: what it picked tonight, or from 24.15 on a past night that night, and its live record
     // per $1 risked beside random picks'.
+    // From the operator's correction of 2026-11-23 a night the earlier version picked across the three indices counts its picks,
+    // so the line never says none where a version picked.
     public static string JudgeHomeLine(JudgeView view, bool past = false) =>
-        $"<p class=\"judge-home\" data-home=\"judge\"><b>AI stock picker</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} {(past ? "that night" : "tonight")} {(view.PicksFrom is { } from ? $"in the account of {Escaped(VersionWords(from))}, kept apart from its record" : "in its own paper account")}. "
+        (view.AcrossNight is { Picked: > 0 } across
+            ? $"<p class=\"judge-home\" data-home=\"judge\" data-across=\"{across.Picked}\"><b>AI stock picker:</b> {Escaped(AcrossHomeWords(across.Night, across.Picked, past))} "
+            : $"<p class=\"judge-home\" data-home=\"judge\"><b>AI stock picker</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} {(past ? "that night" : "tonight")} {(view.PicksFrom is { } from ? $"in the account of {Escaped(VersionWords(from))}, kept apart from its record" : "in its own paper account")}. ")
         + (view.Score.PerDollar is { } made
             ? $"Since it started: {Dollars(made)} per $1 risked, against {(view.RandomPerDollar is { } random ? Dollars(random) : "nothing yet")} for random picks. "
             : "No trade of it has closed yet. ")
         + $"<a href=\"{JudgeRoute}\">See the AI stock picker</a></p>";
+
+    // "picked 5 stocks from all 1,500 on the night of 20 Nov, before it picked within each index. Bought at today's open in its
+    // own paper account."
+    public static string AcrossHomeWords(DateOnly night, int picked, bool past = false) =>
+        string.Create(CultureInfo.InvariantCulture, $"picked {picked} stock{(picked == 1 ? string.Empty : "s")} from all 1,500 on the night of {night:d MMM}, before it picked within each index. Bought at {(past ? "the next" : "today's")} open in its own paper account.");
 
     static string RunLine(JudgeView view) =>
         view.Night is not { } night ? "<p class=\"empty\">The AI stock picker has not run yet. The night starts it after its last step.</p>"

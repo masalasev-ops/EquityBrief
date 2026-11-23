@@ -46,6 +46,10 @@ public static class JudgeScreen
         // The night an index's version that has not run picks first: the session after the newest night any version ran.
         var startsOn = runs.Where(run => !run.Replayed).Select(run => (DateOnly?)run.Session).Max() is { } newestRan ? OpenAfter(newestRan) : (DateOnly?)null;
 
+        // From the operator's correction of 2026-11-23 the newest night the earlier version picked across the three indices, or
+        // the night drawn where it picked then, which Home counts where the index's own version has not picked since.
+        var acrossRan = runs.Where(run => !run.Replayed && run.Index is null && (drawnNight is null || run.Session == drawnNight)).Select(run => (DateOnly?)run.Session).Max();
+
         runs = [.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
 
         var started = runs.Any(run => !run.Replayed);
@@ -246,6 +250,9 @@ public static class JudgeScreen
             Tiles = [tile],
             Across = acrossView,
             AcrossOpen = acrossOpen,
+            AcrossNight = acrossRan is { } acrossOn && (newest is null || acrossOn > newest.Session)
+                ? (acrossOn, acrossPicks.Count(pick => pick.Session == acrossOn))
+                : null,
         };
     }
 

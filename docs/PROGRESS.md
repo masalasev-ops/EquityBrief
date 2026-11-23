@@ -22266,3 +22266,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    nothing new.
+
+### 24.21 - correction: a stock met again drawn once on Home, "already held" for a bought trade alone, and the picker's Home line counting the night's picks   2026-11-23
+
+Queue:      done, the held-none marking's correction; in progress, this correction; next, Fox and DDR, the delisted spellings
+            asked once, the table's check measured again, then 24.35's S&P 400 and 600 half.
+Ruled:      the operator's correction of 2026-11-23, kept word for word in
+            `prompts/2026-11-23-24.21-home-met-the-rules-again-correction.md`. One new decision.
+Built:      on Home a stock its setup's rules met again while its earlier order waits is drawn once, on that order's card in the
+            carousel: its chip and its card marked "Met the rules again", the line saying the order stands and the price
+            tonight's rules would have placed, tonight's checklist under "Why it qualified again", the standing order's plan
+            alone. A stock met again while a bought trade holds it is a row of its own beneath: the stock, its company, the setup
+            and the day it bought it, "Already held, not bought again" and the way to Paper trading; no row and no heading where
+            none is held. "Already held" names a bought trade alone on every page, Tonight's group, its one-minute line and a
+            setup's summary among them, the day it bought it the day its fill traded; an order not filled is said as placed and
+            not filled. The picker's Home line counts the night's picks whichever version made them, a night the earlier
+            version picked across the three indices in the operator's words. Nothing the night writes changes.
+Measured:   the live Home of the night of 20 Nov before the change: AVY, RMD, TGT and TJX drawn as already held and bought on
+            18 and 19 Nov, each an order still waiting in the carousel of 8; the picker's line "Picked 0 stocks tonight".
+Tests:      4 new: over the plan trades' store an order still waiting met again drawn once on its card with the mark, the line
+            worked by hand at $47.50 and $46.90, the checklist and the order's plan alone, and Tonight's card said as not filled;
+            a chip marked where its stock met the rules again and no other; over the family pages' store a bought trade met
+            again drawn as one row; and the picker's line counting 5 picks across the indices on 20 Nov and 2 of the S&P 500's
+            own on 23 Nov. One assertion moved: HELD's line says the day its fill traded, 2 Oct.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 an order's card never
+            finding its stock met again: red, the order's card and the chip unmarked; m2 every trade met again read as bought:
+            red, the card in the carousel lost and Tonight's line saying bought; m3 the picker's line never counting the
+            earlier version's night: red, the line saying 0. Each filtered to its tests and reverted before anything was
+            committed.
+Claims:     1753, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4008 of 4008 tests ran with none failed, migrations 0 to 169 with
+            none pending, schema version 169, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the earlier decision on a stock met again stays where it stands, since a rule-pinned source cites it; the new one
+            narrows its Home clause, for the operator.
