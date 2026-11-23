@@ -71,9 +71,9 @@ public partial class ReadSurface
             $"FROM index_rule_trade WHERE ticker = 'M1' AND session_date = '{IndexNight}';");
         store.Execute("INSERT OR REPLACE INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES ('M1', '2026-10-05', '48.5', '49.5', '47.8', '49.2', 1000, 'eod', '2026-10-05T22:00:00Z');");
         store.Execute(
-            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
-            + "('judge-pick-1', '2026-10-02', 'v', 1, 1, 'picked', '2026-10-03T01:00:00Z', '2026-10-03T01:10:00Z', 4, 1, 2, 0, ''), "
-            + "('judge-pick-2', '2026-10-05', 'v', 1, 2, 'picked', '2026-10-06T01:00:00Z', '2026-10-06T01:10:00Z', 4, 2, 2, 0, '');");
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code) VALUES "
+            + "('judge-pick-1', '2026-10-02', 'v', 1, 1, 'picked', '2026-10-03T01:00:00Z', '2026-10-03T01:10:00Z', 4, 1, 2, 0, '', 'MID'), "
+            + "('judge-pick-2', '2026-10-05', 'v', 1, 2, 'picked', '2026-10-06T01:00:00Z', '2026-10-06T01:10:00Z', 4, 2, 2, 0, '', 'MID');");
         store.Execute(
             "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance) VALUES "
             + $"('2026-10-02', 1, 'judge-pick-1', 'MID', 'M5', '1 week', '{JudgeMenu.Whole}', 'A reason.', '100', 2.0, '98', '104', NULL), "

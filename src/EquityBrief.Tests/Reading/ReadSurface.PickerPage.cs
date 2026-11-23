@@ -153,7 +153,7 @@ public partial class ReadSurface
 
         // The tiles, in the selector's order on every index's page, the index read marked as showing. By hand: the S&P 500
         // and the S&P 600 each bought their first pick and stay open with none closed, their second past the cash and its
-        // result not yet in; the S&P 400 marked none, so its account never started.
+        // result not yet in; the S&P 400 ran and marked none, so its account holds no trade yet.
         foreach (var (code, page) in pages)
         {
             var tiles = Blocks(page, "<section class=\"card\" data-card=\"judge-tiles\">.*?</section>").Single();
@@ -164,7 +164,8 @@ public partial class ReadSurface
             Assert.Single(Regex.Matches(tiles, "class=\"on\""));
             Assert.Contains("<span>S&P 500, large caps" + (code == "GSPC" ? " (showing)" : string.Empty) + "</span>", tiles, StringComparison.Ordinal);
             Assert.Contains("<b>0.0%</b><span>1 open · 0 closed · picked 2 tonight</span>", tiles, StringComparison.Ordinal);
-            Assert.Contains("<b>Not started</b><span>0 open · 0 closed · picked 0 tonight</span>", tiles, StringComparison.Ordinal);
+            // From the 24.25 correction an index that ran and marked none has started; it holds no trade yet.
+            Assert.Contains("<b>No trade yet</b><span>0 open · 0 closed · picked 0 tonight</span>", tiles, StringComparison.Ordinal);
         }
 
         // Tonight's carousel on the S&P 500: a chip for each pick in rank order, the second marked past the cash; the place

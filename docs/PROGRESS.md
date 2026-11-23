@@ -21765,3 +21765,45 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the 24.19 correction, open; migration 164 on the operator's store after the merge; the Sunday task registered by
             the operator, as the runbook gives it. Put to the operator: the waiting list grows by up to 26 ideas a week against
             10 tested, and the rehearsal's ideas leaned on the same two readings across setups.
+
+### 24.25 - correction: each index's picker page draws its own version's picks alone, the earlier version's once in a region of their own   2026-11-22
+
+Queue:      done, 24.0 to 24.28 and the 24.4, 24.14 and 24.26 corrections, 24.19 done, its correction open; in progress,
+            this correction, with the stage of a buy range put to the operator in the same pull request; next, 24.29,
+            reading recipes, or the buy range where the operator places it first.
+Corrects:   the operator's correction of 2026-11-22, kept word for word in
+            `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`: the five picks the earlier version made
+            across all 1,500 stocks on the night of 20 Nov were drawn as each index's picks, every tile saying "picked 5
+            tonight" and the S&P 500's view calling small and mid caps its large-cap picks. A run with no index was read as
+            every index's own.
+Built:      an index's view reads its own version's runs and picks alone. A tile counts only its own version's picks on a
+            night that version ran, the count Tonight's heading draws; until that version's first night it reads "Not
+            started. Its first picks come from the night of Mon 23 Nov.", the session after the newest night any version ran,
+            and Tonight, the scoreboard and the four accounts say the same; an index that ran and marked none reads "No trade
+            yet". The earlier version's picks stand once, under the tiles, as "Picked across all 1,500 stocks by the earlier
+            version, before it picked within each index": the same carousel and tabs, each card naming the index its stock
+            belongs to and what the earlier version's own account did with it, never an index's account; once all its trades
+            are sold the region folds into one line of its record. An index's versions are numbered among its own. Section
+            15.26's two rows and a row of its own, and the changelog.
+Measured:   read back over the C: copy of the store, which holds the night of 20 Nov as the operator's does: each index's
+            view at 1440 and a true 390, every tile not started, tonight empty and the five once under the tiles, Wolverine
+            named a stock of the S&P 600; no page wider than its screen. The shots before, off the operator's app, and after
+            stand in the scratchpad's `picker-index-before` and `picker-index-after`; those after the Monday night follow it.
+Tests:      2 new: a store where only the earlier version picked, every tile and every tonight not started, the five once in
+            their own region each naming its index, folded once all are sold; and one where each index's version picked, each
+            index showing its own alone with the tile and heading counting the same. Six older tests stored their nights with
+            no index, the earlier version's shape, and gained their index; two read their cards in tonight's region, the
+            index's "fixed 5" drawing them too.
+Claims:     1730, one new: the row of the earlier version's picks.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard the correction adds taken out at its one site. m1 a run with no index
+            read as every index's again: red; m2 every tile read as started: red; m3 the earlier version's region never
+            folding: red in two tests; m4 its cards naming no index: red. Each filtered to its tests and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3969 of 3969 tests ran with none failed, migrations 0 to 164 with
+            none pending, schema version 164, against `data-ci` and never `data`; the phase report 68 tables, 1730 claims, 1730
+            passing, none out of scope and none unexamined, 1745 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the shots of the three views after the Monday night, taken once it has run; the buy-range stage, stored on the
+            operator's approval of its table and words.

@@ -21,6 +21,9 @@ public sealed record JudgeCardView(int Rank, int Of, string Ticker, string? Comp
     public DateOnly? Night { get; init; }
 
     public JudgeHeld? Held { get; init; }
+
+    // On a card of the earlier version that picked across the three indices, the index its stock belongs to.
+    public string? Index { get; init; }
 }
 
 // What an account did with one of the judge's picks: the session it bought at the open and the price it paid, its stop,
@@ -110,7 +113,13 @@ public sealed record JudgeFactView(string Words, string Value, string? Compariso
 
 // One index's tile of the picker's accounts: the index, its account's return since its first session, none before it holds
 // two sessions, its trades still open and those closed, and its picks tonight.
-public sealed record JudgeTile(string Index, double? Return, int Open, int Closed, int Tonight);
+public sealed record JudgeTile(string Index, double? Return, int Open, int Closed, int Tonight)
+{
+    // Whether the index's own version has run a night, and where it has not the night its first picks come from.
+    public bool Started { get; init; } = true;
+
+    public DateOnly? StartsOn { get; init; }
+}
 
 // One account's line on the chart: its name and its value on each session.
 public sealed record JudgeLineView(string Name, IReadOnlyList<(DateOnly Session, decimal Value)> Values);
@@ -161,6 +170,15 @@ public sealed record JudgeView(
 
     // The three indices' tiles in the selector's order, or the chosen index's alone where the page draws no tiles.
     public IReadOnlyList<JudgeTile> Tiles { get; init; } = [];
+
+    // The earlier version that picked across the three indices before it picked within each, in its own account, and whether
+    // a trade of it is still to be bought or sold.
+    public JudgeVersionView? Across { get; init; }
+
+    public bool AcrossOpen { get; init; }
+
+    // The tile of the index the page reads.
+    public JudgeTile? Own => Tiles.FirstOrDefault(tile => tile.Index == Index);
 }
 
 // The AI stock picker's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
@@ -207,7 +225,16 @@ public sealed partial class SinglePageApp
             region.Append(Cards.Computed("Its three accounts", IndexTiles(view.Tiles, chosen), title: "The AI stock picker in each index", lede: Escaped(TilesLede), region: "judge-tiles"));
         }
 
-        region.Append(Cards.Computed("Tonight, " + chosen.Name, $"<p class=\"count-line\" data-summary>{TonightWords(view, chosen)}</p><p class=\"count-note\">{Escaped(TonightNote)}</p>" + Carousel(view.Picks, view.Score, chosen), title: $"The AI stock picker's {Escaped(CapWord(chosen))} picks tonight ({view.Picks.Count})", stamp: view.Night is { } on ? "<span class=\"stamp computed\">Computed for " + on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "</span>" : null, region: "judge-picks"));
+        if (view.Across is { } across)
+        {
+            region.Append(AcrossRegion(across, view.AcrossOpen));
+        }
+
+        var tonight = view.Own is { Started: false } waiting
+            ? $"<p class=\"empty\" data-started=\"no\" data-summary>{Escaped(NotStartedWords(waiting.StartsOn))}</p>"
+            : $"<p class=\"count-line\" data-summary>{TonightWords(view, chosen)}</p><p class=\"count-note\">{Escaped(TonightNote)}</p>" + Carousel(view.Picks, view.Score, chosen);
+
+        region.Append(Cards.Computed("Tonight, " + chosen.Name, tonight, title: $"The AI stock picker's {Escaped(CapWord(chosen))} picks tonight ({view.Picks.Count})", stamp: view.Night is { } on ? "<span class=\"stamp computed\">Computed for " + on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "</span>" : null, region: "judge-picks"));
         region.Append(Cards.Computed("Its own rules, " + chosen.Name, OwnRules(chosen), title: $"The picker's own {Escaped(CapWord(chosen))} rules", lede: Escaped(OwnRulesLede(chosen)), region: "judge-rules"));
         region.Append(Cards.Computed("Scoreboard", EmptyRecord(view) ?? Scoreboard(view), title: "How its live record stands", region: "judge-score"));
         region.Append(Cards.Computed("Four accounts", (EmptyRecord(view) ?? $"<p data-summary>The picker's account beside the rules', random picks' and the index's, each from {(view.RecordNumber is { } number ? $"version {number}'s" : "the picker's")} first night.</p>" + JudgeChart(view.Lines, view.Band, "The four accounts' returns since the picker started")) + ApartCharts(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
@@ -316,7 +343,9 @@ public sealed partial class SinglePageApp
     // From 24.13, until any of the judge's live picks has been bought, why the scoreboard and the four accounts hold nothing,
     // the night and the open read from its first stored picks; none once one is bought, or before it has picked.
     public static string? EmptyRecord(JudgeView view) =>
-        view.Bought || view.FirstNight is not { } night || view.FirstOpen is not { } open
+        view.Own is { Started: false } waiting
+            ? "<p class=\"empty\" data-empty=\"record\" data-started=\"no\" data-summary>" + Escaped(NotStartedWords(waiting.StartsOn)) + "</p>"
+        : view.Bought || view.FirstNight is not { } night || view.FirstOpen is not { } open
             ? null
             : "<p class=\"empty\" data-empty=\"record\" data-summary>" + Escaped(EmptyRecordWords(night, open, view.RecordNumber)) + "</p>";
 
@@ -355,27 +384,28 @@ public sealed partial class SinglePageApp
     // Tonight's picks as a carousel: a chip for each pick in rank order, a pick its account had no cash for marked on its
     // chip, the place and the arrows of the pick shown, and one card at a time. Radio inputs choose the card, so it works
     // with no script; a night of one pick, or more than the carousel holds, draws its cards one under another.
-    static string Carousel(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, UniverseChoice chosen)
+    static string Carousel(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, UniverseChoice chosen, string slides = "judge-slide", string cardIds = "judge-tonight", JudgeVersionView? version = null)
     {
         if (picks.Count == 0)
         {
             return string.Empty;
         }
 
-        var cards = picks.Select((pick, at) => PickCard(pick, score, null, string.Create(CultureInfo.InvariantCulture, $"judge-tonight-{at + 1}"), chosen)).ToArray();
+        // A card of the earlier version names its own index, and its facts stand among that index's stocks.
+        var cards = picks.Select((pick, at) => PickCard(pick, score, version, string.Create(CultureInfo.InvariantCulture, $"{cardIds}-{at + 1}"), pick.Index is { } own ? Universes.ByCode(own) ?? chosen : chosen)).ToArray();
 
         if (picks.Count == 1 || picks.Count > CarouselHolds)
         {
             return "<div class=\"judge-ideas\">" + string.Concat(cards) + "</div>";
         }
 
-        static string Slide(int at) => string.Create(CultureInfo.InvariantCulture, $"judge-slide-{at + 1}");
+        string Slide(int at) => string.Create(CultureInfo.InvariantCulture, $"{slides}-{at + 1}");
 
         var html = new StringBuilder("<div class=\"judge-car\" data-carousel>");
 
         for (var at = 0; at < picks.Count; at++)
         {
-            html.Append($"<input type=\"radio\" class=\"judge-slide\" name=\"judge-slide\" id=\"{Slide(at)}\"{(at == 0 ? " checked" : string.Empty)}>");
+            html.Append($"<input type=\"radio\" class=\"judge-slide\" name=\"{slides}\" id=\"{Slide(at)}\"{(at == 0 ? " checked" : string.Empty)}>");
         }
 
         html.Append("<div class=\"car-head\"><div class=\"car-chips\">");
@@ -408,7 +438,7 @@ public sealed partial class SinglePageApp
     {
         var html = new StringBuilder();
         var place = pick.Night is { } on
-            ? string.Create(CultureInfo.InvariantCulture, $"Pick {pick.Rank} of {pick.Of} on the night of ") + on.ToString("d MMM", CultureInfo.InvariantCulture)
+            ? string.Create(CultureInfo.InvariantCulture, $"Pick {pick.Rank} of {pick.Of} on the night of ") + on.ToString("d MMM", CultureInfo.InvariantCulture) + (pick.Index is not null ? ", a stock of the " + chosen.Name : string.Empty)
             : string.Create(CultureInfo.InvariantCulture, $"Pick {pick.Rank} of {pick.Of} tonight, ") + chosen.Name;
 
         html.Append($"<article class=\"home-idea judge-card\" data-ticker=\"{Escaped(pick.Ticker)}\">");
@@ -568,10 +598,43 @@ public sealed partial class SinglePageApp
             var of = Universes.ByCode(tile.Index) ?? Universes.Large;
             var showing = of == chosen;
 
-            html.Append(CultureInfo.InvariantCulture, $"<a href=\"{JudgeRoute}?{Universes.Query}={of.Word}\" data-index=\"{Escaped(of.Code)}\"{(showing ? " class=\"on\" aria-current=\"page\"" : string.Empty)}><span>{Escaped(of.Name)}, {Escaped(of.Cap)}s{(showing ? " (showing)" : string.Empty)}</span><b>{(tile.Return is { } made ? Figures.Share(made) : "Not started")}</b><span>{tile.Open} open · {tile.Closed} closed · picked {tile.Tonight} tonight</span></a>");
+            var body = tile.Started
+                ? $"<b>{(tile.Return is { } made ? Figures.Share(made) : "No trade yet")}</b><span>{tile.Open} open · {tile.Closed} closed · picked {tile.Tonight} tonight</span>"
+                : $"<b>Not started</b><span data-started=\"no\">{Escaped(NotStartedWords(tile.StartsOn)["Not started. ".Length..])}</span>";
+
+            html.Append(CultureInfo.InvariantCulture, $"<a href=\"{JudgeRoute}?{Universes.Query}={of.Word}\" data-index=\"{Escaped(of.Code)}\"{(showing ? " class=\"on\" aria-current=\"page\"" : string.Empty)}><span>{Escaped(of.Name)}, {Escaped(of.Cap)}s{(showing ? " (showing)" : string.Empty)}</span>{body}</a>");
         }
 
         return html.Append("</div>").ToString();
+    }
+
+    // An index whose own version has not run a night: none of its picks yet, and the night its first come from.
+    public static string NotStartedWords(DateOnly? startsOn) =>
+        "Not started. " + (startsOn is { } night ? "Its first picks come from the night of " + night.ToString("ddd d MMM", CultureInfo.InvariantCulture) + "." : "Its first picks come from its first night.");
+
+    // The earlier version that picked across the three indices before it picked within each, drawn under its own number.
+    public const int AcrossNumber = 0;
+
+    public const string AcrossTitle = "Picked across all 1,500 stocks by the earlier version, before it picked within each index";
+
+    // The earlier version's picks, once, under the tiles: while a trade of it is still to be bought or sold its cards in the
+    // carousel and tabs, each naming the index its stock belongs to and what its own account did with it; then folded into
+    // one line of its record. They are bought and walked in its own account alone, never in an index's.
+    static string AcrossRegion(JudgeVersionView across, bool open)
+    {
+        var count = across.Picks.Count;
+        var closed = across.Score.Closed == 0
+            ? "None of its trades has closed yet."
+            : string.Create(CultureInfo.InvariantCulture, $"{across.Score.Closed} of its trades {(across.Score.Closed == 1 ? "has" : "have")} closed") + (across.Score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked." : ".");
+        var nights = across.First == across.Last ? "on the night of " + across.First.ToString("d MMM", CultureInfo.InvariantCulture) : "from " + across.First.ToString("d MMM", CultureInfo.InvariantCulture) + " to " + across.Last.ToString("d MMM", CultureInfo.InvariantCulture);
+        var summary = string.Create(CultureInfo.InvariantCulture, $"{count} pick{(count == 1 ? string.Empty : "s")} made {nights}, before the picker picked within each index, so none is an index's pick. They are bought and walked in the earlier version's own account, never in an index's account. ") + closed;
+
+        if (!open)
+        {
+            return Cards.Computed("The earlier version", $"<p class=\"judge-version\" data-version=\"across\" data-across=\"folded\" data-summary>{Escaped(summary)} All its trades are done, so its picks are folded into this record.</p>", title: AcrossTitle, region: "judge-across");
+        }
+
+        return Cards.Computed("The earlier version", $"<p class=\"judge-version\" data-version=\"across\" data-across=\"open\" data-summary>{Escaped(summary)}</p>" + Carousel(across.Picks, across.Score, Universes.Large, "judge-across-slide", "judge-across", across), title: AcrossTitle, region: "judge-across");
     }
 
     // The picker's own rules for the index the page reads: none yet on any index.
@@ -596,7 +659,7 @@ public sealed partial class SinglePageApp
     // bought and sold with its result per $1 risked.
     public static string HeldWords(JudgeCardView pick, JudgeVersionView version)
     {
-        var account = string.Create(CultureInfo.InvariantCulture, $"version {version.Number}'s own account");
+        var account = version.Number == AcrossNumber ? "the earlier version's own account" : string.Create(CultureInfo.InvariantCulture, $"version {version.Number}'s own account");
 
         static string Day(DateOnly day) => day.ToString("ddd d MMM", CultureInfo.InvariantCulture);
 

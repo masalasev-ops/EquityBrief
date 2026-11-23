@@ -19,8 +19,9 @@ public static class JudgeScreen
     // The seed the random accounts are drawn from, so the page draws the same band each time it is read.
     public const int RandomSeed = 20261120;
 
-    // A pick or run within one index: an index's own, or one across the three indices before 24.24.
-    static bool Within(string? runIndex, string index) => runIndex is null || string.Equals(runIndex, index, StringComparison.Ordinal);
+    // A pick or run of one index: that index's own version's alone. One made across the three indices before 24.24 is no
+    // index's, and is drawn once in a region of its own.
+    static bool Within(string? runIndex, string index) => string.Equals(runIndex, index, StringComparison.Ordinal);
 
     public static JudgeView Build(
         string within,
@@ -42,7 +43,12 @@ public static class JudgeScreen
         // numbered in the order the versions first ran, an earlier version's drawn apart under its number.
         // see: Each of the picker's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
         // see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's
+        // The night an index's version that has not run picks first: the session after the newest night any version ran.
+        var startsOn = runs.Where(run => !run.Replayed).Select(run => (DateOnly?)run.Session).Max() is { } newestRan ? OpenAfter(newestRan) : (DateOnly?)null;
+
         runs = [.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
+
+        var started = runs.Any(run => !run.Replayed);
 
         var ranked = picks.Where(pick => !pick.Replayed && Within(pick.RunIndex, within)).ToArray();
         var every = ranked.Where(pick => pick.InQuarter).ToArray();
@@ -119,6 +125,26 @@ public static class JudgeScreen
         var apart = numbered.Where(pair => pair.One.Key != version).Select(pair => Apart(pair.One, pair.Number)).ToArray();
         int? recordNumber = earlier ? numbered.Single(pair => pair.One.Key == version).Number : null;
 
+        // The earlier version's picks, made across the three indices before it picked within each: no index's, bought and
+        // walked in its own account and never in an index's, each card naming the index its stock belongs to, and drawn
+        // while a trade of it is not yet bought or not yet sold.
+        var acrossPicks = picks.Where(pick => !pick.Replayed && pick.RunIndex is null).OrderBy(pick => pick.Session).ThenBy(pick => pick.Rank).ToArray();
+        JudgeVersionView? acrossView = null;
+        var acrossOpen = false;
+
+        if (acrossPicks.Length > 0)
+        {
+            var acrossTrades = acrossPicks.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
+            var acrossFirst = acrossPicks[0].Session;
+            var acrossWalk = PaperAccount.Walk(settings, [.. acrossTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= acrossFirst)], Close);
+            var cards = acrossPicks.Select((pick, at) => Card(pick, acrossPicks.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldOf(acrossTrades[at], acrossWalk), Index = pick.Index }).ToArray();
+            double? noneOver = null;
+            (double? Result, double? OverSamePlan)[] acrossResults = [.. acrossTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noneOver))];
+
+            acrossView = new JudgeVersionView(0, acrossFirst, acrossPicks[^1].Session, cards, JudgeScore.Of(acrossResults), acrossWalk.Values);
+            acrossOpen = cards.Any(card => card.Held is null or { Skipped: null, Ended: null });
+        }
+
         // From 24.24 the record's version's variant "a fixed 5", every pick its second round ranked, in an account of its own.
         var fixedFive = numbered.Where(pair => pair.One.Key == version && version.Contains(KeyMark, StringComparison.Ordinal)).Select(pair => Apart(pair.One, pair.Number, fixedFive: true)).FirstOrDefault();
 
@@ -182,7 +208,11 @@ public static class JudgeScreen
             judgeWalk.Trades.Any(one => one.Skipped is null) && judgeWalk.Values.Count > 1 && judgeWalk.Values[0].Value > 0m ? Statistic.FromRatio((judgeWalk.Values[^1].Value / judgeWalk.Values[0].Value) - 1m) : null,
             judgeWalk.Trades.Count(one => one.Skipped is null && one.Trade.Ended is null),
             score.Closed,
-            tonight.Length);
+            tonight.Length)
+        {
+            Started = started,
+            StartsOn = startsOn,
+        };
 
         return new JudgeView(
             newest?.Session,
@@ -214,6 +244,8 @@ public static class JudgeScreen
             Marked = newest is { Index: not null } ran && ran.Outcome is "picked" or "none" ? ran.Kept : null,
             FixedFive = fixedFive,
             Tiles = [tile],
+            Across = acrossView,
+            AcrossOpen = acrossOpen,
         };
     }
 

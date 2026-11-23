@@ -128,15 +128,19 @@ public partial class ReadSurface
 
         Assert.Contains(SinglePageApp.FixedFiveLine, five, StringComparison.Ordinal);
         Assert.Equal(["AAA", "BBB", "CCC"], [.. Blocks(five, "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">").Select(card => card[^5..^2])]);
-        Assert.Contains("A fixed 5, version 2's variant, picked 19 Nov: its own account, apart from the record", five, StringComparison.Ordinal);
+        // From the 24.25 correction an index's versions are numbered among its own, the earlier version being no index's.
+        Assert.Contains("A fixed 5, version 1's variant, picked 19 Nov: its own account, apart from the record", five, StringComparison.Ordinal);
         Assert.DoesNotContain("The fixed five alone.", Blocks(large, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single(), StringComparison.Ordinal);
 
-        // The version from before 24.24, which picked across the three indices, drawn apart on each index's page.
+        // The version from before 24.24, which picked across the three indices, drawn once in its own region on each index's
+        // page and never as an index's version; OLD's week has run out on its flat prices, so its region is folded.
         foreach (var page in new[] { large, small })
         {
-            var apart = Blocks(page, "<section class=\"card\" data-card=\"judge-version-1\">.*?</section>").Single();
+            var across = Blocks(page, "<section class=\"card\" data-card=\"judge-across\">.*?</section>").Single();
 
-            Assert.Contains("data-ticker=\"OLD\"", apart, StringComparison.Ordinal);
+            Assert.Contains("1 pick made on the night of 18 Nov, before the picker picked within each index", across, StringComparison.Ordinal);
+            Assert.Contains("data-across=\"folded\"", across, StringComparison.Ordinal);
+            Assert.Empty(Blocks(page, "<section class=\"card\" data-card=\"judge-version-[0-9]+\">"));
         }
 
         Assert.DoesNotContain("data-ticker=\"ZZZ\"", large, StringComparison.Ordinal);

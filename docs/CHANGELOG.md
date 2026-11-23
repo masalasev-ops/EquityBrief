@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html - each index's picker page draws its own version's picks alone, at the 24.25 correction
+Corrects: on the operator's correction of 2026-11-22, kept word for word in `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`, the five picks the earlier version made across all 1,500 stocks on the night of 20 Nov were drawn as each index's picks: every tile said "picked 5 tonight", and the S&P 500's view called small and mid caps its large-cap picks.
+Was:
+> section 15.26's row "Within one index": "... and that index's fund held; and a version from before 24.24 that picked across the three indices drawn apart under its number on each (see: ...)"
+> section 15.26's row "Its three accounts": "... its trades open and those closed; and its picks tonight; the index the page reads marked as showing; and each tile opening the page for its index"
+> no row "The earlier version's picks across all three indices"
+Now:
+> "Within one index": "... and that index's fund held; and from the 24.25 correction of 2026-11-22 that index's own version's runs and picks alone, a version from before 24.24 that picked across the three indices being no index's (see: ...)"
+> "Its three accounts": "... and each tile opening the page for its index; from the 24.25 correction of 2026-11-22 each counting only the picks its own index's version made on a night that version ran as Tonight's heading counts them; and until that version's first night reading not started with the night its first picks come from"
+> the row "The earlier version's picks across all three indices": drawn once under the tiles with its carousel and tabs, each card naming its stock's index, in its own account, and folded into one line once all its trades are done
+Why: the operator's correction of that day; the earlier version's picks stay bought and walked in its own account as decided (see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's).
+
 ### 2026-11-23 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/BUILD_PLAN.md and docs/RUNBOOK.md - the researcher, weekly, at 24.28
 Decision: The researcher reads each rule's failure list over the early years and the nights since the restart, and the later years as one word
 Was:

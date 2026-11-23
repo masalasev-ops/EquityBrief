@@ -49,7 +49,7 @@ public partial class ArchitectureConformance
         ("24.22", [.. ComponentAccess.CaseRows, .. SchemaColumns.CaseStoreRows, .. FixtureExpectations.CaseClaims], []),
         ("24.23", [.. ComponentAccess.SwapRows, .. SchemaColumns.SwapStoreRows, .. FixtureExpectations.SwapClaims], []),
         ("24.24", [.. FixtureExpectations.JudgeIndexRows], []),
-        ("24.25", [.. Reading.ReadSurface.PickerPageRows], []),
+        ("24.25", [.. Reading.ReadSurface.PickerPageRows, .. Reading.ReadSurface.PickerAcrossRows], []),
         ("24.26", [.. ComponentAccess.NotebookRows, .. SchemaColumns.NotebookStoreRows, .. FixtureExpectations.NotebookClaims, .. Reading.ReadSurface.NotebookRows], []),
         ("24.27", [.. FixtureExpectations.SurvivorRows], []),
         ("24.28", [.. FixtureExpectations.ResearchRows], []),
@@ -80,7 +80,8 @@ public partial class ArchitectureConformance
     // counted the register's form, Paper trading's row and section 18's, the first two landing as words in rows that stood.
     // The picker within each index, six of four: section 17's row, section 18's row of a night with no stock marked and the
     // picker page's four, where the plan counted the accounts' row and the count of picks as one. The picker's page from its
-    // mockup, four of three: where each fact stands a row of its own beside the carousel's, where the plan counted them as one.
+    // mockup, four of three: where each fact stands a row of its own beside the carousel's, where the plan counted them as one;
+    // and from its correction of 2026-11-22 the row of the earlier version's picks across the three indices.
     // The notebook, the grammar and the one tester, seven of eight: the two components' catalogue and matrix rows, the
     // notebook's store, section 17's row and the Loop page's row, the tester's store landing as the notebook it writes.
     // The survivors, nine of six: the desk's catalogue and matrix rows, its three stores, section 14's step, section 17's
@@ -113,7 +114,7 @@ public partial class ArchitectureConformance
         ("24.22", 1),
         ("24.23", 2),
         ("24.24", 2),
-        ("24.25", 1),
+        ("24.25", 2),
         ("24.26", -1),
         ("24.27", 3),
         ("24.28", 0),
@@ -170,6 +171,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1729), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1730), (before, low, high, actual));
     }
 }
