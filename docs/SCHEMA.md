@@ -2755,7 +2755,7 @@ Grain: one row per idea and test, from 24.26.
 
 Primary key: `id`.
 
-**Inserted by the one tester and by the notebook's fill alone, and never updated or deleted** (see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from). Its triggers refuse an update, a delete and an insert naming a row or a source row it holds, so an idea tested again is a row of its own. Read by the read surface for the Improvement loop page and by the tester, which refuses a line it holds.
+**Inserted by the one tester and by the notebook's fill alone, and never updated or deleted** (see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from). Its triggers refuse an update, a delete and an insert naming a row or a source row it holds, so an idea tested again is a row of its own. Read by the read surface for the Improvement loop page and by the tester, which refuses a line it holds. From migration 162, the 24.26 correction, the table is strict, so a value of the wrong type is refused as the tables written beside it refuse one, rebuilt with its rows copied across first and its triggers made again.
 
 ### loop_run
 Grain: one row per tester run on an index.

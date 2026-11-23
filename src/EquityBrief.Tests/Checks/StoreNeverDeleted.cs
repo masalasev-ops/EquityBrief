@@ -310,8 +310,8 @@ public class StoreNeverDeleted
         // end reasons, from 23.1 the session marks gaining the session a history ends on among their kinds, from the
         // 23.10 correction of 2026-11-16 the same two books' holdings gaining a close under the stop and the take-profit,
         // and from 24.24 the picker's facts gaining their field list's version in their key, its runs a night not run among
-        // their outcomes and its picks their run in theirs.
-        Assert.Equal(["judge_fact", "judge_run", "judge_pick", "quality_holding", "improving_trade", "session_mark", "quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
+        // their outcomes and its picks their run in theirs; and sixteen with the notebook rebuilt as a strict table.
+        Assert.Equal(["notebook", "judge_fact", "judge_run", "judge_pick", "quality_holding", "improving_trade", "session_mark", "quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
 
         foreach (var table in dropped)
         {

@@ -21643,3 +21643,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1727 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open.
+
+### 24.26 - correction: the notebook rebuilt as a strict table   2026-11-22
+
+Queue:      done, 24.0 to 24.26 and the 24.4 and 24.14 corrections, 24.19 done, its correction open; in progress, this
+            correction and 24.27, survivors run by themselves, in one pull request; next, 24.28, the researcher, weekly.
+Corrects:   migration 161 made the notebook a table without STRICT, so a figure of the wrong type would have been stored as
+            written where the tables beside it refuse one. Found while 24.27's tables were written.
+Built:      migration 162 rebuilds the notebook as a strict table: a new table made, every row copied across in the order
+            written, the old dropped and the new renamed, its index and its three triggers made again, the drop listed where
+            `store-never-deleted` holds every dropped table to its rebuild. SCHEMA's notebook section and the changelog.
+Tests:      none new: the notebook's test reads the table as strict and a figure written as words refused.
+Claims:     1712, none new.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the correction's one guard taken out. m1 the rebuild without STRICT: red. Filtered to
+            its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and 24.27's, the run and
+            its figures stated in 24.27's entry below.
+Carried:    four older tables without STRICT, `long_search`, `plan_point`, `book_record` and `listed_name`, put to the operator;
+            migration 162 on the operator's store after the merge.

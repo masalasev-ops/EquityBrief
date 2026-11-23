@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/SCHEMA.md - the notebook rebuilt as a strict table, at the 24.26 correction
+Corrects: migration 161 made the notebook a table without STRICT, so a figure of the wrong type would have been stored as written where the tables beside it refuse one.
+Was:
+> the notebook's section ending "... and by the tester, which refuses a line it holds."
+Now:
+> "... and by the tester, which refuses a line it holds. From migration 162, the 24.26 correction, the table is strict, so a value of the wrong type is refused as the tables written beside it refuse one, rebuilt with its rows copied across first and its triggers made again."
+Why: a defect in 24.26's built work, found while 24.27 was built; also under the decision "Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from".
+
 ### 2026-11-22 - docs/ARCHITECTURE.html - the picker's facts drawn in the page's words, at the 24.14 correction
 Corrects: on the operator's correction of 2026-11-22, kept word for word in `prompts/2026-11-22-24.14-picker-facts-correction.md`, a card drew "+1 points", "-0%" and "Shares falling +15%", ran its quote into the line under it, and showed a pick made before the picker named its facts with its whole sheet open.
 Was:
