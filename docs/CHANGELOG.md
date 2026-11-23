@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - a moved close with no volume traded, and three spans ended on the operator's word, at a correction to the 24.19 correction
+Decision: A bar whose close moved with no volume traded with its volume missing
+Decision: The spans of AM_old, BEL and PSD past their last traded price end there on the operator's word
+Was:
+> ARCHITECTURE.html, the long history reader's row: "a span the schedules ended past its code's last price ended there where its filer stops reporting or it runs a quarter at most (see: A member span past its code's last price ends there where its filer's reports stop or it runs a quarter at most), and from the S&amp;P 400's and 600's first nights their spans the nights' own"
+> ARCHITECTURE.html, the row of every member's readings on every session: "the three reach readings over the last 2,792 sessions (see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own)"
+> RUNBOOK.md, the long history's lists: "each code whose member sessions hold a price they held none of, with its spans and the years; each code's member sessions counted under another code of its company; and each code's member sessions still holding no price"
+Now:
+> RUNBOOK.md: the same, with each code ended on the operator's word and each code's member sessions past its last traded price where its span ended there, apart from those counted under another code, each with its citation
+> ARCHITECTURE.html, the long history reader's row: the same, with "AM_old's, BEL's and PSD's ended there on the operator's word" and "a bar whose close moved with no volume read as traded with its volume missing", each with its citation
+> ARCHITECTURE.html, the row of every member's readings: the same, with "and its readings of a bar's volume none on a session whose close moved with no volume, the liquidity's mean leaving such a day out" and its citation
+Why: the operator's answers of 2026-11-23 at 14:00, items 1 and 2, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-2pm.md`.
+
 ### 2026-11-23 - docs/RUNBOOK.md - a provider row no snapshot and no name dates, at a correction to the 24.19 correction
 Decision: A provider span no snapshot and no name dates continues its code's latest dated span ending by its own end
 Was:

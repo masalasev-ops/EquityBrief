@@ -22,12 +22,21 @@ public static class TableReadings
 
     public static IReadOnlyList<string> ReachColumns { get; } = ["highest_since_years", "older_days", "stretch_share"];
 
+    // The readings that read a bar's volume, none on a session whose close moved with no volume, its volume missing.
+    // see: A bar whose close moved with no volume traded with its volume missing
+    public static IReadOnlyList<string> VolumeColumns { get; } =
+    [
+        "volume_ratio", "dry_up", "volume_multiple", "liquidity", "up_volume_share", "price_volume_correlation", "illiquidity",
+        "volume_slope", "alpha_two", "alpha_three", "alpha_six", "drop_volume", "night_volume_ratio",
+    ];
+
     // A price at the price the stock traded at on its bar's day; none where the bar holds no raw close.
     public static decimal? Traded(SweepBar bar, decimal price) =>
         bar.RawClose > 0 && bar.Close > 0 ? price * bar.RawClose / bar.Close : null;
 
-    // The base-10 logarithm of the mean of the dollars traded over the liquidity's window, the raw close times the volume;
-    // none under the window, where a day holds no raw close, or where the mean is nothing.
+    // The base-10 logarithm of the mean of the dollars traded over the liquidity's window, the raw close times the volume, a
+    // day whose volume is missing left out of the mean; none under the window, where a day holds no raw close, or where the
+    // mean is nothing.
     public static double? Liquidity(IReadOnlyList<SweepBar> bars, int bar)
     {
         if (bar + 1 < LedgerReadings.LiquiditySessions)
@@ -35,7 +44,8 @@ public static class TableReadings
             return null;
         }
 
-        var mean = 0.0;
+        var sum = 0.0;
+        var held = 0;
 
         for (var at = bar - LedgerReadings.LiquiditySessions + 1; at <= bar; at++)
         {
@@ -44,12 +54,16 @@ public static class TableReadings
                 return null;
             }
 
-            mean += Statistic.FromPrice(bars[at].RawClose) * Statistic.FromVolume(bars[at].Volume);
+            if (LongTraded.VolumeMissing(bars, at))
+            {
+                continue;
+            }
+
+            sum += Statistic.FromPrice(bars[at].RawClose) * Statistic.FromVolume(bars[at].Volume);
+            held++;
         }
 
-        mean /= LedgerReadings.LiquiditySessions;
-
-        return mean > 0 ? Math.Log10(mean) : null;
+        return held > 0 && sum > 0 ? Math.Log10(sum / held) : null;
     }
 
     // Amihud's illiquidity at the traded price: the base-10 logarithm of the mean of the absolute daily return as stored over

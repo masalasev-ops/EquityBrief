@@ -33,6 +33,15 @@ public static class TableOwnReadings
         Set("stretch_share", entry?.StretchShare);
         Set("highest_since_years", entry is { } read && (read.HighestSince ?? read.HistoryStart) is { } matched ? (read.Session.DayNumber - matched.DayNumber) / Core.EntryCheck.EntryMeasure.YearDays : null);
         Set("older_days", entry?.OlderDays);
+
+        // see: A bar whose close moved with no volume traded with its volume missing
+        if (LongTraded.VolumeMissing(one.Bars, bar))
+        {
+            foreach (var column in TableReadings.VolumeColumns)
+            {
+                Set(column, null);
+            }
+        }
     }
 }
 
