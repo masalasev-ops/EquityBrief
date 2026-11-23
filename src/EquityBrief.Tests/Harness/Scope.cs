@@ -2984,6 +2984,10 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed night the night's row after the labeller's says the copy's own run copies the store and no copy stands in the folder, a night run again for an earlier session and a night handed no launcher writing the same row, and the night's source asks for none",
             ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.SurvivorStep)] = new Scoped(
+            Verdict.Pass,
+            "over a constructed night the survivors' row stands between the store copy's and the picker's with no model call or request on it, saying none is queued; and over a constructed store a queued survivor walked to the newest night's setups, its one pick stored with the night's close, nothing stored twice on a second walk and the step's row counting what it did",
+            ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
             Verdict.Pass,
             "over a constructed night the launcher the night was handed is asked to start the AI stock picker once, its row the last the night writes with no model call on it, a night run again for an earlier session starts none and says so, and the night's source constructs no reader of the judge's tables",
@@ -4075,6 +4079,34 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "The idea grammar and the one tester")] = new Scoped(
             Verdict.Pass,
             "a line parsed into its parts and two spellings read as one canonical line by hand, eleven lines outside the grammar each refused naming its part, twenty early setups' cut points worked by hand and unmoved by later setups, and the weekly bar worked by hand at 1 in 1,024 over it and 1 in 2,048 under it",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Survivor desk")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the survivors' three tables, the setups, setup nights, bars and indicators it reads and the run log it writes, each reconciled against the row, and over a constructed store a queued survivor is walked to the newest night, its pick stored once and its state written once for its reason",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Survivor desk")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Survivors")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and an update and a delete are each refused over a constructed store",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Survivor states")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a survivor queued for one reason on two nights holds one row",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Survivor picks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and the table is read by the desk and the Loop page's survivors alone, so no buy draws it",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Making room for a survivor")] = new Scoped(
+            Verdict.Pass,
+            "the admission worked by hand with room, with nine held and the lowest past 63 nights retired before a lower one at 62, one night younger the next lowest retired, and none past the minimum queuing with the nearest named, each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A survivor that cannot register yet")] = new Scoped(
+            Verdict.Pass,
+            "a time limit, a cap, no cap and the loose gates each queued with why, a name the running revision's never written or retired, and over a constructed store a queued survivor walked on the night and written once for its reason on two nights",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "The AI stock picker within each index")] = new Scoped(
             Verdict.Pass,
@@ -5299,6 +5331,10 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The notebook")] = new Scoped(
             Verdict.Pass,
             "over a constructed store of four ideas on two indices and the operator's, the S&P 600's page read back with its three newest first under the count of each verdict, an idea's words above its grammar line, its figures and its verdict and why, the S&P 500's idea absent; the S&P 500's page drawing its own; and an empty store saying none is in it",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, "Survivors and the queue")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of four survivors on two indices, the S&P 600's page read back with its counts, its two queued in the order they passed with the nights each was walked, a record so far worked by hand from the stored bars at +$2.50 per $1 and one still open, why each waits and the rule for making room, and its retired one with why, the S&P 500's absent; and an empty store saying none has passed",
             ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
@@ -8099,6 +8135,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
         [CheckReach.Key(LoopPage, "The long history")] = "23.8",
         [CheckReach.Key(LoopPage, "The notebook")] = "24.26",
+        [CheckReach.Key(LoopPage, "Survivors and the queue")] = "24.27",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -9320,6 +9357,8 @@ internal static class Scope
         ["Close the arithmetic"] = "5.5",
         // 24.4's step, the AI stock picker after the store's copy.
         ["From 24.4, start the AI stock picker"] = "24.4",
+        // 24.27's step, the queued survivors walked after the store's copy.
+        ["From 24.27, walk each queued survivor"] = "24.27",
     };
 
     // Figure 12.1's boxes, which are the research flow and land in phase 6.

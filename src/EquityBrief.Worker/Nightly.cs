@@ -1008,7 +1008,14 @@ public static class Nightly
 
                 return said;
             }),
-            // Section 14's last step, after the store's copy. The night starts the AI stock picker: one process of its own, which
+            // Section 14's step after the store copy's row. Each queued survivor walked to the night's setups its line keeps,
+            // which the ledger wrote earlier in the night, its picks drawn among no buys, and admitted again where a slot has
+            // opened; a night with none queued writes the step's row saying so.
+            // see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens
+            new("survivors", async () =>
+                await new EquityBrief.Worker.Loop.SurvivorDesk(clock, store.DatabaseFile, store.DataRoot).NightAsync(runId, night.Token),
+                [EquityBrief.Worker.Loop.SurvivorDesk.Stage]),
+            // Section 14's last step, after the survivors' row. The night starts the AI stock picker: one process of its own, which
             // waits until the night has finished, writes the night's facts and picks under the local model's lock, its
             // calls on its own row and never the night's. A night run again for an earlier session starts none, since a
             // night the judge missed is never filled in later.

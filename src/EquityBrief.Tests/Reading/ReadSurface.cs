@@ -247,6 +247,9 @@ public partial class ReadSurface
             // The notebook on the Improvement loop page.
             .. NotebookRows,
 
+            // The survivors and the queue on the Improvement loop page.
+            .. SurvivorRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

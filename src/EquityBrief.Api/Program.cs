@@ -4072,7 +4072,7 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
     return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links, answers, sources), "text/html; charset=utf-8");
 });
 
-app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, StoreLocation store) =>
 {
     var night = await read.NewestNightAsync();
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
@@ -4144,7 +4144,24 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
     var notebook = page.NotebookRegion(reading, await read.NotebookAsync(reading.Code));
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered, read.FrozenUntil()), chips, choices, pooled, longRead, request.Query["strategy"].FirstOrDefault(), request.Query["part"].FirstOrDefault()) + notebook, "text/html; charset=utf-8");
+    // The survivors on the index, a registered one's record carried across its registration: its queued picks and its
+    // variant's closed trades over the nights it shares with its running revision, as the case page reads them.
+    // see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens
+    var survivors = await read.SurvivorsAsync(reading.Code, night);
+
+    if (night is { } walked && survivors.Any(one => one.Candidate is not null))
+    {
+        var accounts = await PaperAccountsAsync(read, reading, walked, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) ?? EquityBrief.Core.Cards.AccountSettings.Example);
+        var variants = EquityBrief.Core.Loop.PromotionCases.Rows(reading.Code, reading.Name, accounts.Sources, accounts.Views, accounts.Sessions, [], walked)
+            .SelectMany(row => row.Variants)
+            .ToDictionary(variant => variant.Variant, StringComparer.Ordinal);
+
+        survivors = [.. survivors.Select(one => one.Candidate is { } name && variants.TryGetValue(EquityBrief.Core.Paper.RuleRegister.Slug(name), out var variant)
+            ? one with { RegisteredClosed = variant.Same.Closed, RegisteredPerDollar = variant.Same.Figure }
+            : one)];
+    }
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered, read.FrozenUntil()), chips, choices, pooled, longRead, request.Query["strategy"].FirstOrDefault(), request.Query["part"].FirstOrDefault()) + page.SurvivorsRegion(reading, survivors) + notebook, "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

@@ -452,9 +452,9 @@ public partial class ArchitectureConformance
         // 1695 with the promotion swap's catalogue and matrix rows, the presses' and swaps' stores and section 18's row of a
         // Promote whose variant no longer stands, and 1701 with the picker within each index's section 17 and 18 rows and its
         // page's four, and 1705 with the picker's page from its mockup, and 1712 with the notebook, the grammar and the one
-        // tester.
+        // tester, and 1721 with the survivors.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1712),
+            (789, 853, 6, 4, 855, 876, 1721),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

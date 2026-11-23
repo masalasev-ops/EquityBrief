@@ -1223,7 +1223,7 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .lm-table .r{text-align:right}
 .lm-table .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .lm-narrow{max-width:640px}
-.notebook-table .idea-line{display:block;margin-top:4px;font:12.5px ui-monospace,Consolas,monospace;color:var(--soft);overflow-wrap:anywhere}
+.notebook-table .idea-line,.survivors-table .idea-line{display:block;margin-top:4px;font:12.5px ui-monospace,Consolas,monospace;color:var(--soft);overflow-wrap:anywhere}
 .lm-freeze{margin:0 0 12px;padding:8px 12px;border:1px solid var(--warn);background:var(--warn-fill);border-radius:6px;font-size:14px;color:var(--ink)}
 .lm-case{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
 .lm-case > div{border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--surface)}

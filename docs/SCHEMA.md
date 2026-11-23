@@ -115,6 +115,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `promotion_press` | ReadApi | none | none |
 | `promotion_swap` | PromotionSwap | none | none |
 | `notebook` | IdeaTestRun, NotebookFill | none | none |
+| `survivor` | SurvivorDesk | none | none |
+| `survivor_state` | SurvivorDesk | none | none |
+| `survivor_pick` | SurvivorDesk | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2755,7 +2758,54 @@ Grain: one row per idea and test, from 24.26.
 
 Primary key: `id`.
 
-**Inserted by the one tester and by the notebook's fill alone, and never updated or deleted** (see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from). Its triggers refuse an update, a delete and an insert naming a row or a source row it holds, so an idea tested again is a row of its own. Read by the read surface for the Improvement loop page and by the tester, which refuses a line it holds.
+**Inserted by the one tester and by the notebook's fill alone, and never updated or deleted** (see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from). Its triggers refuse an update, a delete and an insert naming a row or a source row it holds, so an idea tested again is a row of its own. Read by the read surface for the Improvement loop page and by the tester, which refuses a line it holds. From migration 162, the 24.26 correction, the table is strict, so a value of the wrong type is refused as the tables written beside it refuse one, rebuilt with its rows copied across first and its triggers made again.
+
+### survivor
+Grain: one row per idea the one tester passed, from 24.27.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the survivor, in the order written |
+| `notebook_id` | INTEGER | the notebook's row of the test it passed, unique |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup its event names |
+| `line` | TEXT | its canonical grammar line |
+| `cuts` | TEXT | JSON: each reading its line reads and the nine cut points between its tenths over 2005 to 2018 |
+| `passed_on` | TEXT | the newest session the test that passed it read |
+| `entered_at` | TEXT | UTC instant it was written |
+| `run_id` | TEXT | the test's run |
+
+Primary key: `id`.
+
+### survivor_state
+Grain: one row per state a survivor reached, from 24.27.
+
+| Column | Type | Notes |
+|---|---|---|
+| `survivor_id` | INTEGER | the survivor |
+| `at` | TEXT | UTC instant |
+| `state` | TEXT | `queued`, `registered` or `retired`, constrained in the table |
+| `candidate` | TEXT | the name it registered under; null while queued |
+| `why` | TEXT | why, in words |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `survivor_id`, `at`, `state`.
+
+### survivor_pick
+Grain: one row per survivor, session and stock it was walked to while it queued, from 24.27.
+
+| Column | Type | Notes |
+|---|---|---|
+| `survivor_id` | INTEGER | the survivor |
+| `session_date` | TEXT | the night |
+| `ticker` | TEXT | the stock |
+| `last_close` | TEXT | decimal in code: the night's close |
+| `typical_move` | REAL | the stock's typical daily move that night |
+| `run_id` | TEXT | the night that stored it |
+
+Primary key: `survivor_id`, `session_date`, `ticker`.
+
+**Inserted by the survivors' desk alone, and never updated or deleted** (see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens). A survivor is written when the tester passes it and admitted at once; a state is written where it differs from the survivor's last, so a survivor queued for one reason night after night holds one row for it; and a queued survivor's picks are stored each night it queues, its record walked from them when the page is read. Read by the read surface for the Improvement loop page alone, and drawn among no buys anywhere.
 
 ### loop_run
 Grain: one row per tester run on an index.

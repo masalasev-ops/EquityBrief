@@ -191,6 +191,9 @@ public class SchemaColumns
     // Every idea ever tested.
     internal static string[] NotebookStoreRows => [CheckReach.Key(Scope.StoresTable, "Notebook")];
 
+    // The ideas that passed, their standing and the picks of those queued.
+    internal static string[] SurvivorStoreRows => [.. new[] { "Survivors", "Survivor states", "Survivor picks" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // 24.3: the AI stock picker's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
@@ -345,6 +348,7 @@ public class SchemaColumns
             .. CaseStoreRows,
             .. SwapStoreRows,
             .. NotebookStoreRows,
+            .. SurvivorStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,

@@ -192,6 +192,10 @@ public partial class FixtureExpectations
 
         Assert.Equal(6L, Scalar(store, "SELECT COUNT(*) FROM notebook;"));
         Assert.Equal("failed", Query(store, "SELECT verdict FROM notebook WHERE id = 1;").Single());
+
+        // From the 24.26 correction the table is strict, so a figure written as words is refused.
+        Assert.Equal(1L, Scalar(store, "SELECT strict FROM pragma_table_list WHERE name = 'notebook';"));
+        Assert.Throws<SqliteException>(() => store.Execute("INSERT INTO notebook (entered_at, source, words, early_picks, verdict, why, run_id) VALUES ('x', 'the operator', 'w', 'many', 'failed', 'y', 'r');"));
     }
 
     [Fact]
