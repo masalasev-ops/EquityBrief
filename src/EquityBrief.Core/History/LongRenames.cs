@@ -5,43 +5,113 @@ namespace EquityBrief.Core.History;
 
 // Two codes of one company over the long history. A member span whose code holds no price on some of its sessions reads the
 // prices another code of its filer, or its own code under the provider's delisted spelling, holds there, joined as one
-// history, only where the two are never priced on the same day, or where on every day both are priced they carry the same
-// close and the same volume, one company listed twice. Two codes priced on the same days at different volumes, as share
-// classes are, never join. And each company is counted once on a session: a member code holding no price of its own that
-// session, whose company another member code holds a price of its own for, is not counted there.
-// see: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
+// history, only where the two are never priced on the same day, or where on the days both are priced the prices they traded
+// at and their volumes stand in one ratio, one company listed twice, the other's prices then put on the code's own scale.
+// Two codes whose prices or volumes drift against each other, as share classes do, never join. And each company is counted once on a
+// session: a member code holding no price of its own that session, whose company another member code holds a price of its
+// own for, is not counted there.
+// see: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
 public static partial class LongRenames
 {
     public const string NeverSameDay = "never priced on the same day";
 
     public const string ListedTwice = "the same close and volume on every day both are priced";
 
+    public const string ConstantRatio = "closes and volumes in one ratio on the days both are priced";
+
+    // How near a day's ratio of the prices the two traded at stands to the pair's median ratio, and on what share of the
+    // shared days at least. The prices traded at are read and not the stored closes, whose dividends a code's history
+    // carries only to its own last day.
+    public const decimal CloseTolerance = 0.001m;
+
+    public const decimal CloseShare = 0.99m;
+
+    // How near a day's volume ratio stands to the pair's median ratio, and on what share of the shared days at least, two
+    // feeds counting one company's shares a little apart.
+    public const decimal VolumeTolerance = 0.25m;
+
+    public const decimal VolumeShare = 0.80m;
+
+    // The shared days the ratio test needs at least, since a few days fit one ratio whatever the two codes are.
+    public const int RatioDays = 20;
+
     // The code a delisted spelling stands for: the provider's "_old" and "_old2" endings and a digit added to a code, which
     // the long pull gave a code a delisted company held.
     public static string BaseOf(string ticker) => Delisted().Replace(ticker, string.Empty);
 
-    // Whether two codes join, and by which test; none where they are priced together on a day their close or volume differ.
-    // Only sessions a code traded on are read.
+    // Whether two codes join, and by which test; none where they are priced together and their closes or volumes drift
+    // against each other, as share classes do. Only sessions a code traded on are read.
     public static string? Test(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other)
     {
-        var mine = own.Where(bar => bar.Volume > 0).ToDictionary(bar => bar.Session);
-        var shared = other.Where(bar => bar.Volume > 0 && mine.ContainsKey(bar.Session)).ToArray();
+        var shared = Shared(own, other);
 
         if (shared.Length == 0)
         {
             return NeverSameDay;
         }
 
-        return shared.All(bar => mine[bar.Session].Close == bar.Close && mine[bar.Session].Volume == bar.Volume) ? ListedTwice : null;
+        if (shared.All(pair => pair.Own.Close == pair.Other.Close && pair.Own.Volume == pair.Other.Volume))
+        {
+            return ListedTwice;
+        }
+
+        var traded = shared.Where(pair => pair.Own.RawClose > 0 && pair.Other.RawClose > 0).ToArray();
+
+        if (traded.Length < RatioDays)
+        {
+            return null;
+        }
+
+        static bool Holds(decimal[] ratios, decimal tolerance, decimal share)
+        {
+            var median = Median(ratios);
+
+            return ratios.Count(ratio => Math.Abs(ratio / median - 1m) <= tolerance) >= share * ratios.Length;
+        }
+
+        return Holds([.. traded.Select(pair => pair.Other.RawClose / pair.Own.RawClose)], CloseTolerance, CloseShare)
+            && Holds([.. shared.Select(pair => Shares(pair.Other.Volume) / pair.Own.Volume)], VolumeTolerance, VolumeShare)
+            ? ConstantRatio
+            : null;
     }
 
-    // A code's bars with another code's on every session it holds none of, and the sessions taken from the other.
+    // A code's bars with another code's on every session it holds none of, the other's put on the code's own scale: its
+    // stored prices by their ratio over the last shared days, its traded prices and its volume by their median ratios.
     public static (SweepBar[] Bars, IReadOnlySet<DateOnly> Joined) Joined(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other)
     {
         var held = own.Select(bar => bar.Session).ToHashSet();
-        var taken = other.Where(bar => !held.Contains(bar.Session)).ToArray();
+        var shared = Shared(own, other);
+        var traded = shared.Where(pair => pair.Own.RawClose > 0 && pair.Other.RawClose > 0).ToArray();
+        var (price, raw, volume) = shared.Length == 0
+            ? (1m, 1m, 1m)
+            : (Median(shared[^Math.Min(RatioDays, shared.Length)..].Select(pair => pair.Other.Close / pair.Own.Close)),
+                traded.Length == 0 ? 1m : Median(traded.Select(pair => pair.Other.RawClose / pair.Own.RawClose)),
+                Median(shared.Select(pair => Shares(pair.Other.Volume) / pair.Own.Volume)));
+        var taken = other.Where(bar => !held.Contains(bar.Session))
+            .Select(bar => price == 1m && raw == 1m && volume == 1m
+                ? bar
+                : bar with { High = bar.High / price, Low = bar.Low / price, Close = bar.Close / price, Open = bar.Open / price, RawClose = bar.RawClose / raw, Volume = (long)Math.Round(bar.Volume / volume) })
+            .ToArray();
 
         return ([.. own.Concat(taken).OrderBy(bar => bar.Session)], taken.Select(bar => bar.Session).ToHashSet());
+    }
+
+    // The sessions both codes traded on, each code's bar there, in order.
+    static (SweepBar Own, SweepBar Other)[] Shared(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other)
+    {
+        var mine = own.Where(bar => bar.Volume > 0 && bar.Close > 0).ToDictionary(bar => bar.Session);
+
+        return [.. other.Where(bar => bar.Volume > 0 && bar.Close > 0 && mine.ContainsKey(bar.Session)).OrderBy(bar => bar.Session).Select(bar => (mine[bar.Session], bar))];
+    }
+
+    // A count of shares as a decimal, so a ratio of two volumes is read exactly.
+    static decimal Shares(long volume) => volume;
+
+    static decimal Median(IEnumerable<decimal> values)
+    {
+        var sorted = values.Order().ToArray();
+
+        return sorted.Length % 2 == 1 ? sorted[sorted.Length / 2] : (sorted[(sorted.Length / 2) - 1] + sorted[sorted.Length / 2]) / 2m;
     }
 
     // A code's spans with the sessions it is not counted on taken out, each span parted around a run of them, the calendar

@@ -1022,6 +1022,27 @@ static async Task<int> LongPricesRun(string[] args)
         return 0;
     }
 
+    if (args.Contains("--spans", StringComparer.Ordinal))
+    {
+        var (before, after) = await EquityBrief.Worker.History.LongPricePull.SpansAsync(store.DatabaseFile, FormattableString.Invariant($"long-spans-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
+
+        Say(FormattableString.Invariant($"{before:N0} span(s) written again as {after:N0}, nothing asked of the provider"));
+
+        return 0;
+    }
+
+    if (args.Contains("--behind", StringComparer.Ordinal))
+    {
+        var behind = await EquityBrief.Worker.History.LongMembers.BehindAsync(store.DatabaseFile);
+
+        foreach (var line in EquityBrief.Worker.History.LongMembers.BehindLines(behind))
+        {
+            Say(line);
+        }
+
+        return behind.Count == 0 ? 0 : 1;
+    }
+
     if (args.Contains("--report-days", StringComparer.Ordinal))
     {
         var days = await EquityBrief.Worker.History.LongPricePull.ReportDaysAsync(store.DatabaseFile, FormattableString.Invariant($"long-report-days-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
@@ -1071,7 +1092,7 @@ static async Task<int> LongPricesRun(string[] args)
 
     if ((write ?? VerbArguments.Value(args, "--print")) is not { } kept)
     {
-        Console.Error.WriteLine("long-prices: give '--capture --into <folder>', '--write <folder>', '--print <folder>' or '--counts-read'.");
+        Console.Error.WriteLine("long-prices: give '--capture --into <folder>', '--write <folder>', '--print <folder>', '--spans', '--behind' or '--counts-read'.");
 
         return 2;
     }
@@ -1682,6 +1703,8 @@ static int NoVerb()
         "'--write <folder>' writes them whole where no stop stands, '--print <folder>' writing nothing, '--each' naming every end and difference, " +
         "and '--counts-read' recording the operator's word that the long data check's counts have been read, " +
         "'--report-days' writing again the report days read off 8-K filings carrying item 2.02, " +
+        "'--spans' writing the long spans again from the store alone and '--behind' naming each current member whose spans end more " +
+        "than 2 sessions before its newest bar, failing where any does, " +
         "'long-facts' asks the SEC once for each long filer's facts with '--capture --into <folder>', after stating what it asks, and with " +
         "'--write <folder>' writes the periods before the standing table's first whole, '--print <folder>' writing nothing, " +
         "and '--measure' reading each filing-based family's and the drift's first test year on each index, writing nothing, " +
@@ -2161,6 +2184,18 @@ static async Task<int> LedgerBuildRun(string[] args)
         if (index is null || (from is not null && (!writtenAgain || againFrom is null)) || through is not null)
         {
             Console.Error.WriteLine("ledger-build: give '--every-session --index <GSPC, MID or SML>', with '--word' to write, its span being every session from 2005, and with '--again' and '--from yyyy-MM-dd' to write it once more from that session.");
+
+            return 1;
+        }
+
+        // The table is written only over spans that reach every current member's newest bar.
+        // see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
+        if (args.Contains("--word", StringComparer.Ordinal) && await EquityBrief.Worker.History.LongMembers.BehindAsync(store.DatabaseFile) is { Count: > 0 } behind)
+        {
+            foreach (var line in EquityBrief.Worker.History.LongMembers.BehindLines(behind))
+            {
+                Console.Error.WriteLine("ledger-build: " + line);
+            }
 
             return 1;
         }

@@ -2383,9 +2383,10 @@ public partial class NightlyRun
         // session it asks Yahoo about; and from the 18.4 correction of 2026-11-01 the news labeller the three indices'
         // members on the night holding a story it has not labelled; and from 23.9 the History page's labels row each index's
         // members on the newest session; and from 23.10's second part the rule cards each index's members on the sessions
-        // after a planned pick, whose bars benchmark it.
+        // after a planned pick, whose bars benchmark it; and the long members' check each index's members on the newest
+        // stored session, whose long history it holds to their newest bar.
         Assert.Equal(
-            ["CalendarFetcher", "ChartChecker", "DecisionCards", "DipFamily", "DividendKeeper", "EntryReader", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "ImprovingFamily", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsLabeller", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "RatingsRefresh", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.NewsMood", "ReadApi.Standing", "ReleaseFetch", "RuleCards", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower", "TrendsFetcher"],
+            ["CalendarFetcher", "ChartChecker", "DecisionCards", "DipFamily", "DividendKeeper", "EntryReader", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "ImprovingFamily", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "LongMembers", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsLabeller", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "RatingsRefresh", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.NewsMood", "ReadApi.Standing", "ReleaseFetch", "RuleCards", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower", "TrendsFetcher"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.
