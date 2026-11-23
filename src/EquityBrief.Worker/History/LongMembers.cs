@@ -25,7 +25,8 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         [
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSnapshot, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongHolding, EquityBrief.Core.Components.Touch.Read | EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
-            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSpan, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSpan, EquityBrief.Core.Components.Touch.Read | EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.Bar, EquityBrief.Core.Components.Touch.Read),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.PulledHolding, EquityBrief.Core.Components.Touch.Read),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.Membership, EquityBrief.Core.Components.Touch.Read),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.RunLog, EquityBrief.Core.Components.Touch.Insert),
@@ -732,6 +733,16 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
     const string SelectProviderSpans = "SELECT ticker, joined, left, name FROM membership WHERE index_code = 'GSPC';";
 
+    const string SelectNightSpans = "SELECT index_code, ticker, joined, \"left\" FROM membership WHERE index_code IN ('MID', 'SML');";
+
+    // Each index's members on the newest stored session, with their newest bar.
+    const string SelectCurrentMembers = @"
+        SELECT m.index_code, m.ticker, (SELECT MAX(b.session_date) FROM bar b WHERE b.ticker = m.ticker)
+        FROM membership m
+        WHERE (m.joined IS NULL OR m.joined <= $session)
+          AND (m.""left"" IS NULL
+            OR m.""left"" > $session);";
+
     // The run's schedules and their holdings written whole in one transaction, each holding with the code and the key it was
     // matched by or why it was left out, and every code's spans of membership read over these schedules, the members pull's
     // later ones and the provider's dates of the S&P 500, the run before's rows removed with them; nothing written where a stop
@@ -964,12 +975,101 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         });
         await ReadAsync(SelectProviderSpans, rows => provider.Add(new ProviderSpan(rows.GetString(0), Day(rows.GetValue(1)), Day(rows.GetValue(2)), rows.IsDBNull(3) ? null : rows.GetString(3))));
 
+        var nights = new Dictionary<string, List<ProviderSpan>>(StringComparer.Ordinal);
+
+        await ReadAsync(SelectNightSpans, rows =>
+        {
+            if (!nights.TryGetValue(rows.GetString(0), out var ofIndex))
+            {
+                nights[rows.GetString(0)] = ofIndex = [];
+            }
+
+            ofIndex.Add(new ProviderSpan(rows.GetString(1), Day(rows.GetValue(2)), Day(rows.GetValue(3))));
+        });
+
         return LongSpans.Of(
             snapshots.ToDictionary(pair => pair.Key, pair => (IReadOnlyDictionary<DateOnly, IReadOnlySet<string>>)pair.Value.ToDictionary(one => one.Key, one => (IReadOnlySet<string>)one.Value), StringComparer.Ordinal),
             provider,
             firstHeldByName,
-            providerFrom);
+            providerFrom,
+            nights.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<ProviderSpan>)pair.Value, StringComparer.Ordinal));
     }
+
+    // The long history's spans as they stand against tonight's members: those of each index whose spans end more than the
+    // margin before their newest bar.
+    public static async Task<IReadOnlyList<(string Index, string Ticker, DateOnly? Ends, int Behind)>> BehindAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        var builder = EquityBrief.Data.StoreConnection.Builder(databaseFile);
+        builder.Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly;
+
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellation);
+
+        var spans = new List<LongSpan>();
+        var members = new List<(string, string, DateOnly)>();
+        var calendar = new List<DateOnly>();
+
+        static DateOnly? Day(object value) =>
+            value is string text && DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
+
+        async Task ReadAsync(string sql, Action<Microsoft.Data.Sqlite.SqliteDataReader> row, string? session = null)
+        {
+            await using var read = connection.CreateCommand();
+            read.CommandText = sql;
+
+            if (session is not null)
+            {
+                read.Parameters.AddWithValue("$session", session);
+            }
+
+            await using var rows = await read.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                row(rows);
+            }
+        }
+
+        await ReadAsync("SELECT index_code, ticker, joined, \"left\", read_from FROM long_span;", rows =>
+        {
+            if (Day(rows.GetValue(2)) is { } joined)
+            {
+                spans.Add(new LongSpan(rows.GetString(0), rows.GetString(1), joined, Day(rows.GetValue(3)), rows.GetString(4)));
+            }
+        });
+        var newestSession = string.Empty;
+
+        await ReadAsync("SELECT MAX(session_date) FROM bar;", rows => newestSession = rows.IsDBNull(0) ? string.Empty : rows.GetString(0));
+        await ReadAsync(SelectCurrentMembers, rows =>
+        {
+            if (Day(rows.GetValue(2)) is { } newest)
+            {
+                members.Add((rows.GetString(0), rows.GetString(1), newest));
+            }
+        }, newestSession);
+
+        var oldest = members.Count == 0 ? DateOnly.MaxValue : members.Min(member => member.Item3).AddDays(-365);
+
+        await ReadAsync("SELECT DISTINCT session_date FROM bar ORDER BY session_date;", rows =>
+        {
+            if (Day(rows.GetValue(0)) is { } session && session >= oldest)
+            {
+                calendar.Add(session);
+            }
+        });
+
+        return LongSpans.Behind(spans, members, calendar);
+    }
+
+    // The members behind as lines, by index, and what to run where any is.
+    public static IReadOnlyList<string> BehindLines(IReadOnlyList<(string Index, string Ticker, DateOnly? Ends, int Behind)> behind) =>
+    [
+        .. behind.GroupBy(one => one.Index, StringComparer.Ordinal).SelectMany(index => new[]
+        {
+            FormattableString.Invariant($"{index.Key}: {index.Count()} current member(s) whose long history ends more than {LongSpans.BehindMargin} sessions before their newest bar"),
+        }.Concat(index.Select(one => FormattableString.Invariant($"  {one.Ticker}: its spans {(one.Ends is { } ends ? "end " + ends.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "hold none")}, {one.Behind} session(s) behind")))),
+        behind.Count == 0 ? "every current member's long history reaches its newest bar" : "run 'long-prices --spans' before the every-session table or the long ledger is built",
+    ];
 
     // The spans written again whole inside a transaction a later run holds, the rows before removed with them, and the rows written.
     public static async Task<int> RewriteSpansAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction transaction, IReadOnlyList<LongSpan> spans, string runId, CancellationToken cancellation = default)

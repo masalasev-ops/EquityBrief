@@ -161,7 +161,9 @@ public sealed class LongHistoryReader : IComponent
                 var after = end is { } mark && partSpans.Any(span => span.Joined is { } joined && joined > mark) ? end : null;
                 var upTo = end is not null && after is null ? end : null;
 
-                parts.Add(await RenamedAsync(connection, ticker, bars, partSpans, (after, upTo), companies, marks, calendar, stamp, cancellation));
+                var part = await RenamedAsync(connection, ticker, bars, partSpans, (after, upTo), companies, marks, calendar, stamp, cancellation);
+
+                parts.Add(part with { Spans = await EndedAsync(connection, part, calendar, cancellation) });
             }
 
             if (++read % 250 == 0)
@@ -392,7 +394,7 @@ public sealed class LongHistoryReader : IComponent
 
     // Every pair of codes the reader joins on an index through the session given, and every pair of one company's codes it
     // leaves apart for being priced together, each with the member sessions it covers.
-    // see: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
+    // see: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
     public async Task<IReadOnlyList<LongJoin>> JoinsAsync(string index, DateOnly through, CancellationToken cancellation = default)
     {
         await ReadAsync(index, through, null, cancellation);
@@ -682,6 +684,24 @@ public sealed class LongHistoryReader : IComponent
     }
 
     readonly List<LongJoin> lastJoinsFound = [];
+
+    // A part's spans the schedules ended past its last traded price, ended at that price where its filer's reports stop there
+    // or it runs a quarter at most; the filer's reports read only where a span runs on further.
+    static async Task<(DateOnly? Joined, DateOnly? Left)[]> EndedAsync(SqliteConnection connection, LongPart part, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
+    {
+        var last = part.Bars.Where(bar => bar.Volume > 0).Select(bar => (DateOnly?)bar.Session).Max();
+        var filings = new List<(DateOnly, string)>();
+
+        if (last is { } lastDay && part.Spans.Any(span => span.Left is { } left && calendar.Count(session => session > lastDay && session < left) > LongMarks.QuarterSessions))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT filed, form FROM long_filing WHERE ticker = $ticker;", [("$ticker", part.Ticker)], cancellation))
+            {
+                filings.Add((Day(row.GetString(0)), row.GetString(1)));
+            }
+        }
+
+        return LongMarks.EndedAtLastPrice(part.Spans, last, calendar, day => LongMarks.FilerOf(day, filings) == LongMarks.FilerStops);
+    }
 
     // The member sessions a part is not counted on: those it holds no price of its own for, its bar missing or taken from
     // another code, where another code of its company is a member holding a price of its own.

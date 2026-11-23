@@ -5416,6 +5416,10 @@ internal static class Scope
             Verdict.Pass,
             "the first stage's 81 lines and the second's 14 counted, the choice worked by hand on the early years alone, the filter read over constructed setups at two settings, and each figure read off the document against its constant",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long history's renames and spans")] = new Scoped(
+            Verdict.Pass,
+            "the ratio test worked by hand on both sides of each level, a span past its last price ended within a quarter or where its filer stops, the nights' spans and a member behind on both sides of the margin, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(LoopPage, "The pullbacks' search")] = new Scoped(
             Verdict.Pass,
             "over a constructed store of two runs, the newest read back on the S&P 500 with its counts and its settings best on the early years first, each with its figures and verdict; the older run, another index's, another kind of long search's and another source's rows absent; and an empty store saying when the search runs",

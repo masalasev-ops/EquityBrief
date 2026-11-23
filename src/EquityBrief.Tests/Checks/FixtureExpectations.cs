@@ -184,6 +184,9 @@ public partial class FixtureExpectations
             // Section 17's row of the pullbacks' search's grid.
             .. PullbackSearchClaims,
 
+            // Section 17's row of the long history's renames and spans.
+            .. LongSpansClaims,
+
             // Section 18's row of an idea the box cannot read.
             .. IdeaBoxClaims,
 

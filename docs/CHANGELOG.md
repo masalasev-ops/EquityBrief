@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - renames in one ratio and the spans the nights' own, at the 24.19 correction
+Decision: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
+Decision: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
+Was:
+> ARCHITECTURE.html, the long history reader's row: "another code of its company joined where the two pass the rename test, and a company counted once on a session (see: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day)"
+> ARCHITECTURE.html, the long members' row reading "filings archive, historical price feed, membership, pulled holdings, long holdings", its words ending "where its count moves the S&P 500's cutover", and its matrix row reading no bars; no section 17 row of the renames and spans
+> SCHEMA.md, `long_span`: `joined` "the first snapshot holding it, or the provider's start, a span with none taking the first of IVV's snapshots holding its company"; `left` "the first later snapshot that does not hold it, or the provider's leave, null where it is a member still"; `read_from` "`fund` where the snapshots gave it, `provider` where the provider's S&P 500 dates did"; no word of the nights' spans or `long-prices --spans`
+> RUNBOOK.md: "joins another code of its company only where the two pass the rename test and counts a company once on a session (see: ... Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day)"; no `long-prices --behind` or `--spans`
+> BUILD_PLAN.md, 24.19: no second part
+Now:
+> ARCHITECTURE.html: "another code of its company joined where the two are never priced on the same day or trade in one ratio, its days put on the code's own scale, ... and from the S&P 400's and 600's first nights their spans the nights' own"
+> SCHEMA.md: `joined`, `left` and `read_from` naming the nights' own spans; the spans written again by `long-prices --spans` and `--behind` reading
+> RUNBOOK.md: the ratio test's citation; `long-prices --behind` and `--spans`, and the table's write refusing while a member is behind
+> BUILD_PLAN.md, 24.19: "Its second part, on the operator's answers of 2026-11-23 at 11:00" with its done condition
+Why: the operator's answers of 2026-11-23 at 11:00, items 1 to 3, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-11am.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/RUNBOOK.md and docs/BUILD_PLAN.md - the pullbacks' search, at 24.35
 Decision: The pullbacks' search walks the swing filter's dials as grammar lines, chosen on 2005 to 2018 and judged together from 2019
 Was:

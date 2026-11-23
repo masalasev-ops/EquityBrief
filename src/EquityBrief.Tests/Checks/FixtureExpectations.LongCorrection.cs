@@ -12,13 +12,19 @@ namespace EquityBrief.Tests.Checks;
 // once on a session, and the every-session table's seven readings at the traded price and over a fixed length of history,
 // each worked by hand.
 // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
-// see: Two codes of one filer join as one history only where they are never priced on the same day or carry the same close and volume on every shared day
+// see: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
 // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
 public partial class FixtureExpectations
 {
     // The correction's two rows: the marks ruled's store and the History page's row of the marks the evidence leaves to the
     // operator.
-    internal static string[] LongCorrectionRows => [.. SchemaColumns.MarkRulingStoreRows, .. Reading.ReadSurface.MarkRulingRows];
+    internal static string[] LongCorrectionRows => [.. SchemaColumns.MarkRulingStoreRows, .. Reading.ReadSurface.MarkRulingRows, .. LongSpansClaims];
+
+    // The correction's second part's row: section 17's renames and spans.
+    internal static readonly string[] LongSpansClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The long history's renames and spans"),
+    ];
 
     static SweepBar Dated(int day, decimal close, long volume = 1000, decimal raw = 0) =>
         new(new DateOnly(2010, 1, 4).AddDays(day), close, close, close, volume, close, raw);

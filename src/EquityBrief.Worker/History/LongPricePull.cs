@@ -1120,6 +1120,54 @@ public sealed class LongPricePull : IComponent
         return lines;
     }
 
+    // The long history's spans written again whole from what the store holds, asking nothing of the provider: the S&P 500's
+    // provider dates read from the day the spans the pull wrote read them from, and the S&P 400's and 600's from their first
+    // night the nights' own. The spans before and after are counted on the run log.
+    // see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
+    public static async Task<(int Before, int After)> SpansAsync(string databaseFile, string runId, IClock clock, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var startedAt = clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+        var (before, from) = (0, LongSpans.ProviderFrom);
+
+        await ReadAsync(connection, SelectSpansRead, reader =>
+        {
+            before = reader.GetInt32(0);
+
+            if (!reader.IsDBNull(1) && Day(reader.GetValue(1)) is { } day)
+            {
+                from = day;
+            }
+        }, cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+        var spans = await LongMembers.SpansAsync(connection, transaction, from, cancellation);
+        var after = await LongMembers.RewriteSpansAsync(connection, transaction, spans, runId, cancellation);
+
+        await using (var run = connection.CreateCommand())
+        {
+            run.Transaction = transaction;
+            run.CommandText = AppendRun;
+            run.Parameters.AddWithValue("$run_id", runId);
+            run.Parameters.AddWithValue("$stage", SpansStage);
+            run.Parameters.AddWithValue("$started_at", startedAt);
+            run.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            run.Parameters.AddWithValue("$rows", after);
+            run.Parameters.AddWithValue("$detail", FormattableString.Invariant($"{before} span(s) written again as {after}, the S&P 500's provider dates read from {from:yyyy-MM-dd}"));
+            await run.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return (before, after);
+    }
+
+    public const string SpansStage = "long-spans";
+
+    const string SelectSpansRead = $"SELECT COUNT(*), (SELECT MIN(joined) FROM long_span WHERE read_from = '{LongSpans.FromProvider}') FROM long_span;";
+
     // The operator's word that the data check's counts over the long history have been read, on the run log.
     public static async Task<int> CountsReadAsync(string databaseFile, string runId, IClock clock, CancellationToken cancellation = default)
     {

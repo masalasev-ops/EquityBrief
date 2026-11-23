@@ -15,8 +15,11 @@ public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Lef
 // there, one away at two snapshots or more reads as two spans; a code two funds hold at one quarter end reads in the larger
 // index. Before 2012 the S&P 500 reads IVV's snapshots, and from 2012 the provider's dates, or from the day after IVV's last
 // schedule where the prices' count of the two sets them more than its margin apart, a span with no start date taking
-// the first snapshot holding its company, read by its code and where no snapshot holds the code by its name; two spans the
-// provider files under two codes with one name and the same dates are one company's and read as the first code.
+// the first snapshot holding its company, read by its code and where no snapshot holds the code by its name; a code's own
+// provider spans that overlap or meet are one span; two spans the provider files under two codes with one name as written
+// and the same dates are one company's and read as the first code, two classes of shares never. From the first night that
+// read the S&P 400's or 600's members, that index's spans are the nights' own.
+// see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
 // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
 // see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name
 // see: The S&P 500's provider dates from 2012 are held against IVV's holdings and read from IVV's last schedule where they stand more than 5 apart
@@ -25,6 +28,8 @@ public static class LongSpans
     public const string FromFund = "fund";
 
     public const string FromProvider = "provider";
+
+    public const string FromNight = "night";
 
     public static DateOnly ProviderFrom { get; } = new(2012, 1, 1);
 
@@ -37,7 +42,8 @@ public static class LongSpans
         IReadOnlyDictionary<string, IReadOnlyDictionary<DateOnly, IReadOnlySet<string>>> snapshots,
         IReadOnlyList<ProviderSpan> provider,
         IReadOnlyDictionary<string, DateOnly>? firstHeldByName = null,
-        DateOnly? providerFrom = null)
+        DateOnly? providerFrom = null,
+        IReadOnlyDictionary<string, IReadOnlyList<ProviderSpan>>? nights = null)
     {
         var spans = new List<LongSpan>();
         var cutover = providerFrom ?? ProviderFrom;
@@ -87,8 +93,10 @@ public static class LongSpans
             DateOnly[] periods = [.. ivv.Keys.Order()];
 
             var once = provider
+                .GroupBy(span => span.Ticker, StringComparer.Ordinal)
+                .SelectMany(Runs)
                 .Where(span => !(span.Left <= cutover))
-                .GroupBy(span => (Name: span.Name is { } name ? HoldingMatcher.NameKey(name) : span.Ticker, span.Joined, span.Left))
+                .GroupBy(span => (Name: span.Name is { } name ? Spelled(name) : span.Ticker, span.Joined, span.Left))
                 .Select(group => group.OrderBy(span => span.Ticker, StringComparer.Ordinal).First());
 
             foreach (var span in once)
@@ -104,10 +112,138 @@ public static class LongSpans
             }
         }
 
-        return [.. spans.DistinctBy(span => (span.Index, span.Ticker, span.Joined)).OrderBy(span => span.Index, StringComparer.Ordinal).ThenBy(span => span.Ticker, StringComparer.Ordinal).ThenBy(span => span.Joined)];
+        return [.. Nightly(spans, nights).DistinctBy(span => (span.Index, span.Ticker, span.Joined)).OrderBy(span => span.Index, StringComparer.Ordinal).ThenBy(span => span.Ticker, StringComparer.Ordinal).ThenBy(span => span.Joined)];
     }
 
     // Whether a code is a member of an index on a day by the spans.
     public static bool IsMember(IEnumerable<LongSpan> spans, string index, string ticker, DateOnly day) =>
         spans.Any(span => span.Index == index && span.Ticker == ticker && span.Joined <= day && !(span.Left <= day));
+
+    // How many sessions a current member's long history may end before its newest bar.
+    public const int BehindMargin = 2;
+
+    // The current members of each index whose long history's spans end more than the margin of sessions before their newest
+    // bar: each with its index, its spans' last day, none where it holds no span there, and the sessions it is behind by.
+    public static IReadOnlyList<(string Index, string Ticker, DateOnly? Ends, int Behind)> Behind(
+        IEnumerable<LongSpan> spans,
+        IEnumerable<(string Index, string Ticker, DateOnly NewestBar)> members,
+        IReadOnlyList<DateOnly> calendar)
+    {
+        var byCode = spans.ToLookup(span => (span.Index, span.Ticker));
+        var behind = new List<(string Index, string Ticker, DateOnly? Ends, int Behind)>();
+
+        foreach (var (index, ticker, newest) in members)
+        {
+            var own = byCode[(index, ticker)].ToArray();
+
+            if (own.Any(span => !span.Left.HasValue))
+            {
+                continue;
+            }
+
+            DateOnly? ends = own.Length == 0 ? null : own.Max(span => span.Left);
+            var sessions = calendar.Count(session => session <= newest && (ends is not { } end || session >= end));
+
+            if (sessions > BehindMargin)
+            {
+                behind.Add((index, ticker, ends, sessions));
+            }
+        }
+
+        return [.. behind.OrderBy(one => one.Index, StringComparer.Ordinal).ThenBy(one => one.Ticker, StringComparer.Ordinal)];
+    }
+
+    // One code's provider spans with those that overlap or meet read as one, a span with no start read as begun before any
+    // other and one with no end as running still.
+    static IEnumerable<ProviderSpan> Runs(IEnumerable<ProviderSpan> rows)
+    {
+        ProviderSpan? run = null;
+
+        foreach (var row in rows.OrderBy(span => span.Joined ?? DateOnly.MinValue).ThenBy(span => span.Left ?? DateOnly.MaxValue))
+        {
+            if (run is { } open && (row.Joined ?? DateOnly.MinValue) <= (open.Left ?? DateOnly.MaxValue))
+            {
+                run = open with { Left = open.Left is not { } was || row.Left is not { } now ? null : was > now ? was : now };
+
+                continue;
+            }
+
+            if (run is not null)
+            {
+                yield return run;
+            }
+
+            run = row;
+        }
+
+        if (run is not null)
+        {
+            yield return run;
+        }
+    }
+
+    // A company's name as the provider wrote it, its letters and digits alone, so two classes of one company's shares, whose
+    // names differ by their class, are never read as one code.
+    static string Spelled(string name) => new([.. name.ToUpperInvariant().Where(char.IsLetterOrDigit)]);
+
+    // The S&P 400's and 600's spans from the first night that read each index's members: a fund's span still open on that
+    // night ends there, or runs on as the night's own span where the nights hold the code from that night, and the nights'
+    // other spans are read as they stand.
+    static IEnumerable<LongSpan> Nightly(IEnumerable<LongSpan> spans, IReadOnlyDictionary<string, IReadOnlyList<ProviderSpan>>? nights)
+    {
+        if (nights is null || nights.Count == 0)
+        {
+            return spans;
+        }
+
+        var kept = new List<LongSpan>();
+        var all = spans.ToArray();
+
+        foreach (var index in all.Select(span => span.Index).Concat(nights.Keys).Distinct(StringComparer.Ordinal))
+        {
+            var ofIndex = all.Where(span => span.Index == index).ToArray();
+            DateOnly[] starts = nights.TryGetValue(index, out var rows) ? [.. rows.Where(row => row.Joined is not null).Select(row => row.Joined!.Value)] : [];
+
+            if (index == "GSPC" || starts.Length == 0)
+            {
+                kept.AddRange(ofIndex);
+
+                continue;
+            }
+
+            var first = starts.Min();
+            var night = rows!
+                .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+                .SelectMany(Runs)
+                .Select(row => (row.Ticker, Joined: row.Joined is { } joined && joined > first ? joined : first, row.Left))
+                .Where(row => !(row.Left <= row.Joined))
+                .ToList();
+
+            foreach (var span in ofIndex.Where(span => span.Joined < first))
+            {
+                if (span.Left is { } left && left <= first)
+                {
+                    kept.Add(span);
+
+                    continue;
+                }
+
+                var on = night.FindIndex(row => row.Ticker == span.Ticker && row.Joined == first);
+
+                if (on >= 0)
+                {
+                    kept.Add(span with { Left = night[on].Left });
+                    night.RemoveAt(on);
+                }
+                else
+                {
+                    kept.Add(span with { Left = first });
+                }
+            }
+
+            kept.AddRange(night.Select(row => new LongSpan(index, row.Ticker, row.Joined, row.Left, FromNight)));
+        }
+
+        return kept;
+    }
 }

@@ -22084,3 +22084,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the store of each pullback setup's other gates and the S&P 400's and 600's search with it; the search's run, its
             list and time to the operator once the long ledger is rebuilt.
+
+### 24.19 - correction, its second part: renames in one ratio, a span past its last price ended, the S&P 400's and 600's spans the nights' own, and the members behind   2026-11-23
+
+Queue:      done, 24.0 to 24.29, 24.39 and 24.40, the 24.19 correction's first part, 24.35's S&P 500 half and the 24.4,
+            24.14, 24.25 and 24.26 corrections; in progress, this second part; next, 24.35's S&P 400 and 600 half, then the
+            fetch's list and the one pin move's statement to the operator.
+Ruled:      the operator's answers of 2026-11-23 at 11:00, items 1 to 3, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-11am.md`. Two new decisions and one made here; the rename decision of
+            2026-11-22 superseded.
+Built:      two codes of one filer priced on the same days join where, over at least 20 shared days, the prices they traded at
+            stand within 0.1% of their median ratio on 99 days in 100 and their volumes within 25% on 80 in 100, the other's
+            days put on the code's own scale. A span the funds' schedules ended past its code's last traded price, once every
+            rename has joined, ends on the session after it where it runs 63 sessions at most or its filer's reports stop
+            there. The long spans: a code's own provider rows that overlap or meet read as one span, two codes under one name
+            and the same dates as one only where the names are the same as written, and from the S&P 400's and 600's first
+            night their spans are the nights' own. `long-prices --spans` writes the spans again from the store alone;
+            `long-prices --behind` names each current member whose spans end more than 2 sessions before its newest bar and
+            fails, and the every-session table's write refuses while it does.
+Measured:   on the live store, read only. The operator's rule word for word fails CECO_old with PRDO: their traded prices part by 0.4% to
+            1.3% on 20 of 3,876 shared days, and stored closes part every renamed pair, a code carrying dividends only to its
+            own last day; the levels read the prices traded at, and the two named to join pass on 99.5% and 100% of days, the
+            three named never to join on 5%, 4% and 47%. Behind tonight before the spans are written again: 14 of the S&P
+            500's members, 18 of the 400's and 37 of the 600's; the 11 S&P 600 codes the operator named left the index between
+            the funds' schedule of 2026-06-30 and the first night of 2026-10-02 and are no current members, TCBI, ABR and LXP
+            left on the nights' dates, and ITGR is the one current member whose bars stop, at 2026-11-16, the provider's answer
+            ending there and the night's late-bar asks on it. The lists read again under the new test and the end rule: 30
+            pairs join by one ratio, 6 on the S&P 500, 8 on the 400 and 16 on the 600, no share class among them; of the 86
+            spans named past their last price by more than 20 sessions, 11 join, 66 end at their last price, among them SNH
+            with DHC, USTR with ESND, SUNW_old with JAVA_old and KFT, one company each that the test keeps apart, and 9 spans
+            of 8 codes stay gaps for the fetch: CLI, DDR, PVAC, DOC_old1 and WTW_old under the codes their filers traded as
+            after, SIX's own, and BEL and PSD, whose filers' reports are not on file.
+Tests:      4 new: the ratio test on both sides of each level and the scale of a joined day, by hand; a code's two provider
+            rows as one span and two classes as two codes; the nights' spans of a constructed index, a member behind named on
+            both sides of the margin, and over a constructed store the spans written again leaving none behind; and a span
+            past its last price ended within a quarter or where its filer stops, by hand.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this part adds taken out at its one site. m1 the share of days the
+            prices hold set to nought: red; m2 the floor of 20 shared days taken out: red; m3 a code's provider rows not
+            read as one span: red in two tests; m4 the nights' spans not read: red; m5 a member two sessions behind named:
+            red; m6 the filer's word not read past a quarter: red. Each filtered to its tests and reverted before anything
+            was committed.
+Claims:     1752, one more: section 17's row of the renames and spans.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3996 of 3996 tests ran with none failed, migrations 0 to 167 with
+            none pending, schema version 167, against `data-ci` and never `data`; the phase report 68 tables, 1752 claims, 1752
+            passing, none out of scope and none unexamined, 1767 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the lists before the store run; the fetch's list and call count to the operator, holding only the real gaps; the
+            spans written again before the table's store run; cause D and the table's missing rows traced over the copy.

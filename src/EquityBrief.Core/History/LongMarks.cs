@@ -84,6 +84,41 @@ public static class LongMarks
         return before && after ? SameFiler : before ? FilerStops : NotOnFile;
     }
 
+    // The sessions past a code's last traded price a span the schedules ended may run before it reads as ended at that price
+    // with no word from its filer: a quarter's, the schedules being a quarter apart.
+    public const int QuarterSessions = 63;
+
+    // A part's spans with each one the schedules ended, running past its code's last traded price, ended on the first session
+    // after that price where the sessions past it are a quarter's at most or the filer's reports stop there; a span still open,
+    // or one longer whose filer reports on, keeps its sessions and they stay without a price.
+    // see: A member span past its code's last price ends there where its filer's reports stop or it runs a quarter at most
+    public static (DateOnly? Joined, DateOnly? Left)[] EndedAtLastPrice(
+        IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> spans,
+        DateOnly? lastTraded,
+        IReadOnlyList<DateOnly> calendar,
+        Func<DateOnly, bool> filerStops)
+    {
+        if (lastTraded is not { } last)
+        {
+            return [.. spans];
+        }
+
+        return
+        [
+            .. spans.Select(span =>
+            {
+                if (span.Left is not { } left || left <= last || (span.Joined is { } joined && joined > last))
+                {
+                    return span;
+                }
+
+                var past = calendar.Where(session => session > last && session < left).ToArray();
+
+                return past.Length > 0 && (past.Length <= QuarterSessions || filerStops(last)) ? (span.Joined, (DateOnly?)past[0]) : span;
+            }),
+        ];
+    }
+
     // What the price did from the mark's session to the next it traded, over the sessions it traded.
     public static string PriceOf(IReadOnlyList<SweepBar> traded, DateOnly mark, IReadOnlyList<DateOnly> calendar)
     {
