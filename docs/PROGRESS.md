@@ -21960,3 +21960,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1760 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the operator's word on the pullbacks' search, 24.35, before it is built.
+
+### 24.0 planning - amendment: the 24.19 correction's order, 24.35 taught the live pullback plan, and 24.45 the full design search   2026-11-23
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.29, 24.39 and 24.40 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction
+            open; in progress, this amendment; next, the 24.19 correction's table code, then 24.35's grammar, its search
+            waiting on the rebuilt long ledger.
+Ruled:      the operator's answers of 2026-11-22 on the 24.19 correction's fixes and its order, and of 2026-11-23 to the
+            report of that day, kept word for word as Appendices AB, AC and AE of the plan's file. The year limit from 2027
+            a growing window, 2027 a ninth year and each later year added, none dropped, the three history-length readings
+            kept at their fixed length. The rename test strict, two codes of one filer joined only where never priced on the
+            same day, with one exception, the same close and the same volume on every shared day, one company listed twice;
+            share classes never joined; any pair joined by the exception listed before the store run. 24.35 as lines of the
+            grammar, the grammar first taught the live pullback rule's buy and sale; the S&P 500's grid of strength 0.40,
+            0.50 and 0.60 and the sweep's stops, 81 crossed settings then one dial at a time, every setting counted toward the
+            bar; the S&P 400's and 600's dial grid at the live design now; the search over the long ledger once rebuilt, its
+            list and timing to the operator before any run. The full design search over every member year since 2005 kept, a
+            stage of its own after the phase report is drafted, its rework and hours stated first.
+Sized:      teaching the grammar the live buy and sale touches the grammar, the tester's plan and the survivors' parameters,
+            none of them a file a rule pins: the walks already price a distance under the close and the first band above,
+            and the registered parameters already state both. No pin move and no migration, so it is built in this phase as
+            the grammar, and the proposal of walking each setting under the rule's own plan in words is not used.
+Planned:    `BUILD_PLAN.md`'s 24.19 with the correction's order; 24.35 rewritten as above; 24.45 added after the phase report,
+            about 2 claims, about 1,809 at the phase's end; section 20's row reading 24.0 to 24.45.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps,
+            0 warnings, 0 errors, 3979 of 3979 tests ran with none failed, migrations 0 to 166 with none pending, schema
+            version 166, against `data-ci` and never `data`.
+Carried:    the lists before the store run: every ticker the correction brings back, every pair joined with the exception's
+            pairs named apart, and each mark's outcome.

@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - the 24.19 correction's order, 24.35 taught the live pullback plan, and 24.45 the full design search, at the 24.0 planning amendment
+Was:
+> BUILD_PLAN.md, 24.19: no order of the correction's steps, no rename test, no year limit from 2027
+> BUILD_PLAN.md, 24.35: "as lines of the grammar: the S&P 500's swing filter given a grid of its own dials, and the S&P 400's and 600's design search reading every year a stock was a member as it stood, the S&P 500's first", its done condition holding "the design search scores a constructed stock's every member year as it scores its standing years"
+> BUILD_PLAN.md: no 24.45; "After 24.44 about 1,807"; "- about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44."; "Checkpoints 24.0 to 24.44"
+> ARCHITECTURE.html, section 20's row of phase 24: "the build plan's phase 24 checkpoints, 24.0 to 24.44"
+Now:
+> BUILD_PLAN.md, 24.19: "Its order, on the operator's answers of 2026-11-22 and 2026-11-23": the table's code with the strict rename test and its one exception, the marks by evidence, cause D, the one pin move with the growing window from 2027, then the fetch, the store run and the rebuild, the lists first
+> BUILD_PLAN.md, 24.35: the grammar taught the live pullback rule's buy and sale with no pin move, the S&P 500's 81 crossed settings then one dial at a time, the S&P 400's and 600's dial grid at the live design, every setting counted toward the bar, run over the rebuilt long ledger
+> BUILD_PLAN.md: "### 24.45 The S&P 400's and 600's full design search over every member year since 2005" with its done condition; "After 24.45 about 1,809"; "about 1 at 24.44; about 2 at 24.45."; "Checkpoints 24.0 to 24.45"
+> ARCHITECTURE.html: "24.0 to 24.45"
+Why: the operator's answers of 2026-11-22 on the correction's order and of 2026-11-23 to the report of that day, kept word for word as Appendices AB, AC and AE of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html and docs/BUILD_PLAN.md - never stuck, at 24.40
 Decision: A month with no idea passed names its nearest misses and what the researcher tried next, and a failed week is counted and never stops the next
 Was:
