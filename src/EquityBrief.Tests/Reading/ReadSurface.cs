@@ -244,6 +244,9 @@ public partial class ReadSurface
             // The picker's page from its approved mockup.
             .. PickerPageRows,
 
+            // The 24.25 correction: the earlier version's picks across the three indices.
+            .. PickerAcrossRows,
+
             // The notebook on the Improvement loop page.
             .. NotebookRows,
 

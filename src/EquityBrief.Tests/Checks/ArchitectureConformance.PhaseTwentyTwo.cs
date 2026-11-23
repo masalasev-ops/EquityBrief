@@ -225,8 +225,9 @@ public partial class ArchitectureConformance
         // And the picker within each index: section 17's and section 18's rows and the page's four rows.
         .. FixtureExpectations.JudgeIndexRows,
 
-        // And the picker's page from its mockup: its four rows.
+        // And the picker's page from its mockup: its four rows, and from its correction the earlier version's.
         .. Reading.ReadSurface.PickerPageRows,
+        .. Reading.ReadSurface.PickerAcrossRows,
 
         // And the notebook, the grammar and the one tester: two components' catalogue and matrix rows, the notebook's store,
         // section 17's row and the Loop page's row.

@@ -32,9 +32,9 @@ public partial class ReadSurface
             + $"(1, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Earlier[0]}', '2026-11-20T01:00:00Z'), "
             + $"(2, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Version}', '2026-11-24T01:00:00Z');");
         store.Execute(
-            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
-            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 2, 2, 0, '')"
-            + (second ? ", ('judge-pick-2', '2026-11-23', 'v', 2, 20261123, 'picked', '2026-11-24T01:00:00Z', '2026-11-24T01:10:00Z', 4, 1, 2, 0, '');" : ";"));
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code) VALUES "
+            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 2, 2, 0, '', 'GSPC')"
+            + (second ? ", ('judge-pick-2', '2026-11-23', 'v', 2, 20261123, 'picked', '2026-11-24T01:00:00Z', '2026-11-24T01:10:00Z', 4, 1, 2, 0, '', 'GSPC');" : ";"));
         store.Execute(
             "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields) VALUES "
             + $"('2026-11-19', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'Version one first.', '100', 2.0, '98', '104', NULL, NULL), "
@@ -95,7 +95,8 @@ public partial class ReadSurface
         Assert.Contains("data-ticker=\"AAA\"", region, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"DDD\"", region, StringComparison.Ordinal);
 
-        var cards = Blocks(drawn, "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">.*?</article>");
+        // Read outside the record version's "fixed 5", which draws its own picks in an account of their own.
+        var cards = Blocks(System.Text.RegularExpressions.Regex.Replace(drawn, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline), "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">.*?</article>");
         var aaa = Assert.Single(cards, card => card.Contains("data-ticker=\"AAA\"", StringComparison.Ordinal));
         var ddd = Assert.Single(cards, card => card.Contains("data-ticker=\"DDD\"", StringComparison.Ordinal));
 

@@ -21765,3 +21765,71 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the 24.19 correction, open; migration 164 on the operator's store after the merge; the Sunday task registered by
             the operator, as the runbook gives it. Put to the operator: the waiting list grows by up to 26 ideas a week against
             10 tested, and the rehearsal's ideas leaned on the same two readings across setups.
+
+### 24.25 - correction: each index's picker page draws its own version's picks alone, the earlier version's once in a region of their own   2026-11-22
+
+Queue:      done, 24.0 to 24.28 and the 24.4, 24.14 and 24.26 corrections, 24.19 done, its correction open; in progress,
+            this correction, with the stage of a buy range put to the operator in the same pull request; next, 24.29,
+            reading recipes, or the buy range where the operator places it first.
+Corrects:   the operator's correction of 2026-11-22, kept word for word in
+            `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`: the five picks the earlier version made
+            across all 1,500 stocks on the night of 20 Nov were drawn as each index's picks, every tile saying "picked 5
+            tonight" and the S&P 500's view calling small and mid caps its large-cap picks. A run with no index was read as
+            every index's own.
+Built:      an index's view reads its own version's runs and picks alone. A tile counts only its own version's picks on a
+            night that version ran, the count Tonight's heading draws; until that version's first night it reads "Not
+            started. Its first picks come from the night of Mon 23 Nov.", the session after the newest night any version ran,
+            and Tonight, the scoreboard and the four accounts say the same; an index that ran and marked none reads "No trade
+            yet". The earlier version's picks stand once, under the tiles, as "Picked across all 1,500 stocks by the earlier
+            version, before it picked within each index": the same carousel and tabs, each card naming the index its stock
+            belongs to and what the earlier version's own account did with it, never an index's account; once all its trades
+            are sold the region folds into one line of its record. An index's versions are numbered among its own. Section
+            15.26's two rows and a row of its own, and the changelog.
+Measured:   read back over the C: copy of the store, which holds the night of 20 Nov as the operator's does: each index's
+            view at 1440 and a true 390, every tile not started, tonight empty and the five once under the tiles, Wolverine
+            named a stock of the S&P 600; no page wider than its screen. The shots before, off the operator's app, and after
+            stand in the scratchpad's `picker-index-before` and `picker-index-after`; those after the Monday night follow it.
+Tests:      2 new: a store where only the earlier version picked, every tile and every tonight not started, the five once in
+            their own region each naming its index, folded once all are sold; and one where each index's version picked, each
+            index showing its own alone with the tile and heading counting the same. Seven older tests stored their nights with
+            no index, the earlier version's shape, and gained their index; three read their cards outside the index's "fixed
+            5", which draws them too.
+Claims:     1730, one new: the row of the earlier version's picks.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard the correction adds taken out at its one site. m1 a run with no index
+            read as every index's again: red; m2 every tile read as started: red; m3 the earlier version's region never
+            folding: red in two tests; m4 its cards naming no index: red. Each filtered to its tests and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3969 of 3969 tests ran with none failed, migrations 0 to 164 with
+            none pending, schema version 164, against `data-ci` and never `data`; the phase report 68 tables, 1730 claims, 1730
+            passing, none out of scope and none unexamined, 1745 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the shots of the three views after the Monday night, taken once it has run; the buy-range stage, stored on the
+            operator's approval of its table and words.
+
+### 24.0 planning - amendment: 24.29, every buy has a range, and 24.29 to 24.43 one number on   2026-11-22
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.28 and the 24.4, 24.14, 24.25 and 24.26 corrections, 24.19 done, its correction open; in
+            progress, this amendment with the 24.25 correction; next, 24.29's code, its widths table waiting on the 24.19
+            correction's rebuild of the long ledger.
+Ruled:      the operator's order of 2026-11-22 adding a stage of a buy range, and their answers that night to the changed
+            table and the stage's words: stored as 24.29, the widths table run over the long ledger after its rebuild through
+            the 24.19 correction's fixed reader and the code built before then; the range on next-open buys, the picker's
+            versions and the four price families, the dip's orders at a set price and the books' reshuffle buys left as they
+            are; and the words approved with two changes, "Opens above $b: waits up to 2 days for the price to come back to
+            $b, then not bought." and "Opens below $a: not bought.". Kept word for word in
+            `prompts/2026-11-22-24.25-picker-index-correction-and-buy-range-stage.md`.
+Planned:    `BUILD_PLAN.md`'s 24.29, depending on the long ledger and the case page, both built, its widths table on the
+            ledger's rebuild; reading recipes and every stage after it one number on, to the phase report at 24.44, each
+            reference with them; about 7 claims at 24.29 and about 1,807 at the phase's end; a pin move at 24.29 carried by
+            the replay; four decisions' pointers moved with the numbers, the operator's quoted words kept; section 20's row
+            reading 24.0 to 24.44.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 24.25
+            correction's, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3969 of 3969 tests
+            ran with none failed, migrations 0 to 164 with none pending, schema version 164, against `data-ci` and never
+            `data`; the phase report 68 tables, 1730 claims, 1730 passing, none out of scope and none unexamined, 1745
+            placements and verdicts reconciled against a floor of 34, 57 checks on the roster run and passed.
+Carried:    the widths table, run once the 24.19 correction has rebuilt the long ledger and put to the operator before any
+            version or variant uses a width.

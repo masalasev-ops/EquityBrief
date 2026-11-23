@@ -36,18 +36,18 @@ public partial class ReadSurface
         var store = new TemporaryStore().Migrated();
 
         store.Execute(
-            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
-            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 2, 2, 0, ''), "
-            + "('judge-replay-1', '2026-11-12', 'v', 1, 20261112, 'picked', '2026-11-20T02:00:00Z', '2026-11-20T02:10:00Z', 4, 1, 2, 0, '');");
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code) VALUES "
+            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 2, 2, 0, '', 'GSPC'), "
+            + "('judge-replay-1', '2026-11-12', 'v', 1, 20261112, 'picked', '2026-11-20T02:00:00Z', '2026-11-20T02:10:00Z', 4, 1, 2, 0, '', 'GSPC');");
         store.Execute(
             "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance) VALUES "
             + $"('2026-11-19', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'Rising estimates and a breakout on heavy volume.', '100', 2.0, '98', '104', NULL), "
-            + $"('2026-11-19', 2, 'judge-pick-1', 'SML', 'BBB', '2 weeks', '{JudgeMenu.HalfThenGiveUp}', 'Fell hard on light volume while its business held.', '100', 2.0, '97', '106', '3'), "
+            + $"('2026-11-19', 2, 'judge-pick-1', 'GSPC', 'BBB', '2 weeks', '{JudgeMenu.HalfThenGiveUp}', 'Fell hard on light volume while its business held.', '100', 2.0, '97', '106', '3'), "
             + $"('2026-11-12', 1, 'judge-replay-1', 'GSPC', 'EEE', '1 week', '{JudgeMenu.Whole}', 'A replayed pick.', '50', 1.0, '49', '52', NULL);");
         store.Execute(
             "INSERT INTO judge_fact (index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id) VALUES "
             + "('GSPC', '2026-11-19', 'AAA', 'v', '{\"sector\":\"Industrials\",\"size\":\"large\"}', 'r', 's', '2026-11-20T01:00:00Z', 'f'), "
-            + "('SML', '2026-11-19', 'BBB', 'v', '{\"sector\":\"Health Care\",\"size\":\"mid-size\"}', 'r', 's', '2026-11-20T01:00:00Z', 'f'), "
+            + "('GSPC', '2026-11-19', 'BBB', 'v', '{\"sector\":\"Health Care\",\"size\":\"mid-size\"}', 'r', 's', '2026-11-20T01:00:00Z', 'f'), "
             + "('GSPC', '2026-11-19', 'CCC', 'v', '{}', 'r', 's', '2026-11-20T01:00:00Z', 'f'), "
             + "('GSPC', '2026-11-19', 'DDD', 'v', '{}', 'r', 's', '2026-11-20T01:00:00Z', 'f');");
         store.Execute("INSERT INTO listed_name (ticker, name, read_on, run_id) VALUES ('AAA', 'Alpha Corp', '2026-11-15', 'r'), ('BBB', 'Beta Inc', '2026-11-15', 'r');");
@@ -232,8 +232,8 @@ public partial class ReadSurface
         using var store = new TemporaryStore().Migrated();
 
         store.Execute(
-            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
-            + "('judge-pick-1', '2026-11-20', 'v', 1, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T02:39:00Z', 4, 2, 2, 0, '');");
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code) VALUES "
+            + "('judge-pick-1', '2026-11-20', 'v', 1, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T02:39:00Z', 4, 2, 2, 0, '', 'GSPC');");
         store.Execute(
             "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance) VALUES "
             + $"('2026-11-20', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'Rising estimates.', '100', 2.0, '98', '104', NULL);");
@@ -246,9 +246,12 @@ public partial class ReadSurface
 
         Assert.Equal(Words, SinglePageApp.EmptyRecordWords(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 23)));
         Assert.Equal(2, Blocks(page, "<p class=\"empty\" data-empty=\"record\" data-summary>" + System.Text.RegularExpressions.Regex.Escape(Words) + "</p>").Count);
-        Assert.DoesNotContain("trades closed<span>", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("<svg class=\"judge-chart\"", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("No account has a session to draw yet.", page, StringComparison.Ordinal);
+        // Read in the scoreboard and the four accounts; the version's "fixed 5" keeps an account of its own below them.
+        var record = string.Concat(Blocks(page, "<section class=\"card\" data-card=\"judge-(score|chart)\">.*?</section>"));
+
+        Assert.DoesNotContain("trades closed<span>", record, StringComparison.Ordinal);
+        Assert.DoesNotContain("<svg class=\"judge-chart\"", record, StringComparison.Ordinal);
+        Assert.DoesNotContain("No account has a session to draw yet.", record, StringComparison.Ordinal);
 
         // Once a pick is bought, the store above whose AAA opened on the session after its night, the tiles and the chart draw
         // as before and the words are gone; and its replayed night is drawn apart, labelled replayed.
@@ -288,9 +291,9 @@ public partial class ReadSurface
             + $"(1, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Earlier[0]}', '2026-11-20T01:00:00Z'), "
             + $"(2, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Version}', '2026-11-21T01:00:00Z');");
         store.Execute(
-            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
-            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 1, 2, 0, ''), "
-            + "('judge-pick-2', '2026-11-20', 'v', 2, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T01:10:00Z', 4, 2, 2, 0, '');");
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code) VALUES "
+            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 1, 2, 0, '', 'GSPC'), "
+            + "('judge-pick-2', '2026-11-20', 'v', 2, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T01:10:00Z', 4, 2, 2, 0, '', 'GSPC');");
         store.Execute(
             "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields) VALUES "
             + $"('2026-11-19', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'An earlier pick.', '100', 2.0, '98', '104', NULL, NULL), "
@@ -325,7 +328,9 @@ public partial class ReadSurface
 
         // BBB's card: the three facts it named in the order named, each with its value and its comparison where signed, then
         // the rest of the sheet folded under its count, the sheet's fields less the three.
-        var bbb = Blocks(page, "<article class=\"home-idea judge-card\" data-ticker=\"BBB\">.*?</article>").Single();
+        // Read in tonight's region, the version's "fixed 5" drawing the same picks in its own account below.
+        var picked = Blocks(page, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single();
+        var bbb = Blocks(picked, "<article class=\"home-idea judge-card\" data-ticker=\"BBB\">.*?</article>").Single();
         var rest = JudgeFacts.In(JudgeRound.Sheet).Count() - 3;
 
         Assert.Contains(
@@ -340,7 +345,7 @@ public partial class ReadSurface
         Assert.DoesNotContain(SinglePageApp.JudgeBeforeNamed, bbb, StringComparison.Ordinal);
 
         // CCC, picked with no facts stored: its sentence, then its whole sheet folded under its count and the mark.
-        var ccc = Blocks(page, "<article class=\"home-idea judge-card\" data-ticker=\"CCC\">.*?</article>").Single();
+        var ccc = Blocks(picked, "<article class=\"home-idea judge-card\" data-ticker=\"CCC\">.*?</article>").Single();
         var sheet = JudgeFacts.In(JudgeRound.Sheet).Count();
 
         Assert.Contains("\"Picked before the facts were stored.\"", ccc, StringComparison.Ordinal);
