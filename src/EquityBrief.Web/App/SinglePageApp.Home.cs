@@ -519,15 +519,13 @@ public sealed partial class SinglePageApp
             region.Append(Invariant($"<p class=\"home-split\">{Escaped(SplitLine(view.Reading, view.Watching.Count > 0))}</p>"));
         }
 
+        // From the operator's order of 2026-11-24, items 4 to 8, each setup present tonight under one header saying once what
+        // its cards shared, its ideas a carousel beneath it, each setup in the order the page uses.
+        // see: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it
         if (view.IdeasCount > 0)
         {
             region.Append("<div class=\"home-ideas\" data-group=\"buy\">");
-
-            foreach (var idea in view.Ideas)
-            {
-                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false, view.Night, view.Since.GetValueOrDefault(idea.Family + "|" + idea.Ticker)));
-            }
-
+            region.Append(SetupGroups(view.Ideas, marks.Copying, view.Reading, watched: false, view.Night, view.Since));
             region.Append("</div>");
         }
 
@@ -535,13 +533,15 @@ public sealed partial class SinglePageApp
         {
             region.Append(watchingLine);
             region.Append("<div class=\"home-ideas\" data-group=\"watch\">");
-
-            foreach (var idea in view.Watching)
-            {
-                region.Append(Idea(idea, marks.Copying, view.Reading, watched: true));
-            }
-
+            region.Append(SetupGroups(view.Watching, marks.Copying, view.Reading, watched: true, view.Night, null));
             region.Append("</div>");
+        }
+
+        // From the operator's order of 2026-11-24, item 10, the way to every idea's full plan under the rules' ideas, never read
+        // as the AI stock picker's picks.
+        if (view.IdeasCount + view.Watching.Count > 0)
+        {
+            region.Append(Invariant($"<p class=\"home-all\" style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">{Escaped(AllIdeasLink(view.IdeasCount + view.Watching.Count))}</a></p>"));
         }
 
         // The orders earlier nights placed still waiting for their price, under tonight's ideas: cards nearest their buy price
@@ -564,13 +564,6 @@ public sealed partial class SinglePageApp
         if (!marks.Copying)
         {
             region.Append(HeldAgainRows(heldAgain, view.Reading, view.HeldCompanies));
-        }
-
-        if (view.IdeasCount + view.Watching.Count > 0)
-        {
-            var every = view.IdeasCount + view.Watching.Count;
-
-            region.Append(Invariant($"<p style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">{(every == 1 ? "See it with its full plan" : Invariant($"See all {every} picks with their full plans"))}</a></p>"));
         }
 
         region.Append(ReshuffleLine(view.Reshuffled) is { } reshuffle ? Invariant($"<p class=\"home-more home-reshuffle\" data-reshuffled=\"{view.Reshuffled.Count}\">{Escaped(reshuffle)}</p>") : string.Empty);
@@ -683,24 +676,84 @@ public sealed partial class SinglePageApp
     public static string PastNightWords(DateOnly night) =>
         "Showing the picks of the night of " + night.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + ", not tonight's.";
 
-    // A pick's card: an idea to buy, or a pick watched, whose buy price reads as bought on paper; from 24.15 on a past night
-    // with its line on what has happened since.
-    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched, DateOnly? night = null, string? since = null)
+    // "See all 5 of tonight's ideas with their full plans", or one idea's.
+    public static string AllIdeasLink(int every) =>
+        every == 1 ? "See it with its full plan" : Invariant($"See all {every} of tonight's ideas with their full plans");
+
+    // The heading of a setup's record on Home, in the operator's words.
+    public static string HeaderRecordHeading(UniverseChoice reading) =>
+        Invariant($"Its record on the {reading.Name}, against buying the index's other stocks the same way");
+
+    // Each setup's picks under one header, in the order the page gives them: its tag and colour, its revision and how many it
+    // picked tonight, the sentence its cards share, its verdict, for a watched setup why it is not bought, and its record; then
+    // its cards, a carousel where it holds more than one, four across on a wide screen and one at a time on a phone.
+    // see: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it
+    public static string SetupGroups(IReadOnlyList<HomeIdea> ideas, bool copying, UniverseChoice reading, bool watched, DateOnly? night, IReadOnlyDictionary<string, string>? since)
+    {
+        var html = new StringBuilder();
+
+        foreach (var group in ideas.GroupBy(idea => idea.Family, StringComparer.Ordinal))
+        {
+            HomeIdea[] cards = [.. group];
+            var first = cards[0];
+            var family = Escaped(group.Key);
+            var header = "idea-setup-" + group.Key + (watched ? "-watched" : string.Empty);
+            var shared = cards.Select(idea => idea.Why).Distinct(StringComparer.Ordinal).Count() == 1 ? first.Why : null;
+            var rolling = cards.Length > 1;
+            var counted = Invariant($"{cards.Length} {(watched ? cards.Length == 1 ? "pick" : "picks" : cards.Length == 1 ? "idea" : "ideas")} tonight");
+
+            html.Append(Invariant($"<div class=\"idea-setup wo\" id=\"{Escaped(header)}\" data-family=\"{family}\" data-setup-ideas=\"{cards.Length}\" data-carousel=\"{(rolling ? "true" : "false")}\">"));
+            html.Append(Invariant($"<div class=\"idea-setup-h fam-edge\" data-family=\"{family}\"><div class=\"idea-setup-t\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(group.Key))}</span>{RevisionTags.For(group.Key, night ?? DateOnly.MaxValue)}<span class=\"idea-setup-n\">{Escaped(counted)}</span></div>"));
+            html.Append(shared is null ? string.Empty : Invariant($"<p class=\"home-why\" data-shared>{(watched ? Invariant($"<b>{PickedLabel}</b> ") : string.Empty)}{Escaped(shared)}</p>"));
+            html.Append(VerdictLine(first, reading));
+
+            // A watched setup says once why its picks are not bought.
+            // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
+            html.Append(watched ? Invariant($"<p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(first, reading))}</p>") : string.Empty);
+            html.Append(first.LongRecord is { Periods: true } record && record.State != "unread"
+                ? MarkRenderer.PeriodsBox(record, HeaderRecordHeading(reading), MarkRenderer.HeaderRecordNote)
+                : MarkRenderer.SetupRecordBox(first.LongRecord));
+            html.Append("</div>");
+
+            if (rolling)
+            {
+                html.Append(Invariant($"<div class=\"wo-head idea-setup-nav\"><span></span><div class=\"wo-nav\"><span class=\"wo-count\" aria-live=\"polite\" data-wo-count>1 to {Math.Min(MarkRenderer.WaitingInView, cards.Length)} of {cards.Length}</span><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"-1\" aria-label=\"Show the ideas before these\" disabled>&#8249;</button><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"1\" aria-label=\"Show the ideas after these\">&#8250;</button></div></div>"));
+            }
+
+            html.Append(rolling
+                ? Invariant($"<div class=\"wo-track\" tabindex=\"0\" role=\"group\" aria-label=\"{Escaped(IdeaTag(group.Key))}: tonight's {(watched ? "picks watched" : "ideas")}\" data-wo-track>")
+                : "<div class=\"wo-grid\">");
+
+            foreach (var idea in cards)
+            {
+                html.Append(Idea(idea, copying, reading, watched, header, shared is not null, night, since?.GetValueOrDefault(idea.Family + "|" + idea.Ticker)));
+            }
+
+            html.Append("</div></div>");
+        }
+
+        return html.ToString();
+    }
+
+    // A pick's card under its setup's header: what is its own, an idea to buy or a pick watched whose buy price reads as bought
+    // on paper, its setup's record in one line with the way up to the header; from 24.15 on a past night with its line on what
+    // has happened since.
+    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched, string header, bool sharedWhy, DateOnly? night = null, string? since = null)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
         var buying = watched ? "Paper buy" : "Buy";
 
         card.Append(Invariant($"<article class=\"home-idea fam-edge{(watched ? " watched" : string.Empty)}\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
-        card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span>{RevisionTags.For(idea.Family, night ?? DateOnly.MaxValue)}</span></div>"));
+        card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div></div>"));
         card.Append(since is { } happened ? Invariant($"<p class=\"home-since\" data-since><b>Since then:</b> {Escaped(happened)}</p>") : string.Empty);
-        card.Append(VerdictLine(idea, reading));
 
-        // A watched card says why its rule picked it and why it is not bought.
-        // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
-        card.Append(watched
-            ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p><p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(idea, reading))}</p>")
-            : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
+        // A card's sentence where its setup's cards do not all share one.
+        card.Append(sharedWhy
+            ? string.Empty
+            : watched
+                ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p>")
+                : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
 
         // A watched card's plan that its kind's test recommends, priced on its own levels and not traded.
         // see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
@@ -743,7 +796,10 @@ public sealed partial class SinglePageApp
 
             card.Append("</div>");
             card.Append(zone.Sale is { HoldsToItsLimit: true } ? Invariant($"<p class=\"home-cond\" data-time-record>{Escaped(MarkRenderer.TimeLimitRecordWords(idea.LongRecord))}</p>") : string.Empty);
-            card.Append(Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>"));
+
+            // From the operator's order of 2026-11-24, item 7, the close and the wait said once, in the box above, on a new idea's
+            // card; a watched card, which draws no box, keeps the line.
+            card.Append(watched || night is null ? Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>") : string.Empty);
         }
         else
         {
@@ -751,7 +807,7 @@ public sealed partial class SinglePageApp
         }
 
         card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
-        card.Append(MarkRenderer.SetupRecordBox(idea.LongRecord));
+        card.Append(MarkRenderer.SetupRecordShort(idea.LongRecord, header));
 
         return Rest(idea, card, copying, reading);
     }

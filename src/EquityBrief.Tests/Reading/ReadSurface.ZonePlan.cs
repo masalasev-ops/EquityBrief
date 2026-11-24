@@ -27,14 +27,19 @@ public partial class ReadSurface
         var card = Regex.Match(home, "<article class=\"home-idea.*?</article>", RegexOptions.Singleline).Value;
 
         Assert.Contains("Buy if it dips to about$49.20Sell if it closes below$47.50Take profit at$58.00", Read(card), StringComparison.Ordinal);
-        Assert.Equal(Waits, Read(Regex.Match(card, "<p class=\"home-cond\">.*?</p>").Value));
-        Assert.True(card.IndexOf("home-cond", StringComparison.Ordinal) < card.IndexOf("entry-card-line", StringComparison.Ordinal));
+
+        // From the operator's order of 2026-11-24, item 7, a new idea's card says tonight's close and the wait once, in its box
+        // above the prices, and not again beneath them.
+        Assert.DoesNotContain(Waits, Read(card), StringComparison.Ordinal);
+        Assert.Contains("Not bought unless the price falls to $49.20", Read(card), StringComparison.Ordinal);
+        Assert.Contains("Tonight's close was $51.30", Read(card), StringComparison.Ordinal);
+        Assert.True(card.IndexOf("data-zone-box", StringComparison.Ordinal) < card.IndexOf("entry-card-line", StringComparison.Ordinal));
 
         // A plan with no target names its time limit in the target's place.
         var dip = Read(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(DipRule.Name, "IFF", null, "A fall.", 80m, 76m, null, false, null, Zone: new ZoneBuy(80m, 10, 82.5m, 10))], IdeasCount = 1 }, string.Empty));
 
         Assert.Contains("Otherwise sell after10 trading days", dip, StringComparison.Ordinal);
-        Assert.Contains("within 10 trading days; if it never does, there is no trade.", dip, StringComparison.Ordinal);
+        Assert.Contains("Not bought unless the price falls to $80.00", dip, StringComparison.Ordinal);
 
         // A pick's card and the read-only copy's: the buy tile waits for the zone and the line follows the plan's tiles.
         var row = new DecisionCardRow("GSPC", EntryNight, SetupFamilies.Pullback, "BMY", 1, 51.30m, 47.50m, 58m, "the rule", "{}", "[]", null, Cap: 20);

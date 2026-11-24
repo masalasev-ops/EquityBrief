@@ -20,9 +20,21 @@ public partial class ReadSurface
     static HomeIdea Watched(string family, string ticker) =>
         new(family, ticker, null, "Why.", 100m, 90m, 120m, false, null, LongRecord: new SetupLongRecord("GSPC", family, -0.12, 2933, 2019, 2026));
 
-    static string[] Tickers(string region, string group) =>
-        [.. Regex.Matches(region, "<div class=\"home-ideas\" data-group=\"" + group + "\">(.*?)</article></div>", RegexOptions.Singleline)
-            .SelectMany(block => Regex.Matches(block.Groups[1].Value, "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([A-Z0-9]+)\"").Select(match => match.Groups[1].Value))];
+    // A group's cards, read from the group's opening to the next group or to the way to every plan beneath them.
+    static string[] Tickers(string region, string group)
+    {
+        var start = region.IndexOf("<div class=\"home-ideas\" data-group=\"" + group + "\">", StringComparison.Ordinal);
+
+        if (start < 0)
+        {
+            return [];
+        }
+
+        var next = region.IndexOf("<div class=\"home-ideas\" data-group=", start + 1, StringComparison.Ordinal);
+        var end = next >= 0 ? next : region.IndexOf("class=\"home-all\"", start, StringComparison.Ordinal);
+
+        return [.. Regex.Matches(region[start..(end < 0 ? region.Length : end)], "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([A-Z0-9]+)\"").Select(match => match.Groups[1].Value)];
+    }
 
     [Fact]
     public void HomeDrawsEveryPickAsACardTheIdeasToBuyFirstAndTheWatchedAfterThemEachSayingWhy()
@@ -43,7 +55,7 @@ public partial class ReadSurface
         // The heading counts the ideas to buy; the line above the cards says what splits them; the link counts all five.
         Assert.Matches("Tonight's ideas: 2 stocks to buy at [A-Z][a-z]+day's open", text);
         Assert.Contains("We test every kind of pick against simply buying other S&P 500 stocks on the same days. Kinds that beat it, or are too new to test, are ideas to buy. Kinds that lost to it are shown below as watched, followed on paper only.", text, StringComparison.Ordinal);
-        Assert.Contains("See all 5 picks with their full plans", text, StringComparison.Ordinal);
+        Assert.Contains("See all 5 of tonight's ideas with their full plans", text, StringComparison.Ordinal);
 
         // The picks watched under a heading saying why, between the last idea to buy and the first watched card.
         Assert.Contains(
@@ -53,12 +65,13 @@ public partial class ReadSurface
         Assert.True(region.IndexOf("data-ticker=\"NUE\"", StringComparison.Ordinal) < region.IndexOf("class=\"home-watch\"", StringComparison.Ordinal));
         Assert.True(region.IndexOf("class=\"home-watch\"", StringComparison.Ordinal) < region.IndexOf("data-ticker=\"BMY\"", StringComparison.Ordinal));
 
-        // Each card opens on which it is and why, from its setup's record.
+        // Each setup's header says once which its picks are and why, from its setup's record: the two setups to buy and the two
+        // watched, the pullback's two watched picks under one header.
         Assert.Contains("An idea to buy. Too few past picks of this kind to measure yet.", text, StringComparison.Ordinal);
         Assert.DoesNotContain("nothing counts against it", text, StringComparison.Ordinal);
         Assert.Contains("An idea to buy. We tested this kind of pick on S&P 500 stocks from 2019 to 2026, and it did better than buying other S&P 500 stocks on the same days with the same sell rules.", text, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"buy\">").Count);
-        Assert.Equal(3, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"watch\">").Count);
+        Assert.Equal(2, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"watch\">").Count);
 
         // A watched card's buy is a paper buy; an idea's is a buy.
         Assert.Equal(3, Regex.Matches(region, "<span>Paper buy at the next open, at whatever price it opens; last close</span>").Count);
@@ -67,9 +80,9 @@ public partial class ReadSurface
         // A watched card opens on the words alone, then says why its rule picked it and why it is not bought, with the test's
         // years and the cents it did worse by for each dollar at risk; an idea's card does neither, and no card says when it
         // would become an idea to buy.
-        Assert.Equal(3, Regex.Matches(region, Regex.Escape("<p class=\"home-verdict\" data-verdict=\"watch\"><b>Watching, not buying.</b></p><p class=\"home-why\"><b>Why the rule picked it:</b> Why.</p><p class=\"home-why-not\"><b>Why we're not buying it:</b> We tested this kind of pick on S&P 500 stocks from 2019 to 2026. It did worse than simply buying other S&P 500 stocks on the same days with the same sell rules: about 12 cents worse for every $1 put at risk. So we follow it on paper instead of suggesting it.</p>")).Count);
-        Assert.Contains("<p class=\"home-why\">Dipped.</p>", region, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"home-why\">Bought.</p>", region, StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(region, Regex.Escape("<p class=\"home-why\" data-shared><b>Why the rule picked it:</b> Why.</p><p class=\"home-verdict\" data-verdict=\"watch\"><b>Watching, not buying.</b></p><p class=\"home-why-not\"><b>Why we're not buying it:</b> We tested this kind of pick on S&P 500 stocks from 2019 to 2026. It did worse than simply buying other S&P 500 stocks on the same days with the same sell rules: about 12 cents worse for every $1 put at risk. So we follow it on paper instead of suggesting it.</p>")).Count);
+        Assert.Contains("<p class=\"home-why\" data-shared>Dipped.</p>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-why\" data-shared>Bought.</p>", region, StringComparison.Ordinal);
         Assert.DoesNotContain("It becomes an idea to buy", text, StringComparison.Ordinal);
 
         // How far short, in cents below a dollar: under a cent, one, several, and a dollar or more.
@@ -146,8 +159,9 @@ public partial class ReadSurface
         Assert.Equal(["breakout"], Regex.Matches(lost, "<article class=\"home-idea fam-edge watched\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("Tonight's ideas: 1 stock to buy", text, StringComparison.Ordinal);
         Assert.Contains("Watching, not buying: 1 pick tonight. The rules picked it, but this kind of pick has done worse than simply buying other S&P 400 stocks since 2019.", text, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"home-verdict\" data-verdict=\"watch\"><b>Watching, not buying.</b></p><p class=\"home-why\"><b>Why the rule picked it:</b> ", lost, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-verdict\" data-verdict=\"watch\"><b>Watching, not buying.</b></p><p class=\"home-why-not\">", lost, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-why\" data-shared><b>Why the rule picked it:</b> ", lost, StringComparison.Ordinal);
         Assert.Contains("Why we're not buying it: We tested this kind of pick on S&P 400 stocks from 2019 to 2026. It did worse than simply buying other S&P 400 stocks on the same days with the same sell rules: about 20 cents worse for every $1 put at risk. So we follow it on paper instead of suggesting it.", text, StringComparison.Ordinal);
-        Assert.Contains("See all 2 picks with their full plans", text, StringComparison.Ordinal);
+        Assert.Contains("See all 2 of tonight's ideas with their full plans", text, StringComparison.Ordinal);
     }
 }

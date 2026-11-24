@@ -168,7 +168,7 @@ public partial class ReadSurface
         Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
         Assert.Contains("<div><span>Sell when</span><b class=\"stop\">its filings weaken</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<a class=\"home-plan\" href=\"#/tonight?name=AAA\">See the plan</a>", page, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/tonight\">See all 7 picks with their full plans</a>", page, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"#/tonight\">See all 7 of tonight's ideas with their full plans</a>", page, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);
 
         // The past: the account's day, its ideas and those that made money, and the bars at 3.1% and 1.2%, the larger full.
@@ -185,8 +185,9 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"home-foot\"><span>Want every number, every rule and every change to one being tested?</span><a class=\"go\" href=\"#/tonight\">Open the full Tonight page</a></div>", page, StringComparison.Ordinal);
         Assert.EndsWith($"<p class=\"home-disclaimer\">{SinglePageApp.Disclaimer}</p></section>", page, StringComparison.Ordinal);
 
-        // No word Home bans reaches the reader.
-        Assert.DoesNotMatch(new Regex("\\b(breadth|stops?|setups?|variants?|edges?|R|risk units|typical days' moves)\\b", RegexOptions.IgnoreCase), text);
+        // No word Home bans reaches the reader, the card's line in the operator's words of 2026-11-24, item 7, "Its setup's
+        // record", set aside.
+        Assert.DoesNotMatch(new Regex("\\b(breadth|stops?|setups?|variants?|edges?|R|risk units|typical days' moves)\\b", RegexOptions.IgnoreCase), text.Replace("Its setup's record", string.Empty, StringComparison.Ordinal));
     }
 
     [Fact]

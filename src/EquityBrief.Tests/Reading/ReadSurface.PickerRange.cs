@@ -56,13 +56,30 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/judge"));
 
-        // The range in the operator's words, worked from the last close: on the night's three cards, and in the account of
-        // its variant "a fixed 5" on the two it did not buy, AAA above its range and CCC still to open.
-        Assert.Equal(5, CountOf(page, "<span>Buys</span><b>between $96.00 and $101.00</b><span class=\"sale-note judge-buy\">Opens above $101.00: waits up to 2 days for the price to come back to $101.00, then not bought. Opens below $96.00: not bought. Last close $100.00.</span>"));
+        // The range in the operator's words, worked from the last close, on the night's three cards. Its variant "a fixed 5" took
+        // the same three, so from the operator's order of 2026-11-24, item 11, it draws them as chips under one line and no
+        // card, and item 13's tally reads what its account did, worked by hand: BBB bought inside its range at its open of
+        // 100.5, CCC still to open within its order, AAA above its range and not bought.
+        Assert.Equal(3, CountOf(page, "<span>Buys</span><b>between $96.00 and $101.00</b><span class=\"sale-note judge-buy\">Opens above $101.00: waits up to 2 days for the price to come back to $101.00, then not bought. Opens below $96.00: not bought. Last close $100.00.</span>"));
 
-        // BBB bought inside its range at its open of 100.5, read on the variant's card from the price it paid.
-        Assert.Contains("<span>Bought at</span><b>$100.50</b><span class=\"sale-note judge-buy\">Within its range on Wed 25 Nov. Last close before it $100.00.</span>", page, StringComparison.Ordinal);
-        Assert.Contains($"Not bought in version 1's own account: {JudgeAccounts.OpenedAbove}.", page, StringComparison.Ordinal);
+        var five = System.Text.RegularExpressions.Regex.Match(page, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>", System.Text.RegularExpressions.RegexOptions.Singleline).Value;
+
+        Assert.Contains("Tonight it took the same 3 picks as the version above.", five, StringComparison.Ordinal);
+        Assert.Equal(["AAA", "BBB", "CCC"], System.Text.RegularExpressions.Regex.Matches(five, "<span class=\"judge-chip\" data-ticker=\"([A-Z]+)\">").Select(match => match.Groups[1].Value));
+        Assert.DoesNotContain("<article", five, StringComparison.Ordinal);
+        Assert.Contains("Bought so far: 1 of 3; waiting within the 2-day order: 1; not bought: 1 (1 opened above its range).", five, StringComparison.Ordinal);
+        Assert.Contains("bought each within its range in this version's own account", five, StringComparison.Ordinal);
+
+        // Its account's figure: BBB's small move rounds to nothing, read as 0.0% and never as -0.0%.
+        Assert.Contains("Its own account: 0.0% since Wed 25 Nov, 1 open, 0 closed.", five, StringComparison.Ordinal);
+
+        // From item 12, a variant's card waiting to buy says how it buys in the approved words: within its range from the range's
+        // first night, at the open before it.
+        var version = new JudgeVersionView(1, new DateOnly(2026, 11, 24), new DateOnly(2026, 11, 24), [], new JudgeScoreboard(0, 0, null, null, 300), []);
+        var waiting = new JudgeCardView(3, 3, "CCC", null, null, null, "A third reason.", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole) { Range = JudgeAccounts.RangeOf(new DateOnly(2026, 11, 24), 100m, 2.0) };
+
+        Assert.Equal("Buys between $96.00 and $101.00 Opens above $101.00: waits up to 2 days for the price to come back to $101.00, then not bought. Opens below $96.00: not bought. In version 1's own account.", SinglePageApp.HeldWords(waiting, version));
+        Assert.Equal("Picked before its range began, so it buys at the open. In version 1's own account.", SinglePageApp.HeldWords(waiting with { Range = null }, version));
 
         // AAA opened above and did not come back: not bought, its side named, and the open's walk not yet ended.
         Assert.Contains($"<p class=\"judge-since\" data-range-skip>Not bought: {JudgeAccounts.OpenedAbove}. What buying at the open would have made is recorded once its walk there ends.</p>", page, StringComparison.Ordinal);

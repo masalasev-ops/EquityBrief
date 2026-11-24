@@ -216,9 +216,9 @@ public partial class ReadSurface
         var idea = new HomeIdea(DipRule.Name, "NUE", null, "Dipped.", 150m, 140m, 160m, false, null, LongRecord: new SetupLongRecord("GSPC", DipRule.Name, 0.06, 512, 2019, 2026), Alternative: plan);
         var region = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [idea], IdeasCount = 1, Watching = [Watched(SetupFamilies.Pullback, "BMY") with { Alternative = plan }] }, string.Empty));
 
-        // The watched card draws it after why it is not bought; the idea's card does not.
+        // The watched card draws it, beneath its setup's header saying why it is not bought; the idea's card does not.
         Assert.Single(Regex.Matches(region, "<div class=\"home-alt\""));
-        Assert.Matches("data-ticker=\"BMY\".*?<p class=\"home-why-not\">.*?</p><div class=\"home-alt\" data-alt=\"better\"", region.Replace("\n", " ", StringComparison.Ordinal));
+        Assert.Matches("<p class=\"home-why-not\">.*?</p>.*?data-ticker=\"BMY\".*?<div class=\"home-alt\" data-alt=\"better\"", region.Replace("\n", " ", StringComparison.Ordinal));
         Assert.Empty(SinglePageApp.HomeLinesStartingMidSentence(region));
     }
 }

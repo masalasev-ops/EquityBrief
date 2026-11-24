@@ -59,6 +59,32 @@ public partial class ReadSurface
             [("GSPC", 2013), ("GSPC", 2020), ("GSPC", 2013), ("MID", 2012), ("SML", 2014)],
             new[] { ("GSPC", ImprovingRule.Name), ("GSPC", HeavyweightRule.Name), ("GSPC", QualityRule.Name), ("MID", HeavyweightRule.Name), ("SML", QualityRule.Name) }
                 .Select(one => (one.Item1, records.Of(one.Item1, one.Item2)!.ReachesBack!.Value)));
+
+        // No long test yet: every box reads it being rebuilt.
+        Assert.Null(pullback.LongEdge);
+
+        // From the operator's order of 2026-11-24, item 5: the S&P 500's long ledger built on 2026-11-25, a long run of its live
+        // pullback the day before it and one after it, the later over 2010 (100 trades, 8 risks) and 2019 (50 trades, 5 risks),
+        // the S&P 400's built before the corrections landed. Its long figure is the run after the build's to 2018 alone: 8 over
+        // 100, 0.08 a trade, worked by hand; the S&P 400's breakout, whose run follows no build after them, reads none.
+        store.Execute(@"
+            INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES
+                ('ledger-build-long-GSPC-20261125T040000Z', 'ledger-build-long', '2026-11-25T04:00:00Z', '2026-11-25T09:00:00Z', 'ok', 1, 0, 0, '0', 'built'),
+                ('ledger-build-long-MID-20261118T040000Z', 'ledger-build-long', '2026-11-18T04:00:00Z', '2026-11-18T09:00:00Z', 'ok', 1, 0, 0, '0', 'built');
+            INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, passed, history) VALUES
+                ('loop-rules-long-GSPC-20261124T040000Z', '2026-11', 'GSPC', 'pullback', 'live pullback', 'live', 'w', 'its benchmark', 'risks', 900, 0, 'long'),
+                ('loop-rules-long-GSPC-20261126T040000Z', '2026-11', 'GSPC', 'pullback', 'live pullback', 'live', 'w', 'its benchmark', 'risks', 150, 0, 'long'),
+                ('loop-rules-long-MID-20261126T040000Z', '2026-11', 'MID', 'breakout', 'live breakout', 'live', 'w', 'its benchmark', 'risks', 80, 0, 'long');
+            INSERT INTO loop_rule_year (run_id, index_code, family, rule, year, complete, units, total, compared_units, compared_total) VALUES
+                ('loop-rules-long-GSPC-20261124T040000Z', 'GSPC', 'pullback', 'live pullback', 2010, 1, 900, 90, 900, 0),
+                ('loop-rules-long-GSPC-20261126T040000Z', 'GSPC', 'pullback', 'live pullback', 2010, 1, 100, 8, 100, 0),
+                ('loop-rules-long-GSPC-20261126T040000Z', 'GSPC', 'pullback', 'live pullback', 2019, 1, 50, 5, 50, 0),
+                ('loop-rules-long-MID-20261126T040000Z', 'MID', 'breakout', 'live breakout', 2010, 1, 80, 8, 80, 0);");
+
+        var rebuilt = await Api(store).SetupRecordsAsync();
+
+        Assert.Equal((0.08, 100), (rebuilt.Of("GSPC", SetupFamilies.Pullback)!.LongEdge!.Value, rebuilt.Of("GSPC", SetupFamilies.Pullback)!.LongPicks!.Value));
+        Assert.Null(rebuilt.Of("MID", BreakoutRule.Name)!.LongEdge);
     }
 
     [Fact]
@@ -70,14 +96,15 @@ public partial class ReadSurface
 
         Assert.Same(lost, view.LongRecord);
 
-        // The app's card and the read-only copy's: the heading, the figure in the loss's colour and the count worked by hand
-        // from -0.124 over 2,933, and the rule's note, beneath the entry check line.
+        // The app's card and the read-only copy's, a card standing alone keeping the full box: the heading, the long test's years
+        // being rebuilt beside 2019 to 2026 with the figure in the loss's colour and the count worked by hand from -0.124 over
+        // 2,933, and the rule's note, beneath the entry check line.
         foreach (var drawn in new[] { new MarkRenderer().DecisionCard(view), new MarkRenderer { Copying = true }.DecisionCard(view) })
         {
-            var box = Regex.Match(drawn, "<div class=\"setup-record\".*?</div>", RegexOptions.Singleline).Value;
+            var box = Regex.Match(drawn, "<div class=\"setup-record\".*?class=\"rec-sub\">[^<]*</span></div>", RegexOptions.Singleline).Value;
 
             Assert.Equal(
-                "This setup's record on the S&P 500From 2019 to 2026, picks like this lost about $0.12 for every $1 risked, compared with buying the index's other stocks the same way, over 2,933 picks.The rule's record over every stock it bought, not this stock's chance.",
+                "This setup's record on the S&P 5002005 to 2018, the long testBeing rebuilt2019 to 2026About $0.12 less for every $1 risked, over 2,933 picks.The rule's record over every stock it bought, not this stock's chance.",
                 Read(box));
             Assert.Contains("<b class=\"lost\">$0.12</b>", box, StringComparison.Ordinal);
             Assert.True(drawn.IndexOf("entry-card-line", StringComparison.Ordinal) < drawn.IndexOf("setup-record", StringComparison.Ordinal));
@@ -85,12 +112,17 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("setup-record", new MarkRenderer().DecisionCard(CardScreen.View(row, CardContext.None)), StringComparison.Ordinal);
 
-        // Made, rounded to the cent; a filing-based setup's year; too few picks drawn as its count against the minimum alone;
-        // and nothing where the run wrote no count.
+        // Made, rounded to the cent, with the long test's figure once it stands; a filing-based setup's year; too few picks drawn
+        // as its count against the minimum alone; and nothing where the run wrote no count.
         Assert.Contains(
-            "From 2019 to 2026, picks like this made about $0.19 more for every $1 risked than buying the index's other stocks the same way, over 517 picks.",
+            "2019 to 2026About $0.19 more for every $1 risked, over 517 picks.",
             Read(MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026))),
             StringComparison.Ordinal);
+        Assert.Contains(
+            "2005 to 2018, the long testAbout $0.08 more for every $1 risked, over 1,200 picks.2019 to 2026",
+            Read(MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026) { LongEdge = 0.08, LongPicks = 1200 })),
+            StringComparison.Ordinal);
+        Assert.Contains("data-long=\"read\"", MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026) { LongEdge = 0.08, LongPicks = 1200 }), StringComparison.Ordinal);
         Assert.Contains("<b class=\"made\">$0.19</b>", MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026)), StringComparison.Ordinal);
         // From the operator's order of 2026-11-14 the box says why 2019 on is not walked for a setup reading filings, and where
         // it is judged instead.
@@ -99,19 +131,28 @@ public partial class ReadSurface
             Read(MarkRenderer.SetupRecordBox(SetupLongRecord.Filings("GSPC", ImprovingRule.Name))),
             StringComparison.Ordinal);
         Assert.Contains(
-            "From 2019 to 2026, 12 picks like this, short of the 20 a record needs.",
+            "2019 to 202612 picks, short of the 20 a record needs.",
             Read(MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", DipRule.Name, -0.04, 12, 2019, 2026))),
             StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.SetupRecordBox(new SetupLongRecord("MID", DriftRule.Name, 0.3, null, 2019, 2025)));
         Assert.Equal(string.Empty, MarkRenderer.SetupRecordBox(null));
         Assert.Null(SetupLongRecord.Filings("GSPC", DriftRule.Name));
 
-        // Home's idea and a buy no plan sells on Tonight draw it beneath their entry check line too.
+        // From the operator's order of 2026-11-24, items 5 and 7: Home's idea draws it once in its setup's header, both periods
+        // under the operator's heading, and on its card one line beneath its entry check line with the way up to the header;
+        // a buy no plan sells on Tonight draws the box beneath its entry check line too.
         var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(SetupFamilies.Pullback, "HAND", null, "A dip.", 100m, 90m, 125m, false, null, EntryCheck: EntryFlagged(), LongRecord: lost)], IdeasCount = 1 }, string.Empty);
         var card = Regex.Match(home, "<article class=\"home-idea.*?</article>", RegexOptions.Singleline).Value;
+        var header = Regex.Match(home, "<div class=\"idea-setup-h.*?class=\"rec-sub\">[^<]*</span></div>", RegexOptions.Singleline).Value;
 
-        Assert.Contains("over 2,933 picks.", Read(card), StringComparison.Ordinal);
-        Assert.True(card.IndexOf("entry-card-line", StringComparison.Ordinal) < card.IndexOf("setup-record", StringComparison.Ordinal));
+        Assert.Equal(
+            "Its record on the S&P 500, against buying the index's other stocks the same way2005 to 2018, the long testBeing rebuilt2019 to 2026About $0.12 less for every $1 risked, over 2,933 picks.The rule's record over every stock it bought, not any one stock's chance.",
+            Read(Regex.Match(header, "<div class=\"setup-record\".*", RegexOptions.Singleline).Value));
+        Assert.Contains("Its setup's record: $0.12 less per $1 risked from 2019, 2,933 picks. See it", Read(card), StringComparison.Ordinal);
+        Assert.Contains("data-jump=\"idea-setup-pullback\"", card, StringComparison.Ordinal);
+        Assert.Contains("id=\"idea-setup-pullback\"", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"setup-record\"", card, StringComparison.Ordinal);
+        Assert.True(card.IndexOf("entry-card-line", StringComparison.Ordinal) < card.IndexOf("setup-record-short", StringComparison.Ordinal));
 
         var buys = new MarkRenderer().TomorrowsBuys([], null, night: EntryNight, planless: [new PlanlessBuyView(ImprovingRule.Name, ImprovingRule.Label, "HAND", null, "Bought.", "8 of 9", 100m, "on its filings", "#/tonight", EntryFlagged(), SetupLongRecord.Filings("GSPC", ImprovingRule.Name))]);
         var why = Regex.Match(buys, "<td class=\"why\">.*?</td>", RegexOptions.Singleline).Value;
@@ -171,7 +212,7 @@ public partial class ReadSurface
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
-        const string Made = "From 2019 to 2026, picks like this made about $0.03 more for every $1 risked than buying the index's other stocks the same way, over 4,567 picks.";
+        const string Made = "2019 to 2026About $0.03 more for every $1 risked, over 4,567 picks.";
 
         var page = await client.GetStringAsync($"/screens/name/M1/{IndexNight}");
 

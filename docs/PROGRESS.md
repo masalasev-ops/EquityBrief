@@ -22744,3 +22744,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.29 - correction: Home's ideas under one header a setup, the record in two periods, and the picker page saying once what a variant shares   2026-11-24
+
+Queue:      done, #779, #780 and #781 merged and the every-session table written again on the S&P 500 and 400; in progress,
+            the S&P 600's, then the check on each index, and this correction; next, the widths over every member after the
+            night, then 24.30.
+Ruled:      the operator's order of 2026-11-24, items 4 to 14, kept word for word in
+            `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`, from the mockup
+            `prompts/2026-11-24-say-it-once-mockup.html`: nothing either page shows is lost, each fact moved.
+Built:      Home's ideas: each setup present under one header, its tag and colour, its revision and how many tonight, the
+            sentence its cards share, its verdict, for a watched setup why it is not bought, and its record; its cards a
+            carousel beneath it, four across and one at a time on a phone; each card what is its own and one line of its
+            setup's record whose "See it" brings the header into view; a new idea's second wait line gone; the way to every
+            plan beneath the rules' ideas, "See all 5 of tonight's ideas with their full plans". A price family's record box in
+            two periods, 2005 to 2018 the long test, read off the newest long per-rule run after a build of the index's long
+            ledger from the day the 24.19 corrections landed and "Being rebuilt" until one stands, beside 2019 on; a card
+            standing alone keeps the whole box. The picker page: the fixed 5's shared picks as chips under one line saying why
+            its limit or the quarter decided with its account's figure, only the picks that differ as cards; a waiting card
+            of any version in the approved range words; what an account did with its picks read off the store; the night the
+            first picks buy said once, under the four accounts. Three decisions, four architecture rows, the guide and the
+            changelog.
+Measured:   read back at 1440 and a true 390 in both palettes, no page wider than its screen: before, Home's ideas and the
+            picker page on the operator's 5152; after, Home's region with five pullback ideas as tonight's and the picker page
+            over the range fixture, drawn from the branch with the app's stylesheet.
+Tests:      none new; 13 widened or moved to the new layout, among them the long figure worked by hand from a constructed
+            long run, 8 risks over 100 trades in 2010 and 0.08 a trade, a run before the index's build and an index built
+            before the corrections reading none; the tally by hand, 1 bought, 1 waiting within its order, 1 above its range;
+            the quarter of 5 marked, 2; and a waiting variant card in the range words and at the open before it.
+Pins:       none moved. Home, the record box and the picker page are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 one header a card
+            in place of a setup: red; m2 the long figure never drawn: red; m3 the long run read with no build after the
+            corrections: red; m4 every pick of the fixed 5 a card: red; m5 a waiting pick counted bought: red; m6 a new idea's
+            wait line kept: red; m7 a waiting card's range words taken out: red. Each filtered to its tests and reverted before
+            anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4028 of 4028 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the after shots on the operator's 5152 once it merges, over tonight's ideas.

@@ -1225,7 +1225,7 @@ public sealed partial class SinglePageApp : IComponent
         // The orders still waiting on Home and Tonight: one row of cards that snaps to a card, moved by swipe, by the arrows,
         // by a chip and by the keyboard; the counter and the chips outlined say which cards are in view.
         function woSeen(track) {
-          const cards = [...track.querySelectorAll('.wo-card')];
+          const cards = [...track.querySelectorAll('.wo-card, .home-idea')];
           const box = track.getBoundingClientRect();
           let first = -1, last = -1;
           cards.forEach((card, at) => { const r = card.getBoundingClientRect(); if (r.left >= box.left - 4 && r.right <= box.right + 4) { if (first < 0) { first = at; } last = at; } });
@@ -1245,13 +1245,19 @@ public sealed partial class SinglePageApp : IComponent
           if (on) { on.disabled = last >= cards.length - 1; }
         }
         function woGo(track, at) {
-          const cards = track.querySelectorAll('.wo-card');
+          const cards = track.querySelectorAll('.wo-card, .home-idea');
           const card = cards[Math.max(0, Math.min(at, cards.length - 1))];
           if (card) { track.scrollBy({ left: card.getBoundingClientRect().left - track.getBoundingClientRect().left, behavior: 'smooth' }); }
         }
         function carousels() { for (const track of screen.querySelectorAll('[data-wo-track]')) { woUpdate(track); } }
         document.addEventListener('scroll', (event) => { if (event.target.matches && event.target.matches('[data-wo-track]')) { woUpdate(event.target); } }, true);
         addEventListener('resize', () => carousels(), { passive: true });
+        // From the operator's order of 2026-11-24 a card's "See it" brings its setup's header into view, the route unchanged.
+        document.addEventListener('click', (event) => {
+          const jump = event.target.closest ? event.target.closest('[data-jump]') : null;
+          const to = jump ? document.getElementById(jump.getAttribute('data-jump')) : null;
+          if (to) { to.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+        });
         document.addEventListener('click', (event) => {
           const control = event.target.closest ? event.target.closest('[data-wo-step], .wo-chip') : null;
           const track = control && control.closest('.wo') ? control.closest('.wo').querySelector('[data-wo-track]') : null;
