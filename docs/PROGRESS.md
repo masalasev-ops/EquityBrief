@@ -22717,3 +22717,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the three asks restored to the folder on the operator's word, the long tables written again, the lists read to
             show all four links joined, then each index's table written again whole.
+
+### 24.19 - correction: a link by hand no longer reads past the code's own history-ends mark, the four links held joined through the reader   2026-11-24
+
+Queue:      done, #780 merged and the six asks restored to the capture folder; in progress, the long tables written again
+            and this correction; next, each index's table written again whole, the check on each, the lists, the widths.
+Ruled:      the operator's answer of 2026-11-24, kept word for word in
+            `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`: say whether #778's change is still needed once the six
+            are back, and if not take it out in its own pull request, keeping a test that the four links join through the
+            reader.
+Found:      not needed. The reader takes a link's side from the code's own history-ends mark, and none of DDR, LPI, PVAC and
+            WTW_old carries one in the store; VTLE's and ROCC's own marks are set aside when their prices are read for a link.
+            So for all four the side is empty and the change read the same prices as before it.
+Built:      the reader's line as it stood before #778, the later code's prices read on the part's side of the code's own mark;
+            the architecture's row, the decision's sentence and the changelog.
+Tests:      1 replaced: #778's test of a link past a mark LPI does not carry becomes the four links over a constructed store
+            shaped as the operator's after the restore, each earlier code with no mark, VTLE and ROCC carrying their own, WW_old
+            priced only from its link, each read at the later code's prices from its link and listed as linked by hand.
+Pins:       none moved. The long history reader is no source a rule pins.
+Mutated:    the rule, stated before the run: the hand links taken out of the reader at their one site: red. Filtered to its
+            test and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4028 of 4028 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none.
