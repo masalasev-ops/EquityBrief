@@ -5,7 +5,11 @@ using EquityBrief.Core.Loop;
 namespace EquityBrief.Web.App;
 
 // The buy range's newest widths test: the day it ran and its rows on the index.
-public sealed record BuyRangeTableView(string Day, IReadOnlyList<RangeWidthRow> Rows);
+public sealed record BuyRangeTableView(string Day, IReadOnlyList<RangeWidthRow> Rows)
+{
+    // Whether the run walked the AI stock picker's menu over the price families' setups, its width provisional.
+    public bool Provisional { get; init; }
+}
 
 // The buy range's widths on the Improvement loop page for the index it reads: when the test last ran and the width it chose,
 // every width beside the buy at the open over 2005 to 2018 and from 2019, what each missed and kept out of, each setup on its
@@ -14,6 +18,8 @@ public sealed record BuyRangeTableView(string Day, IReadOnlyList<RangeWidthRow> 
 public sealed partial class SinglePageApp
 {
     public const string BuyRangeLede = "Every plan buying at the next open will carry a range from its last close: a ceiling some typical daily moves above it and a floor some under it, or none. An open above the ceiling waits up to 2 days for the price to come back to it; an open under the floor buys nothing. Each width is walked over the index's setups from 2005, chosen on 2005 to 2018 and checked from 2019. No plan uses a width before you approve one.";
+
+    public const string BuyRangeProvisional = "Provisional: walked as the AI stock picker buys, under each plan of its menu, over every stock and session the four price families flagged, since the picker has no history of its own. It runs again over every member on every session once that table is rebuilt, and that width replaces this one from the next night.";
 
     // The close and typical daily move a card's plan is shown at.
     public const decimal ExampleClose = 100m;
@@ -33,17 +39,25 @@ public sealed partial class SinglePageApp
             ? $"<p data-summary data-ranges=\"chosen\">The test of {Escaped(DayOf(table.Day))} on the {Escaped(chosen.Name)} chose {Escaped(widths.Words)}: the highest edge a pick over 2005 to 2018. It waits for your approval.</p>"
             : $"<p data-summary data-ranges=\"unchosen\">The test of {Escaped(DayOf(table.Day))} on the {Escaped(chosen.Name)} chose no width: none bought the {PlanPoints.FewestFills} picks over 2005 to 2018 a choice rests on.</p>");
 
+        // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+        if (table.Provisional)
+        {
+            html.Append($"<p class=\"lm-small\" data-ranges=\"provisional\">{Escaped(BuyRangeProvisional)}</p>");
+        }
+
         foreach (var (years, words) in new[] { (BuyRanges.Early, "Chosen on 2005 to 2018"), (BuyRanges.Late, "Checked from 2019") })
         {
             html.Append(CultureInfo.InvariantCulture, $"<p class=\"lm-h\">{words}</p>");
             html.Append(RangeTable(rows.Where(row => row.Family == BuyRanges.AllSetups && row.Years == years)));
         }
 
-        html.Append("<details class=\"lm-fold\" data-ranges=\"setups\"><summary>Each setup on its own</summary>");
+        html.Append(table.Provisional ? "<details class=\"lm-fold\" data-ranges=\"setups\"><summary>Each plan of the picker's menu on its own</summary>" : "<details class=\"lm-fold\" data-ranges=\"setups\"><summary>Each setup on its own</summary>");
 
         foreach (var family in rows.Select(row => row.Family).Where(family => family != BuyRanges.AllSetups).Distinct())
         {
-            html.Append(CultureInfo.InvariantCulture, $"<p class=\"lm-p\"><b>{Escaped(IdeaGrammar.FamilyWords(family))}</b>, over 2005 to 2018</p>");
+            var named = family.StartsWith(BuyRanges.PickerPlan, StringComparison.Ordinal) ? Capital(family[BuyRanges.PickerPlan.Length..]) : IdeaGrammar.FamilyWords(family);
+
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"lm-p\"><b>{Escaped(named)}</b>, over 2005 to 2018</p>");
             html.Append(RangeTable(rows.Where(row => row.Family == family && row.Years == BuyRanges.Early)));
         }
 

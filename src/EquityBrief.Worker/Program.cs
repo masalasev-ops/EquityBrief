@@ -177,7 +177,8 @@ static async Task<int> IdeaBoxVerb(string[] args)
 }
 
 // The buy range's widths test over every index, or with '--index <code>' one, each width's figures written beside the
-// open's and the width each index's early years chose marked; no plan uses a width before the operator approves one.
+// open's and the width each index's early years chose marked, with '--picker' under the AI stock picker's menu over every
+// setup the price families flagged; no plan uses a width before the operator approves one.
 // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
 static async Task<int> BuyRangeWidthsVerb(string[] args)
 {
@@ -185,7 +186,7 @@ static async Task<int> BuyRangeWidthsVerb(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
     return await new EquityBrief.Worker.Loop.RangeWidthTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(VerbArguments.Value(args, "--index"));
+        .RunAsync(VerbArguments.Value(args, "--index"), args.Contains(EquityBrief.Worker.Loop.RangeWidthTest.PickerFlag, StringComparer.Ordinal));
 }
 
 // Fills the notebook with every idea the store holds a test of, and the operator's two waiting for their shapes; a fill run
@@ -1774,7 +1775,7 @@ static int NoVerb()
         "'notebook-fill' writes to the notebook every idea the monthly runs, the searches over the long history and the tests of the buy and sell points tested and the operator's two waiting for their shapes, nothing twice, " +
         "'idea-test --line <line>' or '--file <path>' tests each grammar line given over the long history, every line of the run judged together from 2019, and writes each to the notebook, '--source' naming who wrote it, " +
         "'pullback-search --index GSPC' prints the pullbacks' search's lines, their count and the time measured on the live setting's line, and with '--word' walks them in two stages and writes each to the notebook, " +
-        "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, registering nothing, " +
+        "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, and with '--picker' the AI stock picker's menu over every setup the price families flagged, registering nothing, " +
         "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
