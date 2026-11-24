@@ -127,7 +127,13 @@ public partial class ReadSurface
         var five = Blocks(large, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>").Single();
 
         Assert.Contains(SinglePageApp.FixedFiveLine, five, StringComparison.Ordinal);
-        Assert.Equal(["AAA", "BBB", "CCC"], [.. Blocks(five, "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">").Select(card => card[^5..^2])]);
+
+        // From the operator's order of 2026-11-24, item 11: it shared AAA and BBB with its version, drawn as chips, and only CCC,
+        // which differs, as a card; the quarter of 5 marked, 2 rounded up, decided the version's count, worked by hand.
+        Assert.Contains("Tonight it shared 2 of its picks with the version above; 1 differs, drawn as a card below.", five, StringComparison.Ordinal);
+        Assert.Contains("A quarter of 5 is 2, so the quarter decided and it picked 2.", five, StringComparison.Ordinal);
+        Assert.Equal(["AAA", "BBB"], [.. System.Text.RegularExpressions.Regex.Matches(five, "<span class=\"judge-chip\" data-ticker=\"([A-Z]+)\">").Select(match => match.Groups[1].Value)]);
+        Assert.Equal(["CCC"], [.. Blocks(five, "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">").Select(card => card[^5..^2])]);
         // From the 24.25 correction an index's versions are numbered among its own, the earlier version being no index's.
         Assert.Contains("A fixed 5, version 1's variant, picked 19 Nov: its own account, apart from the record", five, StringComparison.Ordinal);
         Assert.DoesNotContain("The fixed five alone.", Blocks(large, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single(), StringComparison.Ordinal);

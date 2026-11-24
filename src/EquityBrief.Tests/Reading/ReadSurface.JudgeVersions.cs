@@ -109,8 +109,8 @@ public partial class ReadSurface
 
         var summary = SinglePageApp.VersionSummaryWords(new JudgeVersionView(1, new DateOnly(2026, 11, 19), new DateOnly(2026, 11, 19), [], new JudgeScoreboard(1, 1, 3.0, null, 300), []), 2);
 
-        Assert.Equal("Version 1, picked 19 Nov: 0 picks, bought at the open on Fri 20 Nov in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. 0 of 0 bought so far. They are never added to version 2's record. 1 of its trades has closed, 1 of them winners, $3.00 made per $1 risked.", summary);
-        Assert.Contains("Version 1, picked 19 Nov: 2 picks, bought at the open on Fri 20 Nov in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. 2 of 2 bought so far. They are never added to version 2's record. 1 of its trades has closed, 1 of them winners, $3.00 made per $1 risked.", drawn, StringComparison.Ordinal);
+        Assert.Equal("Version 1, picked 19 Nov: 0 picks, bought at the open on Fri 20 Nov in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. Bought so far: 0 of 0; not bought: 0. They are never added to version 2's record. 1 of its trades has closed, 1 of them winners, $3.00 made per $1 risked.", summary);
+        Assert.Contains("Version 1, picked 19 Nov: 2 picks, bought at the open on Fri 20 Nov in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. Bought so far: 2 of 2; not bought: 0. They are never added to version 2's record. 1 of its trades has closed, 1 of them winners, $3.00 made per $1 risked.", drawn, StringComparison.Ordinal);
 
         // Its account drawn apart in the four accounts' card, labelled, and never added to the four.
         Assert.Contains("<div class=\"judge-apart\" data-apart=\"1\"><p class=\"judge-apart-h\"><b>Version 1, picked 19 Nov, apart from the record.</b>", drawn, StringComparison.Ordinal);

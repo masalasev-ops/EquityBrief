@@ -1668,8 +1668,27 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-word{font:600 19px var(--sans)}
 .home-word.good{color:var(--up)} .home-word.care{color:var(--warn)} .home-word.bad{color:var(--down)}
 .home-meaning{font-size:14px;color:var(--ink-2);line-height:1.45}
-.home-ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:6px}
-.home-idea{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
+.home-ideas{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.home-idea{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+/* Each setup's ideas under one header, from the operator's order of 2026-11-24 */
+.idea-setup{display:flex;flex-direction:column;gap:10px}
+.idea-setup-h{display:flex;flex-direction:column;gap:8px;padding:12px 16px;border:1px solid var(--hair-2);border-left-width:4px;border-radius:8px;background:var(--surface)}
+.idea-setup-t{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.idea-setup-n{font-size:13px;color:var(--ink-2)}
+.idea-setup-h .home-why,.idea-setup-h .home-verdict,.idea-setup-h .home-why-not{margin:0}
+.idea-setup-h .setup-record{margin:0}
+.idea-setup-nav{justify-content:flex-end}
+.wo-track>.home-idea{scroll-snap-align:start}
+.rec-periods{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0}
+.rec-period{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border:1px solid var(--hair);border-radius:6px;background:var(--page)}
+.rec-ph{font:600 12px var(--sans);color:var(--ink)}
+.setup-record-short{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)}
+.jump{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+@media (max-width:600px){.rec-periods{grid-template-columns:1fr}}
+.judge-same{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--ink)}
+.judge-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.judge-chip{font:600 12.5px var(--sans);padding:3px 9px;border:1px solid var(--hair-2);border-radius:12px;background:var(--surface);color:var(--ink)}
+.judge-bought{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
 .home-idea.fam-edge{border-left-width:4px}
 .home-idea-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .home-ticker{font:700 20px var(--sans)} .home-co{font-size:13.5px;color:var(--soft)}

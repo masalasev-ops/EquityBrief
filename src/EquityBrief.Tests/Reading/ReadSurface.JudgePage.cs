@@ -246,7 +246,10 @@ public partial class ReadSurface
         const string Words = "The picker's first picks, made on the night of 20 Nov, are bought at the open on Mon 23 Nov. The accounts start from then.";
 
         Assert.Equal(Words, SinglePageApp.EmptyRecordWords(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 23)));
-        Assert.Equal(2, Blocks(page, "<p class=\"empty\" data-empty=\"record\" data-summary>" + System.Text.RegularExpressions.Regex.Escape(Words) + "</p>").Count);
+        // From the operator's order of 2026-11-24, item 14, said once, under the four accounts, the scoreboard its line alone.
+        Assert.Single(Blocks(page, "<p class=\"empty\" data-empty=\"record\" data-summary>" + System.Text.RegularExpressions.Regex.Escape(Words) + "</p>"));
+        Assert.Contains(Words, Blocks(page, "<section class=\"card\" data-card=\"judge-chart\">.*?</section>").Single(), StringComparison.Ordinal);
+        Assert.Contains("None of the picker's trades has closed yet; a firm verdict waits for 300.", Blocks(page, "<section class=\"card\" data-card=\"judge-score\">.*?</section>").Single(), StringComparison.Ordinal);
         // Read in the scoreboard and the four accounts; the version's "fixed 5" keeps an account of its own below them.
         var record = string.Concat(Blocks(page, "<section class=\"card\" data-card=\"judge-(score|chart)\">.*?</section>"));
 

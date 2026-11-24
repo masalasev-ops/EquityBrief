@@ -272,13 +272,14 @@ public sealed partial class SinglePageApp
         }
 
         region.Append(Cards.Computed("Its own rules, " + chosen.Name, OwnRules(chosen), title: $"The picker's own {Escaped(CapWord(chosen))} rules", lede: Escaped(OwnRulesLede(chosen)), region: "judge-rules"));
-        region.Append(Cards.Computed("Scoreboard", (EmptyRecord(view) ?? Scoreboard(view)) + AcrossRecord(view), title: "How its live record stands", region: "judge-score"));
+        // From the operator's order of 2026-11-24, item 14, the night the first picks buy said once, under the four accounts.
+        region.Append(Cards.Computed("Scoreboard", ((view.RecordTile ?? view.Own) is { Started: false } ? EmptyRecord(view) : Scoreboard(view, tiles: EmptyRecord(view) is null)) + AcrossRecord(view), title: "How its live record stands", region: "judge-score"));
         region.Append(Cards.Computed("Four accounts", (EmptyRecord(view) ?? $"<p data-summary>The picker's account beside the rules', random picks' and the index's, each from {(view.RecordNumber is { } number ? $"version {number}'s" : "the picker's")} first night.</p>" + JudgeChart(view.Lines, view.Band, "The four accounts' returns since the picker started")) + ApartCharts(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
         region.Append(Cards.Computed("Where the AI looked", LookedSummary(view) + Looked(view), title: "How its picks compare with the rules', since it started", region: "judge-looked"));
 
         if (view.FixedFive is { } five)
         {
-            region.Append(Cards.Computed(VersionWords(five), $"<p class=\"judge-version\" data-version=\"fixed-five\" data-summary>{Escaped(FixedFiveLine)} {Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>" + JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account") + PickCards(five.Picks, five.Score, five, "fixed-five", chosen), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
+            region.Append(Cards.Computed(VersionWords(five), FixedFiveBody(view, five, chosen), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
         }
 
         foreach (var earlier in view.Earlier)
@@ -352,15 +353,42 @@ public sealed partial class SinglePageApp
     public static string VersionSummaryWords(JudgeVersionView version, int? recordNumber)
     {
         var count = version.Picks.Count;
-        var bought = version.Picks.Count(pick => pick.Held is { Skipped: null });
-        var opens = version.First == version.Last ? "at the open on " + Open(version.First).ToString("ddd d MMM", CultureInfo.InvariantCulture) : "each at the open after its night";
+        var opens = version.Picks.Count > 0 && version.Picks.All(pick => pick.Range is not null) ? "each within its range"
+            : version.Picks.Any(pick => pick.Range is not null) ? "at the open before its range began and within its range from then"
+            : version.First == version.Last ? "at the open on " + Open(version.First).ToString("ddd d MMM", CultureInfo.InvariantCulture) : "each at the open after its night";
         var closed = version.Score.Closed == 0
             ? "None of its trades has closed yet."
             : string.Create(CultureInfo.InvariantCulture, $"{version.Score.Closed} of its trades {(version.Score.Closed == 1 ? "has" : "have")} closed, {version.Score.Winners} of them winners") + (version.Score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked." : ".");
 
-        return string.Create(CultureInfo.InvariantCulture, $"{VersionWords(version)}: {count} pick{(count == 1 ? string.Empty : "s")}, bought {opens} in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. {bought} of {count} bought so far. They are never added to ")
+        return string.Create(CultureInfo.InvariantCulture, $"{VersionWords(version)}: {count} pick{(count == 1 ? string.Empty : "s")}, bought {opens} in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. {BoughtSoFarWords(version.Picks)} They are never added to ")
             + (recordNumber is { } number ? string.Create(CultureInfo.InvariantCulture, $"version {number}'s record. ") : "the record. ")
             + closed;
+    }
+
+    // From the operator's order of 2026-11-24, item 13, what an account did with its picks as the store holds it: bought,
+    // waiting within the order a range places or for the open before the range began, and not bought, by which side of its
+    // range it opened on or for want of cash.
+    // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
+    public static string BoughtSoFarWords(IReadOnlyList<JudgeCardView> picks)
+    {
+        var bought = picks.Count(pick => pick.Held is { Skipped: null });
+        var inRange = picks.Count(pick => pick.Held is null && pick.Range is not null);
+        var atOpen = picks.Count(pick => pick.Held is null && pick.Range is null);
+        var above = picks.Count(pick => pick.Held is { Skipped: JudgeAccounts.OpenedAbove });
+        var below = picks.Count(pick => pick.Held is { Skipped: JudgeAccounts.OpenedBelow });
+        var cash = picks.Count(pick => pick.Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash });
+        var sides = new List<string>();
+
+        sides.AddRange(above > 0 ? [string.Create(CultureInfo.InvariantCulture, $"{above} opened above its range")] : []);
+        sides.AddRange(below > 0 ? [string.Create(CultureInfo.InvariantCulture, $"{below} below it")] : []);
+        sides.AddRange(cash > 0 ? [string.Create(CultureInfo.InvariantCulture, $"{cash} for want of cash")] : []);
+
+        return string.Create(CultureInfo.InvariantCulture, $"Bought so far: {bought} of {picks.Count}")
+            + (inRange > 0 ? string.Create(CultureInfo.InvariantCulture, $"; waiting within the {Core.Loop.BuyRanges.OrderSessions}-day order: {inRange}") : string.Empty)
+            + (atOpen > 0 ? string.Create(CultureInfo.InvariantCulture, $"; waiting for the open after its night: {atOpen}") : string.Empty)
+            + string.Create(CultureInfo.InvariantCulture, $"; not bought: {above + below + cash}")
+            + (sides.Count > 0 ? " (" + string.Join(", ", sides) + ")" : string.Empty)
+            + ".";
     }
 
     static string VersionSummary(JudgeVersionView version, int? recordNumber) =>
@@ -389,6 +417,68 @@ public sealed partial class SinglePageApp
                 + JudgeChart([new JudgeLineView(AcrossName + ", its own account", across.Values)], [], AcrossName + "'s own account") + "</div>"
             : string.Empty);
 
+    // From the operator's order of 2026-11-24, item 11, the fixed 5 on the night shown beside its version: where it took the
+    // same stocks, one line saying so with why its limit or the quarter decided, its account's figure and the stocks as chips;
+    // where they differ, the shared stocks as chips and only the picks that differ as cards. Then what its account did with
+    // its picks, its own chart, and the cards of its picks on the other nights.
+    // see: The AI stock picker's page draws a variant's picks as cards only where they differ from its version's that night
+    static string FixedFiveBody(JudgeView view, JudgeVersionView five, UniverseChoice chosen)
+    {
+        var html = new StringBuilder($"<p class=\"judge-version\" data-version=\"fixed-five\" data-summary>{Escaped(FixedFiveLine)}</p>");
+        JudgeCardView[] its = [.. five.Picks.Where(pick => pick.Night == view.Shown)];
+        var versions = view.Picks.Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
+        JudgeCardView[] shared = [.. its.Where(pick => versions.Contains(pick.Ticker))];
+        JudgeCardView[] differ = [.. its.Where(pick => !versions.Contains(pick.Ticker))];
+
+        if (its.Length > 0)
+        {
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"judge-same\" data-same=\"{(differ.Length == 0 && shared.Length == view.Picks.Count ? "all" : shared.Length.ToString(CultureInfo.InvariantCulture))}\"><b>{Escaped(SameWords(shared.Length, differ.Length, view.Past))}</b> {Escaped(FixedFiveWhy(view.Marked, view.Picks.Count))} {Escaped(OwnAccountWords(five))}</p>");
+            html.Append(shared.Length > 0 ? "<p class=\"judge-chips\">" + string.Concat(shared.Select(pick => $"<span class=\"judge-chip\" data-ticker=\"{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</span>")) + "</p>" : string.Empty);
+        }
+
+        html.Append($"<p class=\"judge-bought\" data-bought>{Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>");
+        html.Append(JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account"));
+        html.Append(PickCards([.. differ, .. five.Picks.Where(pick => pick.Night != view.Shown)], five.Score, five, "fixed-five", chosen));
+
+        return html.ToString();
+    }
+
+    // "Tonight it took the same 5 picks as the version above.", or how many it shared and how many differ.
+    public static string SameWords(int shared, int differ, bool past = false) =>
+        differ == 0
+            ? string.Create(CultureInfo.InvariantCulture, $"{(past ? "That night" : "Tonight")} it took the same {shared} pick{(shared == 1 ? string.Empty : "s")} as the version above.")
+            : string.Create(CultureInfo.InvariantCulture, $"{(past ? "That night" : "Tonight")} it shared {shared} of its picks with the version above; {differ} differ{(differ == 1 ? "s" : string.Empty)}, drawn as {(differ == 1 ? "a card" : "cards")} below.");
+
+    // Why a fixed 5 and its version took what they took: the version takes the best quarter of what it marked and at most its
+    // limit, so where a quarter is above the limit the limit decided and the fixed 5 takes the same stocks.
+    public static string FixedFiveWhy(int? marked, int picked)
+    {
+        if (marked is not { } count)
+        {
+            return string.Empty;
+        }
+
+        var quarter = (count + JudgePrompt.QuarterOf - 1) / JudgePrompt.QuarterOf;
+
+        return quarter > JudgePrompt.MostPicks
+            ? string.Create(CultureInfo.InvariantCulture, $"The version takes the best quarter of the stocks it marked, at most {JudgePrompt.MostPicks}. A quarter of {count} is {quarter}, so its limit of {JudgePrompt.MostPicks} decided.")
+            : string.Create(CultureInfo.InvariantCulture, $"The version takes the best quarter of the stocks it marked, at most {JudgePrompt.MostPicks}. A quarter of {count} is {quarter}, so the quarter decided and it picked {picked}.");
+    }
+
+    // "Its own account: 0.0% since Tue 24 Nov, 0 open, 0 closed."
+    public static string OwnAccountWords(JudgeVersionView version)
+    {
+        var first = version.Values.Count > 0 ? version.Values[0].Value : 0m;
+        var last = version.Values.Count > 0 ? version.Values[^1].Value : 0m;
+        var change = Math.Round(ReturnFrom(last, first) * 100, 1);
+
+        // A change rounding to nothing reads 0.0%, never -0.0%.
+        change = change == 0.0 ? 0.0 : change;
+        var open = version.Picks.Count(pick => pick.Held is { Skipped: null, Ended: null });
+
+        return string.Create(CultureInfo.InvariantCulture, $"Its own account: {change:0.0}% since {Open(version.First):ddd d MMM}, {open} open, {version.Score.Closed} closed.");
+    }
+
     // From 24.13, until any of the judge's live picks has been bought, why the scoreboard and the four accounts hold nothing,
     // the night and the open read from its first stored picks; none once one is bought, or before it has picked.
     public static string? EmptyRecord(JudgeView view) =>
@@ -404,10 +494,17 @@ public sealed partial class SinglePageApp
         + ", are bought at the open on " + open.ToString("ddd d MMM", CultureInfo.InvariantCulture)
         + (number is null ? ". The accounts start from then." : ". Its record and the four accounts start from then.");
 
-    static string Scoreboard(JudgeView view)
+    // The scoreboard: its line, and its tiles and verdict once a pick is bought; before then the line alone, the four accounts
+    // saying when the first picks buy.
+    static string Scoreboard(JudgeView view, bool tiles = true)
     {
         var score = view.Score;
         var html = new StringBuilder(string.Create(CultureInfo.InvariantCulture, $"<p data-summary>{(score.Closed == 0 ? "None of the picker's trades has closed yet" : $"{score.Closed} of the picker's trades have closed, {score.Winners} of them winners")}; a firm verdict waits for {score.Needed}.</p>"));
+
+        if (!tiles)
+        {
+            return html.ToString();
+        }
 
         html.Append("<div class=\"judge-tiles\">");
 
@@ -776,9 +873,13 @@ public sealed partial class SinglePageApp
 
         static string Day(DateOnly day) => day.ToString("ddd d MMM", CultureInfo.InvariantCulture);
 
+        // From the operator's order of 2026-11-24, item 12, a pick waiting to buy says how it buys in the approved words: within
+        // its range from the range's first night, at the open before it.
+        // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
         return pick.Held switch
         {
-            null => $"Buys at the next open after its night in {account}.",
+            null when pick.Range is { } range => string.Join(' ', Core.Loop.BuyRanges.PlanLines(range)) + $" In {account}.",
+            null => $"{BeforeRangeLine} In {account}.",
             { Skipped: Core.Cards.PaperAccount.UnderTheCash } => $"Not bought: no cash, in {account}. Its result is still recorded.",
             { Skipped: { } why } => $"Not bought in {account}: {why}.",
             { Ended: { } ended, Sold: { } sold } held => $"Bought on {Day(held.Bought)} at ${Figures.Price(held.Paid)} and sold on {Day(ended)} at ${Figures.Price(sold)}"

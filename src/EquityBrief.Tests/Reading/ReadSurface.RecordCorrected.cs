@@ -59,7 +59,7 @@ public partial class ReadSurface
         // The box draws it beneath the figure and above the rule's note, and its figure as before.
         var box = Read(MarkRenderer.SetupRecordBox(pullback));
 
-        Assert.Contains("picks like this lost about $0.12 for every $1 risked", box, StringComparison.Ordinal);
+        Assert.Contains("About $0.12 less for every $1 risked", box, StringComparison.Ordinal);
         Assert.True(box.IndexOf("Checked on", StringComparison.Ordinal) < box.IndexOf(MarkRenderer.RecordNote, StringComparison.Ordinal));
 
         // The day before the correction and a month after it, nothing is said.

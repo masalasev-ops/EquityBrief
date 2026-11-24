@@ -121,7 +121,7 @@ public partial class ReadSurface
             Assert.Contains("Pick 1 of 3 on the night of 20 Nov, a stock of the S&P 500", across, StringComparison.Ordinal);
             Assert.Contains("Pick 2 of 3 on the night of 20 Nov, a stock of the S&P 600", across, StringComparison.Ordinal);
             Assert.Contains("Pick 3 of 3 on the night of 20 Nov, a stock of the S&P 400", across, StringComparison.Ordinal);
-            Assert.Contains("Buys at the next open after its night in the earlier version's own account.", across, StringComparison.Ordinal);
+            Assert.Contains("Picked before its range began, so it buys at the open. In the earlier version's own account.", across, StringComparison.Ordinal);
             Assert.DoesNotContain("large-cap picks tonight (3)", page, StringComparison.Ordinal);
             Assert.Contains("<span class=\"night-picker\" data-route=\"#/picker/\" data-night=\"2026-11-20\">", page, StringComparison.Ordinal);
         }

@@ -32,6 +32,22 @@ public sealed record SetupLongRecord(string Index, string Family, double? EdgePe
     // see: A record the history was corrected under says for a month how many of its rule's trades the correction added and removed, or that none changed
     public RecordCorrection? Correction { get; init; }
 
+    // From the operator's order of 2026-11-24, item 5, the long test's figure for the rule on the index over its years to 2018:
+    // the live rule's mean result per $1 risked against its benchmark and its trades, from the newest per-rule run over the long
+    // history that followed a build of the long ledger through the 24.19 correction; none until one has, the box then saying
+    // the long test is being rebuilt.
+    // see: A price family's record box draws the long test's years to 2018 beside its record from 2019, the long box saying it is being rebuilt until the long ledger is
+    public double? LongEdge { get; init; }
+
+    public int? LongPicks { get; init; }
+
+    // The day the 24.19 corrections to the long history's reader landed, on or after which a build of the long ledger counts
+    // as built through them.
+    public static DateOnly LongRebuiltOn { get; } = new(2026, 11, 24);
+
+    // A price family's record, of a figure or of too few picks, which the box draws in its two periods side by side.
+    public bool Periods => BookLine is null && ReachesBack is null && EdgePerPick is not null;
+
     // A book's months rounding to nothing, said as about the same.
     public bool Same => Points is { } points && Math.Round(Math.Abs(points), 2) == 0;
 
@@ -131,6 +147,14 @@ public sealed partial class MarkRenderer
             return string.Empty;
         }
 
+        // From the operator's order of 2026-11-24, item 9, a card standing alone keeps the full box, a price family's record in
+        // its two periods.
+        // see: A price family's record box draws the long test's years to 2018 beside its record from 2019, the long box saying it is being rebuilt until the long ledger is
+        if (record.Periods)
+        {
+            return PeriodsBox(record, "This setup's record on the " + IndexNamed(record.Index), RecordNote);
+        }
+
         var line = record switch
         {
             { BookLine: { } book } => Escaped(book),
@@ -148,6 +172,58 @@ public sealed partial class MarkRenderer
             : string.Empty;
 
         return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}{CorrectedLine(record)}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
+    }
+
+    // The long test's years, from the long ledger's first to its last, as the box heads them.
+    public static string LongTestYears => FormattableString.Invariant($"{EquityBrief.Core.History.LongLedger.From.Year} to {EquityBrief.Core.History.LongLedger.Through.Year}, the long test");
+
+    // What the long test's box reads until a run over the long ledger built through the 24.19 correction gives its figure.
+    public const string BeingRebuilt = "Being rebuilt";
+
+    // The line beneath Home's setup header, in the operator's words.
+    public const string HeaderRecordNote = "The rule's record over every stock it bought, not any one stock's chance.";
+
+    // A price family's record in its two periods side by side under the heading given, against buying the index's other stocks
+    // the same way: the long test's years to 2018 and the years from 2019, each its figure per $1 risked and its picks; then
+    // that its figure reads high where it does, the correction's line and the note given.
+    // see: A price family's record box draws the long test's years to 2018 beside its record from 2019, the long box saying it is being rebuilt until the long ledger is
+    public static string PeriodsBox(SetupLongRecord record, string heading, string note)
+    {
+        var high = record is { Made: true } or { Lost: true } && ReadsHigh(record.Family)
+            ? Formatted($"<span class=\"rec-sub\" data-reads-high>{Escaped(ReadsHighLine)}</span>")
+            : string.Empty;
+        var longer = record.LongEdge is { } edge && record.LongPicks is { } picks ? PeriodWords(edge, picks) : Formatted($"<b class=\"none\">{BeingRebuilt}</b>");
+
+        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\" data-periods><span class=\"rec-h\">{Escaped(heading)}</span>")
+            + Formatted($"<div class=\"rec-periods\"><div class=\"rec-period\" data-period=\"long\" data-long=\"{(record.LongEdge is null ? "rebuilt" : "read")}\"><span class=\"rec-ph\">{Escaped(LongTestYears)}</span><span>{longer}</span></div>")
+            + Formatted($"<div class=\"rec-period\" data-period=\"standing\"><span class=\"rec-ph\">{record.From} to {record.Through}</span><span>{PeriodWords(record.EdgePerPick!.Value, record.Picks ?? 0)}</span></div></div>")
+            + Formatted($"{high}{CorrectedLine(record)}<span class=\"rec-sub\">{Escaped(note)}</span></div>");
+    }
+
+    // One period's figure: about how much more or less a pick made for every $1 risked over its picks, or its picks short of
+    // the count a record needs.
+    public static string PeriodWords(double edge, int picks) =>
+        picks < EquityBrief.Core.Cards.TakenWalk.RecordMinimum
+            ? Formatted($"{picks.ToString("N0", CultureInfo.InvariantCulture)} picks, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs.")
+            : Formatted($"About <b class=\"{(edge > 0 ? "made" : "lost")}\">{Escaped(RecordDollars(edge))}</b> {(edge > 0 ? "more" : "less")} for every $1 risked, over {picks.ToString("N0", CultureInfo.InvariantCulture)} picks.");
+
+    // A card's one line under its setup's header on Home: the record from 2019 in short, and the way up to the header.
+    public static string SetupRecordShort(SetupLongRecord? record, string header)
+    {
+        if (record is null || record.State == "unread")
+        {
+            return string.Empty;
+        }
+
+        var said = record switch
+        {
+            { Periods: true, Picks: { } picks, EdgePerPick: { } edge } when picks >= EquityBrief.Core.Cards.TakenWalk.RecordMinimum =>
+                FormattableString.Invariant($"Its setup's record: {RecordDollars(edge)} {(edge > 0 ? "more" : "less")} per $1 risked from {record.From}, {picks.ToString("N0", CultureInfo.InvariantCulture)} picks."),
+            { Periods: true, Picks: { } picks } => FormattableString.Invariant($"Its setup's record: {picks} picks from {record.From}, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
+            _ => "Its setup's record is above.",
+        };
+
+        return Formatted($"<p class=\"setup-record-short\" data-record=\"{record?.State ?? "unread"}\">{Escaped(said)} <button type=\"button\" class=\"jump\" data-jump=\"{Escaped(header)}\">See it</button></p>");
     }
 
     // The corrections to the history the records are read over, the newest last: each one's day, what it fixed in the operator's

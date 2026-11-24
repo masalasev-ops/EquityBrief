@@ -7,6 +7,17 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/ARCHITECTURE.html - Home's ideas under one header a setup, the record in two periods, and a variant's shared picks as chips, at a correction to 24.29
+Decision: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it; A price family's record box draws the long test's years to 2018 beside its record from 2019, the long box saying it is being rebuilt until the long ledger is; The AI stock picker's page draws a variant's picks as cards only where they differ from its version's that night
+Was:
+> ARCHITECTURE.html, 15.18's row "The setup's record over the long history": "... and not this stock's chance (see: A book's record box reads ...)"
+> ARCHITECTURE.html, 15.24's row "Watching, not buying": "... and the link to every pick's full plan counting every pick (see: Home draws every pick as a card ...)"
+> ARCHITECTURE.html, 15.24's row "An idea's record over the long history": "... on each idea's card the box a pick's card draws ... (see: A book's record box reads ...)"
+> ARCHITECTURE.html, 15.26's row "A fixed 5": "... and is never added to the record"
+Now:
+> ARCHITECTURE.html: each row the same, with what the operator's order of 2026-11-24 adds: a price family's figure in two periods side by side; each setup's picks under one header with its cards a carousel and the link beneath the rules' ideas; the record drawn once in the header and as one line on each card; the stocks a fixed 5 shared with its version as chips under one line, only those that differ drawn as cards
+Why: the operator's order of 2026-11-24, items 4 to 14, kept word for word in `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`, from the mockup `prompts/2026-11-24-say-it-once-mockup.html`
+
 ### 2026-11-24 - docs/ARCHITECTURE.html - a link by hand no longer reads past the code's own history-ends mark, at a correction to the 24.19 correction
 Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
 Was:
