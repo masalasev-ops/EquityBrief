@@ -52,6 +52,37 @@ public partial class FixtureExpectations
         Assert.Equal(50.2m, laredo.Value.Bars.Single(bar => bar.Session == vital).Close);
     }
 
+    // Over a constructed store, as the operator's store holds it: LPI a member of the S&P 600 from 2023-01-03 with no end, priced
+    // to 2023-03-10 and carrying a history-ends mark there, and VTLE priced alike to it and on from 2023-03-13 at 50.2. The reader
+    // reads LPI's member sessions from 2023-03-13 at VTLE's prices, the link listed as made by hand, though the mark parts LPI's
+    // history at its last price.
+    [Fact]
+    public async Task TheLongReaderReadsAHandLinkPastTheCodesOwnHistoryEndsMark()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var vital = new DateOnly(2023, 3, 13);
+        string[] days = [.. Enumerable.Range(0, 120).Select(day => new DateOnly(2023, 1, 3).AddDays(day)).Where(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)).Select(day => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))];
+        static DateOnly Day(string text) => DateOnly.ParseExact(text, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        decimal Close(int at) => 50m + (at % 2 == 0 ? 0m : 0.5m);
+
+        store.Execute("INSERT INTO long_market_bar (series, session_date, open, high, low, close, run_id) VALUES " + string.Join(", ", days.Select(day => $"('GSPC', '{day}', '1000', '1000', '1000', '1000', 'r')")) + ";");
+        store.Execute($"INSERT INTO long_span (index_code, ticker, joined, \"left\", read_from, run_id) VALUES ('SML', 'LPI', '{days[0]}', NULL, 'fund', 'r');");
+        store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES "
+            + string.Join(", ", days.Select((day, at) => (day, at)).Where(one => Day(one.day) < vital).Select(one => LongBarRow("LPI", one.day, Close(one.at)))
+                .Concat(days.Select((day, at) => LongBarRow("VTLE", day, Day(day) < vital ? Close(at) : 50.2m)))) + ";");
+
+        var last = days.Last(day => Day(day) < vital);
+
+        store.Execute($"INSERT INTO session_mark (ticker, session_date, kind, says, ruled, run_id) VALUES ('LPI', '{last}', '{EquityBrief.Core.Chart.SessionMarking.HistoryEnds}', 'e', '2026-11-08T00:00:00Z', 'r');");
+
+        var reader = new EquityBrief.Worker.History.LongHistoryReader(store.DatabaseFile);
+        var through = Day(days[^1]);
+        var lpi = (await reader.ReadAsync("SML", through)).Names.Where(name => name.Ticker == "LPI").ToArray();
+
+        Assert.Contains(lpi, name => name.Bars.Any(bar => bar.Session == vital && bar.Close == 50.2m) && name.MemberOn(vital));
+        Assert.Contains(await reader.JoinsAsync("SML", through), join => join.Ticker == "LPI" && join.Other == "VTLE" && join.Test is { } test && test.StartsWith("linked by hand from 2023-03-13", StringComparison.Ordinal) && join.Sessions == days.Count(day => Day(day) >= vital));
+    }
+
     // PARA's rows: Paramount Global's to 2025-08-07 and Banzai International's with no start to 2026-10-14, which continues the
     // first from 2025-08-07; PSKY's from 2025-08-07. Dropped by hand, PARA holds no span from 2025-08-07 and PSKY's stands; a
     // code of the same shape not on the hand list keeps its later span.

@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/ARCHITECTURE.html - a link by hand reads the later code's prices past the code's own history-ends mark, at a correction to the 24.19 correction
+Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
+Was:
+> ARCHITECTURE.html, the long history reader's row: "... LPI read from VTLE's from 2023-03-13, PVAC from ROCC's from 2021-12-20 and WTW_old from WW_old's from 2019-04-22 the same way, a pair never priced on one day read at the later code's prices as they stand (see: ...)"
+Now:
+> ARCHITECTURE.html: the same, and a link by hand reading the later code's prices past the code's own history-ends mark
+Why: the long history's lists read again on the operator's store on 2026-11-24, item 5 of the operator's answers of that morning, named LPI, PVAC and WTW_old apart from their later codes, each carrying a history-ends mark at its last price that clipped the later code's prices to its side.
+
+### 2026-11-24 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the widths test walks the AI stock picker's menu over every member on every session, at a correction to 24.29
+Decision: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+Was:
+> ARCHITECTURE.html, the buy range widths test's row: reads "long setups, setups, setup nights, candidate register"; "... with `--picker`, walks every stock and session the four price families flagged ... marking the width provisional (see: ...)"
+> RUNBOOK.md, "The buy range's widths, from 24.29.": the `--picker` command and its paragraph, and no `--every-member`
+Now:
+> ARCHITECTURE.html: the row reading every member's readings on every session, and with `--every-member` walking the picker's menu over every member on every session the table holds, its width replacing the provisional one
+> RUNBOOK.md: the `--every-member` command and a paragraph on it
+Why: the operator's answer of 2026-11-23, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`, that the run over every member on every session follows the table's rebuild, which finished on the operator's store on 2026-11-24.
+
 ### 2026-11-24 - docs/ARCHITECTURE.html - every AI stock picker version buys within the approved range from the night of 2026-11-24, at a correction to 24.29
 Decision: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
 Was:

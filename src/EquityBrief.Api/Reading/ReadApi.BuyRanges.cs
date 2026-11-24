@@ -21,6 +21,7 @@ public sealed partial class ReadApi
         string runId;
         string day;
         bool provisional;
+        bool everyMember;
 
         await using (var command = connection.CreateCommand())
         {
@@ -35,6 +36,7 @@ public sealed partial class ReadApi
 
             (runId, day) = (reader.GetString(0), reader.GetString(1)[..10]);
             provisional = !reader.IsDBNull(2) && reader.GetString(2).StartsWith(BuyRanges.PickerRun, StringComparison.Ordinal);
+            everyMember = !reader.IsDBNull(2) && reader.GetString(2).StartsWith(BuyRanges.EveryMemberRun, StringComparison.Ordinal);
         }
 
         var rows = new List<RangeWidthRow>();
@@ -63,6 +65,6 @@ public sealed partial class ReadApi
             }
         }
 
-        return new BuyRangeTableView(day, rows) { Provisional = provisional };
+        return new BuyRangeTableView(day, rows) { Provisional = provisional, EveryMember = everyMember };
     }
 }

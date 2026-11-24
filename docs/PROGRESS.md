@@ -22595,3 +22595,62 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the widths test over every member on every session once the every-session table is written again, its table
             beside this one and its width replacing this one from the next night where it differs, the change listed.
+
+### 24.19 - correction: a link by hand reads the later code's prices past the code's own history-ends mark   2026-11-24
+
+Queue:      done, the picker's range at 24.29 and the every-session table written again on the operator's store; in progress,
+            this correction and the widths test over every member; next, the table written again for the years the three
+            links reach, the widths run over every member, then 24.30.
+Found:      the long history's lists read again on the operator's store on 2026-11-24, item 5 of the operator's answers of that
+            morning, named DDR joined with SITC by hand and LPI, PVAC and WTW_old apart from VTLE, ROCC and WW_old, "priced
+            together, 0 member session(s) it would have priced", their member sessions still unpriced: LPI 704 from 2023-03-13,
+            PVAC 383 from 2021-12-20 and WTW_old 112 from 2019-04-22, 1,199 in all. Each carries a history-ends mark at its last
+            price, which parts its history there, and the reader read the later code's prices only on the part's side of the
+            mark, so none after it reached the link. The 24.19 correction's test of the three worked the link alone and never
+            through the reader over a mark.
+Built:      a link by hand reads the later code's prices past the code's own history-ends mark, still from the part's own start
+            where a later part begins after one. The decision's sentence and the reader's row.
+Measured:   the lists of 2026-11-24 above, in 270 s, 88 s and 87 s on the S&P 500, 400 and 600, read only.
+Tests:      1 new: over a constructed store, LPI a member of the S&P 600 with no end, priced to 2023-03-10 and marked there,
+            and VTLE priced alike and on from 2023-03-13, read by the reader with LPI's sessions from 2023-03-13 at VTLE's
+            prices and the link listed as made by hand.
+Pins:       none moved. The long history reader is no source a rule pins.
+Mutated:    the rule, stated before the run: the guard this correction adds taken out at its one site, the later code's prices
+            clipped to the part's side of the mark again: red. Filtered to its test and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+Carried:    the every-session table written again on the operator's store for the S&P 400 from 2019-04-22 and the S&P 600 from
+            2021-12-20, the years the three links reach, after the merge and before the widths run over every member.
+
+### 24.29 - correction: the widths test walks the AI stock picker's menu over every member on every session   2026-11-24
+
+Queue:      done, the picker's range and the every-session table written again; in progress, this correction and the 24.19
+            correction beside it; next, the table written again for the three links' years, this run on the operator's store,
+            then 24.30.
+Ruled:      the operator's answer of 2026-11-23 on the width's basis, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`, that the run over every member on every session follows
+            the table's rebuild and replaces the provisional width from the next night where it differs.
+Built:      the worker's buy-range-widths verb with `--every-member` walks the picker's menu over every member of each index on
+            every session the every-session table holds, each with the company value the table read for it, at the open and in
+            each width as the `--picker` run does; its run log row opens with the run's kind and the Loop page's card says its
+            width replaces the provisional one from the next night where it differs. The menu's tally adds each stock session to
+            its thread's own tallies as it is walked, so millions of them hold no walk in memory. The setup ledger's check that
+            no night reads the table names the widths test, run by hand, as its one reader beside the ledger. The decision's
+            sentence, the catalogue's row, the runbook and the changelog.
+Measured:   nothing on the operator's store yet: the run waits for the table written again for the three links' years.
+Tests:      2 new and 1 widened: the table's members of one index read in order with their company values and none of
+            another's; the Loop page's card over an every-member run, reading its line and no approval; and the menu's tally
+            over the same two members walked on sessions of 2019, all with the later years.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the members read on
+            every index: red; m2 every stock session tallied with the early years: survived first, its 2019 session outside
+            the test walker's calendar and never walked, an unreachable boundary, then red over a walker of 2019 sessions; m3 the
+            card reading no every-member run: red. Each filtered to its tests and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4025 of 4025 tests ran with none failed, migrations 0 to 172 with
+            none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754 claims, 1754
+            passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the run over every member on the operator's store, both tables to the operator, and its width replacing the
+            provisional one from the next night where it differs, the change listed.
