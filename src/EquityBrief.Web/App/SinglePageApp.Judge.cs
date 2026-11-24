@@ -366,8 +366,8 @@ public sealed partial class SinglePageApp
     }
 
     // From the operator's order of 2026-11-24, item 13, what an account did with its picks as the store holds it: bought,
-    // waiting within the order a range places or for the open before the range began, and not bought, by which side of its
-    // range it opened on or for want of cash.
+    // waiting within the order a range places, bought at the open before the range began or not with no night having read that
+    // open, and not bought, by which side of its range it opened on or for want of cash.
     // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
     public static string BoughtSoFarWords(IReadOnlyList<JudgeCardView> picks)
     {
@@ -385,7 +385,7 @@ public sealed partial class SinglePageApp
 
         return string.Create(CultureInfo.InvariantCulture, $"Bought so far: {bought} of {picks.Count}")
             + (inRange > 0 ? string.Create(CultureInfo.InvariantCulture, $"; waiting within the {Core.Loop.BuyRanges.OrderSessions}-day order: {inRange}") : string.Empty)
-            + (atOpen > 0 ? string.Create(CultureInfo.InvariantCulture, $"; waiting for the open after its night: {atOpen}") : string.Empty)
+            + (atOpen > 0 ? string.Create(CultureInfo.InvariantCulture, $"; its open not yet read by a night: {atOpen}") : string.Empty)
             + string.Create(CultureInfo.InvariantCulture, $"; not bought: {above + below + cash}")
             + (sides.Count > 0 ? " (" + string.Join(", ", sides) + ")" : string.Empty)
             + ".";

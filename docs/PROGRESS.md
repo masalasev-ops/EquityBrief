@@ -22785,3 +22785,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the after shots on the operator's 5152 once it merges, over tonight's ideas.
+
+### 24.29 - correction: a pick bought at the open is counted as not yet read until a night reads its open   2026-11-24
+
+Queue:      done, #782 merged and the every-session table written again on all three indexes, each holding the rows it
+            wrote; in progress, the check on each index and this correction; next, the widths over every member after the
+            night, then 24.30.
+Found:      the after shots of #782 on the operator's 5152 at 3:28 pm ET on 24 Nov: the fixed 5's line read "waiting for the
+            open after its night: 5" when the open of 24 Nov had passed and no night had read it yet.
+Built:      the tally's count of picks bought at the open with no fill or refusal on the store reads "its open not yet read by
+            a night", true before that open and after it.
+Tests:      none new; the range test widened with the tally worked by hand over one pick within its order and one at the open.
+Pins:       none moved. The picker page is no source a rule pins.
+Mutated:    the rule, stated before the run: the old words put back at their one site. m1: red. Filtered to its test and
+            reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4028 of 4028 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
