@@ -104,28 +104,41 @@ public static partial class LongRenames
         return ([.. own.Concat(taken).OrderBy(bar => bar.Session)], taken.Select(bar => bar.Session).ToHashSet());
     }
 
-    // The links the operator made by hand: a code, the code whose prices it reads from the session given on, and that session,
-    // here SITE Centers' 8-K carrying item 5.03 of 2018-10-12, the charter amendment of its rename from DDR Corp.
+    // The links the operator made by hand: a code, the code whose prices it reads from the session given on, and that session.
+    // DDR from SITE Centers' 8-K carrying item 5.03 of 2018-10-12, the charter amendment of its rename from DDR Corp. From the
+    // operator's answers of 2026-11-23, item 1, three more, each from the first session its code holds no price after its
+    // company took the later code: LPI, Laredo Petroleum, to VTLE, Vital Energy, after the 8-K carrying item 5.03 of
+    // 2023-01-09; PVAC, Penn Virginia, to ROCC, Ranger Oil, after the 8-K carrying item 5.03 of 2021-10-07; and WTW_old,
+    // Weight Watchers, to WW_old, WW International, the provider's two codes meeting on back-to-back sessions with no filer
+    // on file for either.
     // see: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's
-    public static IReadOnlyList<(string Ticker, string Later, DateOnly From)> ByHand { get; } = [("DDR", "SITC", new DateOnly(2018, 10, 12))];
+    // see: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
+    public static IReadOnlyList<(string Ticker, string Later, DateOnly From)> ByHand { get; } =
+    [
+        ("DDR", "SITC", new DateOnly(2018, 10, 12)),
+        ("LPI", "VTLE", new DateOnly(2023, 3, 13)),
+        ("PVAC", "ROCC", new DateOnly(2021, 12, 20)),
+        ("WTW_old", "WW_old", new DateOnly(2019, 4, 22)),
+    ];
 
     // A code's bars before a hand link's session with the later code's from it on, the later's put on the code's own scale at
-    // the two codes' ratio on the last day both traded before it, and the sessions taken; none where the later code's first
-    // close there does not continue the code's last before it as the marks' price test reads a continuing price.
+    // the two codes' ratio on the last day both traded before it, or as it stands where the two never traded on one day; and
+    // the sessions taken; none where the later code's first close there does not continue the code's last before it as the
+    // marks' price test reads a continuing price.
     public static (SweepBar[] Bars, IReadOnlySet<DateOnly> Joined, string Test)? ByHandJoined(IReadOnlyList<SweepBar> own, IReadOnlyList<SweepBar> other, DateOnly from, IReadOnlyList<DateOnly> calendar)
     {
         SweepBar[] before = [.. own.Where(bar => bar.Session < from)];
         var shared = Shared(before, other.Where(bar => bar.Session < from).ToArray());
+        var (price, raw, volume) = (1m, 1m, 1m);
 
-        if (shared.Length == 0)
+        if (shared.Length > 0)
         {
-            return null;
-        }
+            var (last, theirs) = shared[^1];
 
-        var (last, theirs) = shared[^1];
-        var price = theirs.Close / last.Close;
-        var raw = last.RawClose > 0 && theirs.RawClose > 0 ? theirs.RawClose / last.RawClose : 1m;
-        var volume = last.Volume > 0 && theirs.Volume > 0 ? Shares(theirs.Volume) / last.Volume : 1m;
+            price = theirs.Close / last.Close;
+            raw = last.RawClose > 0 && theirs.RawClose > 0 ? theirs.RawClose / last.RawClose : 1m;
+            volume = last.Volume > 0 && theirs.Volume > 0 ? Shares(theirs.Volume) / last.Volume : 1m;
+        }
         SweepBar[] taken =
         [
             .. other.Where(bar => bar.Session >= from)
@@ -140,7 +153,7 @@ public static partial class LongRenames
             return null;
         }
 
-        return (together, taken.Select(bar => bar.Session).ToHashSet(), FormattableString.Invariant($"linked by hand from {from:yyyy-MM-dd}, its first close there continuing the last before it"));
+        return (together, taken.Select(bar => bar.Session).ToHashSet(), FormattableString.Invariant($"linked by hand from {from:yyyy-MM-dd}, its first close there continuing the last before it{(shared.Length == 0 ? ", the two never priced on one day and read as they stand" : string.Empty)}"));
     }
 
     // The sessions both codes traded on, a session whose close moved with no volume among them, each code's bar there, in order.

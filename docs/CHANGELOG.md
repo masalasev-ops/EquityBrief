@@ -7,6 +7,21 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html and docs/SCHEMA.md - LPI, PVAC and WTW_old linked by hand, PARA's span from 2025-08-07 dropped by hand, four held-none rows removed and eight marks ruled, at a correction to the 24.19 correction
+Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
+Decision: PARA's provider span from 2025-08-07 is dropped by hand, its code then Banzai International's and PSKY holding Paramount
+Was:
+> ARCHITECTURE.html, the long history reader's row: DDR's link by hand alone
+> ARCHITECTURE.html, the long price pull's row: no span dropped by hand
+> SCHEMA.md: "... but for migration 169's removal of five `long_held_none` rows, which the table names as SchemaMigrations' delete."
+> SCHEMA.md: "| `mark_ruling` | ReadApi | none | none |"
+> SCHEMA.md, `long_held_none`: "... its triggers refusing both, but for migration 169's five rows; ..." and no migration 171
+> SCHEMA.md, `mark_ruling`: "**Written once by the read surface's confirm on the marking page, a second ruling changing nothing, ...**"
+Now:
+> ARCHITECTURE.html: the reader reading LPI from VTLE, PVAC from ROCC and WTW_old from WW_old by hand; the pull's spans without PARA's from 2025-08-07
+> SCHEMA.md: migration 171 removing the four codes' held-none rows and migration 172 writing the operator's eight rulings, `mark_ruling`'s inserts naming SchemaMigrations beside ReadApi
+Why: the operator's answers of 2026-11-23 at about 10:40 pm, items 1, 2 and 10, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the widths test walks the AI stock picker's menu over the price families' setups, at a correction to 24.29
 Decision: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
 Was:

@@ -40,6 +40,13 @@ public static class LongSpans
 
     public static DateOnly ProviderFrom { get; } = new(2012, 1, 1);
 
+    // The provider's S&P 500 spans the operator dropped by hand, each a code and the session from which its spans are not read:
+    // from the operator's answers of 2026-11-23, item 2, PARA from 2025-08-07, the day Paramount Skydance's PSKY took Paramount
+    // Global's place, where the provider names PARA Banzai International, whose filer the long filings hold PARA under and not
+    // Paramount Global's, and the long pull's PARA carries Banzai's prices; PSKY holds Paramount's sessions from that day.
+    // see: PARA's provider span from 2025-08-07 is dropped by hand, its code then Banzai International's and PSKY holding Paramount
+    public static IReadOnlyList<(string Ticker, DateOnly From)> DroppedByHand { get; } = [("PARA", new DateOnly(2025, 8, 7))];
+
     // The larger index first: a code two funds hold at one quarter end reads in the first of these holding it.
     public static IReadOnlyList<string> Larger { get; } = ["GSPC", "MID", "SML"];
 
@@ -130,7 +137,7 @@ public static class LongSpans
             {
                 var first = Dated(span);
 
-                if (first is { } joined)
+                if (first is { } joined && !DroppedByHand.Any(drop => drop.Ticker == span.Ticker && joined >= drop.From))
                 {
                     spans.Add(new LongSpan("GSPC", span.Ticker, joined < cutover ? cutover : joined, span.Left, FromProvider));
                 }
