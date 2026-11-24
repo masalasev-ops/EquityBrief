@@ -20,8 +20,9 @@ namespace EquityBrief.Worker.Loop;
 // for each setup and for every setup of the index together, and the width the early years of every setup together chose is
 // marked. A setup whose live rule buys at a level or on its first pullback carries no range and is not walked. With the
 // picker's flag every stock session the four price families flagged is walked instead under each plan of the AI stock
-// picker's menu, as stand-ins for its picks, the width it chooses provisional. It moves no pick, plan, rule or version, and
-// no plan uses a width before the operator approves one.
+// picker's menu, as stand-ins for its picks, the width it chooses provisional; and with the every-member flag every member
+// of the index on every session the every-session table holds, the width it chooses replacing the provisional one. It moves
+// no pick, plan, rule or version, and no plan uses a width before the operator approves one.
 // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
 public sealed class RangeWidthTest(IClock clock, string databaseFile, string dataRoot, TextWriter output)
 {
@@ -32,6 +33,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         [
             new StoreTouch(Store.LongSetup, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.SessionReading, Touch.Read),
             new StoreTouch(Store.SetupNight, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.BuyRangeWidth, Touch.Insert),
@@ -61,6 +63,16 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
     // The flag walking the picker's menu over the price families' setups in place of each live rule's plan.
     public const string PickerFlag = "--picker";
 
+    // From the operator's answer of 2026-11-23 the flag walking the picker's menu over every member of the index on every
+    // session the every-session table holds, each with its company value as the table read it, which its costs are read by.
+    // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    public const string EveryMemberFlag = "--every-member";
+
+    const string EveryMember = "SELECT ticker, session_date, json_extract(readings, $place) FROM session_reading WHERE index_code = $index ORDER BY session_date, ticker;";
+
+    // The family an every-member row is read under, which names no setup.
+    public const string EveryMemberFamily = "every member";
+
     const string NewestNight = "SELECT MAX(session_date) FROM setup_night;";
 
     const string Insert = @"
@@ -75,9 +87,12 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
     public static PlanCombination PlanOf(CandidateRow live) =>
         PlanHook.Of(CandidateEvaluator.Read(live.Parameters)) ?? new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale);
 
-    // Every index, or the one named; with the picker's flag the picker's menu over every setup the price families flagged.
-    public async Task<int> RunAsync(string? index = null, bool picker = false, CancellationToken cancellation = default)
+    // Every index, or the one named; with the picker's flag the picker's menu over every setup the price families flagged, and
+    // with the every-member flag over every member on every session.
+    public async Task<int> RunAsync(string? index = null, bool picker = false, bool everyMember = false, CancellationToken cancellation = default)
     {
+        picker |= everyMember;
+
         if (index is not null && !PaperFiguresRun.Indices.Contains(index, StringComparer.Ordinal))
         {
             output.WriteLine($"{Verb}: name '--index' as one of {string.Join(", ", PaperFiguresRun.Indices)}");
@@ -105,11 +120,11 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
 
             if (picker)
             {
-                var flagged = await SetupsAsync(code, null, cancellation);
+                var flagged = everyMember ? await EveryMemberAsync(databaseFile, code, cancellation) : await SetupsAsync(code, null, cancellation);
 
                 walker = (await PlanPointTest.WalkerAsync(databaseFile, code, output.WriteLine, cancellation)).Walker;
                 tallies.AddRange(PickerTally(walker, flagged, cancellation));
-                output.WriteLine(FormattableString.Invariant($"{Verb}: {code}: {flagged.Count} stock session(s) the price families flagged walked under the picker's {JudgeAccounts.Plans.Count} plans"));
+                output.WriteLine(FormattableString.Invariant($"{Verb}: {code}: {flagged.Count} stock session(s) {(everyMember ? "of every member" : "the price families flagged")} walked under the picker's {JudgeAccounts.Plans.Count} plans"));
                 rows.AddRange(BuyRanges.Rows(code, tallies));
 
                 continue;
@@ -146,7 +161,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
             rows.AddRange(BuyRanges.Rows(code, tallies));
         }
 
-        await WriteAsync(runId, started, rows, picker ? BuyRanges.PickerRun : null, cancellation);
+        await WriteAsync(runId, started, rows, everyMember ? BuyRanges.EveryMemberRun : picker ? BuyRanges.PickerRun : null, cancellation);
 
         foreach (var row in rows.Where(one => one.Family == BuyRanges.AllSetups))
         {
@@ -221,49 +236,105 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
     // Each width's tallies and the open's under each plan of the picker's menu, over every stock session given; a plan the open
     // walks to no result on a stock session is not offered there.
     // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    // Each stock session is walked and added to its thread's own tallies at once, the threads' tallies summed at the end, so
+    // millions of stock sessions hold no walk of theirs in memory.
     public static IReadOnlyList<(string Family, RangeWidths? Widths, RangeTally Early, RangeTally Late)> PickerTally(
         PlanPointTest.Walker walker, IReadOnlyList<PlanPointTest.FlaggedSetup> setups, CancellationToken cancellation = default)
     {
         var widths = BuyRanges.Widths;
         var plans = JudgeAccounts.Plans;
-        var read = new (double Open, (double? Edge, string? NotBought)[] Ranged)?[setups.Count][];
 
-        Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, at => read[at] = walker.PickerWorked(setups[at], plans, widths));
+        // Each plan's tallies: the open's and then each width's, each over the early years and from 2019.
+        RangeTally[][][] Empty() => [.. plans.Select(plan => Enumerable.Range(0, widths.Count + 1).Select(entry => new[] { RangeTally.Empty, RangeTally.Empty }).ToArray())];
+
+        var total = Empty();
+        var gate = new object();
+
+        Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, Empty, (at, _, local) =>
+        {
+            var worked = walker.PickerWorked(setups[at], plans, widths);
+            var period = setups[at].Session.Year <= IdeaTester.EarlyThrough ? 0 : 1;
+
+            for (var plan = 0; plan < plans.Count; plan++)
+            {
+                if (worked[plan] is not { } held)
+                {
+                    continue;
+                }
+
+                local[plan][0][period] = local[plan][0][period].Add(held.Open, held.Open, null);
+
+                for (var width = 0; width < widths.Count; width++)
+                {
+                    var (edge, side) = held.Ranged[width];
+
+                    local[plan][width + 1][period] = local[plan][width + 1][period].Add(held.Open, edge, side);
+                }
+            }
+
+            return local;
+        },
+        local =>
+        {
+            lock (gate)
+            {
+                for (var plan = 0; plan < plans.Count; plan++)
+                {
+                    for (var entry = 0; entry <= widths.Count; entry++)
+                    {
+                        for (var period = 0; period < 2; period++)
+                        {
+                            total[plan][entry][period] = total[plan][entry][period].Plus(local[plan][entry][period]);
+                        }
+                    }
+                }
+            }
+        });
 
         var tallies = new List<(string, RangeWidths?, RangeTally, RangeTally)>();
 
         for (var plan = 0; plan < plans.Count; plan++)
         {
             var family = BuyRanges.PickerFamily(plans[plan].Hold, plans[plan].Shape);
-            var open = (Early: RangeTally.Empty, Late: RangeTally.Empty);
-            var ranged = widths.Select(_ => (Early: RangeTally.Empty, Late: RangeTally.Empty)).ToArray();
 
-            for (var at = 0; at < setups.Count; at++)
-            {
-                if (read[at][plan] is not { } held)
-                {
-                    continue;
-                }
-
-                var early = setups[at].Session.Year <= IdeaTester.EarlyThrough;
-
-                open = early ? (open.Early.Add(held.Open, held.Open, null), open.Late) : (open.Early, open.Late.Add(held.Open, held.Open, null));
-
-                for (var width = 0; width < widths.Count; width++)
-                {
-                    var (edge, side) = held.Ranged[width];
-
-                    ranged[width] = early
-                        ? (ranged[width].Early.Add(held.Open, edge, side), ranged[width].Late)
-                        : (ranged[width].Early, ranged[width].Late.Add(held.Open, edge, side));
-                }
-            }
-
-            tallies.Add((family, null, open.Early, open.Late));
-            tallies.AddRange(widths.Select((width, one) => (family, (RangeWidths?)width, ranged[one].Early, ranged[one].Late)));
+            tallies.Add((family, null, total[plan][0][0], total[plan][0][1]));
+            tallies.AddRange(widths.Select((width, one) => (family, (RangeWidths?)width, total[plan][one + 1][0], total[plan][one + 1][1])));
         }
 
         return tallies;
+    }
+
+    // Every member of the index on every session the every-session table holds, each with the company value the table read
+    // for it, a stock session once.
+    public static async Task<List<PlanPointTest.FlaggedSetup>> EveryMemberAsync(string databaseFile, string index, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EveryMember;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$place", FormattableString.Invariant($"$[{Core.Ledger.LedgerReadings.IndexOf("company_value")}]"));
+
+        var rows = new List<PlanPointTest.FlaggedSetup>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add(new PlanPointTest.FlaggedSetup(
+                EveryMemberFamily,
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                0,
+                0,
+                null,
+                null,
+                0,
+                reader.IsDBNull(2) ? null : reader.GetDouble(2)));
+        }
+
+        return rows;
     }
 
     async Task<DateOnly?> NewestNightAsync(CancellationToken cancellation)

@@ -114,4 +114,33 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-ranges=\"provisional\"", rules, StringComparison.Ordinal);
         Assert.Contains("<summary>Each setup on its own</summary>", rules, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task AnEveryMemberWidthsRunReadsAsReplacingTheProvisionalWidthAndNamesEachPlanOfTheMenu()
+    {
+        // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+        using var store = new TemporaryStore().Migrated();
+        var plan = EquityBrief.Core.Loop.BuyRanges.PickerFamily("1 week", EquityBrief.Core.Judge.JudgeMenu.Whole);
+
+        store.Execute(
+            "INSERT INTO buy_range_width (run_id, index_code, family, width, ceiling, floor, years, offered, bought, above, below, edge, missed, saved, chosen, written_at) VALUES "
+            + string.Join(", ",
+                RangeRow("ranges-5", "GSPC", "all", "the open", "NULL", "NULL", "early", 8000, 8000, 0, 0, "0.00", "0", "0", 0),
+                RangeRow("ranges-5", "GSPC", "all", "0.5 / 2", "0.5", "2", "early", 8000, 7900, 80, 20, "0.01", "0.01", "0.02", 1),
+                RangeRow("ranges-5", "GSPC", plan, "0.5 / 2", "0.5", "2", "early", 1000, 990, 8, 2, "0.01", "0.01", "0.02", 0)) + ";");
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES "
+            + $"('ranges-5', 'buy-range-widths', '2026-11-24T16:00:00Z', '2026-11-24T19:00:00Z', 'ok', 3, 0, 0, '0', '{EquityBrief.Core.Loop.BuyRanges.EveryMemberRun.Replace("'", "''", StringComparison.Ordinal)}; chosen on 2005 to 2018: GSPC 0.5 / 2');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var ranges = Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")), "<section class=\"card\" data-card=\"loop-ranges\">.*?</section>").Single();
+
+        Assert.Contains($"<p class=\"lm-small\" data-ranges=\"every-member\">{EquityBrief.Web.App.SinglePageApp.BuyRangeEveryMember}</p>", ranges, StringComparison.Ordinal);
+        Assert.Contains("the highest edge a pick over 2005 to 2018. It replaces the provisional width from the next night where it differs.</p>", ranges, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-ranges=\"provisional\"", ranges, StringComparison.Ordinal);
+        Assert.DoesNotContain("It waits for your approval.", ranges, StringComparison.Ordinal);
+        Assert.Contains("<summary>Each plan of the picker's menu on its own</summary><p class=\"lm-p\"><b>1 week, the whole at 2 times the risk</b>, over 2005 to 2018</p>", ranges, StringComparison.Ordinal);
+    }
 }

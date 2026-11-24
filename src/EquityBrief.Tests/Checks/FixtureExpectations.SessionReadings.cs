@@ -181,8 +181,9 @@ public partial class FixtureExpectations
     }
 
     // No night, page, rule or check but the setup ledger's own reads the table: the shipped source naming it is the setup
-    // ledger's and the migration's alone, no component but the setup ledger touches it and only the read surface reads its
-    // years; and no source the build lives in is one a rule's version pins.
+    // ledger's, the migration's and from the 24.29 correction of 2026-11-24 the widths test's, run by hand, alone; no shipped
+    // component but the setup ledger touches it and the widths test reads it alone, and only the read surface reads its years; and no source
+    // the build lives in is one a rule's version pins.
     [Fact]
     public void NoNightPageOrRuleReadsEveryMembersReadingsOnEverySessionAndNoRulesVersionMoves()
     {
@@ -193,11 +194,12 @@ public partial class FixtureExpectations
             .Select(Path.GetFileName)
             .Order(StringComparer.Ordinal);
 
-        Assert.Equal(["SchemaMigrations.cs", "SetupLedger.cs"], naming);
+        Assert.Equal(["RangeWidthTest.cs", "SchemaMigrations.cs", "SetupLedger.cs"], naming);
 
         var components = Harness.ShippedComponents.All();
 
         Assert.Equal(["SetupLedger"], components.Where(component => component.Access.Stores.Any(touch => touch.Store == Core.Components.Store.SessionReading)).Select(component => component.Name));
+        Assert.Equal(Core.Components.Touch.Read, Worker.Loop.RangeWidthTest.Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReading).Touch);
         Assert.Equal(["ReadApi", "SetupLedger"], components.Where(component => component.Access.Stores.Any(touch => touch.Store == Core.Components.Store.SessionReadingYear)).Select(component => component.Name).Order(StringComparer.Ordinal));
         Assert.Equal(Core.Components.Touch.Read, components.Single(component => component.Name == "ReadApi").Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReadingYear).Touch);
 

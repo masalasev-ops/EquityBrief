@@ -241,5 +241,49 @@ public partial class FixtureExpectations
         Assert.Equal((2, 1, 0, 1), (ranged.Offered, ranged.Bought, ranged.Above, ranged.Below));
         Assert.Equal(Math.Abs(edgeB), ranged.Missed + ranged.Saved, 9);
         Assert.Equal(Core.Judge.JudgeAccounts.Plans.Count * 13, tallies.Count);
+
+        Assert.Equal(0, tallies.Single(one => one.Family == family && one.Widths is null).Late.Offered);
+
+        // The same two members walked on sessions of 2019 are tallied with the later years alone, the early years holding none.
+        var lateCalendar = calendar.Select(session => session.AddYears(9)).ToArray();
+        var lateAt = lateCalendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+
+        SweepName LateMember(string ticker, decimal open, decimal close) =>
+            new(ticker, [.. lateCalendar.Select((session, at) => at <= Night ? new SweepBar(session, 101m, 99m, 100m, 1_000_000, 100m, 100m)
+                : at == Night + 1 ? new SweepBar(session, Math.Max(open, close) + 0.5m, Math.Min(open, close) - 0.5m, close, 1_000_000, open, close)
+                : new SweepBar(session, close + 1, close - 1, close, 1_000_000, close, close))], [(null, null)], []);
+
+        var lateSeries = new[] { SweepColumns.Series(LateMember("AAA", 101m, 105m), lateAt), SweepColumns.Series(LateMember("BBB", 95m, 100m), lateAt), SweepColumns.Series(LateMember("FLAT", 100m, 100m), lateAt) };
+        var lateWalker = new PlanPointTest.Walker(lateSeries, lateCalendar, names, new Dictionary<DateOnly, double>(), new Dictionary<DateOnly, string>());
+        var late = RangeWidthTest.PickerTally(lateWalker, [Setup("AAA") with { Session = lateCalendar[Night] }, Setup("BBB") with { Session = lateCalendar[Night] }]);
+        var lateOpen = late.Single(one => one.Family == family && one.Widths is null);
+
+        Assert.True(lateCalendar[Night].Year > IdeaTester.EarlyThrough);
+        Assert.Equal((0, 2), (lateOpen.Early.Offered, lateOpen.Late.Offered));
+    }
+
+    [Fact]
+    public async Task EveryMemberOfAnIndexOnEverySessionIsReadFromTheEverySessionTableWithItsCompanyValue()
+    {
+        // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+        using var store = new TemporaryStore().Migrated();
+        var place = Core.Ledger.LedgerReadings.IndexOf("company_value");
+
+        string Readings(double? value) =>
+            System.Text.Json.JsonSerializer.Serialize(Enumerable.Range(0, Core.Ledger.LedgerReadings.Count).Select(at => at == place ? value : (double?)1.5).ToArray());
+
+        store.Execute(
+            "INSERT INTO session_reading (index_code, session_date, ticker, readings, pin, source) VALUES "
+            + $"('GSPC', '2010-03-02', 'BBB', '{Readings(2.5e10)}', 'p', 'long'), "
+            + $"('GSPC', '2010-03-01', 'AAA', '{Readings(null)}', 'p', 'long'), "
+            + $"('GSPC', '2010-03-02', 'AAA', '{Readings(4e9)}', 'p', 'long'), "
+            + $"('MID', '2010-03-01', 'CCC', '{Readings(3e9)}', 'p', 'long');");
+
+        var rows = await RangeWidthTest.EveryMemberAsync(store.DatabaseFile, "GSPC");
+
+        Assert.Equal(
+            [("AAA", new DateOnly(2010, 3, 1), (double?)null), ("AAA", new DateOnly(2010, 3, 2), 4e9), ("BBB", new DateOnly(2010, 3, 2), 2.5e10)],
+            rows.Select(row => (row.Ticker, row.Session, row.CompanyValue)));
+        Assert.All(rows, row => Assert.Equal(RangeWidthTest.EveryMemberFamily, row.Family));
     }
 }

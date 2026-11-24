@@ -94,6 +94,9 @@ public static class BuyRanges
 
     public const string PickerRun = "provisional, the picker's menu over every setup the price families flagged";
 
+    // The run over every member on every session, whose width replaces the provisional one.
+    public const string EveryMemberRun = "the picker's menu over every member on every session";
+
     public static string PickerFamily(string hold, string shape) => PickerPlan + hold + ", " + shape;
 
     // The rows reading every setup of an index together.
