@@ -70,6 +70,12 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
 
     const string EveryMember = "SELECT ticker, session_date, json_extract(readings, $place) FROM session_reading WHERE index_code = $index ORDER BY session_date, ticker;";
 
+    // The company value's place in a row's readings, found by the catalogue's own words for it, since no engine's file names
+    // a catalogue column but the learned score's.
+    static readonly int CompanyValuePlace = Core.Ledger.LedgerReadings.All
+        .Select((reading, at) => (reading.Definition, at))
+        .Single(one => one.Definition == Core.Families.RuleWording.LedgerReadingsWords.CompanyValue).at;
+
     // The family an every-member row is read under, which names no setup.
     public const string EveryMemberFamily = "every member";
 
@@ -314,7 +320,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
 
         command.CommandText = EveryMember;
         command.Parameters.AddWithValue("$index", index);
-        command.Parameters.AddWithValue("$place", FormattableString.Invariant($"$[{Core.Ledger.LedgerReadings.IndexOf("company_value")}]"));
+        command.Parameters.AddWithValue("$place", FormattableString.Invariant($"$[{CompanyValuePlace}]"));
 
         var rows = new List<PlanPointTest.FlaggedSetup>();
 
