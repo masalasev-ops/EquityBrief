@@ -728,15 +728,13 @@ public sealed class LongHistoryReader : IComponent
         var with = new List<(string, string)>();
 
         // A link the operator made by hand reads the later code's prices from its session on in place of the code's own, where a
-        // member span runs past it and the later code's first close there continues the code's last; listed apart otherwise. From
-        // the 24.19 correction of 2026-11-24 the later code's prices are read past the code's own history-ends mark, which a link
-        // at the code's last price crosses by its ruling: LPI, PVAC and WTW_old each carry one at their last price.
+        // member span runs past it and the later code's first close there continues the code's last; listed apart otherwise.
         // see: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's
         // see: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
         foreach (var (_, later, from) in LongRenames.ByHand.Where(link => link.Ticker == ticker && spans.Any(span => span.Left is not { } left || left > link.From)))
         {
             var theirs = (await SeriesAsync(connection, later, marks.GetValueOrDefault(later) ?? [], through, cancellation))
-                .Where(bar => side.After is not { } after || bar.Session > after)
+                .Where(bar => (side.After is not { } after || bar.Session > after) && (side.UpTo is not { } upTo || bar.Session <= upTo))
                 .ToArray();
             bool Member(DateOnly session) => spans.Any(span => (span.Joined is not { } start || start <= session) && (span.Left is not { } left || left > session));
 

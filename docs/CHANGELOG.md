@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/ARCHITECTURE.html - a link by hand no longer reads past the code's own history-ends mark, at a correction to the 24.19 correction
+Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
+Was:
+> ARCHITECTURE.html, the long history reader's row: "... a pair never priced on one day read at the later code's prices as they stand, and from the 24.19 correction of 2026-11-24 a link by hand reading the later code's prices past the code's own history-ends mark (see: ...)"
+Now:
+> ARCHITECTURE.html: "... a pair never priced on one day read at the later code's prices as they stand (see: ...)"
+Why: the operator's answer of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`, that the change built on the wrong diagnosis come out in its own pull request where it is not needed; none of DDR, LPI, PVAC and WTW_old carries a history-ends mark, so it changed none of the four links
+
 ### 2026-11-24 - docs/RUNBOOK.md - a capture keeps every code asked before, at a correction to the 24.19 correction
 Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
 Was:

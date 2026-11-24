@@ -52,35 +52,53 @@ public partial class FixtureExpectations
         Assert.Equal(50.2m, laredo.Value.Bars.Single(bar => bar.Session == vital).Close);
     }
 
-    // Over a constructed store, as the operator's store holds it: LPI a member of the S&P 600 from 2023-01-03 with no end, priced
-    // to 2023-03-10 and carrying a history-ends mark there, and VTLE priced alike to it and on from 2023-03-13 at 50.2. The reader
-    // reads LPI's member sessions from 2023-03-13 at VTLE's prices, the link listed as made by hand, though the mark parts LPI's
-    // history at its last price.
+    // Over a constructed store shaped as the operator's holds the four after the asks of 2026-11-24 were restored: each earlier
+    // code a member with no end and no history-ends mark of its own, priced to the session before its link; VTLE, ROCC and
+    // SITC priced alike over the same days and on from the link at 50.2, VTLE and ROCC carrying history-ends marks of their
+    // own, VTLE's after the days read and ROCC's in 2016 as the store holds it; WW_old priced only from its link. The reader
+    // reads each earlier code's member sessions from its link at the later code's prices, each listed as linked by hand.
     [Fact]
-    public async Task TheLongReaderReadsAHandLinkPastTheCodesOwnHistoryEndsMark()
+    public async Task TheFourLinksByHandJoinThroughTheLongReader()
     {
         using var store = new TemporaryStore().Migrated();
-        var vital = new DateOnly(2023, 3, 13);
-        string[] days = [.. Enumerable.Range(0, 120).Select(day => new DateOnly(2023, 1, 3).AddDays(day)).Where(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)).Select(day => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))];
+        string[] days = [.. Enumerable.Range(0, 1820).Select(day => new DateOnly(2018, 6, 1).AddDays(day)).Where(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)).Select(day => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))];
         static DateOnly Day(string text) => DateOnly.ParseExact(text, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        decimal Close(int at) => 50m + (at % 2 == 0 ? 0m : 0.5m);
+        static decimal Close(int at) => 50m + (at % 2 == 0 ? 0m : 0.5m);
+        (string Index, string Earlier, string Later, DateOnly From, bool Together)[] links =
+        [
+            ("SML", "DDR", "SITC", new DateOnly(2018, 10, 12), true),
+            ("SML", "LPI", "VTLE", new DateOnly(2023, 3, 13), true),
+            ("SML", "PVAC", "ROCC", new DateOnly(2021, 12, 20), true),
+            ("MID", "WTW_old", "WW_old", new DateOnly(2019, 4, 22), false),
+        ];
+
+        Assert.Equal(links.Select(link => (link.Earlier, link.Later, link.From)), LongRenames.ByHand);
 
         store.Execute("INSERT INTO long_market_bar (series, session_date, open, high, low, close, run_id) VALUES " + string.Join(", ", days.Select(day => $"('GSPC', '{day}', '1000', '1000', '1000', '1000', 'r')")) + ";");
-        store.Execute($"INSERT INTO long_span (index_code, ticker, joined, \"left\", read_from, run_id) VALUES ('SML', 'LPI', '{days[0]}', NULL, 'fund', 'r');");
+        store.Execute("INSERT INTO long_span (index_code, ticker, joined, \"left\", read_from, run_id) VALUES " + string.Join(", ", links.Select(link => $"('{link.Index}', '{link.Earlier}', '{days[0]}', NULL, 'fund', 'r')")) + ";");
         store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES "
-            + string.Join(", ", days.Select((day, at) => (day, at)).Where(one => Day(one.day) < vital).Select(one => LongBarRow("LPI", one.day, Close(one.at)))
-                .Concat(days.Select((day, at) => LongBarRow("VTLE", day, Day(day) < vital ? Close(at) : 50.2m)))) + ";");
-
-        var last = days.Last(day => Day(day) < vital);
-
-        store.Execute($"INSERT INTO session_mark (ticker, session_date, kind, says, ruled, run_id) VALUES ('LPI', '{last}', '{EquityBrief.Core.Chart.SessionMarking.HistoryEnds}', 'e', '2026-11-08T00:00:00Z', 'r');");
+            + string.Join(", ", links.SelectMany(link =>
+                days.Select((day, at) => (day, at)).Where(one => Day(one.day) < link.From).Select(one => LongBarRow(link.Earlier, one.day, Close(one.at)))
+                    .Concat(days.Select((day, at) => (day, at)).Where(one => link.Together || Day(one.day) >= link.From).Select(one => LongBarRow(link.Later, one.day, Day(one.day) < link.From ? Close(one.at) : 50.2m))))) + ";");
+        store.Execute($"INSERT INTO session_mark (ticker, session_date, kind, says, ruled, run_id) VALUES ('VTLE', '2025-12-12', '{EquityBrief.Core.Chart.SessionMarking.HistoryEnds}', 'e', '2026-11-23T21:24:59Z', 'r'), ('ROCC', '2016-02-05', '{EquityBrief.Core.Chart.SessionMarking.HistoryEnds}', 'e', '2026-11-23T21:24:59Z', 'r');");
 
         var reader = new EquityBrief.Worker.History.LongHistoryReader(store.DatabaseFile);
         var through = Day(days[^1]);
-        var lpi = (await reader.ReadAsync("SML", through)).Names.Where(name => name.Ticker == "LPI").ToArray();
 
-        Assert.Contains(lpi, name => name.Bars.Any(bar => bar.Session == vital && bar.Close == 50.2m) && name.MemberOn(vital));
-        Assert.Contains(await reader.JoinsAsync("SML", through), join => join.Ticker == "LPI" && join.Other == "VTLE" && join.Test is { } test && test.StartsWith("linked by hand from 2023-03-13", StringComparison.Ordinal) && join.Sessions == days.Count(day => Day(day) >= vital));
+        foreach (var index in links.Select(link => link.Index).Distinct())
+        {
+            var names = (await reader.ReadAsync(index, through)).Names;
+            var joins = await reader.JoinsAsync(index, through);
+
+            foreach (var link in links.Where(link => link.Index == index))
+            {
+                Assert.True(names.Any(name => name.Ticker == link.Earlier && name.MemberOn(link.From) && name.Bars.Any(bar => bar.Session == link.From && bar.Close == 50.2m)),
+                    $"{link.Earlier}: " + string.Join("; ", names.Where(name => name.Ticker == link.Earlier).Select(name => FormattableString.Invariant($"{name.Bars.Length} bars to {(name.Bars.Length == 0 ? "none" : name.Bars[^1].Session.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))}, member {name.MemberOn(link.From)}")))
+                    + " | " + string.Join("; ", joins.Select(join => $"{join.Ticker}/{join.Other} {join.Test} {join.Sessions}")));
+                Assert.Contains(joins, join => join.Ticker == link.Earlier && join.Other == link.Later && join.Test is { } test
+                    && test.StartsWith(FormattableString.Invariant($"linked by hand from {link.From:yyyy-MM-dd}"), StringComparison.Ordinal) && join.Sessions == days.Count(day => Day(day) >= link.From));
+            }
+        }
     }
 
     // PARA's rows: Paramount Global's to 2025-08-07 and Banzai International's with no start to 2026-10-14, which continues the
