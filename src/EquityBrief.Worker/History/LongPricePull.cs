@@ -1356,7 +1356,7 @@ public sealed class LongPricePull : IComponent
         if (asks.Count > 0)
         {
             Directory.CreateDirectory(folder);
-            await File.WriteAllTextAsync(file, JsonSerializer.Serialize(new LongAgain(askedAt, kept)), cancellation);
+            await File.WriteAllTextAsync(Path.Combine(folder, AgainFile), JsonSerializer.Serialize(new LongAgain(askedAt, kept)), cancellation);
         }
 
         return codes;
