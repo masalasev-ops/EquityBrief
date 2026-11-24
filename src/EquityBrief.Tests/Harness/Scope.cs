@@ -4996,7 +4996,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "The AI stock picker's picks tonight")] = new Scoped(
             Verdict.Pass,
-            "read back off the page over a constructed store: each card's tags, reason, sector and size with no name, ticker or date, the buy at the next open at whatever price it opens beside the last close, its stop and take-profit, its hold, and no line stating a price the stock opens at",
+            "read back off the page over a constructed store: each card's tags, reason, sector and size with no name, ticker or date, the buy at the next open beside the last close for a pick of a night before the range began and the range in the operator's words for one from 2026-11-24, a pick its range did not buy marked with its side, its stop and take-profit, its hold, and no line stating a price the stock opens at",
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "Where the AI looked")] = new Scoped(
             Verdict.Pass,

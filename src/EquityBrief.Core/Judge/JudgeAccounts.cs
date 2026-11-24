@@ -4,8 +4,13 @@ using EquityBrief.Core.Prices;
 
 namespace EquityBrief.Core.Judge;
 
-// One member's sessions from a night on, the night first: each session's date, open and close, as statistics.
-public sealed record JudgeBars(IReadOnlyList<DateOnly> Sessions, double[] Opens, double[] Closes);
+// One member's sessions from a night on, the night first: each session's date, open and close, as statistics, and its low,
+// which an order at a range's ceiling fills by, none where it was not read.
+public sealed record JudgeBars(IReadOnlyList<DateOnly> Sessions, double[] Opens, double[] Closes, double[]? Lows = null);
+
+// A pick as its account places it: the trade where it was bought, and where its range did not buy it, the side of the range
+// it opened on; neither while it waits for its open or its order.
+public sealed record JudgePlaced(PaperTrade? Trade, string? NotBought);
 
 // What the median random account and its middle band stood at on a session.
 public sealed record JudgeBand(DateOnly Session, decimal Low, decimal Median, decimal High);
@@ -52,32 +57,84 @@ public static class JudgeAccounts
     public static double? RiskOf(string hold, double? typicalMove) =>
         JudgeMenu.HoldOf(hold) is { } held && typicalMove is > 0 ? typicalMove.Value * held.StopMoves : null;
 
+    // From the operator's answers of 2026-11-24 every picker version buys within a range from the night of 2026-11-24 on,
+    // its picks of earlier nights bought at the open as they were: the provisional width, a ceiling half a typical daily move
+    // above the last close and a floor 2 under it, on all three indices, until the widths test over every member on every
+    // session replaces it.
+    // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
+    public static DateOnly RangedFrom { get; } = new(2026, 11, 24);
+
+    public static RangeWidths Widths { get; } = new(0.5, 2);
+
+    // Why a pick its range did not buy is not bought, as its card says it.
+    public const string OpenedAbove = "it opened above its range and did not come back to it";
+
+    public const string OpenedBelow = "it opened below its range";
+
+    // The widths a pick of a night buys in, none before the range began.
+    public static RangeWidths? WidthsOn(DateOnly night) => night >= RangedFrom ? Widths : null;
+
+    // The range a pick buys in: none for a pick of a night before the range began, or where its last close or typical move
+    // sets none.
+    public static BuyRange? RangeOf(DateOnly night, decimal lastClose, double? typicalMove) =>
+        WidthsOn(night) is { } widths && typicalMove is { } move ? BuyRanges.Of(Statistic.FromPrice(lastClose), move, widths) : null;
+
     // One pick as the account trades it: bought at the open of the session after its night, its stop its risk under the
     // price paid, sold as its plan's walk sells it, at most its hold's sessions; open where its walk has not ended; none
     // where no session after the night is held to buy at, or the plan places no trade. The round trip is read at the buy.
-    public static PaperTrade? Trade(string ticker, int place, string hold, string shape, double? typicalMove, JudgeBars bars, Func<decimal, decimal?> roundTripAt)
+    public static PaperTrade? Trade(string ticker, int place, string hold, string shape, double? typicalMove, JudgeBars bars, Func<decimal, decimal?> roundTripAt) =>
+        Placed(ticker, place, hold, shape, typicalMove, bars, roundTripAt).Trade;
+
+    // One pick placed: with no widths bought at the open after its night; with widths bought in the range its night's close
+    // and typical move set, an open inside it buying at the open, one above it an order at the ceiling for the order's
+    // sessions, one under the floor nothing, the stop and take-profit from the price paid and the walk from the session it
+    // filled; a pick its range did not buy names its side, and one whose open or order is still to come is neither.
+    public static JudgePlaced Placed(string ticker, int place, string hold, string shape, double? typicalMove, JudgeBars bars, Func<decimal, decimal?> roundTripAt, RangeWidths? widths = null)
     {
         if (bars.Sessions.Count < 2 || bars.Opens.Length < 2 || !(bars.Opens[1] > 0)
             || RiskOf(hold, typicalMove) is not { } risk || JudgeMenu.HoldOf(hold) is not { } held)
         {
-            return null;
+            return new JudgePlaced(null, null);
         }
 
+        var at = 1;
         var fill = bars.Opens[1];
+
+        if (widths is { } width)
+        {
+            if (bars.Lows is not { } lows || BuyRanges.Of(bars.Closes[0], typicalMove!.Value, width) is not { } range)
+            {
+                return new JudgePlaced(null, null);
+            }
+
+            var filled = BuyRanges.FillOf(bars.Opens, lows, 0, range);
+
+            if (filled.NotBought is { } side)
+            {
+                return new JudgePlaced(null, side);
+            }
+
+            if (filled.Fill is not { } got)
+            {
+                return new JudgePlaced(null, null);
+            }
+
+            (at, fill) = (got.Bar, got.Price);
+        }
 
         if (!(fill - risk > 0) || SaleOf(hold, shape, fill, risk) is not { } sale)
         {
-            return null;
+            return new JudgePlaced(null, null);
         }
 
         var buy = Statistic.ToPrice(fill);
         var stop = Statistic.ToPrice(fill - risk);
-        var outcome = PlanPoints.Walk(bars.Closes, bars.Opens, 1, fill, fill - risk, sale, held.Sessions);
-        var ended = outcome is { } done && 1 + done.Sessions < bars.Sessions.Count ? bars.Sessions[1 + done.Sessions] : (DateOnly?)null;
+        var outcome = PlanPoints.Walk(bars.Closes, bars.Opens, at, fill, fill - risk, sale, held.Sessions);
+        var ended = outcome is { } done && at + done.Sessions < bars.Sessions.Count ? bars.Sessions[at + done.Sessions] : (DateOnly?)null;
 
-        return new PaperTrade(
+        return new JudgePlaced(new PaperTrade(
             ticker,
-            bars.Sessions[1],
+            bars.Sessions[at],
             buy,
             stop,
             ended,
@@ -87,7 +144,7 @@ public static class JudgeAccounts
             Listed: bars.Sessions[0],
             Target: sale.Target is { } whole ? Statistic.ToPrice(whole) : Statistic.ToPrice(sale.HalfAt!.Value),
             Trail: sale.Trail is { } trail ? Statistic.ToPrice(trail) : null,
-            Cap: held.Sessions);
+            Cap: held.Sessions), null);
     }
 
     // The random accounts' trades: for each draw and each night the judge picked on, as many members as it picked, each

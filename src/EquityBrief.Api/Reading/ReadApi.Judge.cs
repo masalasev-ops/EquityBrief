@@ -88,7 +88,7 @@ public sealed partial class ReadApi
         LEFT JOIN judge_fact f ON f.ticker = p.ticker AND f.session_date = p.session_date AND f.version = r.fact_version AND f.index_code = p.index_code
         ORDER BY p.session_date DESC, p.run_id, p.rank;";
 
-    const string JudgeBarsFrom = "SELECT ticker, session_date, open, close FROM bar WHERE session_date >= $from ORDER BY ticker, session_date;";
+    const string JudgeBarsFrom = "SELECT ticker, session_date, open, close, low FROM bar WHERE session_date >= $from ORDER BY ticker, session_date;";
 
     const string JudgeTypicals = "SELECT ticker, session_date, value FROM indicator WHERE name = $name AND session_date IN (SELECT value FROM json_each($nights));";
 
@@ -251,10 +251,10 @@ public sealed partial class ReadApi
         return tenths;
     }
 
-    // Every member's sessions from a day on, each session's open and close as statistics, oldest first.
-    public async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Open, double Close)>>> JudgeBarsAsync(DateOnly from)
+    // Every member's sessions from a day on, each session's open, close and low as statistics, oldest first.
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Open, double Close, double Low)>>> JudgeBarsAsync(DateOnly from)
     {
-        var bars = new Dictionary<string, List<(DateOnly, double, double)>>(StringComparer.Ordinal);
+        var bars = new Dictionary<string, List<(DateOnly, double, double, double)>>(StringComparer.Ordinal);
 
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -273,10 +273,10 @@ public sealed partial class ReadApi
                 bars[ticker] = held = [];
             }
 
-            held.Add((Day(reader.GetString(1)), Statistic.FromPrice(Money.FromStorage(reader.GetString(2))), Statistic.FromPrice(Money.FromStorage(reader.GetString(3)))));
+            held.Add((Day(reader.GetString(1)), Statistic.FromPrice(Money.FromStorage(reader.GetString(2))), Statistic.FromPrice(Money.FromStorage(reader.GetString(3))), Statistic.FromPrice(Money.FromStorage(reader.GetString(4)))));
         }
 
-        return bars.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, double, double)>)pair.Value, StringComparer.Ordinal);
+        return bars.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, double, double, double)>)pair.Value, StringComparer.Ordinal);
     }
 
     // Each member's typical daily move on each night named.

@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/ARCHITECTURE.html - every AI stock picker version buys within the approved range from the night of 2026-11-24, at a correction to 24.29
+Decision: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
+Was:
+> The AI stock picker's picks tonight: "... the line that it buys at the next open at whatever price it opens with the last close beside it; ..."
+> The AI stock picker's four accounts: "... a pick of the picker's bought at the open after its night, its stop and take-profit set from the price it paid; ..."
+Now:
+> The picks tonight: from the night of 2026-11-24 the range in the operator's words with the last close, a pick of an earlier night buying at the next open, and a pick its range did not buy marked with its side and what the open would have made
+> The four accounts: from the range's first night a pick bought within its range, a ceiling 0.5 typical daily moves above its last close and a floor 2 under it, an open above it an order at the ceiling for 2 sessions, the random picks of those nights bought the same way
+Why: the operator's answers of 2026-11-24, item 1, kept word for word in `prompts/2026-11-24-24.29-answers-of-24-nov-morning.md`, approving 0.5 / 2 on all three indices under items 6 and 7 of their answers of 2026-11-23.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html and docs/SCHEMA.md - LPI, PVAC and WTW_old linked by hand, PARA's span from 2025-08-07 dropped by hand, four held-none rows removed and eight marks ruled, at a correction to the 24.19 correction
 Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
 Decision: PARA's provider span from 2025-08-07 is dropped by hand, its code then Banzai International's and PSKY holding Paramount

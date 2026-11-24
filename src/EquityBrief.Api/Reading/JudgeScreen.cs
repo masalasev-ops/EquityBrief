@@ -27,7 +27,7 @@ public static class JudgeScreen
         string within,
         IReadOnlyList<JudgeRunRow> runs,
         IReadOnlyList<JudgePickRow> picks,
-        IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Open, double Close)>> bars,
+        IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Open, double Close, double Low)>> bars,
         IReadOnlyDictionary<(string Ticker, DateOnly Night), double> typicals,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<(string Index, string Ticker)>> everyMember,
         IReadOnlyList<(string Index, PaperWalk Walk)> rules,
@@ -85,22 +85,45 @@ public static class JudgeScreen
 
             var at = rows.Select(row => row.Session).ToList().IndexOf(night);
 
-            return at < 0 ? null : new JudgeBars([.. rows.Skip(at).Select(row => row.Session)], [.. rows.Skip(at).Select(row => row.Open)], [.. rows.Skip(at).Select(row => row.Close)]);
+            return at < 0 ? null : new JudgeBars([.. rows.Skip(at).Select(row => row.Session)], [.. rows.Skip(at).Select(row => row.Open)], [.. rows.Skip(at).Select(row => row.Close)], [.. rows.Skip(at).Select(row => row.Low)]);
         }
 
-        var trades = new Dictionary<(string, DateOnly, string, string, int), PaperTrade?>();
+        // From the operator's answers of 2026-11-24 a pick of a night from the range's first buys within its range, the
+        // random picks of those nights as well, so the two are bought the same way; a pick its range did not buy keeps the
+        // trade the open would have made, which its card reads its result from.
+        // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
+        var trades = new Dictionary<(string, DateOnly, string, string, int), JudgePlaced>();
 
-        PaperTrade? TradeOf(string ticker, DateOnly night, string hold, string shape, int place, double? typical)
+        JudgePlaced PlacedOf(string ticker, DateOnly night, string hold, string shape, int place, double? typical)
         {
-            if (!trades.TryGetValue((ticker, night, hold, shape, place), out var trade))
+            if (!trades.TryGetValue((ticker, night, hold, shape, place), out var placed))
             {
-                trade = BarsFrom(ticker, night) is { } held
-                    ? JudgeAccounts.Trade(ticker, place, hold, shape, typical, held, buy => roundTrip(ticker, night, buy))
-                    : null;
-                trades[(ticker, night, hold, shape, place)] = trade;
+                placed = BarsFrom(ticker, night) is { } held
+                    ? JudgeAccounts.Placed(ticker, place, hold, shape, typical, held, buy => roundTrip(ticker, night, buy), JudgeAccounts.WidthsOn(night))
+                    : new JudgePlaced(null, null);
+                trades[(ticker, night, hold, shape, place)] = placed;
             }
 
-            return trade;
+            return placed;
+        }
+
+        PaperTrade? TradeOf(string ticker, DateOnly night, string hold, string shape, int place, double? typical) =>
+            PlacedOf(ticker, night, hold, shape, place, typical).Trade;
+
+        // What a pick's account did with it: as its walk took it, or for a pick its range did not buy, the side it opened on
+        // with the trade the open would have made.
+        JudgeHeld? HeldFor(JudgePickRow pick, PaperTrade? trade, PaperWalk walk)
+        {
+            if (PlacedOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove).NotBought is not { } side)
+            {
+                return HeldOf(trade, walk);
+            }
+
+            var open = BarsFrom(pick.Ticker, pick.Session) is { } held
+                ? JudgeAccounts.Trade(pick.Ticker, pick.Rank, pick.Hold, pick.Shape, pick.TypicalMove, held, buy => roundTrip(pick.Ticker, pick.Session, buy))
+                : null;
+
+            return new JudgeHeld(open?.Bought ?? OpenAfter(pick.Session), open?.Buy ?? pick.LastClose, open?.Stop, open?.Target, open?.Trail, open?.Ended, open?.Sale, open is null ? null : JudgeAccounts.ResultOf(open), NotBoughtWords(side));
         }
 
         double? Typical(string ticker, DateOnly night) => typicals.TryGetValue((ticker, night), out var move) ? move : null;
@@ -122,7 +145,7 @@ public static class JudgeScreen
             var its = (fixedFive ? ranked : every).Where(pick => KeyOf(pick) == one.Key).OrderBy(pick => pick.Session).ThenBy(pick => pick.Rank).ToArray();
             var itsTrades = its.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
             var walk = PaperAccount.Walk(settings, [.. itsTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= one.First)], Close);
-            var cards = its.Select((pick, at) => Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldOf(itsTrades[at], walk) }).ToArray();
+            var cards = its.Select((pick, at) => Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, itsTrades[at], walk) }).ToArray();
 
             double? noOverSamePlan = null;
             (double? Result, double? OverSamePlan)[] results = [.. itsTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noOverSamePlan))];
@@ -146,7 +169,7 @@ public static class JudgeScreen
             var acrossTrades = acrossPicks.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
             var acrossFirst = acrossPicks[0].Session;
             var acrossWalk = PaperAccount.Walk(settings, [.. acrossTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= acrossFirst)], Close);
-            var cards = acrossPicks.Select((pick, at) => Card(pick, acrossPicks.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldOf(acrossTrades[at], acrossWalk), Index = pick.Index }).ToArray();
+            var cards = acrossPicks.Select((pick, at) => Card(pick, acrossPicks.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, acrossTrades[at], acrossWalk), Index = pick.Index }).ToArray();
             double? noneOver = null;
             (double? Result, double? OverSamePlan)[] acrossResults = [.. acrossTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noneOver))];
 
@@ -200,13 +223,22 @@ public static class JudgeScreen
         // From 24.15 Home drawn for a past night an earlier version picked on names that version's account.
         var picksFrom = tonight.Length == 0 ? null : numbered.Where(pair => pair.One.Key == KeyOf(tonight[0]) && pair.One.Key != version).Select(pair => apart.Single(one => one.Number == pair.Number)).FirstOrDefault();
 
-        // From 24.24 a card of the record's its account had no cash for says it was not bought.
+        // From 24.24 a card of the record's its account had no cash for says it was not bought, and from the operator's answers
+        // of 2026-11-24 one its range did not buy says which side of it the stock opened on.
         JudgeCardView Tonight(JudgePickRow pick)
         {
             var card = Card(pick, tonight.Length);
-            var trade = KeyOf(pick) == version ? judged.FirstOrDefault(one => one.Pick == pick).Trade : null;
 
-            return trade is not null && HeldOf(trade, judgeWalk) is { Skipped: PaperAccount.UnderTheCash } unfunded ? card with { Held = unfunded } : card;
+            if (KeyOf(pick) != version)
+            {
+                return card;
+            }
+
+            var trade = judged.FirstOrDefault(one => one.Pick == pick).Trade;
+
+            return HeldFor(pick, trade, judgeWalk) is { Skipped: PaperAccount.UnderTheCash or JudgeAccounts.OpenedAbove or JudgeAccounts.OpenedBelow } skipped
+                ? card with { Held = skipped }
+                : card;
         }
 
         // The index's tile: its account's return since its first session, none before it has bought a trade, its trades still
@@ -293,6 +325,9 @@ public static class JudgeScreen
     // Why a pick its account's walk did not take is not bought there.
     public const string NotTaken = "its account's walk did not take it";
 
+    // Why a pick its range did not buy is not bought, by the side of the range it opened on.
+    static string NotBoughtWords(string side) => side == Core.Loop.BuyRanges.Above ? JudgeAccounts.OpenedAbove : JudgeAccounts.OpenedBelow;
+
     // What sets an index's own version's key apart from one picked across the three indices.
     const string KeyMark = "|";
 
@@ -318,6 +353,7 @@ public static class JudgeScreen
     static JudgeCardView Card(JudgePickRow pick, int of) =>
         new JudgeCardView(pick.Rank, of, pick.Ticker, pick.Company, pick.Sector, pick.Size, pick.Reason, pick.LastClose, pick.Stop, pick.Target, pick.GiveUp, pick.Hold, pick.Shape) with
         {
+            Range = JudgeAccounts.RangeOf(pick.Session, pick.LastClose, pick.TypicalMove),
             Named = pick.Named is { } named ? [.. named.Select(key => Fact(key, pick.Sheet, pick.Tenths))] : null,
             Rest = [.. JudgeFacts.In(JudgeRound.Sheet).Where(field => pick.Named?.Contains(field.Key, StringComparer.Ordinal) != true).Select(field => Fact(field.Key, pick.Sheet, pick.Tenths))],
         };

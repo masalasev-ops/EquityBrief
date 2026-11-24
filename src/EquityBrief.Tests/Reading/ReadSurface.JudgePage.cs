@@ -102,7 +102,8 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI stock picker</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\" <small>Its sentence, as your local model wrote it.</small></p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"judge-saw\">It saw: Industrials, a large company. No name, ticker or date.</p>", page, StringComparison.Ordinal);
-        Assert.Contains("<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close $100.00.</span>", page, StringComparison.Ordinal);
+        Assert.Contains($"<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">{SinglePageApp.BeforeRangeLine} Last close $100.00.</span>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("whatever price it opens", page, StringComparison.Ordinal);
         Assert.Contains("The prices are worked from the last close until it is bought, then again from the price it actually paid.", page, StringComparison.Ordinal);
         Assert.Contains("<span>Sell if it closes below</span><b class=\"stop\">$98.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it pays.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<span>Take profit at</span><b class=\"aim\">$104.00</b><span class=\"sale-note judge-target\">2 times the risk: $4.00 up for $2.00 down.</span>", page, StringComparison.Ordinal);
