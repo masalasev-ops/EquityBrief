@@ -13,7 +13,7 @@ Was:
 > The AI stock picker's picks tonight: "... the line that it buys at the next open at whatever price it opens with the last close beside it; ..."
 > The AI stock picker's four accounts: "... a pick of the picker's bought at the open after its night, its stop and take-profit set from the price it paid; ..."
 Now:
-> The picks tonight: from the night of 2026-11-24 the range in the operator's words with the last close, a pick of an earlier night buying at the next open, and a pick its range did not buy marked with its side and what the open would have made
+> The picks tonight: from the night of 2026-11-24 the range it buys in, in the operator's words with the last close beside it; a pick of an earlier night buying at the next open; and a pick its range did not buy marked with its side and what the open would have made
 > The four accounts: from the range's first night a pick bought within its range, a ceiling 0.5 typical daily moves above its last close and a floor 2 under it, an open above it an order at the ceiling for 2 sessions, the random picks of those nights bought the same way
 Why: the operator's answers of 2026-11-24, item 1, kept word for word in `prompts/2026-11-24-24.29-answers-of-24-nov-morning.md`, approving 0.5 / 2 on all three indices under items 6 and 7 of their answers of 2026-11-23.
 
