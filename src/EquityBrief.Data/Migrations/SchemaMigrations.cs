@@ -791,7 +791,45 @@ public static class SchemaMigrations
         new Migration(168, "create long_held_none", CreateLongHeldNone),
         new Migration(169, "remove the five long_held_none rows marked past the store's newest stored session", RemoveHeldNonePastTheStore),
         new Migration(170, "add setup.other_pass and long_setup.other_pass", AddOtherPass),
+        new Migration(171, "remove the long_held_none rows of LPI, PVAC, WTW_old and SIX", RemoveHeldNoneLinkedByHand),
+        new Migration(172, "write the operator's rulings of 2026-11-23 on eight marks", RuleEightMarks),
     ];
+
+    // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
+    // rather than its confirm and written as the confirm writes a ruling, each with what its filer and its price said on the
+    // page that day; a mark the page has ruled already keeps its first ruling, and a store holding none of a stock's long prices,
+    // a new one among them, takes no ruling of it.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    const string RuleEightMarks = @"
+        WITH ruled (ticker, session_date, ruling, filer, price, ruled_at) AS (VALUES
+            ('BLD', '2015-07-02', 'read through', 'not on file', 'too few sessions', '2026-11-24T03:40:00Z'),
+            ('DTV_old', '2009-11-19', 'read through', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
+            ('RDC', '2012-05-03', 'read through', 'files on both sides', 'jumps', '2026-11-24T03:40:00Z'),
+            ('WRK', '2018-11-02', 'read through', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
+            ('CCE_old', '2010-10-04', 'kept', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
+            ('CHMT_old', '2009-04-15', 'kept', 'files on both sides', 'gaps', '2026-11-24T03:40:00Z'),
+            ('PKY', '2016-10-11', 'kept', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
+            ('TW2', '2009-12-31', 'kept', 'files on both sides', 'jumps', '2026-11-24T03:40:00Z'))
+        INSERT OR IGNORE INTO mark_ruling (ticker, session_date, ruling, filer, price, ruled_at)
+        SELECT ticker, session_date, ruling, filer, price, ruled_at FROM ruled
+        WHERE EXISTS (SELECT 1 FROM long_bar WHERE long_bar.ticker = ruled.ticker);
+    ";
+
+    // The held-none rows of the four codes the operator's answers of 2026-11-23, item 1, opened again: LPI, PVAC and WTW_old,
+    // whose member sessions read their later codes' prices by hand from then, and SIX, whose old company's delisted spelling
+    // is asked of the provider once; the removal trigger set aside for this one statement alone and put back as it stood.
+    // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+    const string RemoveHeldNoneLinkedByHand = @"
+        DROP TRIGGER long_held_none_takes_inserts_alone_on_removal;
+        DELETE FROM long_held_none
+        WHERE run_id = 'long-held-none-20261123T213949Z'
+          AND ((ticker = 'LPI' AND first_session = '2023-03-13')
+            OR (ticker = 'PVAC' AND first_session = '2021-12-20')
+            OR (ticker = 'WTW_old' AND first_session = '2019-04-22')
+            OR (ticker = 'SIX' AND first_session = '2019-09-30'));
+        CREATE TRIGGER long_held_none_takes_inserts_alone_on_removal BEFORE DELETE ON long_held_none
+        BEGIN SELECT RAISE(ABORT, 'long_held_none takes inserts alone.'); END;
+    ";
 
     // Whether the live rule's other gates pass a pullback setup of the S&P 400 or 600 on its session, its market check and
     // every part but its own listing, as the night read them: null on every other family and index, and on a row written

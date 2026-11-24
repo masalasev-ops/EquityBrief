@@ -22475,3 +22475,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the run over the operator's store from main once merged, its table to the operator before anything uses a width;
             the run over every member on every session once the every-session table is rebuilt, its width replacing this
             one from the next night with the change listed.
+
+### 24.19 - correction: LPI, PVAC and WTW_old linked by hand, PARA's span from 2025-08-07 dropped by hand, four held-none rows removed and eight marks ruled on the operator's word   2026-11-23
+
+Queue:      done, the 24.29 correction of the widths test; in progress, this correction; next, the picker's widths run and
+            its table, the spans written again and old Six Flags asked once off-peak, then the pin move's statement and the
+            every-session table's time.
+Ruled:      the operator's answers of 2026-11-23 at about 10:40 pm, items 1, 2 and 10, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`. Two new decisions.
+Built:      three more links by hand beside DDR's, each from the first session its code holds no price: LPI reading VTLE from
+            2023-03-13, PVAC ROCC from 2021-12-20 and WTW_old WW_old from 2019-04-22, each under the continuity check and
+            named in the long history's lists as linked by hand; a pair never priced on one day, WTW_old's, read at the later
+            code's prices as they stand. PARA's provider spans of the S&P 500 are not read from 2025-08-07, the next
+            `long-prices --spans` writing the spans without them. Migration 171 removes the held-none rows of LPI, PVAC,
+            WTW_old and SIX the marking of 2026-11-23 wrote, so SIX's old company can be asked once under its delisted
+            spelling; migration 172 writes the operator's eight rulings as the marking page's confirm writes one, BLD,
+            DTV_old, RDC and WRK read through and CCE_old, CHMT_old, PKY and TW2 kept, a mark ruled already keeping its
+            ruling and a store holding none of a stock's long prices, a new one among them, taking no ruling of it.
+Measured:   on the live store, read only: LPI priced to 2023-03-10 and VTLE alike on the same days, VTLE 46.30 on 2023-03-13
+            after LPI's 48.61; PVAC to 2021-12-17 at 25.38 and ROCC 25.21 on 2021-12-20; WTW_old to 2019-04-18 at 19.07 and
+            WW_old from 2019-04-22 at 17.81. The long filings hold PARA under filer 1826011, Banzai International, and CBS
+            under 813828; PARA's provider rows Paramount Global Class B to 2025-08-07 and Banzai International with no start
+            to 2026-10-14, its one long span 2025-08-07 to 2026-10-14. The provider's delisted list kept on 2026-11-06 names
+            old Six Flags as SIX, ISIN US83001A1025, a new listing holding the code, so the ask is SIX_old for SIX's
+            sessions.
+Tests:      3 new: the four links listed and two worked by hand, WTW_old's never priced on one day at 19.10 after 19.00 and
+            refused a fifth lower, LPI's at one; PARA's span from 2025-08-07 dropped while PSKY's and a like code's stand;
+            and migrations 171 and 172 over a store at 170, four rows removed and two kept, the rulings of the seven stocks it
+            holds long prices of written, one ruled already kept, and none of TW2's.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 a pair never priced
+            on one day refused: red; m2 the drop by hand ignored: red; m3 the removal reading every row of the marking: red;
+            m4 a ruling replacing one ruled already: red; m5 the rulings written into a store holding none of the stocks'
+            prices: red, the migrations' test and the migrated store's portability check. Each filtered to its tests and
+            reverted before anything was committed; m1 and m2 were run in one build, each red in its own test.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4020 of 4020 tests ran with none failed, migrations 0 to 172 with
+            none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754 claims, 1754
+            passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    migrations 171 and 172 on the operator's store at the merge; `long-prices --spans` written again; SIX_old asked for
+            SIX's sessions once, off-peak, then written, marked and the spans written again; the long history's lists read
+            again for the four links.
