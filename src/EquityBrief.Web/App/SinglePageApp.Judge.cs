@@ -24,6 +24,10 @@ public sealed record JudgeCardView(int Rank, int Of, string Ticker, string? Comp
 
     // On a card of the earlier version that picked across the three indices, the index its stock belongs to.
     public string? Index { get; init; }
+
+    // From the operator's answers of 2026-11-24 the range a pick of a night from the range's first buys in, none for a pick
+    // of an earlier night, which buys at the open.
+    public Core.Loop.BuyRange? Range { get; init; }
 }
 
 // What an account did with one of the judge's picks: the session it bought at the open and the price it paid, its stop,
@@ -225,8 +229,6 @@ public sealed partial class SinglePageApp
 
     // From 24.24 a pick its account had no cash for.
     public const string NoCashLine = "Not bought: no cash. Its result is still recorded in the record.";
-
-    public const string JudgeBuysAtTheOpen = "Buys at the next open, at whatever price it opens.";
 
     public const string JudgeMenuLine = "The AI chose how long to hold and how to sell, from a fixed menu. Code sets every price from the stock's typical daily move and the price it buys at.";
 
@@ -460,8 +462,10 @@ public sealed partial class SinglePageApp
         for (var at = 0; at < picks.Count; at++)
         {
             var unfunded = picks[at].Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash };
+            var outside = picks[at].Held is { Skipped: JudgeAccounts.OpenedAbove or JudgeAccounts.OpenedBelow };
+            var skipped = unfunded ? ", not bought: no cash" : outside ? ", not bought: outside its range" : string.Empty;
 
-            html.Append(CultureInfo.InvariantCulture, $"<label class=\"car-chip{(unfunded ? " skip" : string.Empty)}\" for=\"{Slide(at)}\">{Escaped(picks[at].Ticker)}<span>{picks[at].Rank}{(unfunded ? ", not bought: no cash" : string.Empty)}</span></label>");
+            html.Append(CultureInfo.InvariantCulture, $"<label class=\"car-chip{(unfunded || outside ? " skip" : string.Empty)}\" for=\"{Slide(at)}\">{Escaped(picks[at].Ticker)}<span>{picks[at].Rank}{skipped}</span></label>");
         }
 
         html.Append("</div><div class=\"car-navs\">");
@@ -499,6 +503,10 @@ public sealed partial class SinglePageApp
         else if (pick.Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash })
         {
             html.Append($"<p class=\"judge-since\" data-cash>{Escaped(NoCashLine)}</p>");
+        }
+        else if (pick.Held is { Skipped: JudgeAccounts.OpenedAbove or JudgeAccounts.OpenedBelow } outside)
+        {
+            html.Append($"<p class=\"judge-since\" data-range-skip>{Escaped(RangeNotBoughtLine(outside))}</p>");
         }
 
         html.Append($"<input type=\"radio\" class=\"judge-tab\" name=\"{id}-tab\" id=\"{id}-why\" value=\"why\" checked><input type=\"radio\" class=\"judge-tab\" name=\"{id}-tab\" id=\"{id}-plan\" value=\"plan\">");
@@ -553,9 +561,7 @@ public sealed partial class SinglePageApp
         var html = new StringBuilder();
 
         html.Append("<p class=\"facts-h\">The plan code set</p><div class=\"judge-ladder\">");
-        html.Append(held is not null
-            ? $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Bought at</span><b>${Figures.Price(held.Paid)}</b><span class=\"sale-note judge-buy\">At the open on {held.Bought.ToString("ddd d MMM", CultureInfo.InvariantCulture)}. Last close before it ${Figures.Price(pick.LastClose)}.</span></div>"
-            : $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close ${Figures.Price(pick.LastClose)}.</span></div>");
+        html.Append(BuyRow(pick, held));
         html.Append($"<div class=\"lad-row\" data-sale=\"target\"><i class=\"dot tp\"></i><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
 
         if (!whole)
@@ -572,6 +578,44 @@ public sealed partial class SinglePageApp
 
         return html.ToString();
     }
+
+    // The plan's buy: bought, at the price paid and the session; in a range, the range in the operator's words with what an
+    // open above or below it does; or for a pick of a night before the range began, the next open. None says what price it
+    // opens at.
+    // see: Every picker version buys within the approved range from the night of 2026-11-24, the picks of earlier nights bought at the open as they were
+    static string BuyRow(JudgeCardView pick, JudgeHeld? held)
+    {
+        var close = $"Last close {(held is null ? string.Empty : "before it ")}${Figures.Price(pick.LastClose)}.";
+
+        if (held is not null)
+        {
+            var how = pick.Range is null ? "At the open on " : "Within its range on ";
+
+            return $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Bought at</span><b>${Figures.Price(held.Paid)}</b><span class=\"sale-note judge-buy\">{how}{held.Bought.ToString("ddd d MMM", CultureInfo.InvariantCulture)}. {close}</span></div>";
+        }
+
+        if (pick.Range is not { } range)
+        {
+            return $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">{Escaped(BeforeRangeLine)} {close}</span></div>";
+        }
+
+        var lines = Core.Loop.BuyRanges.PlanLines(range);
+        var buys = lines[0];
+        var verb = buys.IndexOf(' ', StringComparison.Ordinal);
+
+        return $"<div class=\"lad-row\" data-sale=\"buy\" data-range><i class=\"dot lc\"></i><span>{Escaped(buys[..verb])}</span><b>{Escaped(buys[(verb + 1)..])}</b><span class=\"sale-note judge-buy\">{Escaped(string.Join(' ', lines.Skip(1)))} {close}</span></div>";
+    }
+
+    // The buy of a pick made on a night before the range began, which its account bought at the open.
+    public const string BeforeRangeLine = "Picked before its range began, so it buys at the open.";
+
+    // A pick its range did not buy, on the record's card: why, and what buying at the open would have made where its walk
+    // there has ended.
+    public static string RangeNotBoughtLine(JudgeHeld held) =>
+        $"Not bought: {held.Skipped}. "
+        + (held.Result is { } made
+            ? $"Bought at the open it would have {(made < 0 ? "lost" : "made")} {Dollars(Math.Abs(made))} per $1 risked."
+            : "What buying at the open would have made is recorded once its walk there ends.");
 
     // The groups everything else it saw is folded under, each holding its fields in the sheet's order; a field no group
     // names falls to the last.
@@ -629,8 +673,10 @@ public sealed partial class SinglePageApp
     public static string TenthCaption(UniverseChoice chosen) =>
         $"Each bar: where the stock sits among the {chosen.Name} stocks, lowest tenth on the left. A fact with no bar is a word, or one figure for every stock of the index.";
 
-    // Tonight's line under the count of marks: the cap, the pick past the cash, and the buy at the open.
-    public static string TonightNote { get; } = string.Create(CultureInfo.InvariantCulture, $"Up to {JudgePrompt.MostPicks} a night in each index. A pick the account has no cash for is shown and marked \"not bought\", so you can see what it missed. Each buys at the next open, at whatever price it opens.");
+    // Tonight's line under the count of marks: the cap, the pick past the cash, and the range each buys in.
+    public static string TonightNote { get; } = string.Create(
+        CultureInfo.InvariantCulture,
+        $"Up to {JudgePrompt.MostPicks} a night in each index. A pick the account has no cash for, or whose price stays outside its range, is shown and marked \"not bought\", so you can see what it missed. Each buys only within its range: from {JudgeAccounts.Widths.Floor:0.##} typical daily moves under the last close to {JudgeAccounts.Widths.Ceiling:0.##} of one above it. Opening above, it waits up to {Core.Loop.BuyRanges.OrderSessions} days for the price to come back; opening below, it is not bought.");
 
     public const string TilesLede = "It picks small caps against small caps, mid caps against mid caps and large caps against large caps. Each index has its own account, measured against that index's rules, random picks from the same index and that index's fund.";
 

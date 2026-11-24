@@ -22518,3 +22518,80 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    migrations 171 and 172 on the operator's store at the merge; `long-prices --spans` written again; SIX_old asked for
             SIX's sessions once, off-peak, then written, marked and the spans written again; the long history's lists read
             again for the four links.
+
+### 24.19 ruling - the operator's answers of 2026-11-24 on the width, the pin move's statement, the every-session table and old Six Flags, and a merge made during the drain   2026-11-24
+
+Not a checkpoint entry: it records the operator's answers of the morning of 2026-11-24 on the report of 2026-11-24, and lands
+            nothing.
+Ruled:      word for word in `prompts/2026-11-24-24.29-answers-of-24-nov-morning.md`. (1) The buy range 0.5 / 2 approved on
+            all three indices, provisional, every picker version buying within it from the night of 2026-11-24 with the
+            approved words, the run over every member after the table's rebuild replacing it where it differs, both tables
+            shown; built at the 24.29 correction below. (2) The pin move's statement approved as written, with one line
+            added: "If the S&P 400 and 600 figures fall when the survivors-only reading goes, nothing is switched off, retired
+            or re-registered on that result; the figures go into each rule's case for the run of 2027-02-06 and my click."
+            Built on a branch, the replay's hours stated before it runs, with room left before that run for a second replay.
+            The statement as approved: what moves, the long ledger's history members read from the long spans as they stood
+            on each session in place of the S&P 400's and 600's members still listed and the S&P 500's nightly spans,
+            beside what the move already carried, the sweeps' history reading the span-aware marks, the seven readings fixed
+            in the shared code, each family's time limit and cap a night as settings at today's values, the rules' buy range
+            as background variants and the year limit as a growing window from 2027; which rules re-register, every live
+            rule whose pinned files the move touches, the branch's pin check naming the list before anything registers;
+            what the replay checks, every night since the restart over two copies, every live trade the same or each change
+            listed, and each rule's and variant's monthly test figure and sweep results before and after for each index, both
+            columns from the replay since the stored rule figures predate the restart's plans (see: A pin move a replay
+            carries with every trade the same registers no live rule, and one moving a trade comes to the operator first).
+            (3) The every-session table written again on the operator's store once no night, local run or off-peak run
+            writes, finishing before 7 pm Eastern, each index's rows and the store's size reported, then 24.30 as ordered.
+            (4) Old Six Flags' sessions of 2019 to 2024 accepted as held none: SIX_old asked once on 2026-11-24 holds 2015
+            alone, so SIX's 1,258 sessions stay held none. (5) The four links by hand shown in the long history's lists once
+            read again. (6) This entry records a broken rule, below. (7) Each index's marks after the night of 2026-11-24,
+            of how many, and whether the quarter or the cap of 5 decided.
+Broken:     after the merge of pull request 775 on 2026-11-24 the checkout was fast-forwarded to `main` while the off-peak
+            run's drain, started at 23:31 Eastern on 2026-11-23, was still writing, against the rule that nothing is merged
+            and the checkout is not fast-forwarded while the drain writes from a copy of the checkout's commit. No harm came
+            of it: the drain runs from its own clean copy of the commit it started from, 5c622bad, built under the data
+            root's nights folder, and reads nothing of the checkout's working tree after it starts, so the fast-forward
+            changed no file it ran or read; and the merge carried no migration the drain's store would have met. From this
+            entry the processes and the run log are read before every fast-forward, as the merge rule says.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 24.29 - correction: every AI stock picker version buys within the approved range from the night of 2026-11-24   2026-11-24
+
+Queue:      done, the 24.19 correction's hand links and rulings and the picker's widths table; in progress, this correction
+            and the every-session table written again on the operator's store; next, the pin move on a branch, the widths
+            run over every member, then 24.30.
+Ruled:      the operator's answers of 2026-11-23, items 6 and 7, and of 2026-11-24, item 1, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md` and `prompts/2026-11-24-24.29-answers-of-24-nov-morning.md`.
+            One new decision, written as an exception into the decision on a new picker version's case.
+Built:      the picker's accounts buy each pick of a night from 2026-11-24 within its range, a ceiling 0.5 typical daily
+            moves above its last close and a floor 2 under it on all three indices: an open inside it buying at the open,
+            one above it an order at the ceiling for 2 sessions filled at the ceiling where the price comes back to it, one
+            under the floor nothing, the stop and take-profit from the price paid and the walk from the session it filled.
+            The random picks of those nights are bought the same way; each pick's comparison with the same plan on every
+            member stays at the open. The bars the page reads carry each session's low. A pick its range did not buy reads
+            not bought with its side and what the open would have made, its chip "not bought: outside its range". The card's
+            buy reads the range in the operator's words with the last close, a pick of an earlier night "Picked before its
+            range began, so it buys at the open.", and a range-bought pick "Within its range on" its session; the line under
+            the count names the range; no picker card or line says it buys at whatever price it opens. The decision, its
+            exception in the version case's decision, section 15.26's and 17's rows, the guide and the changelog.
+Measured:   nothing on the operator's store; the pages read it as they stand. The picks of the nights before 2026-11-24 and
+            their trades stand as they were.
+Tests:      2 new: the range from the night of 2026-11-24 and none before it, a pick inside, above and back, above and not
+            back, below and still standing worked by hand, and the same bars bought at the open with no widths; and the
+            picker's page over a constructed night of 2026-11-24, the range on its cards and its variant's, a pick bought in
+            its range read from the price it paid, a pick above it not bought with its side, and the line under the count.
+            The 24.6 page test reads the earlier night's buy line and no "whatever price it opens".
+Pins:       none moved. The picker's accounts are read by the read surface alone, and no rule pins them.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the range read on
+            every night, its first night ignored: red in two tests; m2 a pick opening outside its range read as waiting: red
+            in two tests; m3 the walk started at the open's session in place of the session it filled: red; m4 the record's
+            card not marking a pick its range did not buy: red. Each filtered to its tests and reverted before anything was
+            committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4022 of 4022 tests ran with none failed, migrations 0 to 172 with
+            none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754 claims, 1754
+            passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the widths test over every member on every session once the every-session table is written again, its table
+            beside this one and its width replacing this one from the next night where it differs, the change listed.

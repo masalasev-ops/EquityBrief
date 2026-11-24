@@ -3248,7 +3248,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     var newest = await read.NewestNightAsync();
     DateOnly[] nights = [.. runs.Select(run => run.Session).Distinct()];
     var first = nights.DefaultIfEmpty(newest ?? DateOnly.MinValue).Min();
-    var bars = nights.Length == 0 ? new Dictionary<string, IReadOnlyList<(DateOnly, double, double)>>() : await read.JudgeBarsAsync(first);
+    var bars = nights.Length == 0 ? new Dictionary<string, IReadOnlyList<(DateOnly, double, double, double)>>() : await read.JudgeBarsAsync(first);
     var typicals = await read.JudgeTypicalsAsync(nights);
     var members = await read.JudgeMembersAsync(nights);
     var costs = await read.JudgeCostsAsync(nights);
@@ -3298,7 +3298,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     {
         JudgeRunRow[] runsThen = [.. runs.Where(run => run.Session <= shown)];
         JudgePickRow[] picksThen = [.. picks.Where(pick => pick.Session <= shown)];
-        var barsThen = bars.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, double, double)>)[.. pair.Value.Where(row => row.Session <= shown)], StringComparer.Ordinal);
+        var barsThen = bars.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, double, double, double)>)[.. pair.Value.Where(row => row.Session <= shown)], StringComparer.Ordinal);
 
         return view with
         {

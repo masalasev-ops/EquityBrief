@@ -143,7 +143,7 @@ public partial class ReadSurface
         JudgePickRow Pick(DateOnly night, int rank, string? runIndex, string runId) =>
             new(night, rank, "GSPC", "T" + rank, JudgeMenu.Holds[0].Words, JudgeMenu.Whole, "its reason", 100m, 2.0, 98m, 104m, null, null, null, null, false) { RunIndex = runIndex, RunId = runId };
         JudgeView Built(IReadOnlyList<JudgeRunRow> runs, IReadOnlyList<JudgePickRow> picks) =>
-            JudgeScreen.Build("GSPC", runs, picks, new Dictionary<string, IReadOnlyList<(DateOnly, double, double)>>(), new Dictionary<(string, DateOnly), double>(), new Dictionary<DateOnly, IReadOnlyList<(string, string)>>(), [], [], [], EquityBrief.Core.Cards.AccountSettings.Example, (_, _, _) => null, draws: 0);
+            JudgeScreen.Build("GSPC", runs, picks, new Dictionary<string, IReadOnlyList<(DateOnly, double, double, double)>>(), new Dictionary<(string, DateOnly), double>(), new Dictionary<DateOnly, IReadOnlyList<(string, string)>>(), [], [], [], EquityBrief.Core.Cards.AccountSettings.Example, (_, _, _) => null, draws: 0);
 
         JudgeRunRow[] acrossRuns = [new("judge-across", across, "picked", string.Empty, 1500, 5, false)];
         JudgePickRow[] acrossPicks = [.. Enumerable.Range(1, 5).Select(rank => Pick(across, rank, null, "judge-across"))];
