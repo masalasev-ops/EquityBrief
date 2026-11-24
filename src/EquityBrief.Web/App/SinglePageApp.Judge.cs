@@ -470,7 +470,7 @@ public sealed partial class SinglePageApp
     {
         var first = version.Values.Count > 0 ? version.Values[0].Value : 0m;
         var last = version.Values.Count > 0 ? version.Values[^1].Value : 0m;
-        var change = first == 0m ? 0.0 : Math.Round((double)((last - first) / first) * 100, 1);
+        var change = Math.Round(ReturnFrom(last, first) * 100, 1);
 
         // A change rounding to nothing reads 0.0%, never -0.0%.
         change = change == 0.0 ? 0.0 : change;
