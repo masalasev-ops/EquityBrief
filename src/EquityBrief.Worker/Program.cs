@@ -1582,7 +1582,8 @@ static int NoVerb()
         "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
         "'ledger-build --every-session --index <GSPC, MID or SML>' states the count and the time of every member's readings on " +
         "every session from 2005 and writes them only with '--word', and 'ledger-check --every-session' names every reading of a " +
-        "seeded sample that differs, " +
+        "seeded sample that differs, with '--ledger-members' also rebuilding the sampled sessions from 2019 over the standing " +
+        "ledger's members and naming why the table holds no row of a ledger setup, " +
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
         "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's, the drift's and the dip's grids again over the " +
@@ -2299,7 +2300,7 @@ static async Task<int> LedgerCheckRun(string[] args)
 
     var ledger = new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
 
-    return args.Contains("--every-session", StringComparer.Ordinal) ? await ledger.SessionCheckAsync(index, Console.Out)
+    return args.Contains("--every-session", StringComparer.Ordinal) ? await ledger.SessionCheckAsync(index, Console.Out, overLedgerMembers: args.Contains("--ledger-members", StringComparer.Ordinal))
         : args.Contains("--long", StringComparer.Ordinal) ? await ledger.LongCheckAsync(index, Console.Out)
         : await ledger.CheckAsync(index, Console.Out);
 }

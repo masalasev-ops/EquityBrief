@@ -479,9 +479,10 @@ public partial class FixtureExpectations
         // From the 23.4 correction the marking page reads the long bars and the long filings about each mark owed, a read of
         // the read surface's and of no night; and the plan point test reads the long filings for the drift's sales check, by
         // hand, writing nothing. From 24.11 the split causes verb reads the long bars, splits and dividends by hand, writing
-        // nothing.
+        // nothing. From the 24.19 correction of 2026-11-24 the every-session table's build and its check read the long
+        // filings' results 8-Ks and quarterly and annual reports by hand for the weekdays to the next report.
         Assert.Equal(
-            ["src/EquityBrief.Api/Reading/ReadApi.Marking.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/DataChecker.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/LongPricePull.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/History/SplitCausesRun.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs"],
+            ["src/EquityBrief.Api/Reading/ReadApi.Marking.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/DataChecker.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/LongPricePull.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/History/SplitCausesRun.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.SessionReadings.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs"],
             readers);
 
         var pinned = CandidateEvaluators.All

@@ -101,4 +101,43 @@ public static class TableReadings
     // The first bar of the older history the reach readings read for a bar whose window starts at the start given: the
     // history held to the fixed length, the window first.
     public static int OlderFrom(int start, int bar) => Math.Min(start, Math.Max(0, bar + 1 - HistorySessions));
+
+    // The days a code reported its quarters, which the table's weekdays to the next report count to. Where its filings reach,
+    // each quarter's is the last 8-K with item 2.02 filed on or before the 10-Q or 10-K filed on or after it, so an earlier one
+    // in the same span, a preliminary, is left out and so is a calendar's day inside the filings' span; the calendars' days
+    // before the first such 8-K and after the last and the report that closes it stand, and every one of them where the
+    // filings hold none.
+    // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
+    public static DateOnly[] ReportDays(IEnumerable<DateOnly> results, IEnumerable<DateOnly> periodic, IEnumerable<DateOnly> prints)
+    {
+        var filed = results.Distinct().Order().ToArray();
+        var reports = periodic.Distinct().Order().ToArray();
+        var calendars = prints.Distinct().Order().ToArray();
+
+        if (filed.Length == 0)
+        {
+            return calendars;
+        }
+
+        var kept = new List<DateOnly>();
+
+        for (var at = 0; at < filed.Length; at++)
+        {
+            var closing = Array.FindIndex(reports, report => report >= filed[at]);
+
+            if (at + 1 < filed.Length && closing >= 0 && filed[at + 1] <= reports[closing])
+            {
+                continue;
+            }
+
+            kept.Add(filed[at]);
+        }
+
+        var lastClosing = Array.FindIndex(reports, report => report >= filed[^1]);
+        var after = lastClosing >= 0 ? reports[lastClosing] : filed[^1];
+
+        kept.AddRange(calendars.Where(day => day < filed[0] || day > after));
+
+        return [.. kept.Distinct().Order()];
+    }
 }

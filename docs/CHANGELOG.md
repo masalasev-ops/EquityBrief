@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/ARCHITECTURE.html - the table's years since the price stood this high as a fraction and its weekdays to the next report off the filings, at a correction to the 24.19 correction
+Decision: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
+Was:
+> ARCHITECTURE.html, the store row "Every member's readings on every session": "... and the three reach readings over the last 2,792 sessions (see: The every-session table reads four readings ...), and its readings of a bar's volume none ..."
+Now:
+> ARCHITECTURE.html: "... and the three reach readings over the last 2,792 sessions (see: ...), the years since the price stood this high as a fraction of years, the weekdays to the next report counted to each quarter's results 8-K off the code's filings (see: The every-session table counts the weekdays to the next report ...), and its readings of a bar's volume none ..."
+Why: the operator's orders of 2026-11-24 on the check of 4:40 pm, items 1 and 3, kept word for word in `prompts/2026-11-24-24.19-orders-on-the-check-of-4-40pm.md`: the table cut the years to a whole number, and counted to every results 8-K, a preliminary among them
+
 ### 2026-11-24 - docs/ARCHITECTURE.html - Home's ideas under one header a setup, the record in two periods, and a variant's shared picks as chips, at a correction to 24.29
 Decision: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it; A price family's record box draws the long test's years to 2018 beside its record from 2019, the long box saying it is being rebuilt until the long ledger is; The AI stock picker's page draws a variant's picks as cards only where they differ from its version's that night
 Was:
