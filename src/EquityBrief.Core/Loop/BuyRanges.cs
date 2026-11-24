@@ -87,6 +87,15 @@ public static class BuyRanges
     // The row a widths table names the buy at the open by, with no range.
     public const string TheOpen = "the open";
 
+    // A widths test of the AI stock picker's menu names each plan's rows "the picker: 1 week, the whole at 2 times the risk",
+    // and its run log row opens with its kind, which the card reads as provisional.
+    // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    public const string PickerPlan = "the picker: ";
+
+    public const string PickerRun = "provisional, the picker's menu over every setup the price families flagged";
+
+    public static string PickerFamily(string hold, string shape) => PickerPlan + hold + ", " + shape;
+
     // The rows reading every setup of an index together.
     public const string AllSetups = "all";
 

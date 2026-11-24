@@ -3,6 +3,7 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.History;
+using EquityBrief.Core.Judge;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Paper;
 using EquityBrief.Core.Prices;
@@ -17,8 +18,10 @@ namespace EquityBrief.Worker.Loop;
 // over its setups from 2005 under that rule's own plan, once buying at the open and once in a range of each candidate width,
 // through the plan test's own walk; each width's figures over the early years and from 2019 are written beside the open's,
 // for each setup and for every setup of the index together, and the width the early years of every setup together chose is
-// marked. A setup whose live rule buys at a level or on its first pullback carries no range and is not walked. It moves no
-// pick, plan, rule or version, and no plan uses a width before the operator approves one.
+// marked. A setup whose live rule buys at a level or on its first pullback carries no range and is not walked. With the
+// picker's flag every stock session the four price families flagged is walked instead under each plan of the AI stock
+// picker's menu, as stand-ins for its picks, the width it chooses provisional. It moves no pick, plan, rule or version, and
+// no plan uses a width before the operator approves one.
 // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
 public sealed class RangeWidthTest(IClock clock, string databaseFile, string dataRoot, TextWriter output)
 {
@@ -45,6 +48,19 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         WHERE index_code = $index AND family = $family AND live_pass = 1 AND session_date >= $standing
         ORDER BY session_date, ticker;";
 
+    // Every row the four price families flagged, whether or not its live setting passed it, from the long ledger to its standing
+    // start and the standing ledger after, as the picker's stand-ins.
+    const string PickerSetups = @"
+        SELECT family, ticker, session_date, entry, stop, target, trail, cap, company_value FROM long_setup
+        WHERE index_code = $index AND family IN ('pullback', 'breakout', 'drift', 'dip')
+        UNION ALL
+        SELECT family, ticker, session_date, entry, stop, target, trail, cap, company_value FROM setup
+        WHERE index_code = $index AND family IN ('pullback', 'breakout', 'drift', 'dip') AND session_date >= $standing
+        ORDER BY session_date, ticker;";
+
+    // The flag walking the picker's menu over the price families' setups in place of each live rule's plan.
+    public const string PickerFlag = "--picker";
+
     const string NewestNight = "SELECT MAX(session_date) FROM setup_night;";
 
     const string Insert = @"
@@ -59,8 +75,8 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
     public static PlanCombination PlanOf(CandidateRow live) =>
         PlanHook.Of(CandidateEvaluator.Read(live.Parameters)) ?? new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale);
 
-    // Every index, or the one named.
-    public async Task<int> RunAsync(string? index = null, CancellationToken cancellation = default)
+    // Every index, or the one named; with the picker's flag the picker's menu over every setup the price families flagged.
+    public async Task<int> RunAsync(string? index = null, bool picker = false, CancellationToken cancellation = default)
     {
         if (index is not null && !PaperFiguresRun.Indices.Contains(index, StringComparer.Ordinal))
         {
@@ -86,6 +102,18 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         {
             var tallies = new List<(string Family, RangeWidths? Widths, RangeTally Early, RangeTally Late)>();
             PlanPointTest.Walker? walker = null;
+
+            if (picker)
+            {
+                var flagged = await SetupsAsync(code, null, cancellation);
+
+                walker = (await PlanPointTest.WalkerAsync(databaseFile, code, output.WriteLine, cancellation)).Walker;
+                tallies.AddRange(PickerTally(walker, flagged, cancellation));
+                output.WriteLine(FormattableString.Invariant($"{Verb}: {code}: {flagged.Count} stock session(s) the price families flagged walked under the picker's {JudgeAccounts.Plans.Count} plans"));
+                rows.AddRange(BuyRanges.Rows(code, tallies));
+
+                continue;
+            }
 
             foreach (var family in PlanPoints.Families)
             {
@@ -118,7 +146,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
             rows.AddRange(BuyRanges.Rows(code, tallies));
         }
 
-        await WriteAsync(runId, started, rows, cancellation);
+        await WriteAsync(runId, started, rows, picker ? BuyRanges.PickerRun : null, cancellation);
 
         foreach (var row in rows.Where(one => one.Family == BuyRanges.AllSetups))
         {
@@ -190,6 +218,54 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         return tallies;
     }
 
+    // Each width's tallies and the open's under each plan of the picker's menu, over every stock session given; a plan the open
+    // walks to no result on a stock session is not offered there.
+    // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    public static IReadOnlyList<(string Family, RangeWidths? Widths, RangeTally Early, RangeTally Late)> PickerTally(
+        PlanPointTest.Walker walker, IReadOnlyList<PlanPointTest.FlaggedSetup> setups, CancellationToken cancellation = default)
+    {
+        var widths = BuyRanges.Widths;
+        var plans = JudgeAccounts.Plans;
+        var read = new (double Open, (double? Edge, string? NotBought)[] Ranged)?[setups.Count][];
+
+        Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, at => read[at] = walker.PickerWorked(setups[at], plans, widths));
+
+        var tallies = new List<(string, RangeWidths?, RangeTally, RangeTally)>();
+
+        for (var plan = 0; plan < plans.Count; plan++)
+        {
+            var family = BuyRanges.PickerFamily(plans[plan].Hold, plans[plan].Shape);
+            var open = (Early: RangeTally.Empty, Late: RangeTally.Empty);
+            var ranged = widths.Select(_ => (Early: RangeTally.Empty, Late: RangeTally.Empty)).ToArray();
+
+            for (var at = 0; at < setups.Count; at++)
+            {
+                if (read[at][plan] is not { } held)
+                {
+                    continue;
+                }
+
+                var early = setups[at].Session.Year <= IdeaTester.EarlyThrough;
+
+                open = early ? (open.Early.Add(held.Open, held.Open, null), open.Late) : (open.Early, open.Late.Add(held.Open, held.Open, null));
+
+                for (var width = 0; width < widths.Count; width++)
+                {
+                    var (edge, side) = held.Ranged[width];
+
+                    ranged[width] = early
+                        ? (ranged[width].Early.Add(held.Open, edge, side), ranged[width].Late)
+                        : (ranged[width].Early, ranged[width].Late.Add(held.Open, edge, side));
+                }
+            }
+
+            tallies.Add((family, null, open.Early, open.Late));
+            tallies.AddRange(widths.Select((width, one) => (family, (RangeWidths?)width, ranged[one].Early, ranged[one].Late)));
+        }
+
+        return tallies;
+    }
+
     async Task<DateOnly?> NewestNightAsync(CancellationToken cancellation)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -201,24 +277,35 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         return await command.ExecuteScalarAsync(cancellation) is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
-    async Task<List<PlanPointTest.FlaggedSetup>> SetupsAsync(string index, string family, CancellationToken cancellation)
+    // One family's rows its live setting passed, or with no family every row the four flagged, a stock's session once.
+    async Task<List<PlanPointTest.FlaggedSetup>> SetupsAsync(string index, string? family, CancellationToken cancellation)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
         await using var command = connection.CreateCommand();
 
-        command.CommandText = Setups;
+        command.CommandText = family is null ? PickerSetups : Setups;
         command.Parameters.AddWithValue("$index", index);
-        command.Parameters.AddWithValue("$family", family);
         command.Parameters.AddWithValue("$standing", LongLedger.StandingFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
+        if (family is not null)
+        {
+            command.Parameters.AddWithValue("$family", family);
+        }
+
         var rows = new List<PlanPointTest.FlaggedSetup>();
+        var seen = new HashSet<(string, string)>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
             double? Price(int column) => reader.IsDBNull(column) ? null : Statistic.FromPrice(Money.FromStorage(reader.GetString(column)));
+
+            if (family is null && !seen.Add((reader.GetString(1), reader.GetString(2))))
+            {
+                continue;
+            }
 
             rows.Add(new PlanPointTest.FlaggedSetup(
                 reader.GetString(0),
@@ -235,7 +322,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         return rows;
     }
 
-    async Task WriteAsync(string runId, DateTimeOffset started, IReadOnlyList<RangeWidthRow> rows, CancellationToken cancellation)
+    async Task WriteAsync(string runId, DateTimeOffset started, IReadOnlyList<RangeWidthRow> rows, string? kind, CancellationToken cancellation)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -278,7 +365,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
             command.Parameters.AddWithValue("$started_at", Stamp(started));
             command.Parameters.AddWithValue("$ended_at", Stamp(clock.UtcNow));
             command.Parameters.AddWithValue("$rows", rows.Count);
-            command.Parameters.AddWithValue("$detail", chosen.Length == 0 ? "no width rests on enough fills on any index" : "chosen on 2005 to 2018: " + string.Join("; ", chosen));
+            command.Parameters.AddWithValue("$detail", (kind is null ? string.Empty : kind + "; ") + (chosen.Length == 0 ? "no width rests on enough fills on any index" : "chosen on 2005 to 2018: " + string.Join("; ", chosen)));
             await command.ExecuteNonQueryAsync(cancellation);
         }
 

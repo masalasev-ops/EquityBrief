@@ -8,7 +8,7 @@ namespace EquityBrief.Api.Reading;
 // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
 public sealed partial class ReadApi
 {
-    const string NewestRangeWidths = "SELECT run_id, started_at FROM run_log WHERE stage = 'buy-range-widths' ORDER BY rowid DESC LIMIT 1;";
+    const string NewestRangeWidths = "SELECT run_id, started_at, detail FROM run_log WHERE stage = 'buy-range-widths' ORDER BY rowid DESC LIMIT 1;";
 
     const string RangeWidthRows = @"
         SELECT family, ceiling, floor, years, offered, bought, above, below, edge, missed, saved, chosen
@@ -20,6 +20,7 @@ public sealed partial class ReadApi
         await using var connection = Open();
         string runId;
         string day;
+        bool provisional;
 
         await using (var command = connection.CreateCommand())
         {
@@ -33,6 +34,7 @@ public sealed partial class ReadApi
             }
 
             (runId, day) = (reader.GetString(0), reader.GetString(1)[..10]);
+            provisional = !reader.IsDBNull(2) && reader.GetString(2).StartsWith(BuyRanges.PickerRun, StringComparison.Ordinal);
         }
 
         var rows = new List<RangeWidthRow>();
@@ -61,6 +63,6 @@ public sealed partial class ReadApi
             }
         }
 
-        return new BuyRangeTableView(day, rows);
+        return new BuyRangeTableView(day, rows) { Provisional = provisional };
     }
 }

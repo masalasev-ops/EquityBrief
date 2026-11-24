@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the widths test walks the AI stock picker's menu over the price families' setups, at a correction to 24.29
+Decision: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+Was:
+> ARCHITECTURE.html, the buy range widths test's row: "... skips a setup whose live rule buys at a level; registers nothing, no plan reads it, and refused while the night holds the store"
+> RUNBOOK.md, "The buy range's widths, from 24.29.": the two commands and their paragraph alone
+Now:
+> ARCHITECTURE.html: the row adding the `--picker` walk of every stock and session the price families flagged under each plan of the picker's menu, its width provisional
+> RUNBOOK.md: the `--picker` command and a paragraph on it
+Why: the widths test run of 2026-11-23 walked nothing, since no live rule buys at the next open after the restart; the operator's answer of that night, kept word for word in `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html - the AI stock picker's page one night at a time, and its count line saying what decided the number, at a correction to 24.25
 Decision: The AI stock picker's page draws one night at a time, and its count line says what decided the number
 Was:

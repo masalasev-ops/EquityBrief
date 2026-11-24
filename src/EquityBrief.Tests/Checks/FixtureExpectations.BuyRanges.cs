@@ -179,4 +179,67 @@ public partial class FixtureExpectations
         Assert.Equal(opens.Sum(), open.Edge, 9);
         Assert.Equal(13, RangeWidthTest.Tally(walker, "pullback", plan, setups).Count);
     }
+
+    // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    [Fact]
+    public void ThePickersMenuIsWalkedOverASetupAtTheOpenAndInEachRangeAgainstTheSamePlanOnEveryMemberAsWorkedByHand()
+    {
+        // Three members flat at a close of 100 with a high of 101 and a low of 99, so the typical daily move on the night, the
+        // fortieth session, is 2. On the session after it AAA opens at 101 and closes at 105, BBB opens at 95 and closes at 100,
+        // and FLAT stays at 100; each then holds the price it closed at.
+        var calendar = Enumerable.Range(0, 60).Select(at => new DateOnly(2010, 1, 4).AddDays(at)).ToArray();
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        const int Night = 40;
+
+        SweepName Member(string ticker, decimal open, decimal close) =>
+            new(ticker, [.. calendar.Select((session, at) => at <= Night ? new SweepBar(session, 101m, 99m, 100m, 1_000_000, 100m, 100m)
+                : at == Night + 1 ? new SweepBar(session, Math.Max(open, close) + 0.5m, Math.Min(open, close) - 0.5m, close, 1_000_000, open, close)
+                : new SweepBar(session, close + 1, close - 1, close, 1_000_000, close, close))], [(null, null)], []);
+
+        var series = new[] { SweepColumns.Series(Member("AAA", 101m, 105m), sessionAt), SweepColumns.Series(Member("BBB", 95m, 100m), sessionAt), SweepColumns.Series(Member("FLAT", 100m, 100m), sessionAt) };
+        var names = series.Select((one, at) => (one.Name.Ticker, at)).ToDictionary(pair => pair.Ticker, pair => new List<int> { pair.at }, StringComparer.Ordinal);
+        var walker = new PlanPointTest.Walker(series, calendar, names, new Dictionary<DateOnly, double>(), new Dictionary<DateOnly, string>());
+        (string Hold, string Shape)[] week = [("1 week", Core.Judge.JudgeMenu.Whole)];
+
+        PlanPointTest.FlaggedSetup Setup(string ticker) => new("pullback", ticker, calendar[Night], 100, 90, 110, null, 5, null);
+
+        Assert.Equal(2, series[0].Atr[Night], 9);
+
+        // A week's plan stops 1 typical move, 2, under the price paid and takes the whole at 2 times that risk. AAA bought at 101
+        // stops at 99, reaches 105 on its first close and sells at the next open of 105: 2 risks before costs. BBB bought at 95
+        // reaches 99 and sells at 100: 2.5 risks. FLAT bought at 100 sells at the end of its 5 sessions at 100: nought. The same
+        // plan on every member that night makes (2 + 2.5 + 0) / 3 = 1.5 risks, and each pick's edge is its result after its
+        // costs less that.
+        double Trip(double buy, double sold) => Core.Prices.Statistic.FromPrice(Core.Readings.TradeCost.RoundTrip(null, Core.Prices.Statistic.ToPrice(buy), Core.Prices.Statistic.ToPrice(sold)));
+
+        var edgeA = ((105 - 101 - Trip(101, 105)) / 2) - 1.5;
+        var edgeB = ((100 - 95 - Trip(95, 100)) / 2) - 1.5;
+        var widths = BuyRanges.Widths;
+        var a = walker.PickerWorked(Setup("AAA"), week, widths).Single()!.Value;
+        var b = walker.PickerWorked(Setup("BBB"), week, widths).Single()!.Value;
+        var oneTwo = widths.ToList().IndexOf(new RangeWidths(1, 2));
+        var halfNone = widths.ToList().IndexOf(new RangeWidths(0.5, null));
+
+        Assert.Equal(edgeA, a.Open, 9);
+        Assert.Equal(edgeB, b.Open, 9);
+
+        // In a range of 1 / 2, 96 to 102, AAA buys at its open and BBB, opening under the floor, is not bought; with no floor and
+        // a ceiling of 0.5, 101, both buy at their opens.
+        Assert.Equal((edgeA, (string?)null), (a.Ranged[oneTwo].Edge!.Value, a.Ranged[oneTwo].NotBought));
+        Assert.Equal(((double?)null, BuyRanges.Below), (b.Ranged[oneTwo].Edge, b.Ranged[oneTwo].NotBought));
+        Assert.Equal(edgeB, b.Ranged[halfNone].Edge!.Value, 9);
+
+        // The tally under the week's plan: two offered at the open; at 1 / 2 one bought, one below, its open edge kept as missed
+        // or kept out of; each plan of the menu read with the open and the twelve widths.
+        var tallies = RangeWidthTest.PickerTally(walker, [Setup("AAA"), Setup("BBB")]);
+        var family = BuyRanges.PickerFamily("1 week", Core.Judge.JudgeMenu.Whole);
+        var open = tallies.Single(one => one.Family == family && one.Widths is null).Early;
+        var ranged = tallies.Single(one => one.Family == family && one.Widths == new RangeWidths(1, 2)).Early;
+
+        Assert.Equal((2, 2), (open.Offered, open.Bought));
+        Assert.Equal(edgeA + edgeB, open.Edge, 9);
+        Assert.Equal((2, 1, 0, 1), (ranged.Offered, ranged.Bought, ranged.Above, ranged.Below));
+        Assert.Equal(Math.Abs(edgeB), ranged.Missed + ranged.Saved, 9);
+        Assert.Equal(Core.Judge.JudgeAccounts.Plans.Count * 13, tallies.Count);
+    }
 }

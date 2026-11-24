@@ -75,4 +75,43 @@ public partial class ReadSurface
 
         Assert.Contains("The widths test has not run on this index yet. It runs by hand over the long ledger once the ledger has been rebuilt through the fixed reader.", WebUtility.HtmlDecode(await emptyClient.GetStringAsync("/screens/loop?universe=400")), StringComparison.Ordinal);
     }
+
+    // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+    [Fact]
+    public async Task APickerWidthsRunReadsProvisionalAndNamesEachPlanOfTheMenuWhereARulesRunReadsNeither()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var plan = EquityBrief.Core.Loop.BuyRanges.PickerFamily("1 week", EquityBrief.Core.Judge.JudgeMenu.Whole);
+
+        store.Execute(
+            "INSERT INTO buy_range_width (run_id, index_code, family, width, ceiling, floor, years, offered, bought, above, below, edge, missed, saved, chosen, written_at) VALUES "
+            + string.Join(", ",
+                RangeRow("ranges-3", "GSPC", "all", "the open", "NULL", "NULL", "early", 1200, 1200, 0, 0, "0.05", "0", "0", 0),
+                RangeRow("ranges-3", "GSPC", "all", "1 / 2", "1", "2", "early", 1200, 1000, 150, 50, "0.07", "0.01", "0.03", 1),
+                RangeRow("ranges-3", "GSPC", plan, "1 / 2", "1", "2", "early", 150, 125, 20, 5, "0.06", "0.01", "0.02", 0)) + ";");
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES "
+            + $"('ranges-3', 'buy-range-widths', '2026-11-24T05:00:00Z', '2026-11-24T06:00:00Z', 'ok', 3, 0, 0, '0', '{EquityBrief.Core.Loop.BuyRanges.PickerRun.Replace("'", "''", StringComparison.Ordinal)}; chosen on 2005 to 2018: GSPC 1 / 2');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var ranges = Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")), "<section class=\"card\" data-card=\"loop-ranges\">.*?</section>").Single();
+
+        Assert.Contains("<p class=\"lm-small\" data-ranges=\"provisional\">Provisional: walked as the AI stock picker buys, under each plan of its menu, over every stock and session the four price families flagged, since the picker has no history of its own. It runs again over every member on every session once that table is rebuilt, and that width replaces this one from the next night.</p>", ranges, StringComparison.Ordinal);
+        Assert.Contains("<summary>Each plan of the picker's menu on its own</summary><p class=\"lm-p\"><b>1 week, the whole at 2 times the risk</b>, over 2005 to 2018</p>", ranges, StringComparison.Ordinal);
+
+        // A run of the rules' setups that came after reads as before.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES "
+            + "('ranges-4', 'buy-range-widths', '2026-11-25T05:00:00Z', '2026-11-25T06:00:00Z', 'ok', 1, 0, 0, '0', 'chosen on 2005 to 2018: GSPC 1 / 2');");
+        store.Execute(
+            "INSERT INTO buy_range_width (run_id, index_code, family, width, ceiling, floor, years, offered, bought, above, below, edge, missed, saved, chosen, written_at) VALUES "
+            + RangeRow("ranges-4", "GSPC", "all", "1 / 2", "1", "2", "early", 1200, 1000, 150, 50, "0.07", "0.01", "0.03", 1) + ";");
+
+        var rules = Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")), "<section class=\"card\" data-card=\"loop-ranges\">.*?</section>").Single();
+
+        Assert.DoesNotContain("data-ranges=\"provisional\"", rules, StringComparison.Ordinal);
+        Assert.Contains("<summary>Each setup on its own</summary>", rules, StringComparison.Ordinal);
+    }
 }

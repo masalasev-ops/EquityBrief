@@ -1419,6 +1419,97 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             return worked;
         }
 
+        readonly System.Collections.Concurrent.ConcurrentDictionary<(int At, string Hold, string Shape), double?> pickerBenchmarks = new();
+
+        readonly Lazy<double[]>[] lowsOf = [.. series.Select(one => new Lazy<double[]>(() => [.. one.Bars.Select(bar => Statistic.FromPrice(bar.Low))]))];
+
+        // A setup walked as the AI stock picker trades a pick under each plan of its menu given, bought at the next open and
+        // once in a range of each width given: its stop the hold's typical moves under the price paid, sold as the picker's
+        // accounts sell it within the hold's sessions, its result after costs in that risk less the same plan's mean over every
+        // member that session bought at its own next open. A plan's figures none where the stock is not held on its session, no
+        // typical move sets its risk, no member's walk has ended or the open's walk has not; a width's edge none where its walk
+        // has not ended or it was not bought, with the side it opened on.
+        // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
+        public (double Open, (double? Edge, string? NotBought)[] Ranged)?[] PickerWorked(FlaggedSetup setup, IReadOnlyList<(string Hold, string Shape)> plans, IReadOnlyList<RangeWidths> widths)
+        {
+            var worked = new (double Open, (double? Edge, string? NotBought)[] Ranged)?[plans.Count];
+            var at = Array.BinarySearch(calendar, setup.Session);
+
+            if (at < 0 || !names.TryGetValue(setup.Ticker, out var held) || held.Select(name => (Name: name, Bar: IndexNightRead.BarOf(series[name], at))).Where(one => one.Bar >= 0).Select(one => ((int Name, int Bar)?)one).FirstOrDefault() is not { } placed)
+            {
+                return worked;
+            }
+
+            var (closes, opens) = prices[placed.Name].Value;
+            var lows = lowsOf[placed.Name].Value;
+            var bar = placed.Bar;
+            var typical = series[placed.Name].Atr[bar];
+
+            if (!(typical > 0) || PlanPoints.FillOf(opens, lows, bar, null, 0) is not { } first)
+            {
+                return worked;
+            }
+
+            var fills = widths.Select(width => BuyRanges.Of(closes[bar], typical, width) is { } range ? BuyRanges.FillOf(opens, lows, bar, range) : new RangeFill(null, null)).ToArray();
+
+            for (var plan = 0; plan < plans.Count; plan++)
+            {
+                var (hold, shape) = plans[plan];
+
+                if (Core.Judge.JudgeMenu.HoldOf(hold) is not { } menu || PickerBenchmark(at, hold, shape, menu) is not { } benchmark)
+                {
+                    continue;
+                }
+
+                var risk = typical * menu.StopMoves;
+
+                double? EdgeFrom(WaitFill fill)
+                {
+                    if (!(fill.Price - risk > 0) || Core.Judge.JudgeAccounts.SaleOf(hold, shape, fill.Price, risk) is not { } sale
+                        || PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, fill.Price - risk, sale, menu.Sessions) is not { } outcome)
+                    {
+                        return null;
+                    }
+
+                    var trip = Statistic.FromPrice(TradeCost.RoundTrip(
+                        setup.CompanyValue is { } value && double.IsFinite(value) ? Statistic.ToPrice(value) : null,
+                        Statistic.ToPrice(fill.Price),
+                        Statistic.ToPrice(outcome.Sold)));
+                    var result = (outcome.Sold - fill.Price - trip) / risk;
+                    var edge = result - benchmark;
+
+                    return PlanPoints.NoResult(result, edge) ? null : edge;
+                }
+
+                if (EdgeFrom(first) is not { } open)
+                {
+                    continue;
+                }
+
+                worked[plan] = (open, [.. fills.Select(filled => (filled.Fill is { } fill ? EdgeFrom(fill) : null, filled.NotBought))]);
+            }
+
+            return worked;
+        }
+
+        // A picker plan's mean over every member of a session, each bought at its own next open with its risk the hold's typical
+        // moves, as the picker's accounts read a pick against every member that night.
+        double? PickerBenchmark(int at, string hold, string shape, Core.Judge.JudgeHold held) =>
+            pickerBenchmarks.GetOrAdd((at, hold, shape), key => PlanPoints.BenchmarkOf(members.Value[key.At].Select(member =>
+            {
+                var (closes, opens) = prices[member.Name].Value;
+                var typical = series[member.Name].Atr[member.Bar];
+
+                if (!(typical > 0))
+                {
+                    return null;
+                }
+
+                var risk = held.StopMoves * typical;
+
+                return PlanPoints.MemberResult(closes, opens, member.Bar, risk, fill => fill - risk, fill => Core.Judge.JudgeAccounts.SaleOf(key.Hold, key.Shape, fill, risk), held.Sessions);
+            })));
+
         // The levels plan as of a bar, from the bands and the trend the night's own functions read over the year it held.
         public static LevelsAsOf LevelsAt(SweepSeries series, int bar) => PlanTrades.LevelsAt(series, bar);
     }

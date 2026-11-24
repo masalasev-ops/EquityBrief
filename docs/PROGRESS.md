@@ -22440,3 +22440,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    each index's marks after each of the picker's first 5 nights within each index, reported to the operator.
+
+### 24.29 - correction: the widths test walks the AI stock picker's menu over every setup the price families flagged, its width provisional   2026-11-23
+
+Queue:      done, the 24.25 correction of the picker's page; in progress, this correction; next, its table to the operator,
+            then the held-none codes and PARA on the operator's answers, the marks they ruled, the pin move's statement and
+            the every-session table's time.
+Ruled:      the operator's answers of 2026-11-23 at about 10:40 pm and 10:50 pm ET, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-10-40pm.md`. One new decision.
+Built:      the widths test's `--picker`: every stock and session the pullback, the breakout, the drift and the dip flagged on
+            an index from 2005, once, walked under each of the picker's eight plans as its accounts trade them, at the open
+            and in a range of each of the twelve widths, each result after costs in the plan's risk less the same plan bought
+            on every member that session, the width chosen on 2005 to 2018 over every plan together as the rules' test chooses
+            one. The run log row opens with its kind, and the Improvement loop page's buy ranges card says the width is
+            provisional and folds each plan of the menu beneath. The decision, the widths test's catalogue row, the runbook and
+            the changelog.
+Measured:   the rules' widths test over the operator's store at 10:38 pm ET walked nothing: every live rule on each index buys
+            at a level, the pullback, breakout and drift at a distance under the close or the 20-session average and the dip at
+            its second zone, so no live plan buys at the next open. Its run log row stands with no rows written.
+Tests:      2 new: the picker's week plan over constructed bars worked by hand, at the open, inside a range, under its floor
+            and with no floor, against the same plan on every member, and its tally; and the card over a constructed store
+            reading a picker run provisional with each plan named, and a rules' run after it reading neither.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the benchmark left
+            out of a pick's edge: red; m2 the range ignored, every width filling at the open: red; m3 the provisional mark never
+            read: red. Each filtered to its tests and reverted before anything was committed. The stock session read once
+            whichever family flagged it is not mutated: no test reads the store's setups through the run.
+Claims:     1754, none added: the card's row and the catalogue's row stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4017 of 4017 tests ran with none failed, migrations 0 to 170 with
+            none pending, schema version 170, against `data-ci` and never `data`; the phase report 68 tables, 1754 claims, 1754
+            passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the run over the operator's store from main once merged, its table to the operator before anything uses a width;
+            the run over every member on every session once the every-session table is rebuilt, its width replacing this
+            one from the next night with the change listed.
