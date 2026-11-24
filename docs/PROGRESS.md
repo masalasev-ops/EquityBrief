@@ -22491,7 +22491,7 @@ Built:      three more links by hand beside DDR's, each from the first session i
             WTW_old and SIX the marking of 2026-11-23 wrote, so SIX's old company can be asked once under its delisted
             spelling; migration 172 writes the operator's eight rulings as the marking page's confirm writes one, BLD,
             DTV_old, RDC and WRK read through and CCE_old, CHMT_old, PKY and TW2 kept, a mark ruled already keeping its
-            ruling.
+            ruling and a store holding none of a stock's long prices, a new one among them, taking no ruling of it.
 Measured:   on the live store, read only: LPI priced to 2023-03-10 and VTLE alike on the same days, VTLE 46.30 on 2023-03-13
             after LPI's 48.61; PVAC to 2021-12-17 at 25.38 and ROCC 25.21 on 2021-12-20; WTW_old to 2019-04-18 at 19.07 and
             WW_old from 2019-04-22 at 17.81. The long filings hold PARA under filer 1826011, Banzai International, and CBS
@@ -22501,13 +22501,14 @@ Measured:   on the live store, read only: LPI priced to 2023-03-10 and VTLE alik
             sessions.
 Tests:      3 new: the four links listed and two worked by hand, WTW_old's never priced on one day at 19.10 after 19.00 and
             refused a fifth lower, LPI's at one; PARA's span from 2025-08-07 dropped while PSKY's and a like code's stand;
-            and migrations 171 and 172 over a store at 170, four rows removed and two kept, eight rulings written and one
-            ruled already kept.
+            and migrations 171 and 172 over a store at 170, four rows removed and two kept, the rulings of the seven stocks it
+            holds long prices of written, one ruled already kept, and none of TW2's.
 Pins:       none moved. No file a rule pins or the readings' version pins is touched.
 Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 a pair never priced
             on one day refused: red; m2 the drop by hand ignored: red; m3 the removal reading every row of the marking: red;
-            m4 a ruling replacing one ruled already: red. Each filtered to its tests and reverted before anything was
-            committed; m1 and m2 were run in one build, each red in its own test.
+            m4 a ruling replacing one ruled already: red; m5 the rulings written into a store holding none of the stocks'
+            prices: red, the migrations' test and the migrated store's portability check. Each filtered to its tests and
+            reverted before anything was committed; m1 and m2 were run in one build, each red in its own test.
 Claims:     1754, none added.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 4020 of 4020 tests ran with none failed, migrations 0 to 172 with

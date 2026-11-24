@@ -79,7 +79,8 @@ public partial class FixtureExpectations
     }
 
     // Migration 171 removes the four codes' held-none rows of the marking of 2026-11-23 and nothing else; migration 172 writes the
-    // operator's eight rulings, a mark the page ruled before keeping its ruling, and the tables refuse a delete after them.
+    // operator's rulings of the stocks the store holds long prices of, a mark the page ruled before keeping its ruling, and the
+    // tables refuse a delete after them.
     [Fact]
     public void MigrationsOneSeventyOneAndTwoRemoveTheFourHeldNoneRowsAndWriteTheEightRulings()
     {
@@ -91,12 +92,15 @@ public partial class FixtureExpectations
             + "('WTW_old', '2019-04-22', '2019-09-27', 112, 'a', 'long-held-none-20261123T213949Z'), ('SIX', '2019-09-30', '2024-09-27', 1258, 'a', 'long-held-none-20261123T213949Z'), "
             + "('HOS', '2020-03-02', '2020-03-06', 5, 'a', 'long-held-none-20261123T213949Z'), ('LPI', '2026-01-02', '2026-01-02', 1, 'a', 'long-held-none-other');");
         store.Execute("INSERT INTO mark_ruling (ticker, session_date, ruling, filer, price, ruled_at) VALUES ('PKY', '2016-10-11', 'read through', 'not on file', 'carries on', '2026-11-24T01:00:00Z');");
+        store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES "
+            + string.Join(", ", new[] { "BLD", "DTV_old", "RDC", "WRK", "CCE_old", "CHMT_old", "PKY" }.Select(code => $"('{code}', '2009-01-02', '10', '10', '10', '10', '10', 1000, 'r')")) + ";");
 
         new MigrationRunner([.. SchemaMigrations.All]).Apply(store.DatabaseFile);
 
+        // TW2 holds no long price in this store, so it takes no ruling, as a new store takes none.
         Assert.Equal("HOS 2020-03-02,LPI 2026-01-02", (string)One(store, "SELECT group_concat(ticker || ' ' || first_session, ',') FROM (SELECT ticker, first_session FROM long_held_none ORDER BY ticker);")!);
         Assert.Equal(
-            "BLD read through,CCE_old kept,CHMT_old kept,DTV_old read through,PKY read through,RDC read through,TW2 kept,WRK read through",
+            "BLD read through,CCE_old kept,CHMT_old kept,DTV_old read through,PKY read through,RDC read through,WRK read through",
             (string)One(store, "SELECT group_concat(ticker || ' ' || ruling, ',') FROM (SELECT ticker, ruling FROM mark_ruling ORDER BY ticker);")!);
         Assert.Equal("files on both sides gaps", (string)One(store, "SELECT filer || ' ' || price FROM mark_ruling WHERE ticker = 'CHMT_old';")!);
         Assert.Throws<SqliteException>(() => store.Execute("DELETE FROM long_held_none;"));

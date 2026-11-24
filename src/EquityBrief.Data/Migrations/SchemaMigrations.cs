@@ -797,10 +797,11 @@ public static class SchemaMigrations
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
     // rather than its confirm and written as the confirm writes a ruling, each with what its filer and its price said on the
-    // page that day; a mark the page has ruled already keeps its first ruling.
+    // page that day; a mark the page has ruled already keeps its first ruling, and a store holding none of a stock's long prices,
+    // a new one among them, takes no ruling of it.
     // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
     const string RuleEightMarks = @"
-        INSERT OR IGNORE INTO mark_ruling (ticker, session_date, ruling, filer, price, ruled_at) VALUES
+        WITH ruled (ticker, session_date, ruling, filer, price, ruled_at) AS (VALUES
             ('BLD', '2015-07-02', 'read through', 'not on file', 'too few sessions', '2026-11-24T03:40:00Z'),
             ('DTV_old', '2009-11-19', 'read through', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
             ('RDC', '2012-05-03', 'read through', 'files on both sides', 'jumps', '2026-11-24T03:40:00Z'),
@@ -808,7 +809,10 @@ public static class SchemaMigrations
             ('CCE_old', '2010-10-04', 'kept', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
             ('CHMT_old', '2009-04-15', 'kept', 'files on both sides', 'gaps', '2026-11-24T03:40:00Z'),
             ('PKY', '2016-10-11', 'kept', 'not on file', 'carries on', '2026-11-24T03:40:00Z'),
-            ('TW2', '2009-12-31', 'kept', 'files on both sides', 'jumps', '2026-11-24T03:40:00Z');
+            ('TW2', '2009-12-31', 'kept', 'files on both sides', 'jumps', '2026-11-24T03:40:00Z'))
+        INSERT OR IGNORE INTO mark_ruling (ticker, session_date, ruling, filer, price, ruled_at)
+        SELECT ticker, session_date, ruling, filer, price, ruled_at FROM ruled
+        WHERE EXISTS (SELECT 1 FROM long_bar WHERE long_bar.ticker = ruled.ticker);
     ";
 
     // The held-none rows of the four codes the operator's answers of 2026-11-23, item 1, opened again: LPI, PVAC and WTW_old,
