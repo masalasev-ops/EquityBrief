@@ -321,10 +321,19 @@ public sealed partial class SetupLedger : IComponent
 
     const string SessionRowsOn = "SELECT ticker, readings, source FROM session_reading WHERE index_code = $index AND session_date = $session ORDER BY ticker;";
 
-    // From the 24.19 correction a session's rows the build worked, which the build written again clears in the chunk's own
-    // transaction before writing the session whole, a night's own rows left as they stand.
+    // A session's rows, which the build written again clears whole in the chunk's own transaction before writing the session
+    // again, worked from the long history or copied from the night's own rows, so the table holds what one build writes.
     // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
-    const string ClearBuiltSession = "DELETE FROM session_reading WHERE index_code = $index AND session_date = $session AND source = 'build';";
+    const string ClearSession = "DELETE FROM session_reading WHERE index_code = $index AND session_date = $session;";
+
+    // The sessions a night stored over a span cleared whole before its rows are copied, so a session the night stored holds
+    // the night's rows and no other.
+    const string ClearNightSessions = @"
+        DELETE FROM session_reading WHERE index_code = $index AND session_date >= $from AND session_date <= $through
+        AND session_date IN (SELECT session_date FROM ledger_reading WHERE index_code = $index AND session_date >= $from AND session_date <= $through);";
+
+    // Each session's rows the table holds of an index over a span, which the build holds to what it wrote.
+    const string HeldBySession = "SELECT session_date, COUNT(*) FROM session_reading WHERE index_code = $index AND session_date >= $from AND session_date <= $through GROUP BY session_date;";
 
     // From 23.6 the long build's writes, which only `ledger-build --long` runs: each setup under both readings, the standing
     // setups left open whose prices stop at their last price, and each family's years under both readings, the last two
@@ -3275,7 +3284,7 @@ public sealed partial class SetupLedger : IComponent
         // The rows just rewritten are copied again, so every member's readings on every session holds the night's as they stand.
         foreach (var index in memberRows.Select(row => row.Index).Distinct(StringComparer.Ordinal))
         {
-            await ExecuteAsync(connection, transaction, CopyNightReadings, [("$index", index), ("$from", Stamp(session)), ("$through", Stamp(session))], cancellation);
+            await CopyNightSessionsAsync(connection, transaction, index, session, session, cancellation);
             await CountSessionYearsAsync(connection, transaction, index, session.Year, session.Year, cancellation);
         }
 

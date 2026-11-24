@@ -51,9 +51,11 @@ public sealed partial class SetupLedger
     // The build by hand, from a clean copy of main's commit: every session from 2005 on one index the table holds no row of
     // under the catalogue's version now, its count and its time stated first and nothing written without `word`; each chunk
     // waiting for the night and holding the drain's lock while it writes, then each year of the index counted. From the 24.19
-    // correction, with `again`, every session the build worked written once more from the session given or the first, each
-    // cleared of the build's rows and written whole in its chunk's transaction, a session the nights stored left as it stands;
-    // a build stopped part way is run again from the session its last chunk line names.
+    // correction, with `again`, every session written once more from the session given or the first, each cleared whole and
+    // written in its chunk's transaction, a session the nights stored copied again from their rows, and every row held on a
+    // session outside the calendar over that span removed first; a build stopped part way is run again from the session its
+    // last chunk line names. Every build then holds the rows the table holds on each session it wrote to the rows it wrote
+    // there, and a session outside the calendar to none, and stops short of an ok outcome where either differs.
     public async Task<int> SessionReadingsAsync(string dataRoot, string index, bool word, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null, bool again = false, DateOnly? againFrom = null)
     {
         var startedAt = clock.UtcNow;
@@ -82,7 +84,7 @@ public sealed partial class SetupLedger
         var stored = await SessionsAsync(connection, SessionsAtPin, [("$index", index), ("$pin", LedgerReadings.Version)], cancellation);
         var nights = await SessionsAsync(connection, NightSessionsOf, [("$index", index)], cancellation);
         var toWrite = again
-            ? Enumerable.Range(first, last - first + 1).Where(at => !nights.Contains(calendar[at]) && (againFrom is not { } from || calendar[at] >= from)).ToArray()
+            ? Enumerable.Range(first, last - first + 1).Where(at => againFrom is not { } from || calendar[at] >= from).ToArray()
             : Enumerable.Range(first, last - first + 1).Where(at => !stored.Contains(calendar[at])).ToArray();
         var toWork = toWrite.Where(at => !nights.Contains(calendar[at])).ToArray();
         var sizeBefore = SizeNow();
@@ -116,6 +118,25 @@ public sealed partial class SetupLedger
         var timed = Stopwatch.StartNew();
         var written = 0L;
         var copied = 0;
+        var writtenOn = new Dictionary<DateOnly, long>();
+        var onCalendar = calendar[first..(last + 1)].ToHashSet();
+        var spanFrom = again && againFrom is { } given ? given : DateOnly.MinValue;
+        var removed = 0;
+
+        if (again)
+        {
+            using var drain = await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation);
+            await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+            foreach (var stray in (await HeldBySessionAsync(connection, transaction, index, spanFrom, calendar[last], cancellation)).Keys.Where(session => !onCalendar.Contains(session)))
+            {
+                await using var clear = Command(connection, transaction, ClearSession, [("$index", index), ("$session", Stamp(stray))]);
+
+                removed += await clear.ExecuteNonQueryAsync(cancellation);
+            }
+
+            await transaction.CommitAsync(cancellation);
+        }
 
         for (var taken = 0; taken < toWrite.Length; taken += ChunkSessions)
         {
@@ -139,18 +160,16 @@ public sealed partial class SetupLedger
 
                 if (nights.Contains(calendar[chunk[item]]))
                 {
-                    await using var copy = Command(connection, transaction, CopyNightReadings, [("$index", index), ("$from", session), ("$through", session)]);
+                    var night = await CopyNightSessionsAsync(connection, transaction, index, calendar[chunk[item]], calendar[chunk[item]], cancellation);
 
-                    chunkRows += await copy.ExecuteNonQueryAsync(cancellation);
+                    writtenOn[calendar[chunk[item]]] = night;
+                    chunkRows += night;
                     copied++;
 
                     continue;
                 }
 
-                if (again)
-                {
-                    await ExecuteAsync(connection, transaction, ClearBuiltSession, [("$index", index), ("$session", session)], cancellation);
-                }
+                await ExecuteAsync(connection, transaction, ClearSession, [("$index", index), ("$session", session)], cancellation);
 
                 foreach (var (ticker, readings) in rows[item])
                 {
@@ -158,6 +177,7 @@ public sealed partial class SetupLedger
                         [("$index", index), ("$session", session), ("$ticker", ticker), ("$readings", readings), ("$pin", LedgerReadings.Version), ("$source", BuildSource)], cancellation);
                 }
 
+                writtenOn[calendar[chunk[item]]] = rows[item].Count;
                 chunkRows += rows[item].Count;
             }
 
@@ -179,13 +199,71 @@ public sealed partial class SetupLedger
             years = await CountSessionYearsAsync(connection, null, index, calendar[first].Year, calendar[last].Year, cancellation);
         }
 
-        var detail = FormattableString.Invariant($"{written} row(s) of every member's readings on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {toWrite.Length - copied} session(s) worked from the long history and {copied} copied from the nights' own rows; {years.Sum(year => year.Rows)} row(s) over {years.Count} year(s) in all")
+        var apart = HeldAgainstWritten(await HeldBySessionAsync(connection, null, index, spanFrom, calendar[last], cancellation), writtenOn, onCalendar);
+        var detail = FormattableString.Invariant($"{written} row(s) of every member's readings on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {toWrite.Length - copied} session(s) worked from the long history and {copied} copied from the nights' own rows; ")
+            + (again ? FormattableString.Invariant($"{removed} row(s) held on no session of the calendar removed; ") : "")
+            + (apart ?? FormattableString.Invariant($"the table holds {written} row(s) on the sessions written, as written; "))
+            + FormattableString.Invariant($"{years.Sum(year => year.Rows)} row(s) over {years.Count} year(s) in all")
             + SizeDetail(sizeBefore, SizeNow(), (int)Math.Min(int.MaxValue, written), toWrite.Length, timed.Elapsed).Replace("a setup", "a row", StringComparison.Ordinal);
 
-        await AppendAsync(connection, runId, SessionReadingsStage, startedAt, (int)Math.Min(int.MaxValue, written), Ok, detail, cancellation);
+        await AppendAsync(connection, runId, SessionReadingsStage, startedAt, (int)Math.Min(int.MaxValue, written), apart is null ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("session-readings: " + detail);
 
-        return 0;
+        return apart is null ? 0 : 3;
+    }
+
+    static async Task<Dictionary<DateOnly, long>> HeldBySessionAsync(SqliteConnection connection, SqliteTransaction? transaction, string index, DateOnly from, DateOnly through, CancellationToken cancellation)
+    {
+        var held = new Dictionary<DateOnly, long>();
+
+        await using var command = Command(connection, transaction, HeldBySession, [("$index", index), ("$from", Stamp(from)), ("$through", Stamp(through))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            held[Date(reader.GetString(0))] = reader.GetInt64(1);
+        }
+
+        return held;
+    }
+
+    // The rows the table holds over a build's span held to what the build wrote: each session it wrote holding the rows it
+    // wrote there, and no session outside the calendar holding any. Nothing where both hold, else what differs, named.
+    public static string? HeldAgainstWritten(IReadOnlyDictionary<DateOnly, long> held, IReadOnlyDictionary<DateOnly, long> written, IReadOnlySet<DateOnly> calendar)
+    {
+        var differing = written.Where(session => held.GetValueOrDefault(session.Key) != session.Value).OrderBy(session => session.Key).ToArray();
+        var strays = held.Where(session => !calendar.Contains(session.Key)).OrderBy(session => session.Key).ToArray();
+
+        if (differing.Length == 0 && strays.Length == 0)
+        {
+            return null;
+        }
+
+        var parts = new List<string>();
+
+        if (differing.Length > 0)
+        {
+            parts.Add(FormattableString.Invariant($"{differing.Length} session(s) written hold other than the rows written, {Stamp(differing[0].Key)} first with {held.GetValueOrDefault(differing[0].Key)} held of {differing[0].Value} written, {written.Keys.Sum(session => held.GetValueOrDefault(session))} row(s) held on the sessions written of {written.Values.Sum()} written"));
+        }
+
+        if (strays.Length > 0)
+        {
+            parts.Add(FormattableString.Invariant($"{strays.Sum(session => session.Value)} row(s) held on {strays.Length} session(s) outside the calendar, {Stamp(strays[0].Key)} first"));
+        }
+
+        return "the table does not hold what the build wrote: " + string.Join("; ", parts) + "; ";
+    }
+
+    // The sessions a night stored over a span written again whole from the night's own rows, and the rows copied.
+    static async Task<int> CopyNightSessionsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly from, DateOnly through, CancellationToken cancellation)
+    {
+        IReadOnlyList<(string Name, object Value)> span = [("$index", index), ("$from", Stamp(from)), ("$through", Stamp(through))];
+
+        await ExecuteAsync(connection, transaction, ClearNightSessions, span, cancellation);
+
+        await using var copy = Command(connection, transaction, CopyNightReadings, span);
+
+        return await copy.ExecuteNonQueryAsync(cancellation);
     }
 
     // The bytes a row takes beside its readings' text and its ticker: its index, session, pin and source, and the key's entry.
@@ -253,13 +331,11 @@ public sealed partial class SetupLedger
     }
 
     // The night's own rows on an index copied into the table for the night and the days before it, inside the night's own
-    // transaction, and the years they fall in counted again.
+    // transaction, each such session written again whole, and the years they fall in counted again.
     async Task<int> CopyTheNightsReadingsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         var from = night.AddDays(-NightCopyDays);
-
-        await using var copy = Command(connection, transaction, CopyNightReadings, [("$index", index), ("$from", Stamp(from)), ("$through", Stamp(night))]);
-        var copied = await copy.ExecuteNonQueryAsync(cancellation);
+        var copied = await CopyNightSessionsAsync(connection, transaction, index, from, night, cancellation);
 
         await CountSessionYearsAsync(connection, transaction, index, from.Year, night.Year, cancellation);
 
@@ -326,7 +402,9 @@ public sealed partial class SetupLedger
         var rebuilt = 0;
         var setups = 0;
         var nightRows = 0;
+        var memberSessions = 0;
         var own = FamilyOwnReadings.Select(LedgerReadings.IndexOf).ToHashSet();
+        var standing = await StandingMembersAsync(index, through, sample.Where(session => session > LongLedger.Through && !nights.Contains(session)), cancellation);
 
         foreach (var session in sample)
         {
@@ -355,10 +433,12 @@ public sealed partial class SetupLedger
                 // A session the night stored is the night's own rows, held to them.
                 await using var command = Command(connection, null, "SELECT ticker, readings FROM ledger_reading WHERE index_code = $index AND session_date = $session;", [("$index", index), ("$session", Stamp(session))]);
                 await using var reader = await command.ExecuteReaderAsync(cancellation);
+                var nightsTickers = new HashSet<string>(StringComparer.Ordinal);
 
                 while (await reader.ReadAsync(cancellation))
                 {
                     nightRows++;
+                    nightsTickers.Add(reader.GetString(0));
 
                     if (!byTicker.TryGetValue(reader.GetString(0), out var held))
                     {
@@ -371,7 +451,16 @@ public sealed partial class SetupLedger
                     }
                 }
 
+                findings.AddRange(byTicker.Keys.Where(ticker => !nightsTickers.Contains(ticker)).Order(StringComparer.Ordinal).Select(ticker => $"{ticker} {Stamp(session)}: the table holds it and the night's own rows do not"));
+
                 continue;
+            }
+
+            // The standing ledger's members on a session after the long years held to the table's, both ways.
+            if (standing.TryGetValue(session, out var ledgerMembers))
+            {
+                memberSessions++;
+                findings.AddRange(MemberSetDifferences(ledgerMembers, byTicker.Keys, session));
             }
 
             // One row the build worked, rebuilt from the long history cut at its session.
@@ -425,13 +514,44 @@ public sealed partial class SetupLedger
             output.WriteLine("session-readings-check: " + finding);
         }
 
-        var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table; ")
+        var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table, {memberSessions} session(s) of the standing ledger's members held to the table's both ways; ")
             + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
 
         await AppendAsync(connection, runId, SessionCheckStage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("session-readings-check: " + detail);
 
         return findings.Count == 0 ? 0 : 1;
+    }
+
+    // A session's members the standing ledger reads and the table holds, each held to the other: a member of either the other
+    // lacks named, the ledger's first.
+    public static IEnumerable<string> MemberSetDifferences(IReadOnlySet<string> ledgerMembers, IEnumerable<string> tableMembers, DateOnly session)
+    {
+        var table = tableMembers.ToHashSet(StringComparer.Ordinal);
+
+        return ledgerMembers.Where(ticker => !table.Contains(ticker)).Order(StringComparer.Ordinal).Select(ticker => $"{ticker} {Stamp(session)}: the ledger's members hold it and the table does not")
+            .Concat(table.Where(ticker => !ledgerMembers.Contains(ticker)).Order(StringComparer.Ordinal).Select(ticker => $"{ticker} {Stamp(session)}: the table holds it and the ledger's members do not"));
+    }
+
+    // The members the standing ledger's build reads on each session given, its history read as the build reads it, by ticker.
+    async Task<Dictionary<DateOnly, HashSet<string>>> StandingMembersAsync(string index, DateOnly through, IEnumerable<DateOnly> sessions, CancellationToken cancellation)
+    {
+        var wanted = sessions.ToArray();
+
+        if (wanted.Length == 0)
+        {
+            return [];
+        }
+
+        var inputs = await new SweepHistory(databaseFile).ReadAsync(through, null, cancellation, index: index == IndexFamilies.LargeIndex ? null : index, asItStood: index != IndexFamilies.LargeIndex);
+        var sessionAt = inputs.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        var members = SweepBenchmark.On(series, sessionAt.Count);
+
+        return wanted.Where(sessionAt.ContainsKey).ToDictionary(session => session, session => members.Names[sessionAt[session]].Select(name => series[name].Name.Ticker).ToHashSet(StringComparer.Ordinal));
     }
 
     // The readings a setup's row and its stock's row differ on, a setup's family's own readings and a reading the long build

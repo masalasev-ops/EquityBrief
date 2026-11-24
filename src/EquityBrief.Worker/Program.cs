@@ -1066,15 +1066,14 @@ static async Task<int> LongPricesRun(string[] args)
         Directory.CreateDirectory(folder);
 
         // '--again <ASKED[:FOR],...>' asks the codes named again whether or not the folder keeps them, each for its own member
-        // sessions or for those of the code after the colon, and refuses a code marked held none.
+        // sessions or for those of the code after the colon, and refuses a code marked held none; every code the folder keeps
+        // asked before is carried with or without it.
         var asks = VerbArguments.Value(args, "--again") is { } named ? EquityBrief.Worker.History.LongPricePull.AsksOf(named) : [];
         IReadOnlyList<EquityBrief.Worker.History.LongCode> codes;
 
         try
         {
-            codes = asks.Count > 0
-                ? await EquityBrief.Worker.History.LongPricePull.AgainAsync(store.DatabaseFile, folder, asks, clock.UtcNow)
-                : await EquityBrief.Worker.History.LongPricePull.CodesAsync(store.DatabaseFile);
+            codes = await EquityBrief.Worker.History.LongPricePull.AgainAsync(store.DatabaseFile, folder, asks, clock.UtcNow);
         }
         catch (ArgumentException refusal)
         {
