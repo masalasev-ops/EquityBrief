@@ -4,6 +4,7 @@ using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.History;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Charts;
@@ -68,8 +69,8 @@ public sealed class LongPricePull : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.LongBar, Touch.Insert | Touch.Delete),
-            new StoreTouch(Store.LongMarketBar, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LongBar, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LongMarketBar, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongPrint, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongSplit, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongDividend, Touch.Insert | Touch.Delete),
@@ -554,7 +555,7 @@ public sealed class LongPricePull : IComponent
         progress(FormattableString.Invariant($"the S&P 500 from 2012: {counts.Count} quarter end(s), the most apart {counts.Select(count => Math.Abs(count.Apart)).DefaultIfEmpty().Max()}, read from {cutover:yyyy-MM-dd}"));
 
         await using var transaction = write ? await connection.BeginTransactionAsync(cancellation) : null;
-        var spans = await LongMembers.SpansAsync(connection, (SqliteTransaction?)transaction, cutover, cancellation);
+        var spans = await LongMembers.SpansAsync(connection, (SqliteTransaction?)transaction, cutover, cancellation, await PartsAsync(connection, (SqliteTransaction?)transaction, cancellation));
 
         var holdings = new List<(string Index, DateOnly Period, string? Ticker, decimal Value)>();
 
@@ -1164,7 +1165,8 @@ public sealed class LongPricePull : IComponent
         }, cancellation);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
-        var spans = await LongMembers.SpansAsync(connection, transaction, from, cancellation);
+        var parted = new List<LongParted>();
+        var spans = await LongMembers.SpansAsync(connection, transaction, from, cancellation, await PartsAsync(connection, transaction, cancellation), parted);
         var after = await LongMembers.RewriteSpansAsync(connection, transaction, spans, runId, cancellation);
 
         await using (var run = connection.CreateCommand())
@@ -1176,7 +1178,7 @@ public sealed class LongPricePull : IComponent
             run.Parameters.AddWithValue("$started_at", startedAt);
             run.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             run.Parameters.AddWithValue("$rows", after);
-            run.Parameters.AddWithValue("$detail", FormattableString.Invariant($"{before} span(s) written again as {after}, the S&P 500's provider dates read from {from:yyyy-MM-dd}"));
+            run.Parameters.AddWithValue("$detail", FormattableString.Invariant($"{before} span(s) written again as {after}, the S&P 500's provider dates read from {from:yyyy-MM-dd}") + PartedWords(parted));
             await run.ExecuteNonQueryAsync(cancellation);
         }
 
@@ -1186,6 +1188,122 @@ public sealed class LongPricePull : IComponent
     }
 
     public const string SpansStage = "long-spans";
+
+    // "; parted: FOXA at 2019-03-19 from 21st Century Fox to Fox Corp Class A, its prices begin at the later name, the earlier
+    // left out", none where nothing parted.
+    public static string PartedWords(IReadOnlyList<LongParted> parted) =>
+        parted.Count == 0
+            ? string.Empty
+            : "; parted: " + string.Join("; ", parted.OrderBy(one => one.Ticker, StringComparer.Ordinal).Select(one =>
+                FormattableString.Invariant($"{one.Ticker} at {one.To:yyyy-MM-dd} from {one.Before} to {one.After}, {one.Evidence}{(one.LeftOut ? ", the earlier left out" : string.Empty)}")));
+
+    // The evidence parting a code's S&P 500 provider spans under two names that meet, read off the store as it stands: none
+    // for a code the provider files under one name; its prices beginning more than the marks' gap after the earlier span's
+    // first session, so the earlier holds none of them; the marks' price test at the later span's start gapping or jumping;
+    // or each name's filer known and different, a name's filer read off the codes the provider files under that name alone.
+    // see: A code's provider spans under two names part into two companies only on a different filer or the marks' price test, never on the names alone
+    public static async Task<Func<ProviderSpan, ProviderSpan, string?>> PartsAsync(SqliteConnection connection, SqliteTransaction? transaction, CancellationToken cancellation = default)
+    {
+        static string Spelled(string name) => new([.. name.ToUpperInvariant().Where(char.IsLetterOrDigit)]);
+
+        async Task EachAsync(string sql, (string, object)[] parameters, Action<SqliteDataReader> row)
+        {
+            await using var read = connection.CreateCommand();
+
+            read.Transaction = transaction;
+            read.CommandText = sql;
+
+            foreach (var (name, value) in parameters)
+            {
+                read.Parameters.AddWithValue(name, value);
+            }
+
+            await using var reader = await read.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                row(reader);
+            }
+        }
+
+        var names = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var filers = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        await EachAsync("SELECT ticker, name FROM membership WHERE index_code = 'GSPC' AND name IS NOT NULL;", [], reader =>
+        {
+            if (!names.TryGetValue(reader.GetString(0), out var held))
+            {
+                names[reader.GetString(0)] = held = new HashSet<string>(StringComparer.Ordinal);
+            }
+
+            held.Add(reader.GetString(1));
+        });
+        await EachAsync("SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;", [], reader => filers[reader.GetString(0)] = reader.GetString(1).TrimStart('0'));
+
+        var twoNamed = names.Where(pair => pair.Value.Select(Spelled).Distinct(StringComparer.Ordinal).Count() > 1).Select(pair => pair.Key).ToHashSet(StringComparer.Ordinal);
+        var filerOfName = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var (ticker, held) in names.Where(pair => !twoNamed.Contains(pair.Key)))
+        {
+            if (filers.TryGetValue(ticker, out var cik))
+            {
+                foreach (var name in held)
+                {
+                    filerOfName.TryAdd(HoldingMatcher.NameKey(name), cik);
+                }
+            }
+        }
+
+        var calendar = new List<DateOnly>();
+
+        await EachAsync("SELECT session_date FROM long_market_bar WHERE series = 'GSPC' ORDER BY session_date;", [], reader => calendar.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+
+        var bars = new Dictionary<string, SweepBar[]>(StringComparer.Ordinal);
+
+        foreach (var ticker in twoNamed)
+        {
+            var series = new List<SweepBar>();
+
+            await EachAsync("SELECT session_date, high, low, close, volume, open, raw_close FROM long_bar WHERE ticker = $ticker ORDER BY session_date;", [("$ticker", ticker)], reader =>
+            {
+                decimal Money(int column) => reader.IsDBNull(column) ? 0m : decimal.Parse(reader.GetString(column), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture);
+
+                series.Add(new SweepBar(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture), Money(1), Money(2), Money(3), reader.IsDBNull(4) ? 0 : reader.GetInt64(4), Money(5), Money(6)));
+            });
+
+            bars[ticker] = [.. LongTraded.Of(series)];
+        }
+
+        return (earlier, later) =>
+        {
+            if (!twoNamed.Contains(earlier.Ticker) || later.Joined is not { } boundary)
+            {
+                return null;
+            }
+
+            var traded = bars.GetValueOrDefault(earlier.Ticker) ?? [];
+            var first = traded.Length == 0 ? (DateOnly?)null : traded[0].Session;
+            var unpriced = calendar.Count(session => (earlier.Joined is not { } from || session >= from) && session < boundary && (first is not { } priced || session < priced));
+
+            if (unpriced > LongMarks.GapSessions)
+            {
+                return LongSpans.NoPriceBefore;
+            }
+
+            var before = traded.Where(bar => bar.Session < boundary).Select(bar => (DateOnly?)bar.Session).LastOrDefault();
+            var moved = before is { } last ? LongMarks.PriceOf(traded, last, calendar) : LongMarks.TooFew;
+
+            if (moved is LongMarks.Gap or LongMarks.Jump)
+            {
+                return moved;
+            }
+
+            return earlier.Name is { } was && later.Name is { } now
+                && filerOfName.TryGetValue(HoldingMatcher.NameKey(was), out var wasFiler) && filerOfName.TryGetValue(HoldingMatcher.NameKey(now), out var nowFiler) && wasFiler != nowFiler
+                ? LongSpans.DifferentFiler
+                : null;
+        };
+    }
 
     // The asks named as ASKED or ASKED:FOR, a comma between each, FOR the code whose member sessions the answer is for where
     // it is not the code asked.

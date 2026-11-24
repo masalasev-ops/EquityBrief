@@ -10,6 +10,11 @@ public sealed record LongSpan(string Index, string Ticker, DateOnly Joined, Date
 // the span states it, none where it states none.
 public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Left, string? Name = null);
 
+// Where a code's provider spans under two names meet and the evidence parts them into two companies: the code, the earlier
+// side's start and its end at the later side's start, the two names, the evidence, and whether the earlier side was left out,
+// its code holding no price over it.
+public sealed record LongParted(string Ticker, DateOnly? From, DateOnly To, string? Before, string? After, string Evidence, bool LeftOut);
+
 // The long history's spans of membership. A member runs from a snapshot holding it to the first later snapshot that does not,
 // so a stock falling within a quarter stays a member until its prices stop; a code away at one snapshot alone is read as held
 // there, one away at two snapshots or more reads as two spans; a code two funds hold at one quarter end reads in the larger
@@ -17,7 +22,8 @@ public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Lef
 // schedule where the prices' count of the two sets them more than its margin apart, a span with no start date taking
 // the first snapshot holding its company, read by its code and where no snapshot holds the code by its name, and where neither
 // does, from the end of its code's latest dated span ending by its own end; a code's own provider spans that overlap or meet
-// are one span; two spans the provider files under two codes with one name as written
+// are one span, but where their names differ and a different filer on each side or the marks' price test parts them, two, the
+// earlier left out where its code holds no price over it; two spans the provider files under two codes with one name as written
 // and the same dates are one company's and read as the first code, two classes of shares never. From the first night that
 // read the S&P 400's or 600's members, that index's spans are the nights' own.
 // see: The long history's spans of the S&P 400 and 600 are the nights' own from the first night that read each index
@@ -44,7 +50,9 @@ public static class LongSpans
         IReadOnlyList<ProviderSpan> provider,
         IReadOnlyDictionary<string, DateOnly>? firstHeldByName = null,
         DateOnly? providerFrom = null,
-        IReadOnlyDictionary<string, IReadOnlyList<ProviderSpan>>? nights = null)
+        IReadOnlyDictionary<string, IReadOnlyList<ProviderSpan>>? nights = null,
+        Func<ProviderSpan, ProviderSpan, string?>? partsThem = null,
+        ICollection<LongParted>? parted = null)
     {
         var spans = new List<LongSpan>();
         var cutover = providerFrom ?? ProviderFrom;
@@ -113,7 +121,7 @@ public static class LongSpans
             var once = provider
                 .Select(Continued)
                 .GroupBy(span => span.Ticker, StringComparer.Ordinal)
-                .SelectMany(Runs)
+                .SelectMany(rows => Runs(rows, partsThem, parted))
                 .Where(span => !(span.Left <= cutover))
                 .GroupBy(span => (Name: span.Name is { } name ? Spelled(name) : span.Ticker, span.Joined, span.Left))
                 .Select(group => group.OrderBy(span => span.Ticker, StringComparer.Ordinal).First());
@@ -170,9 +178,19 @@ public static class LongSpans
         return [.. behind.OrderBy(one => one.Index, StringComparer.Ordinal).ThenBy(one => one.Ticker, StringComparer.Ordinal)];
     }
 
+    // The evidence that parts a code's provider spans into two companies, as the worker reads it off the code's prices and the
+    // filers of its names: its prices begin at the later span, so the earlier holds none of them; the marks' price test at the
+    // later span's start; or a different filer on each side.
+    public const string NoPriceBefore = "its prices begin at the later name";
+
+    public const string DifferentFiler = "a different filer on each side";
+
     // One code's provider spans with those that overlap or meet read as one, a span with no start read as begun before any
-    // other and one with no end as running still.
-    static IEnumerable<ProviderSpan> Runs(IEnumerable<ProviderSpan> rows)
+    // other and one with no end as running still; from the operator's answers of 2026-11-23 at 16:50 two that meet under two
+    // names read as two companies where the evidence parts them, never on the names alone, the earlier left out where its code
+    // holds no price over it, so its member sessions are read under the code that does.
+    // see: A code's provider spans under two names part into two companies only on a different filer or the marks' price test, never on the names alone
+    static IEnumerable<ProviderSpan> Runs(IEnumerable<ProviderSpan> rows, Func<ProviderSpan, ProviderSpan, string?>? partsThem = null, ICollection<LongParted>? parted = null)
     {
         ProviderSpan? run = null;
 
@@ -180,6 +198,23 @@ public static class LongSpans
         {
             if (run is { } open && (row.Joined ?? DateOnly.MinValue) <= (open.Left ?? DateOnly.MaxValue))
             {
+                if (partsThem is not null && row.Joined is { } boundary && open.Name is { } before && row.Name is { } after
+                    && Spelled(before) != Spelled(after) && partsThem(open, row) is { } evidence)
+                {
+                    var leftOut = evidence == NoPriceBefore;
+
+                    parted?.Add(new LongParted(open.Ticker, open.Joined, boundary, before, after, evidence, leftOut));
+
+                    if (!leftOut)
+                    {
+                        yield return open with { Left = boundary };
+                    }
+
+                    run = row;
+
+                    continue;
+                }
+
                 run = open with { Left = open.Left is not { } was || row.Left is not { } now ? null : was > now ? was : now };
 
                 continue;
@@ -231,7 +266,7 @@ public static class LongSpans
             var first = starts.Min();
             var night = rows!
                 .GroupBy(row => row.Ticker, StringComparer.Ordinal)
-                .SelectMany(Runs)
+                .SelectMany(group => Runs(group))
                 .Select(row => (row.Ticker, Joined: row.Joined is { } joined && joined > first ? joined : first, row.Left))
                 .Where(row => !(row.Left <= row.Joined))
                 .ToList();
