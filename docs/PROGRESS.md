@@ -22654,3 +22654,66 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the run over every member on the operator's store, both tables to the operator, and its width replacing the
             provisional one from the next night where it differs, the change listed.
+
+### 24.19 - correction: the every-session table holds what one build writes, and its check holds the members both ways   2026-11-24
+
+Queue:      done, #778 and #779 merged and the table written again for the three links' years; in progress, this
+            correction and the capture's asks beside it; next, the long tables written again with the three later codes,
+            each index's table written again whole under this correction, the check on each, the lists and the widths.
+Ruled:      the operator's order of 2026-11-24, items 1 and 2, kept word for word in
+            `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`.
+Found:      each index held more rows than its build of that morning wrote, read on the operator's store after the rewrite
+            for the links' years, read only: the S&P 500 2,747,507 held, 2,732,420 worked by the build and 15,087 copied by
+            the nights on their 30 sessions from 2026-10-13 to 2026-11-23; the S&P 400 2,136,655, 2,124,661 and 11,994; the
+            S&P 600 3,218,818, 3,200,792 and 18,026. Each night's session held exactly the night's rows, and no row stood on a
+            weekend, before 2005 or for a member gone. The build written again skipped the sessions a night stored and
+            counted only the sessions it worked.
+Built:      a build written again clears each session whole, copies a session a night stored again from the night's rows and
+            first removes every row on a day outside the calendar over its span; every build then holds the rows held on each
+            session it wrote to the rows it wrote there and a day outside the calendar to none, its run log row saying the
+            table holds the rows written or naming what differs, recorded not computed with exit 3; each night writes the
+            sessions it copies again whole. The check holds each sampled session after 2018 no night stored to the members the
+            standing ledger's build reads on it, and a night's session to its own rows, both ways. The decision's sentence,
+            the runbook and the changelog.
+Measured:   the counts above, in 280 s, 179 s and 142 s, read only.
+Tests:      3 new: a build written again over a constructed store holding a member's row after it left, a code's row on a
+            night's session, a night's row on a session no night stored, a Saturday's row and one before 2005, each gone and
+            the table holding the 101 rows written, and from a session given a row before it standing; the held-to-written
+            check worked by hand on both sides; a session's members held both ways by hand. 1 widened: the check's line.
+Pins:       none moved. The setup ledger's session readings are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 a night's session
+            not cleared before its copy: red; m2 a worked session not cleared before its writes: red; m3 the rows outside the
+            calendar not removed: red; m4 the held-to-written check finding nothing: red; m5 a night's session not held to the
+            table the other way: red; m6 the members not held the table's way: red. Each filtered to its tests and reverted
+            before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+Carried:    each index's table written again whole under this correction on the operator's store, its row saying the table
+            holds the rows written, and the check run on each, both after the merge.
+
+### 24.19 - correction: a capture keeps every code asked before, so a later ask leaves none out of the long tables   2026-11-24
+
+Queue:      as the entry above.
+Corrects:   the entry "24.19 - correction: a link by hand reads the later code's prices past the code's own history-ends
+            mark" of 2026-11-24, whose Found line gave the marks as the cause. LPI, PVAC and WTW_old carry no history-ends
+            mark, and VTLE, ROCC and WW_old held no price in the store at all.
+Found:      the lists read again on 2026-11-24 after the table's rewrite for the links' years named all three apart, "priced
+            together, 0 member session(s)". The three later codes' prices sit in the capture folder, captured at 21:22 UTC on
+            2026-11-23 and written by the long prices' write of 21:24 UTC, 3,398 codes. SIX_old's ask at 05:46 UTC on
+            2026-11-24 replaced the folder's `again.json` and `codes.json` with its own ask and the codes the store names, and
+            the write of 05:50 UTC, 3,393 codes, left VTLE, ROCC and WW_old out.
+Built:      the folder keeps every ask made, a code asked again taking its newest, and every capture, with an ask or none,
+            carries each code asked before into the codes it writes. The decision's sentence, the runbook and the changelog.
+Measured:   the six codes' rows in the store and the two writes' run log rows, read only.
+Tests:      1 widened: a later ask keeps the earlier ones, and a capture asking nothing still carries both codes.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the earlier asks not carried, m7: red. Filtered to its test and reverted before
+            anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4028 of 4028 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the three asks restored to the folder on the operator's word, the long tables written again, the lists read to
+            show all four links joined, then each index's table written again whole.

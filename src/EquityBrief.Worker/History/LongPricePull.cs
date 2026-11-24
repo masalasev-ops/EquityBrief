@@ -1331,7 +1331,9 @@ public sealed class LongPricePull : IComponent
     }
 
     // The pull's codes with each code asked that it does not hold added, the asks and their instant kept in the folder;
-    // refused before anything is asked where a code an ask is for holds sessions marked held none.
+    // refused before anything is asked where a code an ask is for holds sessions marked held none. From the 24.19 correction of
+    // 2026-11-24 the folder keeps every ask made, a code asked again taking its newest ask, and a capture with none or with
+    // others still carries each code asked before, so no later capture leaves a code asked for another out of the write.
     // see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
     public static async Task<IReadOnlyList<LongCode>> AgainAsync(string databaseFile, string folder, IReadOnlyList<LongAsk> asks, DateTimeOffset askedAt, CancellationToken cancellation = default)
     {
@@ -1342,12 +1344,20 @@ public sealed class LongPricePull : IComponent
             throw new ArgumentException(FormattableString.Invariant($"{string.Join(", ", refused)} hold(s) member sessions the provider was asked for again and holds no price of, and they are never asked for again"));
         }
 
+        var file = Path.Combine(folder, AgainFile);
+        var before = File.Exists(file) ? JsonSerializer.Deserialize<LongAgain>(await File.ReadAllTextAsync(file, cancellation)) : null;
+        var asked = asks.Select(ask => ask.Asked).ToHashSet(StringComparer.Ordinal);
+        IReadOnlyList<LongAsk> kept = [.. (before?.Asks ?? []).Where(ask => !asked.Contains(ask.Asked)), .. asks];
         var codes = (await CodesAsync(databaseFile, cancellation)).ToList();
         var held = codes.Select(code => code.Ticker).ToHashSet(StringComparer.Ordinal);
 
-        codes.AddRange(asks.Where(ask => !held.Contains(ask.Asked)).Select(ask => new LongCode(ask.Asked, [], null)));
-        Directory.CreateDirectory(folder);
-        await File.WriteAllTextAsync(Path.Combine(folder, AgainFile), JsonSerializer.Serialize(new LongAgain(askedAt, asks)), cancellation);
+        codes.AddRange(kept.Where(ask => held.Add(ask.Asked)).Select(ask => new LongCode(ask.Asked, [], null)));
+
+        if (asks.Count > 0)
+        {
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(file, JsonSerializer.Serialize(new LongAgain(askedAt, kept)), cancellation);
+        }
 
         return codes;
     }

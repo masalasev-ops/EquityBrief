@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-24 - docs/RUNBOOK.md - a capture keeps every code asked before, at a correction to the 24.19 correction
+Decision: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again
+Was:
+> RUNBOOK.md, the long prices asked again: "... and keeps the asks and their instant in the folder's `again.json`. `--write` writes the six tables whole as always."
+Now:
+> RUNBOOK.md: the same, and the folder keeping every ask made, every capture carrying each code asked before into the codes it writes
+Why: the long history's lists read again on 2026-11-24 named LPI, PVAC and WTW_old apart from VTLE, ROCC and WW_old because the three later codes held no price: SIX_old's ask at 05:46 UTC that morning replaced the folder's asks, and the write after it left the three out
+
+### 2026-11-24 - docs/RUNBOOK.md - the every-session table holds what one build writes, at a correction to the 24.19 correction
+Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+Was:
+> RUNBOOK.md, the every-session build: the four `tools/ledger-build --every-session` lines and the check's line, and no `--again` line or paragraph
+Now:
+> RUNBOOK.md: two `--again` lines and a paragraph saying a build written again clears each session whole, copies a night's session again and removes every row on a day outside the calendar, every build holds the table to the rows it wrote, and the check holds the members both ways
+Why: the operator's order of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-orders-table-and-say-it-once.md`, that the table hold exactly what one build writes, rows held equal rows written per index, and a check enforce it after every build
+
 ### 2026-11-24 - docs/ARCHITECTURE.html - a link by hand reads the later code's prices past the code's own history-ends mark, at a correction to the 24.19 correction
 Decision: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand
 Was:

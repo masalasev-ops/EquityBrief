@@ -78,6 +78,16 @@ public partial class FixtureExpectations
         Assert.Contains(codes, code => code.Ticker == "NEW");
         Assert.Contains("\"NEW\"", await File.ReadAllTextAsync(Path.Combine(folder, LongPricePull.AgainFile)));
 
+        // From the 24.19 correction of 2026-11-24 a later ask keeps the earlier one, and a capture asking nothing still carries
+        // both codes, as SIX_old's ask of that morning should have kept VTLE's for LPI.
+        var later = await LongPricePull.AgainAsync(store.DatabaseFile, folder, [new LongAsk("LATER", "ALL")], clock.UtcNow);
+        var none = await LongPricePull.AgainAsync(store.DatabaseFile, folder, [], clock.UtcNow);
+
+        Assert.Equal(["HOL", "NEW", "LATER"], System.Text.Json.JsonSerializer.Deserialize<LongAgain>(await File.ReadAllTextAsync(Path.Combine(folder, LongPricePull.AgainFile)))!.Asks.Select(ask => ask.Asked));
+        Assert.Equal(1, later.Count(code => code.Ticker == "NEW"));
+        Assert.Contains(none, code => code.Ticker == "NEW");
+        Assert.Contains(none, code => code.Ticker == "LATER");
+
         var lists = new StringWriter();
 
         await new LongHistoryReader(store.DatabaseFile).ListsAsync("MID", DateOnly.ParseExact(days[^1], "yyyy-MM-dd", CultureInfo.InvariantCulture), lists);
