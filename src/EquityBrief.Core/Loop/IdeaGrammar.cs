@@ -75,6 +75,8 @@ public sealed record IdeaLine(
         {
             IdeaGrammar.TimeOnly => "take profit none",
             IdeaGrammar.FirstBand => Multiple is { } fallBack ? FormattableString.Invariant($"take profit first band else {IdeaGrammar.Number(fallBack)} risks") : "take profit first band",
+            IdeaGrammar.HalfThenBand => FormattableString.Invariant($"take profit half at {IdeaGrammar.Number(Multiple!.Value)} risks then first band"),
+            IdeaGrammar.HalfThenRule => FormattableString.Invariant($"take profit half at {IdeaGrammar.Number(Multiple!.Value)} risks then rule sale"),
             _ => FormattableString.Invariant($"take profit {Shape} at {IdeaGrammar.Number(Multiple!.Value)} risks"),
         };
         yield return FormattableString.Invariant($"sell after {Sessions} sessions");
@@ -102,6 +104,8 @@ public sealed record IdeaLine(
                 IdeaGrammar.Half => FormattableString.Invariant($"half sold at {IdeaGrammar.Number(Multiple!.Value)} times the risk and the rest held to the time limit"),
                 IdeaGrammar.FirstBand => "the whole sold at the first price band above the buy where it turned down before"
                     + (Multiple is { } fallBack ? FormattableString.Invariant($", or at {IdeaGrammar.Number(fallBack)} times the risk where no band stands above") : string.Empty),
+                IdeaGrammar.HalfThenBand => FormattableString.Invariant($"half sold at {IdeaGrammar.Number(Multiple!.Value)} times the risk and the rest at the first price band above the buy where it turned down before"),
+                IdeaGrammar.HalfThenRule => FormattableString.Invariant($"half sold at {IdeaGrammar.Number(Multiple!.Value)} times the risk and the rest by the rule's own sale"),
                 _ => "no take-profit",
             };
             var cap = Cap is { } most ? FormattableString.Invariant($", at most {most} a night, {(Highest ? "highest" : "lowest")} {OrderBy} first") : string.Empty;
@@ -134,6 +138,17 @@ public static class IdeaGrammar
     // The live pullback rule's sale: the whole at the first price band above the buy where the stock turned down before, read
     // on the night it was picked, and where it names a multiple, at that multiple of the risk where no band stands above.
     public const string FirstBand = "first band";
+
+    // From the operator's answers of 2026-11-23 the S&P 400's and 600's live pullback rules' sales: half at a multiple of the
+    // risk, the stop on the rest then moved up to the buy and the rest sold at the first band above, the S&P 400's, or by
+    // the rule's own sale, the S&P 600's.
+    // see: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them
+    public const string HalfThenBand = "half then first band";
+
+    public const string HalfThenRule = "half then rule sale";
+
+    // Whether a line sells by a band or the rule's own sale, which a queued pick is stored without.
+    public static bool SellsByPlace(string shape) => shape is FirstBand or HalfThenBand or HalfThenRule;
 
     // The distances a buy under the close may name, in typical daily moves: every hundredth from a quarter to three, so the
     // distance each live rule registered can be named.
@@ -313,9 +328,15 @@ public static class IdeaGrammar
                     {
                         (shape, multiple) = (FirstBand, fallBack);
                     }
+                    else if (words.Length is 9 or 10 && part.StartsWith("take profit half at ", StringComparison.Ordinal) && words[5] is "risk" or "risks" && words[6] == "then"
+                        && NumberOf(words[4]) is { } first && Multiples.Contains(first)
+                        && string.Join(' ', words[7..]) is ("first band" or "rule sale") and var rest)
+                    {
+                        (shape, multiple) = (rest == "first band" ? HalfThenBand : HalfThenRule, first);
+                    }
                     else
                     {
-                        return (null, $"the take-profit is none, the whole or half at {string.Join(", ", Multiples.Select(Number))} risks, or the first band, else one of those risks: \"{part}\"");
+                        return (null, $"the take-profit is none, the whole or half at {string.Join(", ", Multiples.Select(Number))} risks, the first band, else one of those risks, or half at one of those risks then the first band or the rule's sale: \"{part}\"");
                     }
 
                     break;

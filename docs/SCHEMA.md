@@ -744,6 +744,7 @@ Grain: one row per index, family, stock and session of 2005 to 2018 a family's l
 | `highest_since_years` | REAL | as `setup` carries it |
 | `older_days` | REAL | as `setup` carries it |
 | `one_off_share` | REAL | as `setup` carries it, null in the long years, which hold no results release |
+| `other_pass` | INTEGER | from migration 170, as `setup` carries it |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`.
 
@@ -2590,6 +2591,7 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `highest_since_years` | REAL | the years since an earlier session last closed at or above the session's close, or since the history's first session where none did |
 | `older_days` | REAL | the nearest band above the close from the sessions before the stored year, its low over the close in typical days; null where none stands above |
 | `one_off_share` | REAL | the largest one-off item the newest results release accepted by the session names, its amount a share over the beat, where tied to earnings a share and a beat above nought is stored; 0 where the release names none; null where no release is stored or the share is not read |
+| `other_pass` | INTEGER | from migration 170, on an S&P 400 or 600 pullback row read under its frozen live rule, 1 where the rule's other gates pass the setup on its session as the night read them, its market check at its own level and every part but its own listing, and 0 where they do not, whether or not the rule lists it; null on every other row and on one written before it (see: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them) |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by, and from migration 143 on `session_date` and `ticker`, which the filings refresh's second read of the night's rows updates and lists them by.
 

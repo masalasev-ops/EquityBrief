@@ -193,7 +193,8 @@ public sealed partial class SetupLedger
                         [
                             .. LastPriceParameters(SettleParameters(family.Rows[row].Index, family.Family, family.Rows[row].Ticker, family.Rows[row].Session, null, lastReads[row].Outcome, lastReads[row].Benchmark, prepared.Replayed, at)),
                             ("$run_id", runId),
-                        ]);
+                        ],
+                        otherPass: asRuled.OtherPass(family.Family, family.Rows[row].Ticker));
                     }
 
                     chunk += family.Rows.Count;

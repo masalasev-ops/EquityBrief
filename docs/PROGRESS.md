@@ -22369,3 +22369,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    LPI, PVAC, WTW_old and SIX, marked held none though the provider prices three of them under VTLE, ROCC and WW_old,
             for the operator.
+
+### 24.35 - its second part: each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, and the grammar says those rules' plans   2026-11-23
+
+Queue:      done, Fox and DDR's correction; in progress, this part; next, the ten nights' replay from main after the merge,
+            the spans written again and the table's check measured again, then the pin move's statement.
+Ruled:      the operator's answers of 2026-11-23 at 11:00, item 6, kept word for word in
+            `prompts/2026-11-23-24.19-answers-of-23-nov-11am.md`. One new decision.
+Built:      migration 170 adds `other_pass` to `setup` and `long_setup`. Each S&P 400 and 600 pullback setup read under its
+            frozen live rule stores 1 where the rule's market check stands open and no part of the rule fails on its session,
+            whether or not the rule lists it, and 0 otherwise: on the night from the one read of the rule its live passes come
+            from, and in the history and long builds as they read the pass, over the setups' own series and the session's
+            breadth; every other row stores none. The grammar gains two take-profits, half at a multiple of the risk and the
+            rest at the first band above, the S&P 400's live plan, or by the rule's own sale, the S&P 600's, and the search
+            writes both rules' plans as lines that read back as the same plans. The S&P 400's and 600's search itself waits for
+            the long ledger written again with the new column.
+Measured:   the live register's plans: the S&P 400's pullback 2.16 typical days under the close within 20 sessions, a stop of
+            3, the first band and half at 1.5; the S&P 600's 0.98 within 10, a stop of 4, the rule's own sale and half at 1.5.
+Tests:      2 new and 1 grown: over the frozen pullback's constructed store, the rule at a reward floor of 4 listing none of
+            the three setups while its other gates pass AAA and CCC and not BBB on the night and in the build, and none stored
+            before the freeze; the grammar writing both live plans, reading them back as the same plans and refusing a
+            multiple and a sale its lists do not hold; and the frozen pullback's test holding its other gates beside its passes.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched; the ten nights' replay from main after
+            the merge holds the night's picks and every live trade to the build before it.
+Mutated:    the rule, stated before the run: each guard this part adds taken out at its one site. m1 a failed part not read:
+            red, BBB stored as passing; m2 the night's row not stored: red, none stored; m3 the S&P 600's sale read as the
+            first band: red, the plan read back differing. Each filtered to its tests and reverted before anything was
+            committed.
+Claims:     1753, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4013 of 4013 tests ran with none failed, migrations 0 to 170 with
+            none pending, schema version 170, against `data-ci` and never `data`; the phase report 68 tables, 1753 claims, 1753
+            passing, none out of scope and none unexamined, 1768 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the S&P 400's and 600's search, once the long ledger is written again; the ten nights' replay, from main after
+            the merge.

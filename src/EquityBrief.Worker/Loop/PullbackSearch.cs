@@ -83,7 +83,11 @@ public sealed class PullbackSearch(IClock clock, string databaseFile, string dat
         var stop = PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).FirstOrDefault(days => PlanPoints.NamesStop(plan.Stop, days)) is var days && days > 0
             ? "stop " + IdeaGrammar.Number(days) + " typical days"
             : null;
-        var profit = plan.Exit == PlanPoints.FirstBand && !plan.Half && (plan.TakeProfit is null || plan.Placing == TakeProfitPlacing.Risk)
+        // From the operator's answers of 2026-11-23 the S&P 400's and 600's live plans: half at the multiple, the rest at the
+        // first band or by the rule's own sale.
+        var profit = plan.Half && plan.TakeProfit is { } halfAt && plan.Exit is PlanPoints.FirstBand or PlanPoints.RuleSale
+                ? FormattableString.Invariant($"take profit half at {IdeaGrammar.Number(halfAt)} risks then {(plan.Exit == PlanPoints.FirstBand ? "first band" : "rule sale")}")
+            : plan.Exit == PlanPoints.FirstBand && !plan.Half && (plan.TakeProfit is null || plan.Placing == TakeProfitPlacing.Risk)
                 ? plan.TakeProfit is { } fallBack ? "take profit first band else " + IdeaGrammar.Number(fallBack) + " risks" : "take profit first band"
             : plan.Exit == PlanPoints.TimeLimit && plan.TakeProfit is { } multiple && (plan.Half || plan.Placing == TakeProfitPlacing.Risk)
                 ? FormattableString.Invariant($"take profit {(plan.Half ? IdeaGrammar.Half : IdeaGrammar.Whole)} at {IdeaGrammar.Number(multiple)} risks")

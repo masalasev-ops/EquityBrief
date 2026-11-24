@@ -291,6 +291,47 @@ public partial class FixtureExpectations
             .BuildAsync(copy.Root, "MID", night, night, new StringWriter()));
 
         Assert.Equal(rows, FrozenRows(copy, "MID", SetupFamilies.Pullback, night, SetupLedger.HistorySource));
+
+        // From the operator's answers of 2026-11-23 each pullback setup stores whether the rule's other gates pass it: its
+        // market check open and its cover, AAA's and CCC's passing and BBB's not, the same on the night and in the build.
+        Assert.Equal(["AAA|1", "BBB|0", "CCC|1"], OtherGates(store, night, SetupLedger.NightSource));
+        Assert.Equal(["AAA|1", "BBB|0", "CCC|1"], OtherGates(copy, night, SetupLedger.HistorySource));
+    }
+
+    // A pullback setup's other gates as stored, by ticker, "none" where the row stores none.
+    static IReadOnlyList<string> OtherGates(TemporaryStore store, DateOnly session, string source) =>
+        FamilyRows(store, $"SELECT ticker || '|' || IFNULL(other_pass, 'none') FROM setup WHERE index_code = 'MID' AND family = 'pullback' AND session_date = '{Day(session)}' AND source = '{source}' ORDER BY ticker;");
+
+    // The same frozen pullback at a reward-to-risk floor of 4, the grid's highest, which no setup reaches: the rule lists none
+    // and passes none, and its other gates
+    // still pass AAA and CCC and not BBB, on the night and in the build; before the freeze, with no live rule, none is stored.
+    [Fact]
+    public async Task APullbackSetupStoresItsLiveRulesOtherGatesWhetherOrNotTheRuleListsIt()
+    {
+        var calendar = BusinessFirstHistory.Calendar(BusinessFirstHistory.Night + 1);
+        var night = calendar[^1];
+        var live = new Dictionary<string, double>(FrozenPullback(), StringComparer.Ordinal) { [IndexPullbackCandidate.RewardToRiskParameter] = 4.0 };
+        var frozenAt = new DateTimeOffset(2026, 1, 27, 12, 0, 0, TimeSpan.Zero);
+        var nightClock = FixedClock.At(new DateTimeOffset(2026, 1, 27, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        using var store = FrozenPullbackStore();
+
+        await new SetupLedger(nightClock, store.DatabaseFile).NightAsync("ledger-before");
+        Assert.Equal(["AAA|none", "BBB|none", "CCC|none"], OtherGates(store, night, SetupLedger.NightSource));
+
+        await FrozenRegister(store, frozenAt, SetupFamilies.Pullback, live);
+        await new IndexFamilies(nightClock, store.DatabaseFile).RunAsync("night-frozen", default, await new CandidateRegistrar(nightClock, store.DatabaseFile).RowsAsync(), nightClock.UtcNow);
+        await new SetupLedger(nightClock, store.DatabaseFile).NightAsync("ledger-frozen");
+
+        Assert.All(FrozenRows(store, "MID", SetupFamilies.Pullback, night, SetupLedger.NightSource), row => Assert.EndsWith("|0", row, StringComparison.Ordinal));
+        Assert.Equal(["AAA|1", "BBB|0", "CCC|1"], OtherGates(store, night, SetupLedger.NightSource));
+
+        using var copy = FrozenPullbackStore();
+
+        await FrozenRegister(copy, frozenAt, SetupFamilies.Pullback, live);
+        Assert.Equal(0, await new SetupLedger(FixedClock.At(new DateTimeOffset(2026, 1, 28, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), copy.DatabaseFile)
+            .BuildAsync(copy.Root, "MID", night, night, new StringWriter()));
+        Assert.Equal(["AAA|1", "BBB|0", "CCC|1"], OtherGates(copy, night, SetupLedger.HistorySource));
     }
 
     // The drift's constructed history: weekdays from 2025-01-06, each member at 100 on 200,000 shares a session, a range of

@@ -167,9 +167,26 @@ public static class LedgerLiveRules
     // The members a live rule passes on the session its inputs are read at, as the night's own read of the rule gives it:
     // listed at the rule's settings with its market check open at its own level and no part of the rule failed; each with
     // the place among the sessions of the setup the pass buys, the session itself, or for a drift its reaction's.
-    public static IReadOnlyDictionary<int, int> Passes(IndexNightInputs inputs, IndexRule rule, IndexLevels levels)
+    public static IReadOnlyDictionary<int, int> Passes(IndexNightInputs inputs, IndexRule rule, IndexLevels levels) =>
+        PassesOf(IndexRules.Read(inputs, rule, levels), inputs, rule);
+
+    // From the operator's answers of 2026-11-23 the live rule's passes with, among the names given, those its other gates
+    // pass on the session, read once: its market check open at its own level and no part of the rule failed, whether or
+    // not the rule lists the name, so a pullback setup stores what the rule's gates over the whole index made of it.
+    // see: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them
+    public static (IReadOnlyDictionary<int, int> Passes, IReadOnlySet<int> Others) PassesWithOthers(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, IEnumerable<int> names)
     {
         var read = IndexRules.Read(inputs, rule, levels);
+        IReadOnlySet<int> others = read.Open ? names.Where(name => read.FailsOn(name) is null).ToHashSet() : new HashSet<int>();
+
+        return (PassesOf(read, inputs, rule), others);
+    }
+
+    // The family whose setups store their live rule's other gates.
+    public static bool StoresOtherGates(string family) => family == SetupFamilies.Pullback;
+
+    static IReadOnlyDictionary<int, int> PassesOf(IndexFamilyRead read, IndexNightInputs inputs, IndexRule rule)
+    {
         var passed = new Dictionary<int, int>();
 
         if (!read.Open)
