@@ -5049,7 +5049,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "The earlier version's picks across all three indices")] = new Scoped(
             Verdict.Pass,
-            "over a constructed store where only the earlier version picked and one where each index's version picked too, the earlier version's picks read back once under the tiles on every index's page and in no index's tonight, each card naming the S&P 500, 600 or 400 its stock belongs to and its own account, and folded into one line of its record once all its trades are sold",
+            "over a constructed store where only the earlier version picked and one where each index's version picked too, the earlier version's picks read back once under the tiles on every index's page and in no index's tonight, each card naming the S&P 500, 600 or 400 its stock belongs to and its own account; and from the correction of 2026-11-23 its three read back in the region of 20 Nov alone, on 23 Nov one line under the tiles counting its 3 trades still open with its link to 20 Nov, no line once all its trades are sold, and its record read back in the scoreboard and its account beneath the four accounts",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "One night at a time")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of 20 Nov's earlier version and 23 Nov's three index versions, each index's page read back on its newest night and on 20 Nov with the night picker's date and its arrows to the other night, each tile on 20 Nov read as it stood then, not started; and the count line over 132 stored marks reading that a quarter would be 33 and what it picked under its limit of 5, its words over 132, 20 and 21 marks worked by hand",
             ByReadSurface),
         [CheckReach.Key("15.26 The AI stock picker", "Tonight's picks one at a time")] = new Scoped(
             Verdict.Pass,
@@ -8244,6 +8248,7 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI stock picker", "A pick past the cash")] = "24.24",
         [CheckReach.Key("15.26 The AI stock picker", "Its three accounts")] = "24.25",
         [CheckReach.Key("15.26 The AI stock picker", "The earlier version's picks across all three indices")] = "24.25",
+        [CheckReach.Key("15.26 The AI stock picker", "One night at a time")] = "24.25",
         [CheckReach.Key("15.26 The AI stock picker", "Tonight's picks one at a time")] = "24.25",
         [CheckReach.Key("15.26 The AI stock picker", "Where each fact stands")] = "24.25",
         [CheckReach.Key("15.26 The AI stock picker", "Its own rules")] = "24.25",

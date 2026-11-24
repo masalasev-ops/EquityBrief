@@ -68,11 +68,20 @@ public static class JudgeNight
     public static IReadOnlyList<T> Taken<T>(IReadOnlyList<T> ranked, int marked, string variant) =>
         [.. ranked.Take(string.Equals(variant, FixedFive, StringComparison.Ordinal) ? JudgePrompt.Ranked(marked) : JudgePrompt.Quarter(marked))];
 
-    // What the card says of a night's marks: how many of the index's stocks it rated worth buying and how many it picked.
-    public static string MarkedWords(string indexName, int marked, int picked) =>
-        marked == 0
-            ? $"It rated none of the {indexName}'s stocks worth buying tonight."
-            : string.Create(CultureInfo.InvariantCulture, $"It rated {marked} of the {indexName}'s stocks worth buying tonight and picked the best quarter: {picked}.");
+    // What the card says of a night's marks: how many of the index's stocks it rated worth buying and what decided how many it
+    // picked, its limit where a quarter of the marked is more than the limit and the best quarter otherwise.
+    // see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+    public static string MarkedWords(string indexName, int marked, int picked, bool past = false)
+    {
+        var when = past ? "that night" : "tonight";
+        var quarter = (marked + JudgePrompt.QuarterOf - 1) / JudgePrompt.QuarterOf;
+
+        return marked == 0 ? $"It rated none of the {indexName}'s stocks worth buying {when}."
+            : quarter > JudgePrompt.MostPicks
+                ? string.Create(CultureInfo.InvariantCulture, $"It rated {marked} of the {indexName}'s stocks worth buying {when}. A quarter would be {quarter}; it picked ")
+                    + (picked == JudgePrompt.MostPicks ? string.Create(CultureInfo.InvariantCulture, $"its limit of {picked}.") : string.Create(CultureInfo.InvariantCulture, $"{picked}, under its limit of {JudgePrompt.MostPicks}."))
+            : string.Create(CultureInfo.InvariantCulture, $"It rated {marked} of the {indexName}'s stocks worth buying {when} and picked the best quarter: {picked}.");
+    }
 
     static int Place(string index) => Indices.ToList().IndexOf(index) is var at && at >= 0 ? at : Indices.Count;
 }

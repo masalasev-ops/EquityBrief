@@ -132,14 +132,14 @@ public partial class ReadSurface
         Assert.Contains("A fixed 5, version 1's variant, picked 19 Nov: its own account, apart from the record", five, StringComparison.Ordinal);
         Assert.DoesNotContain("The fixed five alone.", Blocks(large, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single(), StringComparison.Ordinal);
 
-        // The version from before 24.24, which picked across the three indices, drawn once in its own region on each index's
-        // page and never as an index's version; OLD's week has run out on its flat prices, so its region is folded.
+        // The version from before 24.24, which picked across the three indices, never drawn as an index's version; OLD's week
+        // has run out on its flat prices, so from the operator's correction of 2026-11-23 the night of 19 Nov draws no region
+        // and no line of it, and its record stays in the scoreboard as an earlier version's.
         foreach (var page in new[] { large, small })
         {
-            var across = Blocks(page, "<section class=\"card\" data-card=\"judge-across\">.*?</section>").Single();
-
-            Assert.Contains("1 pick made on the night of 18 Nov, before the picker picked within each index", across, StringComparison.Ordinal);
-            Assert.Contains("data-across=\"folded\"", across, StringComparison.Ordinal);
+            Assert.Empty(Blocks(page, "<section class=\"card\" data-card=\"judge-across\">.*?</section>"));
+            Assert.DoesNotContain("judge-across-open", page, StringComparison.Ordinal);
+            Assert.Contains("an earlier version kept apart from this record: 1 of its 1 trade closed, 0 of them winners", Blocks(page, "<section class=\"card\" data-card=\"judge-score\">.*?</section>").Single(), StringComparison.Ordinal);
             Assert.Empty(Blocks(page, "<section class=\"card\" data-card=\"judge-version-[0-9]+\">"));
         }
 

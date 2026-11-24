@@ -3291,6 +3291,22 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
         return view;
     }
 
+    // From the operator's correction of 2026-11-23 on a past night each tile is worked from what stood by that night: the
+    // runs, the picks and the closes to it, and that night's picks.
+    // see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+    if (view.Past && view.Shown is { } shown)
+    {
+        JudgeRunRow[] runsThen = [.. runs.Where(run => run.Session <= shown)];
+        JudgePickRow[] picksThen = [.. picks.Where(pick => pick.Session <= shown)];
+        var barsThen = bars.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, double, double)>)[.. pair.Value.Where(row => row.Session <= shown)], StringComparer.Ordinal);
+
+        return view with
+        {
+            Tiles = [.. Universes.Offered.Select(universe => JudgeScreen.Build(universe.Code, runsThen, picksThen, barsThen, typicals, members, [], [], [], settings, RoundTrip, draws: 0, drawnNight: shown).Tiles[0])],
+            RecordTile = view.Tiles[0],
+        };
+    }
+
     return view with
     {
         Tiles = [.. Universes.Offered.Select(universe => universe == within
@@ -3920,12 +3936,15 @@ app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
 // newest night's cards, where it looked against the rules' picks, and a replayed record apart; from 24.24 for the index
 // the page is read for under Universe.
 // see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
-app.MapGet("/screens/judge", async (HttpRequest request, ReadApi read, SinglePageApp page, StoreLocation store) =>
+// From the operator's correction of 2026-11-23 for one night a version ran, chosen by the night picker, the newest by default.
+// see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+app.MapGet("/screens/judge/{night?}", async (string? night, HttpRequest request, ReadApi read, SinglePageApp page, StoreLocation store) =>
 {
     var within = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.JudgeRoute) : string.Empty;
+    DateOnly? chosen = DateOnly.TryParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
 
-    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within, tiles: true), selector), "text/html; charset=utf-8");
+    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within, drawnNight: chosen, tiles: true), selector), "text/html; charset=utf-8");
 });
 
 // From 24.17 the case for promotion under the Improvement loop: every running revision on each index against its variants over

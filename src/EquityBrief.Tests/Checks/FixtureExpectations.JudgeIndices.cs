@@ -90,6 +90,13 @@ public partial class FixtureExpectations
         // The card's words, the operator's own.
         Assert.Equal("It rated 12 of the S&P 600's stocks worth buying tonight and picked the best quarter: 3.", Core.Judge.JudgeNight.MarkedWords("S&P 600", 12, 3));
         Assert.Equal("It rated none of the S&P 600's stocks worth buying tonight.", Core.Judge.JudgeNight.MarkedWords("S&P 600", 0, 0));
+
+        // From the operator's correction of 2026-11-23 the line says what decided the number: 132 marked make a quarter of 33,
+        // over the limit of 5; 20 make a quarter of 5, which is the limit's own count and so the quarter's case; 21 make 6.
+        Assert.Equal("It rated 132 of the S&P 500's stocks worth buying tonight. A quarter would be 33; it picked its limit of 5.", Core.Judge.JudgeNight.MarkedWords("S&P 500", 132, 5));
+        Assert.Equal("It rated 20 of the S&P 500's stocks worth buying tonight and picked the best quarter: 5.", Core.Judge.JudgeNight.MarkedWords("S&P 500", 20, 5));
+        Assert.Equal("It rated 21 of the S&P 400's stocks worth buying that night. A quarter would be 6; it picked its limit of 5.", Core.Judge.JudgeNight.MarkedWords("S&P 400", 21, 5, past: true));
+        Assert.Equal("It rated 132 of the S&P 500's stocks worth buying tonight. A quarter would be 33; it picked 4, under its limit of 5.", Core.Judge.JudgeNight.MarkedWords("S&P 500", 132, 4));
     }
 
     // As the local model answered on a copy of the store: round one listing a label twice, read once; round two ranking more

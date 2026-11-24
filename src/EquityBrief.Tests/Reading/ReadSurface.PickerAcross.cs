@@ -18,6 +18,7 @@ public partial class ReadSurface
     internal static string[] PickerAcrossRows =>
     [
         CheckReach.Key("15.26 The AI stock picker", "The earlier version's picks across all three indices"),
+        CheckReach.Key("15.26 The AI stock picker", "One night at a time"),
     ];
 
     static TemporaryStore AcrossStore(bool ownNights, bool sold = false)
@@ -69,7 +70,7 @@ public partial class ReadSurface
         return store;
     }
 
-    static async Task<Dictionary<string, string>> PickerPagesAsync(TemporaryStore store)
+    static async Task<Dictionary<string, string>> PickerPagesAsync(TemporaryStore store, string night = "")
     {
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -77,7 +78,7 @@ public partial class ReadSurface
 
         foreach (var universe in Universes.Offered)
         {
-            pages[universe.Code] = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/judge?universe={universe.Word}"));
+            pages[universe.Code] = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/judge{(night.Length == 0 ? string.Empty : "/" + night)}?universe={universe.Word}"));
         }
 
         return pages;
@@ -104,11 +105,9 @@ public partial class ReadSurface
             Assert.Equal(3, Regex.Matches(tiles, "<b>Not started</b><span data-started=\"no\">Its first picks come from the night of Mon 23 Nov.</span>").Count);
             Assert.DoesNotContain("picked 3 tonight", tiles, StringComparison.Ordinal);
 
-            var tonight = Blocks(page, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single();
-
-            Assert.Empty(CardsIn(tonight));
-            Assert.Contains($"<p class=\"empty\" data-started=\"no\" data-summary>{NotStarted}</p>", tonight, StringComparison.Ordinal);
-            Assert.Contains("picks tonight (0)</h2>", tonight, StringComparison.Ordinal);
+            // From the operator's correction of 2026-11-23 the night of 20 Nov is the night drawn, and its region is the
+            // earlier version's, in place of an index's picks.
+            Assert.Empty(Blocks(page, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>"));
 
             // The scoreboard and the four accounts say the same, in place of an empty record's zeros.
             Assert.Equal(2, Regex.Matches(string.Concat(Blocks(page, "<section class=\"card\" data-card=\"judge-(score|chart)\">.*?</section>")), $"data-started=\"no\" data-summary>{Regex.Escape(NotStarted)}</p>").Count);
@@ -123,17 +122,83 @@ public partial class ReadSurface
             Assert.Contains("Pick 2 of 3 on the night of 20 Nov, a stock of the S&P 600", across, StringComparison.Ordinal);
             Assert.Contains("Pick 3 of 3 on the night of 20 Nov, a stock of the S&P 400", across, StringComparison.Ordinal);
             Assert.Contains("Buys at the next open after its night in the earlier version's own account.", across, StringComparison.Ordinal);
-            Assert.Contains("data-across=\"open\"", across, StringComparison.Ordinal);
             Assert.DoesNotContain("large-cap picks tonight (3)", page, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"night-picker\" data-route=\"#/picker/\" data-night=\"2026-11-20\">", page, StringComparison.Ordinal);
+        }
+    }
+
+    // From the operator's correction of 2026-11-23: on the newest night, 23 Nov, the earlier version is one line under the tiles
+    // while it holds trades still open, its link setting the picker to 20 Nov, where its picks stand in that night's region and
+    // each tile reads as it stood then; the line goes once its last trade has closed, its record kept in the scoreboard and its
+    // account beneath the four accounts.
+    // see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+    [Fact]
+    public async Task ThePickerPageDrawsOneNightAtATimeAndTheEarlierVersionStandsOnItsOwnNight()
+    {
+        using var store = AcrossStore(ownNights: true);
+        var newest = await PickerPagesAsync(store);
+        var then = await PickerPagesAsync(store, "2026-11-20");
+
+        foreach (var code in new[] { "GSPC", "MID", "SML" })
+        {
+            var word = Universes.ByCode(code)!.Word;
+            var tiles = Blocks(newest[code], "<section class=\"card\" data-card=\"judge-tiles\">.*?</section>").Single();
+
+            Assert.Contains($"<p class=\"judge-across-open\" data-across-open=\"3\">{SinglePageApp.AcrossOpenWords(new DateOnly(2026, 11, 20), 3)} <a href=\"#/picker/2026-11-20?universe={word}\">See that night.</a></p>", tiles, StringComparison.Ordinal);
+            Assert.Equal("The earlier version, across all 1,500 stocks: 3 trades still open from the night of 20 Nov.", SinglePageApp.AcrossOpenWords(new DateOnly(2026, 11, 20), 3));
+            Assert.Empty(Blocks(newest[code], "<section class=\"card\" data-card=\"judge-across\">.*?</section>"));
+            Assert.Contains("<span class=\"night-picker\" data-route=\"#/picker/\" data-night=\"2026-11-23\">", newest[code], StringComparison.Ordinal);
+            Assert.Contains($"href=\"#/picker/2026-11-20?universe={word}\" title=\"The night before, 2026-11-20\"", newest[code], StringComparison.Ordinal);
+
+            // Its record stays in the scoreboard and its account beneath the four, as an earlier version's.
+            Assert.Contains("data-across=\"record\"", Blocks(newest[code], "<section class=\"card\" data-card=\"judge-score\">.*?</section>").Single(), StringComparison.Ordinal);
+            Assert.Contains("data-apart=\"across\"", Blocks(newest[code], "<section class=\"card\" data-card=\"judge-chart\">.*?</section>").Single(), StringComparison.Ordinal);
+
+            // On 20 Nov: the earlier version's three in that night's region, the tiles as they stood then, and no line.
+            var past = then[code];
+            var acrossThen = Blocks(past, "<section class=\"card\" data-card=\"judge-across\">.*?</section>").Single();
+
+            Assert.Equal(["WWW", "LFS", "EXP"], CardsIn(acrossThen));
+            Assert.Contains($"<h2>{SinglePageApp.AcrossTitle}</h2>", acrossThen, StringComparison.Ordinal);
+            Assert.Empty(Blocks(past, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>"));
+            Assert.DoesNotContain("judge-across-open", past, StringComparison.Ordinal);
+            Assert.Equal(3, Regex.Matches(Blocks(past, "<section class=\"card\" data-card=\"judge-tiles\">.*?</section>").Single(), "<b>Not started</b>").Count);
+            Assert.Contains("Night of 2026-11-20", past, StringComparison.Ordinal);
+
+            // The scoreboard and the four accounts stay as the record stands, never the not started of 20 Nov's tiles, and
+            // the lede says nothing of a run that did not happen.
+            Assert.DoesNotContain("data-started=\"no\"", string.Concat(Blocks(past, "<section class=\"card\" data-card=\"judge-(score|chart)\">.*?</section>")), StringComparison.Ordinal);
+            Assert.DoesNotContain("has not run yet", past, StringComparison.Ordinal);
+            Assert.Contains($"href=\"#/picker/2026-11-23?universe={word}\" title=\"The night after, 2026-11-23\"", past, StringComparison.Ordinal);
         }
 
-        // Once every trade of it has been bought and sold, its region folds into one line of its record.
-        using var sold = AcrossStore(ownNights: false, sold: true);
-        var folded = Blocks((await PickerPagesAsync(sold))["GSPC"], "<section class=\"card\" data-card=\"judge-across\">.*?</section>").Single();
+        // Its three sell at the open on 24 Nov, after a close past their take-profit on the 23rd: with a night of 24 Nov the
+        // newest, the line goes and its record stays; the night of 23 Nov, drawn as a past night, still counts the three open.
+        using var sold = AcrossStore(ownNights: true, sold: true);
 
-        Assert.Contains("data-across=\"folded\"", folded, StringComparison.Ordinal);
-        Assert.Contains("3 of its trades have closed", folded, StringComparison.Ordinal);
-        Assert.Empty(CardsIn(folded));
+        sold.Execute("INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail, index_code, standing) VALUES ('pick-24-500', '2026-11-24', 'v', 1, 20261124, 'none', '2026-11-25T00:00:00Z', '2026-11-25T00:10:00Z', 503, 0, 2, 0, '', 'GSPC', 'running');");
+
+        Assert.Contains("data-across-open=\"3\"", (await PickerPagesAsync(sold, "2026-11-23"))["GSPC"], StringComparison.Ordinal);
+
+        var closed = (await PickerPagesAsync(sold))["GSPC"];
+
+        Assert.DoesNotContain("judge-across-open", closed, StringComparison.Ordinal);
+        Assert.Empty(Blocks(closed, "<section class=\"card\" data-card=\"judge-across\">.*?</section>"));
+        Assert.Contains("an earlier version kept apart from this record: 3 of its 3 trades closed", Blocks(closed, "<section class=\"card\" data-card=\"judge-score\">.*?</section>").Single(), StringComparison.Ordinal);
+    }
+
+    // The count line on a night where the cap decided the number, from the stored count of marks, read on the page.
+    [Fact]
+    public async Task TheCountLineSaysTheLimitDecidedWhereAQuarterOfTheMarkedIsMoreThanFive()
+    {
+        using var store = AcrossStore(ownNights: true);
+
+        store.Execute("UPDATE judge_run SET kept = 132 WHERE run_id = 'pick-23-500';");
+
+        var page = (await PickerPagesAsync(store))["GSPC"];
+        var tonight = Blocks(page, "<section class=\"card\" data-card=\"judge-picks\">.*?</section>").Single();
+
+        Assert.Contains("<p class=\"count-line\" data-summary>It rated 132 of the S&P 500's stocks worth buying tonight. A quarter would be 33; it picked 1, under its limit of 5.</p>", tonight, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -154,8 +219,10 @@ public partial class ReadSurface
             Assert.Contains("picked 1 tonight", tile, StringComparison.Ordinal);
             Assert.DoesNotContain("Not started", tile, StringComparison.Ordinal);
 
-            // The earlier version's picks never stand among an index's own.
-            Assert.Equal(["WWW", "LFS", "EXP"], CardsIn(Blocks(pages[code], "<section class=\"card\" data-card=\"judge-across\">.*?</section>").Single()));
+            // The earlier version's picks never stand among an index's own, and from the correction of 2026-11-23 stand on
+            // 20 Nov alone, the night of 23 Nov drawing them as one line under the tiles.
+            Assert.Empty(Blocks(pages[code], "<section class=\"card\" data-card=\"judge-across\">.*?</section>"));
+            Assert.Contains("data-across-open=\"3\"", pages[code], StringComparison.Ordinal);
             Assert.DoesNotContain("data-ticker=\"WWW\"", tonight, StringComparison.Ordinal);
         }
     }

@@ -50,7 +50,12 @@ public static class JudgeScreen
         // the night drawn where it picked then, which Home counts where the index's own version has not picked since.
         var acrossRan = runs.Where(run => !run.Replayed && run.Index is null && (drawnNight is null || run.Session == drawnNight)).Select(run => (DateOnly?)run.Session).Max();
 
-        runs = [.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
+        // From the operator's correction of 2026-11-23 every night a version ran, and the night the page draws.
+        // see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+        DateOnly[] ranNights = [.. runs.Where(run => !run.Replayed).Select(run => run.Session).Distinct().OrderDescending()];
+        var shown = drawnNight is { } chosenNight && ranNights.Contains(chosenNight) ? chosenNight : ranNights.Length == 0 ? (DateOnly?)null : ranNights[0];
+
+        runs =[.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
 
         var started = runs.Any(run => !run.Replayed);
 
@@ -253,7 +258,36 @@ public static class JudgeScreen
             AcrossNight = acrossRan is { } acrossOn && (newest is null || acrossOn > newest.Session)
                 ? (acrossOn, acrossPicks.Count(pick => pick.Session == acrossOn))
                 : null,
+            Shown = shown,
+            Nights = ranNights,
+            Past = shown is { } chosenOn && ranNights.Length > 0 && chosenOn < ranNights[0],
+            AcrossTonight = acrossView is null || shown is not { } on ? [] : [.. acrossView.Picks.Where(card => card.Night == on)],
+            AcrossStillOpen = AcrossOpenOn(acrossView, shown, ranNights.Length > 0 && shown < ranNights[0]),
         };
+    }
+
+    // From the operator's correction of 2026-11-23 the earlier version's trades still open on a night after the one it picked
+    // on, counted from its newest night before it: each not skipped and not yet sold, by that night on a past night and by
+    // the newest prices on the newest. None where it holds none then, or picked on no night before it.
+    // see: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+    static (DateOnly Night, int Open)? AcrossOpenOn(JudgeVersionView? across, DateOnly? shown, bool past)
+    {
+        if (across is null || shown is not { } on || across.Picks.Where(card => card.Night < on).Select(card => card.Night).Max() is not { } picked)
+        {
+            return null;
+        }
+
+        bool OpenOn(JudgeCardView card) => card.Held switch
+        {
+            null => true,
+            { Skipped: not null } => false,
+            { Ended: { } sold } => past && sold > on,
+            _ => true,
+        };
+
+        var open = across.Picks.Count(card => card.Night <= picked && OpenOn(card));
+
+        return open == 0 ? null : (picked, open);
     }
 
     // Why a pick its account's walk did not take is not bought there.

@@ -170,7 +170,7 @@ public partial class ReadSurface
         Assert.Equal("#/judge", SinglePageApp.JudgeOldRoute);
         Assert.Contains("<a href=\"#/picker\" data-view=\"judge\">AI stock picker</a>", shell, StringComparison.Ordinal);
         Assert.Contains("if (path === '#/judge') { path = '#/picker'; history.replaceState(null, '', path + (query ? '?' + query : '')); }", System.Text.RegularExpressions.Regex.Replace(shell, @"\s+", " "), StringComparison.Ordinal);
-        Assert.True(shell.IndexOf("path = '#/picker';", StringComparison.Ordinal) < shell.IndexOf("} else if (path === '#/picker') {", StringComparison.Ordinal), "The old address is sent on before the routes are read.");
+        Assert.True(shell.IndexOf("path = '#/picker';", StringComparison.Ordinal) < shell.IndexOf("} else if (path === '#/picker' || path.startsWith('#/picker/')) {", StringComparison.Ordinal), "The old address is sent on before the routes are read.");
 
         // The picker's store tables stand under their names.
         foreach (var table in new[] { "judge_pin", "judge_run", "judge_ask", "judge_pick", "judge_fact", "judge_naming" })
