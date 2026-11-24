@@ -55,7 +55,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null,
-        bool table = false)
+        bool table = false,
+        IReadOnlyDictionary<string, SetupLedger.ReportFiled>? reportFilings = null)
     {
         if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is not { } read)
         {
@@ -67,7 +68,7 @@ public static class LedgerPointInTime
         // From the 24.19 correction a row of the every-session table is rebuilt as the table reads its seven of its own.
         if (table)
         {
-            TableOwnReadings.Apply(readings, new TradedRanks(read.Series, read.Members), read.Name, read.Series[read.Name], read.Bar);
+            TableOwnReadings.Apply(readings, new TradedRanks(read.Series, read.Members), read.Name, read.Series[read.Name], read.Bar, reportFilings is { } filings ? SetupLedger.ReportDaysOf(filings, read.Series[read.Name]) : null);
         }
 
         return readings;
@@ -113,14 +114,96 @@ public static class LedgerPointInTime
         return (true, row?.Readings);
     }
 
+    // From the operator's order of 2026-11-24, item 4, a cut whose members on its last sessions given are those a set holds on
+    // each, a code a member where the set names it and none where it does not, the cut's own spans before them and on a
+    // session the set does not hold.
+    public static SweepHistoryInputs OverMembers(SweepHistoryInputs cut, IReadOnlyDictionary<DateOnly, HashSet<string>> membersOn, int sessions)
+    {
+        var window = cut.Sessions.TakeLast(sessions).ToArray();
+
+        if (window.Length == 0)
+        {
+            return cut;
+        }
+
+        var from = window[0];
+
+        return cut with
+        {
+            Names =
+            [
+                .. cut.Names.Select(name => name with
+                {
+                    Spans =
+                    [
+                        .. name.Spans
+                            .Where(span => span.Joined is not { } joined || joined < from)
+                            .Select(span => (span.Joined, (DateOnly?)(span.Left is { } left && left < from ? left : from))),
+                        .. window
+                            .Where(day => membersOn.TryGetValue(day, out var set) ? set.Contains(name.Ticker) : name.MemberOn(day))
+                            .Select(day => ((DateOnly?)day, (DateOnly?)day.AddDays(1))),
+                    ],
+                }),
+            ],
+        };
+    }
+
+    // The rows of the tickers given on the last session of a cut history, read once over the cut as the ledger's own build
+    // reads them, each with the third and fourth alphas at the traded price over the same members beside it; a ticker the
+    // cut holds no bar of there left out.
+    public static IReadOnlyDictionary<string, (double?[] Readings, double? Alpha3Traded, double? Alpha4Traded)> RebuiltMany(
+        string index,
+        SweepHistoryInputs cut,
+        LedgerMarket market,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
+        IReadOnlyDictionary<string, string?> sectors,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
+        IEnumerable<string> tickers,
+        LedgerInsiders? insiders = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null,
+        IReadOnlyDictionary<string, string?>? gics = null,
+        IReadOnlyDictionary<string, LedgerActions>? actions = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null)
+    {
+        var rows = new Dictionary<string, (double?[] Readings, double? Alpha3Traded, double? Alpha4Traded)>(StringComparer.Ordinal);
+
+        if (Read(cut, income, sectors, facts, null, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is not { } read)
+        {
+            return rows;
+        }
+
+        var traded = new TradedRanks(read.Series, read.Members);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            var name = Array.FindIndex(read.Series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
+            var bar = name < 0 ? -1 : IndexNightRead.BarOf(read.Series[name], read.At);
+
+            if (bar < 0)
+            {
+                continue;
+            }
+
+            var readings = LedgerSetups.Readings(index, name, read.Series[name], Closes(read.Series[name]), bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series);
+
+            rows[ticker] = (readings, traded.Alpha3(name, bar), traded.Alpha4(name, bar));
+        }
+
+        return rows;
+    }
+
     sealed record CutRead(SweepSeries[] Series, IReadOnlyList<SweepColumns.Session> Sessions, SweepBenchmark.Members Members, DateOnly[] Calendar, int At, int Name, int Bar, LedgerContext Context);
 
+    // A cut read once, and the ticker given placed in it; none given places none.
     static CutRead? Read(
         SweepHistoryInputs cut,
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
-        string ticker,
+        string? ticker,
         LedgerInsiders? insiders,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases,
         IReadOnlyDictionary<DateOnly, double>? largeBreadth,
@@ -142,17 +225,17 @@ public static class LedgerPointInTime
 
         Parallel.For(0, cut.Names.Count, name => series[name] = SweepColumns.Series(cut.Names[name], sessionAt));
 
-        var name = Array.FindIndex(series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
+        var name = ticker is null ? -1 : Array.FindIndex(series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
         var at = calendar.Length - 1;
 
-        if (name < 0)
+        if (ticker is not null && name < 0)
         {
             return null;
         }
 
-        var bar = IndexNightRead.BarOf(series[name], at);
+        var bar = name < 0 ? -1 : IndexNightRead.BarOf(series[name], at);
 
-        if (bar < 0)
+        if (ticker is not null && bar < 0)
         {
             return null;
         }

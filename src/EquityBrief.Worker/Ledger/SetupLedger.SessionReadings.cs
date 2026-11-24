@@ -70,6 +70,9 @@ public sealed partial class SetupLedger
         var longHistory = new LongHistoryReader(databaseFile);
         var through = await longHistory.NewestSessionAsync(cancellation);
         var prepared = await PrepareAsync(connection, index, through, output, cancellation, heavyweightsRead: false, live: await LiveRulesAsync(index, output, cancellation), longHistory: longHistory);
+
+        prepared.ReportFilings = await ReportFilingsAsync(connection, cancellation);
+
         var calendar = prepared.Calendar;
         var first = Array.FindIndex(calendar, session => session >= LongLedger.From);
         var last = Array.FindLastIndex(calendar, session => session <= through);
@@ -362,7 +365,7 @@ public sealed partial class SetupLedger
     // the long ledger's to 2018 and the standing ledger's after, is held to its stock's row on every reading but its family's
     // own; a session the night stored is held to the night's own rows. Every reading that differs is named. It reads the
     // store and writes its run log row alone.
-    public async Task<int> SessionCheckAsync(string index, TextWriter output, int perYear = SessionCheckPerYear, int seed = SessionCheckSeed, CancellationToken cancellation = default)
+    public async Task<int> SessionCheckAsync(string index, TextWriter output, int perYear = SessionCheckPerYear, int seed = SessionCheckSeed, CancellationToken cancellation = default, bool overLedgerMembers = false)
     {
         var startedAt = clock.UtcNow;
         var runId = FormattableString.Invariant($"{SessionCheckStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
@@ -390,6 +393,7 @@ public sealed partial class SetupLedger
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await longHistory.ReadAsync(IndexFamilies.LargeIndex, through, null, cancellation), inputs.Sessions));
         var gics = await GicsAsync(connection, history: true, cancellation);
         var nights = await SessionsAsync(connection, NightSessionsOf, [("$index", index)], cancellation);
+        var reportFilings = await ReportFilingsAsync(connection, cancellation);
 
         var random = new Random(seed);
         var sample = inputs.Sessions
@@ -404,7 +408,15 @@ public sealed partial class SetupLedger
         var nightRows = 0;
         var memberSessions = 0;
         var own = FamilyOwnReadings.Select(LedgerReadings.IndexOf).ToHashSet();
-        var standing = await StandingMembersAsync(index, through, sample.Where(session => session > LongLedger.Through && !nights.Contains(session)), cancellation);
+        var standingSampled = sample.Where(session => session > LongLedger.Through && !nights.Contains(session)).ToArray();
+        var standing = await StandingMembersAsync(
+            index,
+            through,
+            overLedgerMembers ? standingSampled.SelectMany(session => inputs.Sessions.Where(day => day <= session).TakeLast(MemberWindow)).Distinct() : standingSampled,
+            cancellation);
+        var overMembers = new SortedDictionary<string, (int Compared, int Table, int Over, int OverTraded)>(StringComparer.Ordinal);
+        var overExamples = new List<string>();
+        var unrowed = new List<(string Finding, string Cause)>();
 
         foreach (var session in sample)
         {
@@ -466,7 +478,7 @@ public sealed partial class SetupLedger
             // One row the build worked, rebuilt from the long history cut at its session.
             var picked = rows[random.Next(rows.Count)];
             var cut = LedgerPointInTime.Cut(inputs, session);
-            var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, table: true);
+            var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, table: true, reportFilings: reportFilings);
 
             if (readingsThen is null)
             {
@@ -480,6 +492,8 @@ public sealed partial class SetupLedger
             }
 
             // Every setup the ledger holds of the session, held to its stock's row on every reading but its family's own.
+            var heldSetups = new List<(string Family, string Ticker, double?[] Stored, double?[] Held)>();
+
             await using (var command = Command(connection, null, session <= LongLedger.Through ? LongSetupsOn : StandingSetupsOn, [("$index", index), ("$session", Stamp(session))]))
             await using (var reader = await command.ExecuteReaderAsync(cancellation))
             {
@@ -498,15 +512,69 @@ public sealed partial class SetupLedger
 
                     if (!byTicker.TryGetValue(ticker, out var held))
                     {
-                        findings.Add($"{family} {ticker} {Stamp(session)}: the ledger's setup has no row of its stock in the table");
+                        var finding = $"{family} {ticker} {Stamp(session)}: the ledger's setup has no row of its stock in the table";
+
+                        findings.Add(finding);
+
+                        if (overLedgerMembers)
+                        {
+                            unrowed.Add((finding, UnrowedCause(cut, ticker, session)));
+                        }
 
                         continue;
                     }
 
+                    heldSetups.Add((family, ticker, stored, held));
                     findings.AddRange(SetupDifferences(stored, held, own).Select(differ =>
                         FormattableString.Invariant($"{family} {ticker} {Stamp(session)}: {differ.Reading} the ledger's {Shown(differ.Stored)}, the table's {Shown(differ.Rebuilt)}")));
                 }
             }
+
+            // From the operator's order of 2026-11-24, items 2 and 4: on a session the standing ledger's members are read for,
+            // the rows rebuilt over those members as its own build reads them, each across-members reading and the third and
+            // fourth alphas held to the ledger's beside the table's.
+            if (overLedgerMembers && standing.ContainsKey(session) && heldSetups.Count > 0)
+            {
+                var over = LedgerPointInTime.RebuiltMany(index, LedgerPointInTime.OverMembers(cut, standing, MemberWindow), LedgerPointInTime.Cut(market, session), income, sectors, facts, heldSetups.Select(setup => setup.Ticker), insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs);
+
+                foreach (var (family, ticker, stored, held) in heldSetups)
+                {
+                    if (!over.TryGetValue(ticker, out var rebuiltOver))
+                    {
+                        continue;
+                    }
+
+                    foreach (var column in AcrossMembers)
+                    {
+                        var at = LedgerReadings.IndexOf(column);
+                        var traded = column switch { "alpha_three" => rebuiltOver.Alpha3Traded, "alpha_four" => rebuiltOver.Alpha4Traded, _ => rebuiltOver.Readings[at] };
+                        var was = overMembers.GetValueOrDefault(column);
+                        var overDiffers = !SameReading(stored[at], rebuiltOver.Readings[at]);
+
+                        overMembers[column] = (was.Compared + 1, was.Table + (SameReading(stored[at], held[at]) ? 0 : 1), was.Over + (overDiffers ? 1 : 0), was.OverTraded + (SameReading(stored[at], traded) ? 0 : 1));
+
+                        if (overDiffers && overExamples.Count(example => example.StartsWith(column + " ", StringComparison.Ordinal)) < 3)
+                        {
+                            overExamples.Add(FormattableString.Invariant($"{column} {family} {ticker} {Stamp(session)}: the ledger's {Shown(stored[at])}, the table's {Shown(held[at])}, over the ledger's members {Shown(rebuiltOver.Readings[at])}"));
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (var (column, counts) in overMembers)
+        {
+            output.WriteLine(FormattableString.Invariant($"session-readings-members: {column}: {counts.Compared} reading(s) on the standing ledger's sampled sessions differ from the ledger's: the table's {counts.Table}, rebuilt over the ledger's members at its prices {counts.Over}, over its members at the traded price {counts.OverTraded}"));
+        }
+
+        foreach (var example in overExamples)
+        {
+            output.WriteLine("session-readings-members: still differs, " + example);
+        }
+
+        foreach (var group in unrowed.GroupBy(one => one.Cause).OrderByDescending(group => group.Count()))
+        {
+            output.WriteLine(FormattableString.Invariant($"session-readings-unrowed: {group.Count()} setup(s): {group.Key}; e.g. {group.First().Finding}"));
         }
 
         foreach (var finding in findings)
@@ -521,6 +589,38 @@ public sealed partial class SetupLedger
         output.WriteLine("session-readings-check: " + detail);
 
         return findings.Count == 0 ? 0 : 1;
+    }
+
+    // The sessions to a sampled one whose members a rebuild over the ledger's members reads as the ledger's: the longest window
+    // a ranked reading places a member over, Alpha#3's ten, with room.
+    const int MemberWindow = 12;
+
+    // The readings ranked or counted across a session's members, and the third and fourth alphas, which a rebuild over the
+    // ledger's members holds to the ledger's.
+    static readonly string[] AcrossMembers =
+    [
+        "breadth", "strength", "strength_twelve_less_one", "alpha_one", "alpha_two", "highs_less_lows", "drop_against_sector",
+        "sector_month", "sector_quarter", "large_breadth", "alpha_three", "alpha_four",
+    ];
+
+    // Two readings the same: both none, or two figures a millionth of the larger apart or less.
+    static bool SameReading(double? one, double? other) =>
+        (one, other) switch
+        {
+            (null, null) => true,
+            ({ } a, { } b) => Math.Abs(a - b) <= LedgerPointInTime.Tolerance * Math.Max(Math.Abs(a), Math.Abs(b)),
+            _ => false,
+        };
+
+    // Why the table holds no row of a ledger setup's stock on its session, as the long history the table reads holds it.
+    static string UnrowedCause(SweepHistoryInputs cut, string ticker, DateOnly session)
+    {
+        var named = cut.Names.Where(name => string.Equals(name.Ticker, ticker, StringComparison.Ordinal)).ToArray();
+
+        return named.Length == 0 ? "the long history holds no code of that ticker"
+            : !named.Any(name => name.MemberOn(session)) ? "the long history holds the code and no span of the index on the session"
+            : !named.Any(name => name.Bars.Any(bar => bar.Session == session)) ? "a member on the session with no bar there"
+            : "a member with a bar on the session, read as a gap";
     }
 
     // A session's members the standing ledger reads and the table holds, each held to the other: a member of either the other
@@ -593,14 +693,58 @@ public sealed partial class SetupLedger
                 var bar = IndexNightRead.BarOf(one, at);
                 var readings = LedgerSetups.Readings(index, name, one, ownCloses.Value[name], bar, sessions[at], members, calendar, at, market, context, series);
 
-                TableOwnReadings.Apply(readings, tradedRanks.Value, name, one, bar);
+                TableOwnReadings.Apply(readings, tradedRanks.Value, name, one, bar, ReportFilings is { } filings ? ReportDaysOf(filings, one) : null);
                 rows.Add((one.Name.Ticker, ReadingsText(readings)));
             }
 
             return rows;
         }
 
+        // Each code's results 8-Ks and quarterly and annual reports, which the table's weekdays to the next report read.
+        public IReadOnlyDictionary<string, ReportFiled>? ReportFilings { get; set; }
+
         // The members' places at the traded price, which the table's third and fourth alphas read.
         readonly Lazy<TradedRanks> tradedRanks = new(() => new TradedRanks(series, members));
     }
+
+    // A code's results 8-Ks, those carrying item 2.02, and its 10-Qs and 10-Ks, each by the day it was filed.
+    public sealed record ReportFiled(List<DateOnly> Results, List<DateOnly> Periodic);
+
+    const string ReportFilingsRead = "SELECT ticker, filed, form, items FROM long_filing WHERE form IN ('8-K', '10-Q', '10-K');";
+
+    // Every code's report filings as the long filings hold them.
+    // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
+    static async Task<IReadOnlyDictionary<string, ReportFiled>> ReportFilingsAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var filings = new Dictionary<string, ReportFiled>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, ReportFilingsRead, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var form = reader.GetString(2);
+            var results = form == "8-K";
+
+            if (results && (reader.IsDBNull(3) || !reader.GetString(3).Split(',').Contains("2.02", StringComparer.Ordinal)))
+            {
+                continue;
+            }
+
+            if (!filings.TryGetValue(reader.GetString(0), out var held))
+            {
+                filings[reader.GetString(0)] = held = new ReportFiled([], []);
+            }
+
+            (results ? held.Results : held.Periodic).Add(DateOnly.ParseExact(reader.GetString(1)[..10], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        return filings;
+    }
+
+    // A code's report days: off its filings where they hold any, and the earnings calendars' days around them.
+    internal static IReadOnlyList<DateOnly> ReportDaysOf(IReadOnlyDictionary<string, ReportFiled> filings, SweepSeries one) =>
+        filings.TryGetValue(one.Name.Ticker, out var filed)
+            ? TableReadings.ReportDays(filed.Results, filed.Periodic, one.Name.Prints)
+            : one.Name.Prints;
 }

@@ -22805,3 +22805,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
+
+### 24.19 - correction: the table's years since the high as a fraction, its weekdays to the next report off the filings, and the check over the ledger's members   2026-11-24
+
+Queue:      done, #783 merged and item 2's check on all three indexes reported; in progress, this correction, then the check
+            over the ledger's members, the table written again and the check again; next, 24.30 once items 1 to 4 settle.
+Ruled:      the operator's orders of 2026-11-24 on the check of 4:40 pm, kept word for word in
+            `prompts/2026-11-24-24.19-orders-on-the-check-of-4-40pm.md`.
+Found:      the table's years since the price stood this high divided whole numbers, so every one read a whole year where the
+            ledger reads the fraction; and its weekdays to the next report counted to every 8-K with item 2.02, preliminaries
+            among them, where the provider's calendar the ledger reads holds no day before 2019 and at times the 10-Q's day.
+Built:      the years read as a fraction, still over the 2,792 sessions; each code's report days off its filings, the last
+            results 8-K on or before the 10-Q or 10-K that closes its quarter, the calendars' days outside the filings' span;
+            and '--ledger-members' on the every-session check, rebuilding the sampled sessions from 2019 over the standing
+            ledger's members, each reading ranked or counted across them and the third and fourth alphas held to the
+            ledger's at its prices and at the traded price, and naming why the table holds no row of a ledger setup. One
+            decision, the architecture's row and the changelog.
+Tests:      3 new: the years held to the ledger's own rebuild on every session of a short history, a fraction on some; the
+            report days worked by hand from SWKS's and WMT's filings, 21 and 65 weekdays; a rebuild reading the ledger's
+            members on the sessions it names.
+Pins:       none moved. No file this changes is one a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the whole-number
+            division put back: red; m2 a preliminary kept: red; m3 the ledger's members ignored: red. Filtered to their
+            tests and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4031 of 4031 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the check over the ledger's members on each index once this merges; the table written again and checked; the
+            stock's own price readings, the older days, the market series and the readings one side holds none of traced
+            beside the later stages.

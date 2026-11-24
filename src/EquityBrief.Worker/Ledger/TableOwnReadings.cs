@@ -10,7 +10,11 @@ namespace EquityBrief.Worker.Ledger;
 // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
 public static class TableOwnReadings
 {
-    public static void Apply(double?[] readings, TradedRanks traded, int name, SweepSeries one, int bar)
+    const double DaysAYear = Core.EntryCheck.EntryMeasure.YearDays;
+
+    // The reports given are the code's report days off its filings, which the weekdays to the next report count to; none
+    // given leaves that reading as the night works it.
+    public static void Apply(double?[] readings, TradedRanks traded, int name, SweepSeries one, int bar, IReadOnlyList<DateOnly>? reports = null)
     {
         void Set(string column, double? value) => readings[LedgerReadings.IndexOf(column)] = value;
 
@@ -31,8 +35,14 @@ public static class TableOwnReadings
             double.IsFinite(one.Volume50[bar]) ? one.Volume50[bar] : null);
 
         Set("stretch_share", entry?.StretchShare);
-        Set("highest_since_years", entry is { } read && (read.HighestSince ?? read.HistoryStart) is { } matched ? (read.Session.DayNumber - matched.DayNumber) / Core.EntryCheck.EntryMeasure.YearDays : null);
+        Set("highest_since_years", entry is { } read && (read.HighestSince ?? read.HistoryStart) is { } matched ? (read.Session.DayNumber - matched.DayNumber) / DaysAYear : null);
         Set("older_days", entry?.OlderDays);
+
+        // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
+        if (reports is not null)
+        {
+            Set("earnings_sessions", LedgerSetups.EarningsSessions(reports, [one.Bars[bar].Session], 0));
+        }
 
         // see: A bar whose close moved with no volume traded with its volume missing
         if (LongTraded.VolumeMissing(one.Bars, bar))
