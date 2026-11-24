@@ -519,9 +519,10 @@ public sealed partial class SinglePageApp : IComponent
             view = 'history';
             const history = await fetch('/screens/history');
             screen.innerHTML = await history.text();
-          } else if (path === '{{{JudgeRoute}}}') {
+          } else if (path === '{{{JudgeRoute}}}' || path.startsWith('{{{JudgeNightRoute}}}')) {
             view = 'judge';
-            const judge = await fetch('/screens/judge' + (query ? '?' + query : ''));
+            const date = path.startsWith('{{{JudgeNightRoute}}}') ? path.slice('{{{JudgeNightRoute}}}'.length) : '';
+            const judge = await fetch('/screens/judge' + (date === '' ? '' : '/' + encodeURIComponent(date)) + (query ? '?' + query : ''));
             screen.innerHTML = await judge.text();
           } else if (path === '{{{MarkingRoute}}}') {
             view = 'marking';

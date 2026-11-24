@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-23 - docs/ARCHITECTURE.html - the AI stock picker's page one night at a time, and its count line saying what decided the number, at a correction to 24.25
+Decision: The AI stock picker's page draws one night at a time, and its count line says what decided the number
+Was:
+> Route: `#/picker` from 24.18, `#/judge` from 24.6 and from 24.18 a redirect to it
+> The night's marks: "... or that it rated none of them worth buying where it marked none"
+> Its three accounts: "... and until that version's first night reading not started with the night its first picks come from"
+> The earlier version's picks across all three indices: "... and once all its trades are done one line of its record in place of its cards"
+> no row "One night at a time"
+Now:
+> the route `#/picker/{yyyy-MM-dd}` for one night; the count line saying what decided the number; the tiles on a past night worked from what stood by it; the earlier version's picks in the region of its own night, one line under the tiles on a later night while a trade of it is open, and its record kept in the scoreboard and the accounts; and the row "One night at a time"
+Why: the operator's correction of 2026-11-23, kept word for word in `prompts/2026-11-23-24.25-picker-page-night-picker-correction.md`.
+
 ### 2026-11-23 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a code's provider rows parted only on evidence, and DDR linked to SITC by hand, at a correction to the 24.19 correction
 Decision: A code's provider spans under two names part into two companies only on a different filer or the marks' price test, never on the names alone
 Decision: DDR reads SITC's prices from SITE Centers' 2018 rename by hand where SITC's close there continues DDR's

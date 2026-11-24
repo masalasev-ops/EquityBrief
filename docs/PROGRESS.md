@@ -22404,3 +22404,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the S&P 400's and 600's search, once the long ledger is written again; the ten nights' replay, from main after
             the merge.
+
+### 24.25 - correction: the AI stock picker's page one night at a time, the earlier version on its own night, and the count line saying what decided the number   2026-11-23
+
+Queue:      done, Fox and DDR and 24.35's second part merged, the spans written again on the live store, the ten nights'
+            replay; in progress, this correction; next, the table's check differences reported, then the delisted spellings
+            on the operator's answer.
+Ruled:      the operator's correction of 2026-11-23, kept word for word in
+            `prompts/2026-11-23-24.25-picker-page-night-picker-correction.md`. One new decision.
+Built:      the picker's page carries Home's night picker over every night a version ran, the newest by default, at
+            `#/picker/{date}`. The tiles, the night's region and its count line follow the night chosen, each tile on a past
+            night worked from the runs, picks and closes that stood by it; the scoreboard, the four accounts and its own rules
+            stay as they are. The earlier version's 5 picks stand in the region of 20 Nov under its heading; on a later night
+            it is one line under the tiles while a trade of it is still open, linking to 20 Nov, and none once its last has
+            closed; its record stays in the scoreboard and its account beneath the four. The count line says what decided the
+            number: where a quarter of the marked is over 5, what a quarter would be and that it picked its limit.
+Measured:   the live store's picker runs: 20 Nov, the earlier version, 31 of 1,505 marked and 5 picked; 23 Nov, the first
+            night within each index, 132 of the S&P 500's 503, 89 of the S&P 400's 400 and 147 of the S&P 600's 602 marked, a
+            quarter of 33, 23 and 37, each index picking its limit of 5.
+Tests:      2 new and 4 moved: each index's page on 23 Nov and on 20 Nov over the earlier version's store, the line and its
+            link, the tiles as they stood on 20 Nov, its record kept, and the line gone once its trades are sold by the newest
+            prices while a past night still counts them; the count line over 132 stored marks; the line's words over 132, 20
+            and 21 marks worked by hand; and the router's order, the earlier region's two tests and one index's page held to
+            the night drawn.
+Pins:       none moved. No file a rule pins or the readings' version pins is touched.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the limit's case
+            never taken: red, the line and its words; m2 no trade counted still open: red, the line gone on 23 Nov; m3 the
+            earlier version's picks never drawn on their night: red, 20 Nov's region empty; m4 the tiles not worked as of a
+            past night: red, 20 Nov's tiles as of 23 Nov. Each filtered to its tests and reverted before anything was
+            committed.
+Claims:     1754, one more for the row "One night at a time".
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 4015 of 4015 tests ran with none failed, migrations 0 to 170 with
+            none pending, schema version 170, against `data-ci` and never `data`; the phase report 68 tables, 1754 claims, 1754
+            passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    each index's marks after each of the picker's first 5 nights within each index, reported to the operator.
