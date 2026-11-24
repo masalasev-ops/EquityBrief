@@ -81,6 +81,10 @@ public partial class ReadSurface
         Assert.Equal("Buys between $96.00 and $101.00 Opens above $101.00: waits up to 2 days for the price to come back to $101.00, then not bought. Opens below $96.00: not bought. In version 1's own account.", SinglePageApp.HeldWords(waiting, version));
         Assert.Equal("Picked before its range began, so it buys at the open. In version 1's own account.", SinglePageApp.HeldWords(waiting with { Range = null }, version));
 
+        // A pick bought at the open that no night has read yet is counted as not yet read, never as waiting for an open that
+        // may already have passed.
+        Assert.Equal("Bought so far: 0 of 2; waiting within the 2-day order: 1; its open not yet read by a night: 1; not bought: 0.", SinglePageApp.BoughtSoFarWords([waiting, waiting with { Range = null }]));
+
         // AAA opened above and did not come back: not bought, its side named, and the open's walk not yet ended.
         Assert.Contains($"<p class=\"judge-since\" data-range-skip>Not bought: {JudgeAccounts.OpenedAbove}. What buying at the open would have made is recorded once its walk there ends.</p>", page, StringComparison.Ordinal);
         Assert.Equal(1, CountOf(page, "data-range-skip"));
