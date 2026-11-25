@@ -13,7 +13,7 @@ Was:
 > ARCHITECTURE.html, 15.24's row "Watching, not buying": "... each setup's picks under one header saying once what they share with its cards a carousel beneath it and the link beneath the rules' ideas (see: Home draws each setup's ideas under one header ...)"
 > ARCHITECTURE.html, 15.26's row "A fixed 5": "... and only those that differ drawn as cards (see: The AI stock picker's page draws a variant's picks as cards only where they differ ...)"
 Now:
-> ARCHITECTURE.html: each row the same, with what the operator's correction of that evening adds: one setup at a time, chosen from a row of chips each with its colour, name and count, the first chosen when the page opens; and the fixed 5 named once in its heading, its tally once under the chips, and an account's chart drawing no frame until a night reads its first buy
+> ARCHITECTURE.html: each row the same, with what the operator's correction of that evening adds, each worded as one part: "one setup at a time chosen from a row of chips at the top of tonight's ideas each with its setup's colour and name and count with the first chosen when the page opens and the rest hidden until their chip is chosen"; and "the variant named once in its heading and its tally said once under the chips and an account's chart drawing no frame until a night reads its first buy"
 Why: the operator's correction of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-setup-switcher-and-fixed-five.md`, from the mockup `prompts/2026-11-24-setup-switcher-mockup.html`
 
 ### 2026-11-24 - docs/ARCHITECTURE.html - the table's years since the price stood this high as a fraction and its weekdays to the next report off the filings, at a correction to the 24.19 correction
