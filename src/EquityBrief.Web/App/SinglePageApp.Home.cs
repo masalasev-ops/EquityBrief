@@ -698,7 +698,7 @@ public sealed partial class SinglePageApp
             var fam = Escaped(family);
 
             html.Append(Invariant($"<input type=\"radio\" class=\"sw-r\" name=\"home-setup\" id=\"sw-{key}\" value=\"{key}\"{(at == 0 ? " checked" : string.Empty)}>"));
-            html.Append(Invariant($"<label for=\"sw-{key}\" data-family=\"{fam}\" data-setup=\"{key}\" style=\"--chip:var(--fam-{fam})\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"sw-n\">{ideas.Length}</span></label>"));
+            html.Append(Invariant($"<label for=\"sw-{key}\" data-family=\"{fam}\" data-setup=\"{key}\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"sw-n\">{ideas.Length}</span></label>"));
         }
 
         html.Append(Invariant($"<span class=\"sw-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched)))}</span></div>"));

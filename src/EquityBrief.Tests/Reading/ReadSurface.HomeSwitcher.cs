@@ -28,7 +28,8 @@ public partial class ReadSurface
         Assert.Equal(
             [(SetupFamilies.Pullback, "2"), (DriftRule.Name, "1"), (DipRule.Name, "1")],
             Regex.Matches(bar, "<label for=\"sw-[^\"]+\" data-family=\"([^\"]+)\"[^>]*>.*?<span class=\"sw-n\">(\\d+)</span></label>").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.Contains($"style=\"--chip:var(--fam-{SetupFamilies.Pullback})\"", bar, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"fam-swatch\" data-family=\"{SetupFamilies.Pullback}\"></span>", bar, StringComparison.Ordinal);
+        Assert.Contains($".sw-r:checked+label[data-family='{SetupFamilies.Pullback}']{{background:var(--fam-{SetupFamilies.Pullback}-tint);border-color:var(--fam-{SetupFamilies.Pullback})}}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("<span class=\"sw-hint\">4 ideas tonight in 3 setups</span>", bar, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(bar, " checked>"));
         Assert.Contains($"id=\"sw-{SetupFamilies.Pullback}\" value=\"{SetupFamilies.Pullback}\" checked>", bar, StringComparison.Ordinal);
