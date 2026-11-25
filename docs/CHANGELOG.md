@@ -7,6 +7,17 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/BUILD_PLAN.md - the finishing order: five stages' code before 24.19 closes, the two pin moves, one approval table and the picker's chain, at the 24.0 planning amendment
+Was:
+> 24.30, 24.31, 24.36 and 24.37: "It reads 24.19's table, so it starts only once the 24.19 correction has closed." (24.37: "... for the readings a book ranks by, so it starts only once ...")
+> 24.30: "... the rules' \"also requires\" is taught once to read one, in one pin move carried by the replay over two copies or not landed."
+> 24.37: "... are taught the grammar's parts in one pin move, each defaulting to what the book does today, carried by the replay over two copies or not landed."
+> 24.38: "The two take-profit shapes the operator added on 2026-11-17 join the grammar's list in one pin move carried by the replay over two copies or not landed, and the two ideas waiting for them are tested."
+> phase 24: no finishing order after its estimate
+Now:
+> each of the five landing in two parts, a, its code proven on constructed inputs and the frozen test data, and b, its run on the store once the 24.19 correction has closed; the three pin moves of 24.30, 24.37 and 24.38 one, after the run of 2027-02-06; and after the estimate "The finishing order": the parts' order, the pin move before the run of 2027-02-06 carrying only what it carries with its cut-off and its three weekends of replays, the pin move after it, the approval table, the picker's chain, 24.29's items and the checkpoint table in every report
+Why: the operator's amendment of 2026-11-25 and their answers on it of that day, kept word for word as Appendix AF of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md` and in `prompts/2026-11-25-24.19-on-the-report-of-4-17pm.md`
+
 ### 2026-11-25 - docs/ARCHITECTURE.html - every build reads the long history, a code's long prices read against its newest pull, BB&T as TFC and IR from its entry, and a build's short interest from the two newest settlements, at a correction to the 24.19 correction
 Decision: A code whose long prices part from the newest pull's is read at the pull's adjustment where both are one instrument, and from the pull where the long side is another and thin; BB&T is read as TFC throughout, BBT's S&P 500 span to Truist's rename dropped by hand and IR's span started by hand at its entry; A build reads a stock's short interest only from the two newest settlements FINRA published before the session; The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
 Was:

@@ -23148,3 +23148,25 @@ Carried:    the folded build on the operator's go of 2026-11-25, Friday 27 Nov a
             2026-10-26 to its span's end of 2026-11-03, which the October pull does not reach and the long and store's
             bars hold as the new filer's, and whether the new filer is the S&P 600's SUPN since 2026-11-03, both to the
             operator in that report.
+
+### 24.0 planning - amendment: the finishing order, five stages' code before 24.19 closes, the two pin moves, one approval table and the picker's chain   2026-11-25
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.29, 24.35's built parts, 24.39 and 24.40, and the 24.19 correction's code to its 5a part; in
+            progress, this amendment; next, the Waiting to buy redesign, then 24.30a, 24.31a, 24.36a, 24.37a and 24.38a.
+Ruled:      the operator's amendment of 2026-11-25 and their answers on it of that day, kept word for word as Appendix AF of
+            the plan's file and in `prompts/2026-11-25-24.19-on-the-report-of-4-17pm.md`, final. 24.30, 24.31, 24.36, 24.37
+            and 24.38 each in two parts, the code proven on constructed inputs first and the run on the store after the
+            24.19 correction closes. The pin move before the run of 2027-02-06 carrying only what it carries, its code
+            complete by Friday 2027-01-08, replays on the weekends of 9 to 10 and 16 to 17 January and 23 to 24 January kept
+            for a third, merged by Friday 2027-01-29, a report on 2027-01-24 where none has passed and nothing landing
+            without a passing replay; the rules' parts of 24.30, 24.37 and 24.38 in one pin move after that run. One
+            approval table, approved, 24.35's search starting after the operator's ruling on the 24.19 check. The picker's
+            chain after the store runs, 24.29's items in their order, and the checkpoint table under every report's queue.
+Planned:    `BUILD_PLAN.md`'s 24.30, 24.31, 24.36, 24.37 and 24.38 each in two parts, the three stages' pin moves one after
+            the run of 2027-02-06, and "The finishing order" after the phase's estimate. No claim added and no stage
+            renumbered.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps,
+            0 warnings, 0 errors, 4055 of 4055 tests ran with none failed, migrations 0 to 172 with none pending, schema
+            version 172, against `data-ci` and never `data`.
+Carried:    none.
