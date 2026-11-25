@@ -23014,6 +23014,60 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the picks proof over the operator's store after tonight's night, the again cards read as their orders.
 
+### 24.29 - correction: Home's list of the last five trading days becomes one line, and Paper trading lists them in a tab   2026-11-25
+
+Ruled:      the operator's correction of 2026-11-25, kept word for word in
+            `prompts/2026-11-25-24.29-last-five-days-tab.md`.
+Found:      on the night of 24 Nov Home's list under its waiting cards ran to 36 rows on the S&P 500.
+Built:      Home's one line in the operator's words, "In the last 5 trading days: 6 bought, 26 sold, 2 cancelled, 2 not
+            placed. See them on Paper trading", a kind with none left out, linking to the tab; Paper trading's fifth tab
+            "Last 5 trading days" on the running revision's card, across every rule and every revision of the index, read
+            from the one list Home's line counts, each row with its session, stock, what happened, price, result, rule and
+            revision, newest first and ten a page; the picks proof holding each move to a row of the tab and Home's line to
+            the tab's count of each kind. Tonight's notes are as they were.
+Measured:   over a copy of the store on C:, the S&P 500's line counted 6 bought, 26 sold, 2 cancelled and 2 not placed and
+            the tab listed the 36 over four pages, each with its revision. Shots wide and at 390 before and after.
+Tests:      3 new: the line and the rows' fields worked by hand; the proof holding the line to the tab, two planted and
+            named; Home's line and Paper trading's tab over a store, every page read. 1 widened: a past night's Home reading
+            its buy off the line and the tab.
+Pins:       none moved. Home, Paper trading and the proof are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the proof's count
+            of the line against the tab dropped: red; m2 Home drawing its list again in place of the line: red; m3 an order
+            not placed counted as cancelled: red; m4 the tab given no rows: red. Filtered to their tests and reverted before
+            anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4048 of 4048 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the picks proof over the operator's store after the night that follows its merge, Home's line against the tab.
+
+### 24.29 ruling - the reward check on the traded plan rides the one pin move before the run of 2027-02-06   2026-11-25
+
+Not a checkpoint entry: it records the operator's order of 2026-11-25, item 2, their answer on it and their orders on the report
+            of 9:24 am, items 1 and 2, and lands nothing.
+Ruled:      word for word in `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`, item 2,
+            `prompts/2026-11-25-24.29-answer-reward-check-variant.md` and `prompts/2026-11-25-24.29-on-the-report-of-9-24am.md`.
+            The variant "the reward check uses the traded plan's own stop and take-profit, at 2 times its risk" is built
+            into the one pin move before the run of 2027-02-06 at today's behaviour, carried by the same replay, and
+            registered in the background on each live rule it applies to once the move lands (see: The reward check on the
+            traded plan rides the one pin move before the run of 2027-02-06 and registers in the background once it lands).
+            The question put to the operator stated 15 plans under 1 time their risk and 28 under 2 times; both figures were
+            wrong, and the count below replaces them.
+Counted:    read off Paper trading's waiting and open tabs on the operator's store on 2026-11-25 at about 14:30 UTC, each
+            plan's take-profit less its buy over its buy less its stop. Of the 44 live plans, 3 Fundamentals trades (NJR,
+            WMG, NPK) hold no take-profit price, and 7 sell half at a take-profit and the rest by their rule's own sale, so
+            their whole plan holds no fixed reward and they are counted in neither figure: the S&P 400 pullback's CART, G,
+            SN and TTC, half at 1.5 times the risk; the S&P 600 drift's WWW, half at 2; the S&P 400 dip's HZN and the S&P 400
+            drift's AAON, half at 3. Of the 34 left, 10 make under 1 time their risk: the S&P 500 pullback's MET 0.42, EL
+            0.52 and MRNA 0.54, each at the band above read on its night; the S&P 600 pullback's RHP 0.76, QTWO 0.79, MD 0.88,
+            DFIN 0.90, EVTC 0.92, RHI 0.93 and DXC 0.99, each at its setup's own sale. And 17 under 2 times: those 10, the S&P
+            500 drift's BBY 1.14, TGT 1.24, DLTR 1.26 and TJX 1.33 and the S&P 600 pullback's PAYC 1.10, each at its setup's
+            own sale, the S&P 600 drift's LZB 1.37 at its setup's own sale, and the S&P 600 dip's ACIW 1.57 where it turned
+            down before.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
 ### 24.19 - correction: a company the provider prices under two member codes counted once, and the every-session check in three parts   2026-11-25
 
 Ruled:      the operator's orders of 2026-11-25 on the report of 10:42 am, item 5, and their answer on the member set, kept
@@ -23042,7 +23096,7 @@ Mutated:    the rule, stated before the run: each guard this correction adds tak
             trace: red. Filtered to their tests and reverted before anything was committed.
 Claims:     1754, none added.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
-            before that run: all six steps, 0 warnings, 0 errors, 4047 of 4047 tests ran with none failed, migrations 0 to 172
+            before that run: all six steps, 0 warnings, 0 errors, 4050 of 4050 tests ran with none failed, migrations 0 to 172
             with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.

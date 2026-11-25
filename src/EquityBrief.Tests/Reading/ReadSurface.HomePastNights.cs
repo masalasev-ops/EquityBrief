@@ -107,10 +107,12 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-since", tonight, StringComparison.Ordinal);
         Assert.Contains("data-night=\"2026-10-05\"", tonight, StringComparison.Ordinal);
 
-        // M1's order left the waiting list when it filled on 5 Oct: the newest night's notes say so, and the night of 2 Oct's,
-        // drawn as they stood then, do not.
-        Assert.Contains("M1 bought 5 Oct at $48.00", tonight, StringComparison.Ordinal);
-        Assert.DoesNotContain("M1 bought 5 Oct", past, StringComparison.Ordinal);
+        // M1's order left the waiting list when it filled on 5 Oct: from the operator's correction of 2026-11-25 the newest night's
+        // line counts its buy and Paper trading's last five trading days list it, and the night of 2 Oct, drawn as it stood
+        // then, counts no buy.
+        Assert.Matches("<p class=\"recent-line\" data-bought=\"1\" ", tonight);
+        Assert.DoesNotMatch("<p class=\"recent-line\" data-bought=\"[1-9]", past);
+        Assert.Contains("<tr data-ticker=\"M1\" data-kind=\"bought\" data-family=\"breakout\" data-on=\"2026-10-05\">", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&tab=" + EquityBrief.Web.Marks.MarkRenderer.RecentTab)), StringComparison.Ordinal);
 
         // And on the store as PlanTradesStore lists it, Home tonight as before: the night of 2 Oct with no banner and no line.
         using var before = PlanTradesStore();

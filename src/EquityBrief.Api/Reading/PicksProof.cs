@@ -43,7 +43,8 @@ public static partial class PicksProof
 
     // What the pages drew on the newest night: Home, Tonight, each night's Tonight since the restart, and each family's Paper
     // trading waiting tab, every page of it.
-    public sealed record DrawnPages(string Home, string Tonight, IReadOnlyDictionary<DateOnly, string> Nights, IReadOnlyDictionary<string, string> PaperWaiting);
+    // From the operator's correction of 2026-11-25 Paper trading's "Last 5 trading days" tab too, every page of it.
+    public sealed record DrawnPages(string Home, string Tonight, IReadOnlyDictionary<DateOnly, string> Nights, IReadOnlyDictionary<string, string> PaperWaiting, string PaperRecent = "");
 
     // Every live rule's order and trade alive since the restart, held to the pages: an order waiting is a waiting card on Home
     // and on Tonight and a row of its family's waiting tab, one placed tonight Home's idea and Tonight's pick; a trade bought,
@@ -68,7 +69,8 @@ public static partial class PicksProof
         var homeAgain = Triples(drawn.Home, "<article class=\"home-idea[^\"]*again-idea[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-again=\"true\" data-listed=\"([^\"]+)\"");
         var homeWaiting = Triples(drawn.Home, "<article class=\"wo-card[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-listed=\"([^\"]+)\"");
         var tonightWaiting = Triples(drawn.Tonight, "<article class=\"wo-card[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-listed=\"([^\"]+)\"");
-        var homeLeft = Regex.Matches(drawn.Home, "<li class=\"(bt|cx|sd)\" data-ticker=\"([^\"]+)\"").Select(match => (Kind: match.Groups[1].Value, Ticker: match.Groups[2].Value)).ToArray();
+        // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+        var paperRecent = Regex.Matches(drawn.PaperRecent, "<tr data-ticker=\"([^\"]+)\" data-kind=\"([^\"]+)\" data-family=\"([^\"]*)\"").Select(match => (Ticker: match.Groups[1].Value, Kind: match.Groups[2].Value, Family: match.Groups[3].Value)).ToArray();
         var lines = new List<PickLine>();
         var rows = planned.Where(row => row.Live && (row.Listed >= since || row.EndedOn is null || row.EndedOn >= since) && row.Listed <= night)
             .GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First())
@@ -86,10 +88,10 @@ public static partial class PicksProof
                 : running ? "waiting" : "waiting, its revision replaced on " + Day(replaced!.Value);
             var paperRows = drawn.PaperWaiting.GetValueOrDefault(row.Family, string.Empty);
             var onHome = homeWaiting.Contains((row.Family, row.Ticker, Day(row.Listed))) ? "waiting card"
-                : row.Listed == night && homeIdeas.Contains((row.Family, row.Ticker)) ? "idea"
-                : homeLeft.Any(one => one.Ticker == row.Ticker) ? "note" : "-";
+                : row.Listed == night && homeIdeas.Contains((row.Family, row.Ticker)) ? "idea" : "-";
             var onTonight = tonightWaiting.Contains((row.Family, row.Ticker, Day(row.Listed))) ? "waiting card" : row.Listed == night && (Listed(drawn.Tonight, row.Family, row.Ticker) || Ordered(drawn.Tonight, row.Family, row.Ticker)) ? "pick" : "-";
-            var onPaper = paperRows.Contains(FormattableString.Invariant($"<tr data-ticker=\"{row.Ticker}\" data-placed=\"{Day(row.Listed)}\""), StringComparison.Ordinal) ? "waiting" : "-";
+            var onPaper = paperRows.Contains(FormattableString.Invariant($"<tr data-ticker=\"{row.Ticker}\" data-placed=\"{Day(row.Listed)}\""), StringComparison.Ordinal) ? "waiting"
+                : paperRecent.Any(one => one.Ticker == row.Ticker && one.Family == row.Family) ? "last 5 days" : "-";
 
             if (state == "waiting")
             {
@@ -117,9 +119,9 @@ public static partial class PicksProof
                     ? new[] { row.FilledOn, row.EndedOn }.Where(day => day is { } on && on >= fromRecent && on <= night).ToArray()
                     : gone is { } went && went.On >= fromRecent && went.On <= night ? [went.On] : [];
 
-                if (movedOn.Length > 0 && onHome != "note")
+                if (movedOn.Length > 0 && onPaper != "last 5 days")
                 {
-                    mismatches.Add("Home's notes name no move of it in the last five trading days");
+                    mismatches.Add("Paper trading's last 5 trading days name no move of it");
                 }
             }
 
@@ -149,6 +151,20 @@ public static partial class PicksProof
                 {
                     extra.Add(FormattableString.Invariant($"{family} {match.Groups[1].Value} placed {match.Groups[2].Value}: Paper trading waits on it and no live order stands for it"));
                 }
+            }
+        }
+
+        // Home's line counts each kind the tab lists, and none it does not.
+        var homeLine = Regex.Match(drawn.Home, "<p class=\"recent-line\" data-bought=\"(\\d+)\" data-sold=\"(\\d+)\" data-cancelled=\"(\\d+)\" data-not-placed=\"(\\d+)\"");
+
+        foreach (var (kind, at) in LeftOrderView.Kinds.Select((kind, at) => (kind, at)))
+        {
+            var said = homeLine.Success ? int.Parse(homeLine.Groups[at + 1].Value, CultureInfo.InvariantCulture) : 0;
+            var listed = paperRecent.Count(one => one.Kind == kind);
+
+            if (said != listed)
+            {
+                extra.Add(FormattableString.Invariant($"Home's line counts {said} {kind} in the last {LeftOrderView.Sessions} trading days, Paper trading's tab lists {listed}"));
             }
         }
 

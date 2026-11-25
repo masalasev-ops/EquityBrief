@@ -23,6 +23,24 @@ Now:
 > the first adding that the check's output names the differences to trace, then the member lists', then the seven readings' apart and marked expected, each counted, any part still failing the check; the second adding that the reader counts a company the provider prices under two member codes once, under the code it traded under until that code stops, citing the new decision
 Why: the operator's order of 2026-11-25, item 5, and their answer on the member set, kept word for word in `prompts/2026-11-25-24.19-on-the-report-of-10-42am.md` and `prompts/2026-11-25-24.19-answer-member-set.md`
 
+### 2026-11-25 - docs/BUILD_PLAN.md - the reward check on the traded plan joins the one pin move before the run of 2027-02-06, at a ruling on 24.29
+Decision: The reward check on the traded plan rides the one pin move before the run of 2027-02-06 and registers in the background once it lands
+Was:
+> phase 24's order on the operator's answers of 2026-11-22 and 2026-11-23: "... and the year limit from 2027 a growing window, 2027 read as a ninth year and each later year added with none dropped; its report of every live trade ..."
+Now:
+> the same, adding before "its report": "and from the operator's answer of 2026-11-25 each price family's reward check taught to read the traded plan's own stop and take-profit as a setting at today's behaviour, its variant at 2 times the risk on each live rule it applies to registered in the background once the move lands"
+Why: the operator's answer of 2026-11-25, kept word for word in `prompts/2026-11-25-24.29-answer-reward-check-variant.md`.
+
+### 2026-11-25 - docs/ARCHITECTURE.html - Home's list of the last five trading days becomes one line, and Paper trading gains its tab, at a correction to 24.29
+Decision: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+Was:
+> Paper trading, part 3: "... and its four tabs, Open, Waiting to buy, Closed and Left the waiting list, ten rows a page, each drawing the price its walk sells at."
+> Home, Tonight's ideas: "... under the waiting cards every live rule's buy and sale and every order that left unbought in the last five trading days with why (see: Home's left notes name every live rule's buy and sale and every order that left unbought, with why); the AI stock picker's line ..."
+Now:
+> Paper trading, part 3: the same, adding "from the operator's correction of 2026-11-25 a fifth tab on the running revision's card named Last 5 trading days" holding every rule's and every revision's moves on the index in those days with each row's fields, newest first and counted as Home's line counts them
+> Home, Tonight's ideas: the same, adding "from the operator's correction of 2026-11-25 in their place one line counting them by kind with the way to Paper trading's tab of them"
+Why: the operator's correction of 2026-11-25, kept word for word in `prompts/2026-11-25-24.29-last-five-days-tab.md`.
+
 ### 2026-11-25 - docs/ARCHITECTURE.html - Home's ideas draw a stock met again while its order waits among tonight's ideas, at a correction to 24.29
 Decision: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
 Was:
