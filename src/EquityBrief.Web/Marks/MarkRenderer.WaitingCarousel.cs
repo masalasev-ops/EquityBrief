@@ -23,8 +23,34 @@ public sealed partial class MarkRenderer
 
     public const string WaitingState = "Waiting to buy";
 
-    // The heading of tonight's checklist on a waiting order's card whose stock met the rules again.
+    // The heading of tonight's checklist on the card of a stock met the rules again while its order waits.
     public const string AgainHeading = "Why it qualified again";
+
+    // From the operator's correction of 2026-11-25, item 5, in their words: "Its order of 23 Nov at $320.04 stands; no second order
+    // was placed. Tonight's rules would have placed it at $318.13.", the second sentence none where tonight's plan buys at the
+    // open and so places no price.
+    // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+    public static string AgainLine(WaitingOrderView order, DecisionCardView again) =>
+        FormattableString.Invariant($"Its order of {order.Listed:d MMM}") + (order.Price is { } price ? " at " + Dollars(price) : string.Empty)
+        + " stands; no second order was placed."
+        + (again.Zone is { NoBuy: false } zone ? " Tonight's rules would have placed it at " + Dollars(zone.Price) + "." : string.Empty);
+
+    // Tonight's checks folded under one line, "Why it qualified again on 24 Nov (5 checks)", the count read off the card's
+    // checklist; none where the card holds no checklist.
+    public static string AgainFold(DecisionCardView again)
+    {
+        var checks = AgainChecks(again);
+        var heading = AgainHeading + FormattableString.Invariant($" on {again.Night:d MMM}");
+        var drawn = WhyItQualified(again, heading).Replace("<h5>" + Escaped(heading) + "</h5>", string.Empty, StringComparison.Ordinal);
+
+        return drawn.Length == 0
+            ? string.Empty
+            : Formatted($"<details class=\"again-fold\" data-checks=\"{checks}\"><summary>{Escaped(AgainHeading)} on {again.Night:d MMM} ({checks} {(checks == 1 ? "check" : "checks")})</summary>{drawn}</details>");
+    }
+
+    // The checks a card's setup passed, read from its first line as its checklist draws them.
+    public static int AgainChecks(DecisionCardView card) =>
+        card.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.TrendName) is { } passed ? PassedSteps(card.Family, passed.Words).Count : 0;
 
     // What a waiting order's take-profit row says before the night places its price.
     public const string TakeProfitNextNight = "added at the next night";
@@ -146,12 +172,6 @@ public sealed partial class MarkRenderer
         card.Append(Invariant, $"<div class=\"wo-badge\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setup)}</span><span class=\"wo-state\">{WaitingState}</span>{(again is null ? string.Empty : Formatted($"<b class=\"wo-again\">{Escaped(HeldAgainView.AgainMark)}</b>"))}{RevisionTags.For(order.Family, order.Listed, order: true)}</div></div>");
         card.Append(Invariant, $"<p class=\"wo-cond\">{Escaped(WaitingCondition(order))}</p>");
 
-        // The night's would-be price is the price tonight's plan waits for; a plan buying at the open places none to say.
-        if (again is not null && night is { } metOn)
-        {
-            card.Append(Invariant, $"<p class=\"wo-again-line\">{Escaped(HeldAgainView.WaitingLine(again.Family, metOn, order.Listed, order.Price, again.Zone?.Price))}</p>");
-        }
-
         if (order.Price is { } buy)
         {
             var filled = widest > 0m && gap is { } share ? Math.Clamp(share / widest, 0.02m, 1m) * 100m : 2m;
@@ -169,7 +189,9 @@ public sealed partial class MarkRenderer
 
         card.Append("</div>");
         card.Append(Invariant, $"<p class=\"wo-placed\">{Escaped(PlacedLine(order, setup, night))}</p>");
-        card.Append(again is null ? string.Empty : WhyItQualified(again, AgainHeading));
+        // From the operator's correction of 2026-11-25, item 7, a stock met again keeps only its mark here: the sentence saying its
+        // order stands and tonight's checks stand on its card among tonight's ideas.
+        // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
         // From the operator's correction of 2026-11-24, item 7, the stock's chart page, where its plan is drawn.
         // see: See the plan opens the stock's chart page with its pick's plan drawn on it
         card.Append(Invariant, $"<a class=\"home-plan\" href=\"{ChartRoute}{Uri.EscapeDataString(order.Ticker)}\">See the plan</a>");

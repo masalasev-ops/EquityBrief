@@ -1788,6 +1788,8 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-again{display:inline-block;font:600 11px var(--sans);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 7px;white-space:nowrap}
 .wo-chip .wo-again{margin-left:6px}
 .wo-again-line{margin:0;font-size:13.5px;line-height:1.45;color:var(--ink)}
+.again-idea .home-idea-h{align-items:center} .again-line{margin:0;font-size:14px;line-height:1.5;color:var(--ink)}
+.again-fold summary{cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-2)} .again-fold .card-why{margin:8px 0 0}
 .wo-card .card-why{margin:0}
 .wo-card .card-why h5{margin:0 0 4px;font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
 .held-rows{margin:16px 0 4px}

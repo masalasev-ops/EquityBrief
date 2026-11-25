@@ -61,7 +61,11 @@ public static partial class PicksProof
     {
         DateOnly[] recent = [.. sessions.Where(session => session <= night).OrderDescending().Take(LeftOrderView.Sessions)];
         var fromRecent = recent.Length > 0 ? recent.Min() : night;
-        var homeIdeas = Pairs(drawn.Home, "<article class=\"home-idea[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\"");
+        // From the operator's correction of 2026-11-25, item 9, a card of a stock met again is its standing order's and never a new
+        // idea: tonight's ideas leave it out, and it is held to an order still waiting.
+        // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+        var homeIdeas = Pairs(drawn.Home, "<article class=\"home-idea(?![^\"]*again-idea)[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\"");
+        var homeAgain = Triples(drawn.Home, "<article class=\"home-idea[^\"]*again-idea[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-again=\"true\" data-listed=\"([^\"]+)\"");
         var homeWaiting = Triples(drawn.Home, "<article class=\"wo-card[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-listed=\"([^\"]+)\"");
         var tonightWaiting = Triples(drawn.Tonight, "<article class=\"wo-card[^\"]*\" data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\" data-listed=\"([^\"]+)\"");
         var homeLeft = Regex.Matches(drawn.Home, "<li class=\"(bt|cx|sd)\" data-ticker=\"([^\"]+)\"").Select(match => (Kind: match.Groups[1].Value, Ticker: match.Groups[2].Value)).ToArray();
@@ -135,6 +139,7 @@ public static partial class PicksProof
 
         extra.AddRange(homeWaiting.Concat(tonightWaiting).Distinct().Where(card => !waitingOrders.Contains(card)).Select(card => FormattableString.Invariant($"{card.Item1} {card.Item2} placed {card.Item3}: a waiting card no live order stands for")));
         extra.AddRange(homeIdeas.Where(idea => planFamilies.Contains(idea.Item1) && !tonightOrders.Contains(idea)).Select(idea => FormattableString.Invariant($"{idea.Item1} {idea.Item2}: Home's idea tonight with no order of its live rule")));
+        extra.AddRange(homeAgain.Where(card => !waitingOrders.Contains(card)).Select(card => FormattableString.Invariant($"{card.Item1} {card.Item2} placed {card.Item3}: Home's card met again stands for no order still waiting")));
 
         foreach (var (family, rowsDrawn) in drawn.PaperWaiting)
         {
