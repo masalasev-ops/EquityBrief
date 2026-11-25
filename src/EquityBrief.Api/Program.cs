@@ -4853,7 +4853,10 @@ if (copyServer is not null && proving)
         using var both = System.Text.Json.JsonDocument.Parse(answer);
 
         said = both.RootElement.GetProperty("text").GetString() ?? string.Empty;
-        File.WriteAllText(Path.Combine(app.Services.GetRequiredService<StoreLocation>().DataRoot, PicksProof.StoredFile), both.RootElement.GetProperty("html").GetString() ?? string.Empty);
+
+        var keptProof = Path.Combine(app.Services.GetRequiredService<StoreLocation>().DataRoot, PicksProof.StoredFile);
+
+        File.WriteAllText(keptProof, both.RootElement.GetProperty("html").GetString() ?? string.Empty);
     }
 
     Console.Write(said);

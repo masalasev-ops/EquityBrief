@@ -163,6 +163,7 @@ public class StoreNeverDeleted
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
                 "NightLock.cs: FileOptions.DeleteOnClose(path)",
+                "Program.cs: File.WriteAllText(keptProof)",
                 "ReplayCopy.cs: File.WriteAllTextAsync(newMark)",
                 "ReplayCopy.cs: File.WriteAllTextAsync(oldMark)",
                 "ResearchRunner.cs: FileOptions.DeleteOnClose(path)",
