@@ -76,7 +76,13 @@ if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
 // setting, none of the operator's own trades, no live quote and no TipRanks ratings, and no control asking for any.
 // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 var copying = args.Length > 0 && args[0] == PublishedSite.Verb;
-var copyServer = copying ? new InProcessServer() : null;
+
+// From the operator's correction of 2026-11-24, item 1, started with the picks proof's verb the surface runs on the same
+// server inside its own process, reads the proof as text, prints it and exits non-zero on any mismatch; the night's script
+// runs it once the night has finished.
+// see: The reconciliation holds every live rule's order and trade to what Home, Tonight and Paper trading draw, and fails on any mismatch
+var proving = args.Length > 0 && args[0] == PicksProof.Verb;
+var copyServer = copying || proving ? new InProcessServer() : null;
 
 if (copyServer is not null)
 {
@@ -2574,6 +2580,91 @@ app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, Endpoint
     return Results.Content(CountsProof.Page(indexes), "text/html; charset=utf-8");
 });
 
+// From the operator's correction of 2026-11-24, item 1, every live rule's order and trade since the rules restart beside what
+// Home, Tonight and Paper trading draw for it, an index at a time; as text with `format=text` for the step after each night.
+// see: The reconciliation holds every live rule's order and trade to what Home, Tonight and Paper trading draw, and fails on any mismatch
+app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, ReadApi read, EndpointDataSource routes) =>
+{
+    var indexes = new List<(string, IReadOnlyList<PicksProof.PickLine>, IReadOnlyList<string>)>();
+    var night = await read.NewestNightAsync();
+    var since = EquityBrief.Core.Candidates.RuleFreezeDates.From;
+    var replacedOn = EquityBrief.Core.Paper.PlanOrderWords.ReplacedOn(await read.RegisteredCandidatesAsync());
+
+    // A page as its own route draws it, with no request leaving the process.
+    async Task<string> Drawn(string pattern, string query, DateOnly? on = null)
+    {
+        using var body = new MemoryStream();
+        var context = new DefaultHttpContext { RequestServices = request.HttpContext.RequestServices };
+
+        context.Request.Method = HttpMethods.Get;
+        context.Request.QueryString = new QueryString(query);
+        context.Response.Body = body;
+
+        if (on is { } routed)
+        {
+            context.Request.RouteValues["night"] = routed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        await routes.Endpoints.OfType<RouteEndpoint>().First(one => one.RoutePattern.RawText == pattern).RequestDelegate!(context);
+
+        return System.Text.Encoding.UTF8.GetString(body.ToArray());
+    }
+
+    if (night is { } newest)
+    {
+        foreach (var universe in Universes.Offered)
+        {
+            var query = FormattableString.Invariant($"?{Universes.Query}={universe.Word}");
+            var planned = await read.PlannedTradesAsync(universe.Code, newest);
+            var accounts = await PaperAccountsAsync(read, universe, newest, null);
+            var sessions = accounts.Sessions ?? [];
+            var nights = new Dictionary<DateOnly, string>();
+
+            foreach (var on in sessions.Where(session => session >= since && session <= newest))
+            {
+                nights[on] = await Drawn("/screens/tonight/{night?}", query, on);
+            }
+
+            var waiting = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (var family in planned.Where(row => row.Live).Select(row => row.Family).Distinct(StringComparer.Ordinal))
+            {
+                var rows = new System.Text.StringBuilder();
+
+                for (var page = 1; page < 50; page++)
+                {
+                    var drawn = await Drawn("/screens/paper", FormattableString.Invariant($"{query}&rule={family}&tab=waiting&page={page}"));
+                    var card = drawn.IndexOf("data-card=\"paper-revision\"", StringComparison.Ordinal);
+                    var section = card < 0 ? string.Empty : drawn[card..(drawn.IndexOf("<section", card + 10, StringComparison.Ordinal) is var end && end > card ? end : drawn.Length)];
+                    var tab = section.IndexOf("data-tab=\"waiting\"", StringComparison.Ordinal);
+
+                    rows.Append(tab < 0 ? string.Empty : section[tab..]);
+
+                    if (System.Text.RegularExpressions.Regex.Match(section, @"Showing \d+ to (\d+) of (\d+)") is not { Success: true } shown || int.Parse(shown.Groups[1].Value, CultureInfo.InvariantCulture) >= int.Parse(shown.Groups[2].Value, CultureInfo.InvariantCulture))
+                    {
+                        break;
+                    }
+                }
+
+                waiting[family] = rows.ToString();
+            }
+
+            var pages = new PicksProof.DrawnPages(
+                await Drawn("/screens/home/{night?}", query),
+                nights.TryGetValue(newest, out var tonight) ? tonight : await Drawn("/screens/tonight/{night?}", query),
+                nights,
+                waiting);
+            var lines = PicksProof.Check(universe.Code, newest, since, planned, sessions, replacedOn, pages, out var extras);
+
+            indexes.Add((universe.Name, lines, extras));
+        }
+    }
+
+    return string.Equals(format, "text", StringComparison.Ordinal)
+        ? Results.Text(PicksProof.Page(indexes, text: true), "text/plain; charset=utf-8")
+        : Results.Content(PicksProof.Page(indexes, text: false), "text/html; charset=utf-8");
+});
+
 app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRenderer marks) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
@@ -3127,7 +3218,10 @@ async Task<IResult> HomeAsync(
             fund,
             progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed),
             PaperBooks.Fund(reading.Code),
-            combined.Since);
+            combined.Since)
+        {
+            Accounts = combined.Accounts,
+        };
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
@@ -3351,7 +3445,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         Fund,
         standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet(), LeftOrders = RevisionScreen.LeftOf(planned, night, sessions), Revisions = RevisionTags.Of(views) })
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet(), LeftOrders = RevisionScreen.LeftOf(planned, night, sessions, sources), Revisions = RevisionTags.Of(views) })
     {
         Books = await BookLinesAsync(read, reading, night, sources, register, standings),
         Planned = planned,
@@ -4676,7 +4770,7 @@ app.MapGet("/screens/run/{night?}", async (
 // with no socket, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and
 // stops, recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
 // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
-if (copyServer is not null)
+if (copyServer is not null && copying)
 {
     if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))
     {
@@ -4725,6 +4819,20 @@ if (BranchBuild.Refusal(
 {
     Console.Error.WriteLine(refused);
     Environment.ExitCode = BranchBuild.Refused;
+
+    return;
+}
+
+// The picks proof, read once and printed, recording no start.
+if (copyServer is not null && proving)
+{
+    await app.StartAsync();
+
+    var (status, said) = await copyServer.AskAsync(PicksProof.Route + "?format=text");
+
+    await app.StopAsync();
+    Console.Write(said);
+    Environment.ExitCode = status == 200 && said.Contains(PicksProof.Tally + " 0\n", StringComparison.Ordinal) ? 0 : PicksProof.Mismatched;
 
     return;
 }

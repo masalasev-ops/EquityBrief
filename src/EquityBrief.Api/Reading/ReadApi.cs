@@ -3914,6 +3914,34 @@ public sealed partial class ReadApi : IComponent
             });
         }
 
+        // From the operator's correction of 2026-11-24, item 2, a card the night stored as a new pick whose stock its family's live
+        // rule already holds from an earlier night, a trade bought or an order waiting, is read as met again; the night's list,
+        // a pinned step, held back only the stocks its own trades held.
+        // see: A stock its rule's live account already holds is drawn as met again on every page and never ordered twice
+        // A card the night stored as held by another setup's trade, whose own setup's live rule ordered the stock that night all
+        // the same, its own account holding none, says so and the price its order buys at.
+        foreach (var group in rows.Select((row, at) => (Row: row, At: at)).GroupBy(one => (one.Row.Index, one.Row.Night)).ToArray())
+        {
+            var planned = await Paper.PlannedTradesAsync(group.Key.Index, group.Key.Night);
+            var holds = EquityBrief.Core.Paper.PlannedTrades.HeldOn(planned, group.Key.Night);
+
+            foreach (var (row, at) in group)
+            {
+                if (row.HeldAgain is null && holds.TryGetValue((row.Family, row.Ticker), out var holding))
+                {
+                    rows[at] = row with { HeldAgain = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string> { ["family"] = row.Family, ["night"] = holding.Listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), ["index"] = row.Index }) };
+                }
+                else if (row.HeldAgain is { } stored && HeldAgainView.Of(stored) is { } heldBy && heldBy.Family != row.Family
+                    && planned.FirstOrDefault(one => one.Live && one.Family == row.Family && one.Ticker == row.Ticker && one.Listed == row.Night) is { } ordered)
+                {
+                    var trade = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(stored) ?? [];
+
+                    trade[HeldAgainView.OrderedKey] = EquityBrief.Core.Paper.PlannedTrades.Price(ordered) is { } price ? price.ToString("0.00", CultureInfo.InvariantCulture) : string.Empty;
+                    rows[at] = row with { HeldAgain = System.Text.Json.JsonSerializer.Serialize(trade) };
+                }
+            }
+        }
+
         var nights = rows.Select(row => row.Night).Distinct().ToArray();
         var entry = new Dictionary<DateOnly, IReadOnlyDictionary<string, EquityBrief.Core.EntryCheck.EntryReading>>();
 
@@ -3947,6 +3975,13 @@ public sealed partial class ReadApi : IComponent
         SELECT t.stop, t.target, t.plan, f.fill, f.filled_on, substr(t.candidate, 1, length($live)) = $live AS live, t.candidate FROM index_rule_trade t
         LEFT JOIN trade_fill f ON f.source = 'index_rule_trade' AND f.index_code = t.index_code AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE t.index_code = $index AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
+        UNION ALL
+        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on, substr(t.rule, 1, length($live)) = $live AS live, t.rule FROM rule_pick t
+        LEFT JOIN trade_fill f ON f.source = 'rule_pick' AND f.index_code = t.index_code AND f.owner = t.rule AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE t.index_code = $index AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
+        UNION ALL
+        SELECT t.stop, NULL, t.plan, t.fill, t.bought_on, substr(t.rule, 1, length($live)) = $live AS live, t.rule FROM dip_trade t
+        WHERE t.index_code = $index AND t.ticker = $ticker AND $family = 'dip' AND t.session_date = $night
         ORDER BY live DESC, candidate
         LIMIT 1;
     ";

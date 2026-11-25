@@ -336,7 +336,15 @@ public static class CardScreen
         [
             .. cards.Select(card => card with
             {
-                Picks = [.. card.Picks.Select(pick => byPick.TryGetValue((card.Family, pick.Row.Ticker), out var view) ? pick with { Card = view } : pick)],
+                // From the operator's correction of 2026-11-24, item 2, a stock its family's live rule already holds is never one of
+                // its picks, whatever the night's list said.
+                // see: A stock its rule's live account already holds is drawn as met again on every page and never ordered twice
+                Picks =
+                [
+                    .. card.Picks
+                        .Where(pick => !stored.Any(row => row.HeldAgain is not null && row.Family == card.Family && row.Ticker == pick.Row.Ticker))
+                        .Select(pick => byPick.TryGetValue((card.Family, pick.Row.Ticker), out var view) ? pick with { Card = view } : pick),
+                ],
                 HeldAgain = [.. stored.Where(row => row.HeldAgain is not null && row.Family == card.Family).OrderBy(row => row.Ticker, StringComparer.Ordinal).Select(row => View(row, context))],
             }),
         ];

@@ -52,12 +52,13 @@ public static class RevisionScreen
                     profitFrom[ProfitKey(KeyOf(row.Listed), row.Ticker, row.Listed)] = placedBy;
                 }
 
-                // An order whose plan placed no price never buys, so it waits on no list: it left on its own night.
-                if (PlannedTrades.IsWaiting(row) && row.Order.PlacesNoPrice())
+                // An order that left the list unbought, whatever its step stored: its plan placed no price, its revision was
+                // replaced, or its window passed.
+                if (LeftUnbought(row, night, sessions) is { } gone)
                 {
-                    if (row.Listed >= since)
+                    if (gone.On >= since && gone.On <= night)
                     {
-                        Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, row.Listed, false, row.Ticker + " not placed: " + PlanOrderWords.NotFilledOf(row.Order), RevisionAt(row.Listed)));
+                        Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, gone.On, false, gone.Words, RevisionAt(row.Listed)));
                     }
                 }
                 else if (PlannedTrades.IsWaiting(row))
@@ -81,10 +82,6 @@ public static class RevisionScreen
                 else if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill && PlannedTrades.BuysAtAPrice(row))
                 {
                     Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), RevisionAt(row.Listed)));
-                }
-                else if (row.NotFilled && last >= since && last <= night)
-                {
-                    Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, last, false, LeftOrderView.CancelledWords(row.Ticker, last), RevisionAt(row.Listed)));
                 }
             }
 
@@ -111,29 +108,86 @@ public static class RevisionScreen
     // The key an open trade's take-profit words are kept under: its account's key, its stock and the night that listed it.
     public static string ProfitKey(string account, string ticker, DateOnly listed) => PaperPageView.ProfitKey(account, ticker, listed);
 
-    // The running rules' orders that left their waiting lists in the last five trading days, newest first, which Home and
-    // Tonight draw under their waiting cards: each bought at its fill, or cancelled at its last session.
-    public static IReadOnlyList<LeftOrderView> LeftOf(IReadOnlyList<PlannedTradeRow> planned, DateOnly night, IReadOnlyList<DateOnly> sessions)
+    // The running rules' orders and trades that moved in the last five trading days, newest first, which Home and Tonight draw
+    // under their waiting cards: each order bought at its fill, or left unbought with why; and from the operator's correction
+    // of 2026-11-24, item 5, every live rule's buy at the open and every sale, each revision's, the Fundamentals family's
+    // among them, read from the same trades as Paper trading.
+    // see: Home's left notes name every live rule's buy and sale and every order that left unbought, with why
+    public static IReadOnlyList<LeftOrderView> LeftOf(IReadOnlyList<PlannedTradeRow> planned, DateOnly night, IReadOnlyList<DateOnly> sessions, IReadOnlyList<PaperAccountSource>? accounts = null)
     {
         DateOnly[] recent = [.. sessions.Where(session => session <= night).OrderDescending().Take(LeftOrderView.Sessions)];
         var since = recent.Length > 0 ? recent.Min() : night;
         var left = new List<LeftOrderView>();
+        var noted = new HashSet<(string Ticker, DateOnly Bought)>();
 
-        foreach (var row in planned.Where(row => row.Live && PlannedTrades.BuysAtAPrice(row)).GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First()))
+        foreach (var row in planned.Where(row => row.Live).GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First()))
         {
-            var last = PlannedTrades.LastDay(row.Listed, row.Order.Window);
+            if (row.FilledOn is { } filled && row.Fill is { } fill && PlannedTrades.BuysAtAPrice(row))
+            {
+                noted.Add((row.Ticker, filled));
 
-            if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill)
-            {
-                left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
+                if (filled >= since && filled <= night)
+                {
+                    left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
+                }
             }
-            else if (row.NotFilled && last >= since && last <= night)
+            else if (LeftUnbought(row, night, sessions) is { } gone && gone.On >= since && gone.On <= night)
             {
-                left.Add(new LeftOrderView(row.Ticker, last, false, LeftOrderView.CancelledWords(row.Ticker, last), string.Empty) { Family = row.Family, Listed = row.Listed });
+                left.Add(new LeftOrderView(row.Ticker, gone.On, false, gone.Words, string.Empty) { Family = row.Family, Listed = row.Listed });
+            }
+        }
+
+        foreach (var account in (accounts ?? []).Where(one => one.Standing is PaperAccountView.Live))
+        {
+            foreach (var (trade, version) in account.Trades.Select(one => (one.Trade, (string?)null)).Concat((account.Earlier ?? []).Select(one => (one.Trade, (string?)one.Version))))
+            {
+                var listed = trade.Listed ?? trade.Bought;
+
+                if (trade.Bought >= since && trade.Bought <= night && noted.Add((trade.Ticker, trade.Bought)))
+                {
+                    left.Add(new LeftOrderView(trade.Ticker, trade.Bought, true, LeftOrderView.BoughtAtOpenWords(trade.Ticker, trade.Bought, trade.Buy, trade.Ended is { } sold && sold <= night), version ?? string.Empty) { Family = account.Family, Listed = listed });
+                }
+
+                if (trade.Ended is { } ended && ended >= since && ended <= night && trade.Sale is { } sale)
+                {
+                    left.Add(new LeftOrderView(trade.Ticker, ended, false, LeftOrderView.SoldWords(trade.Ticker, ended, sale, trade.Buy), version ?? string.Empty) { Family = account.Family, Listed = listed, Sold = true });
+                }
             }
         }
 
         return [.. left.OrderByDescending(row => row.On).ThenBy(row => row.Ticker, StringComparer.Ordinal)];
+    }
+
+    // Why an order of a live rule's plan left the waiting list unbought, and on which session; none while it waits and once it
+    // is bought: its plan placed no price, on its own night; its revision was replaced, on the session its fill row said so;
+    // or its window passed, at its last session.
+    public static (DateOnly On, string Words)? LeftUnbought(PlannedTradeRow row, DateOnly night, IReadOnlyList<DateOnly> sessions)
+    {
+        if (row.Fill is not null)
+        {
+            return null;
+        }
+
+        if (row.Order.PlacesNoPrice())
+        {
+            return (row.Listed, row.Ticker + " not placed: " + PlanOrderWords.NotFilledOf(row.Order));
+        }
+
+        if (row.NotFilled && PlanOrderWords.IsReplaced(row.Why))
+        {
+            var written = row.WhyOn is { } on && on < night ? on : night;
+
+            return (sessions.Where(session => session <= written).DefaultIfEmpty(written).Max(), row.Ticker + " " + row.Why + ".");
+        }
+
+        if (row.NotFilled)
+        {
+            var last = PlannedTrades.LastDay(row.Listed, row.Order.Window);
+
+            return (last, LeftOrderView.CancelledWords(row.Ticker, last));
+        }
+
+        return null;
     }
 
     // A stock's open trades and waiting orders under its index's rules' plans, every revision's, as the top of its page names

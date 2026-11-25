@@ -1827,7 +1827,7 @@ p.sub-l{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
 .row-note{display:block;font-size:12.5px;color:var(--soft);margin-top:2px;white-space:normal}
 .left-list{margin:6px 0 0;padding:0;list-style:none}
 .left-list li{padding:8px 12px;border:1px solid var(--hair-2);border-left:4px solid var(--accent);border-radius:6px;margin:6px 0;font-size:14px;background:var(--surface)}
-.left-list li.cx{border-left-color:var(--s3)}
+.left-list li.cx{border-left-color:var(--s3)} .left-list li.sd{border-left-color:var(--ink-2)}
 .setup-tiles a{display:block;border:1px solid var(--hair-2);border-left:4px solid var(--hair-2);border-radius:8px;padding:10px 12px;color:var(--ink);text-decoration:none;background:var(--surface)}
 .setup-tiles a b{display:block;font:600 19px var(--sans);font-variant-numeric:tabular-nums;margin:4px 0 2px}
 .setup-tiles a span{display:block;font-size:12.5px;color:var(--soft)}

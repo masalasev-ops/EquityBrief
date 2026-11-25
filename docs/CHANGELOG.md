@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - what is picked, ordered, bought and shown agrees across Home, Tonight and Paper trading, at a correction to 24.29
+Decision: The reconciliation holds every live rule's order and trade to what Home, Tonight and Paper trading draw, and fails on any mismatch; A stock its rule's live account already holds is drawn as met again on every page and never ordered twice; An order its revision placed and never filled is cancelled when the revision is replaced, and every page says so; Home's left notes name every live rule's buy and sale and every order that left unbought, with why; Home names its account figure as the running rules' accounts averaged, the same trades Paper trading draws; See the plan opens the stock's chart page with its pick's plan drawn on it; A card labels the rule's checks and the plan it trades apart, each with its own figures and its own reward against risk
+Was:
+> ARCHITECTURE.html, the Trade filler's row: "... the benchmark holding none while any member's sale's open is not stored yet (see: Every swing trade is judged ...)"
+> ARCHITECTURE.html, "Every count of trades names its group": "... and a page drawing no such count is unexamined rather than passed. (see: Every count of trades names its group and one function works the four groups)"
+> ARCHITECTURE.html, the card's part 2: "Why it qualified: a ticked sentence for each step its setup passed, read from the steps and values the night stored, each step in the setup's own words for it."
+> ARCHITECTURE.html, 15.24's row "Tonight's ideas": "... (see: On Home a stock its setup's rules met again is drawn once, ...); the AI stock picker's line ..." and "... (see: See the plan opens Tonight at the stock's row ...); the link to Tonight; ..."
+> ARCHITECTURE.html, 15.24's row "How past ideas have done": "... (see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled)"
+> SCHEMA.md, `trade_fill.reason`: "why the trade holds no fill: its stock holds no bar on its listing night or the session after, no open on that session, or its plan put up no risk at its close; null where it holds one"
+> RUNBOOK.md, the night built from a clean copy: "... `tools/nightly --check` prints what a run would build and run, and runs nothing (see: Each night is built from a clean copy ...)."
+Now:
+> ARCHITECTURE.html: each the same, with what the operator's correction of that night adds: the fill step writing a replaced revision's unfilled order as cancelled; a second proof holding every live order and trade to Home, Tonight and Paper trading, run after each night; the rule's checks and the traded plan labelled apart on a card whose plan buys below the close; a stock its live rule holds drawn as met again; every buy, sale and order that left unbought in Home's notes; See the plan opening the chart page; and Home's account bar named as the running rules' accounts averaged
+> SCHEMA.md, `trade_fill.reason`: the same, naming the window's passing from 23.10 and `cancelled: its revision was replaced on <d Mon>`
+> RUNBOOK.md: the same, with the read surface built beside the worker and the picks proof run once the night's worker has finished, failing the script on any mismatch, and how to run it by hand
+Why: the operator's correction of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-picks-agree-across-pages.md`
+
 ### 2026-11-24 - docs/ARCHITECTURE.html - Home's ideas one setup at a time from a row of chips, and the fixed 5 named once with its tally once, at a correction to 24.29
 Decision: Home's ideas show one setup at a time, chosen from a row of chips each with its setup's colour and count
 Was:

@@ -119,6 +119,11 @@ worker_in() {
     find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
 }
 
+# The read surface the picks proof runs on once the night has finished, built in the same copy.
+surface_in() {
+    find "$1/src/EquityBrief.Api/bin/Release" -name EquityBrief.Api.dll 2>/dev/null | head -n 1 || true
+}
+
 built="$(worker_in "$copy")"
 
 if [ "$check" = 1 ]; then
@@ -126,6 +131,7 @@ if [ "$check" = 1 ]; then
     echo "nightly: copy $copy, ${built:+built already}${built:-to build}"
     echo "nightly: data root $data"
     echo "nightly: secrets read from $secrets, none copied"
+    echo "nightly: then the picks proof on the copy's read surface"
     rm -f "$data/night.refused"
     exit 0
 fi
@@ -138,6 +144,7 @@ if [ -z "$built" ]; then
     mkdir -p "$copy.partial"
     git archive "$commit" | tar -x -C "$copy.partial"
     dotnet build "$copy.partial/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    dotnet build "$copy.partial/src/EquityBrief.Api" -c Release --nologo -v quiet
     mv "$copy.partial" "$copy"
     built="$(worker_in "$copy")"
 
@@ -161,4 +168,23 @@ echo "nightly: $note"
 export EquityBrief__DataRoot="$data"
 export EquityBrief__SecretsFile="$secrets"
 
-exec dotnet "$built" nightly --built-from "$short" --build-note "$note" "${pass[@]}"
+status=0
+dotnet "$built" nightly --built-from "$short" --build-note "$note" "${pass[@]}" || status=$?
+
+if [ "$status" != 0 ]; then
+    exit "$status"
+fi
+
+# From the operator's correction of 2026-11-24, item 1: once the night has finished, the picks proof holds every live rule's
+# order and trade to what Home, Tonight and Paper trading draw, and the script fails on any mismatch, naming each.
+surface="$(surface_in "$copy")"
+
+if [ -z "$surface" ]; then
+    echo "nightly: the picks proof did not run: the copy of $short holds no read surface built" >&2
+    exit 1
+fi
+
+if ! dotnet "$surface" picks-proof; then
+    echo "nightly: the picks proof found a mismatch between the store and the pages, listed above" >&2
+    exit 1
+fi

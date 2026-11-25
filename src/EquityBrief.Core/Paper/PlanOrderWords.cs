@@ -41,6 +41,54 @@ public static class PlanOrderWords
 
     public static bool IsNotFilled(string? why) => string.Equals(why, NotFilled, StringComparison.Ordinal) || string.Equals(why, NoPrice, StringComparison.Ordinal);
 
+    // From the operator's word of 2026-11-24, item 3: an order still unfilled when the revision that placed it is replaced dies
+    // with it, its fill row saying so in their words, "cancelled: its revision was replaced on 16 Nov".
+    // see: An order its revision placed and never filled is cancelled when the revision is replaced, and every page says so
+    public const string ReplacedOpening = "cancelled: its revision was replaced on ";
+
+    public static string Replaced(DateOnly on) => ReplacedOpening + on.ToString("d MMM", CultureInfo.InvariantCulture);
+
+    const string LargeIndex = "GSPC";
+
+    public static bool IsReplaced(string? why) => why is not null && why.StartsWith(ReplacedOpening, StringComparison.Ordinal);
+
+    // The session each live rule's revision that listed an order was replaced on, read off the register: the first session
+    // of the revision after it, none while it runs. A revision of a family's live rule on its index is a run of its
+    // registrations stating the same settings.
+    public static Func<string, string, DateOnly, DateOnly?> ReplacedOn(IReadOnlyList<CandidateRow> register)
+    {
+        var byOwner = new Dictionary<(string Index, string Owner), IReadOnlyList<RevisionView>>();
+        string[] families =
+        [
+            .. Families.SetupFamilies.InPageOrder.Select(one => one.Name),
+            Families.DipRule.Name, Families.ImprovingRule.Name, Families.HeavyweightRule.Name, Families.QualityRule.Name,
+        ];
+
+        foreach (var index in new[] { LargeIndex, Providers.FundHoldings.MidCapIndex, Providers.FundHoldings.SmallCapIndex })
+        {
+            var large = index == LargeIndex;
+            var name = Candidates.OwnStepCandidate.NameOf(index);
+
+            foreach (var family in families.Distinct(StringComparer.Ordinal))
+            {
+                IReadOnlyList<CandidateRow> lineage = [.. RuleRegister.Registrations(family, large, name, register).Where(row => Candidates.FamilyRecords.IsLive(row.Candidate))];
+                var revisions = PaperBooks.RevisionViews(lineage);
+
+                foreach (var owner in lineage.Select(row => row.Candidate).Distinct(StringComparer.Ordinal))
+                {
+                    byOwner[(index, owner)] = revisions;
+                }
+            }
+        }
+
+        return (index, owner, listed) =>
+            byOwner.TryGetValue((index, owner), out var revisions)
+                && revisions.LastOrDefault(revision => revision.From <= listed) is { Until: not null } placedBy
+                && revisions.FirstOrDefault(revision => revision.From > placedBy.From) is { } next
+                    ? next.From
+                    : null;
+    }
+
     // A count's words for the orders waiting, tonight's new and earlier nights' each named as its group, each led by a comma
     // and none where none waits.
     public static string Counts(int newTonight, int stillWaiting) =>

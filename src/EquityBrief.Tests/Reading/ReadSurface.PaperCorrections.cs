@@ -211,8 +211,9 @@ public partial class ReadSurface
         var past = new HomePast(new DateOnly(2025, 9, 25), 51, 21, -0.012, -0.020, true, "SPY", new DateOnly(2026, 11, 3));
         var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Past = past }, string.Empty));
 
-        Assert.Contains("data-account-since=\"2026-11-03\">Since today's rules all took effect on 3 Nov, our paper account has followed every one of them with an equal share.</p>", home, StringComparison.Ordinal);
-        Assert.Contains("<span>Our paper account since 3 Nov</span><b", home, StringComparison.Ordinal);
+        // From the operator's correction of 2026-11-24 the account named as Paper trading names it.
+        Assert.Contains($"data-account-since=\"2026-11-03\">Since today's rules all took effect on 3 Nov, this account has followed every running rule with an equal share each: Paper trading's \"{SinglePageApp.PaperAveragedName}\", from the same trades. A rule with nothing bought holds its share in cash.</p>", home, StringComparison.Ordinal);
+        Assert.Contains("<span>The running rules' accounts averaged, since 3 Nov</span><b", home, StringComparison.Ordinal);
         Assert.Contains("<span>The index's fund, SPY, over the same days</span>", home, StringComparison.Ordinal);
         Assert.Contains("<p class=\"home-system\" data-system-closed=\"51\" data-made-money=\"21\">Every revision since 25 Sep: 51 ideas bought and sold on paper, 21 made money.</p>", home, StringComparison.Ordinal);
         Assert.DoesNotContain("2 Oct", home, StringComparison.Ordinal);

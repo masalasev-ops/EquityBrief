@@ -340,7 +340,8 @@ public partial class ReadSurface
         Assert.Contains("<tr data-low-edge=\"95.5\" data-high-edge=\"97.25\"><td class=\"num\">95.50 to 97.25</td><td>the price reaching the zone</td><td>a daily close below 94.00, where the whole position is wrong</td></tr>", levels, StringComparison.Ordinal);
         Assert.Contains("<td class=\"num\">110.00 to 112.00</td><td>sell 1/1 of the position</td></tr>", levels, StringComparison.Ordinal);
         Assert.DoesNotContain("level-summary", planned, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"card-full\"><a href=\"#/name/F3\">The stock's full page</a></p>", planned, StringComparison.Ordinal);
+        // From the operator's correction of 2026-11-24 the stock's chart page, the report reached from there.
+        Assert.Contains("<p class=\"card-full\"><a href=\"#/chart/F3\">The stock's full page</a></p>", planned, StringComparison.Ordinal);
 
         // A pick whose night stored no plan, F1 among the six, its few bars starting after the store's and giving no level, says
         // why in the plan's place. A stock with its full history and no plan stored says that, which PlainWords holds.

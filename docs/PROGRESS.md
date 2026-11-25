@@ -22895,3 +22895,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the after shots on the operator's 5152 with each chip chosen once it merges.
+
+### 24.29 - correction: what is picked, ordered, bought and shown agrees across Home, Tonight and Paper trading   2026-11-25
+
+Queue:      done, #787 merged and the every-session table written again on all three indices; in progress, this
+            correction, which comes first; held, the Home redesign of Waiting to buy, its branch unmerged; next, the check
+            of the table over the ledger's members on each index.
+Ruled:      the operator's correction of 2026-11-24 at about 11:30 pm, kept word for word in
+            `prompts/2026-11-24-24.29-picks-agree-across-pages.md`.
+Found:      the reconciliation, read from the store and the pages of 5152, named 74 mismatches on the night of 24 Nov:
+            29 on the S&P 500, 29 on the S&P 400, 16 on the S&P 600. MSCI and DXC listed again while their rule's trade
+            was open, the list holding a stock back only for its own trade; 12 orders of revisions replaced on 16 Nov still
+            waiting; HUM's orders placed no price and were ended on their nights, so no note named them; no buy at the open
+            and no sale stood in Home's notes; CART, SN and DFIN, ordered by their own rule while another setup held them,
+            said not bought; See the plan scrolled to a fold still closed; MRNA's checklist read the rule's stop from the
+            close beside a plan buying lower.
+Built:      the picks proof at `/proof/picks` and the read surface's `picks-proof` verb, run by the night's script once
+            the worker has finished; a stock its rule's live account holds read as met again; the fill step cancelling a
+            replaced revision's unfilled order in the operator's words; the notes naming every buy, sale and order that
+            left unbought with why; Home's account named; See the plan opening the chart page; a card's checks and its
+            traded plan labelled apart. The lists' steps are pinned and were not touched.
+Measured:   over a copy of the store on C:, the fill step cancelled the 12 orders and the proof and the reconciliation
+            script each read 0 mismatches on every index, 67, 63 and 46 live orders and trades.
+Tests:      8 new: a held stock found; every order that left unbought and every buy and sale in the notes; the
+            reconciliation over constructed pages, each mismatch planted and named; the account named; a card's checks and
+            plan apart; See the plan on every idea; a card held by another setup that its own rule ordered; the fill step's
+            cancellation over a store. 6 widened to the new words and links.
+Pins:       none moved. The fill step, the read surface and the pages are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the held stocks
+            found empty: red; m2 the fill step's cancellation never firing: red; m3 the notes' no-price branch removed: red;
+            m4 the proof's comparison dropped: red; m5 the card's checks and plan drawn under one heading: red. Filtered to
+            their tests and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4042 of 4042 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the remedy on the operator's store once it merges, the fill step's run that cancels the 12 orders; the after
+            shots and the reconciliation's table on 5152.

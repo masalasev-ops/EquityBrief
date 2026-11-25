@@ -225,6 +225,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
         var filledAt = clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
         var written = 0;
+        var replacedOn = Core.Paper.PlanOrderWords.ReplacedOn(await new PaperReads(databaseFile).RegisteredCandidatesAsync());
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -236,8 +237,33 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             if (trade.Plan is { } order && calendar.Count > 0)
             {
                 var bars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, calendar[^1], cancellation));
+                var placed = PlanTrades.Where(order, Statistic.ToPrice(trade.Entry), Statistic.ToPrice(trade.Stop ?? 0), trade.Session, bars);
 
-                if (PlanTrades.Where(order, Statistic.ToPrice(trade.Entry), Statistic.ToPrice(trade.Stop ?? 0), trade.Session, bars) is not { } where)
+                // From the operator's word of 2026-11-24, item 3, a live rule's order still unfilled when the revision that
+                // placed it is replaced dies with it: its row says so, and no later night fills it. An order already filled,
+                // its row holding its fill, stays its revision's trade.
+                // see: An order its revision placed and never filled is cancelled when the revision is replaced, and every page says so
+                if (replacedOn(trade.Index, trade.Owner, trade.Session) is { } replaced && replaced <= calendar[^1]
+                    && (placed?.FilledOn is null || placed.FilledOn >= replaced)
+                    && !(standing.TryGetValue(Key(trade), out var standingRow) && standingRow.Reason is null))
+                {
+                    counts[trade.Source][1]++;
+
+                    await ExecuteAsync(connection, transaction, UpsertFill,
+                    [
+                        ("$source", trade.Source), ("$index", trade.Index), ("$owner", trade.Owner), ("$ticker", trade.Ticker),
+                        ("$session", Stamp(trade.Session)), ("$filled_on", DBNull.Value), ("$fill", DBNull.Value), ("$past", DBNull.Value),
+                        ("$result", DBNull.Value), ("$benchmark", DBNull.Value), ("$members", DBNull.Value), ("$edge", DBNull.Value),
+                        ("$reason", Core.Paper.PlanOrderWords.Replaced(replaced)), ("$sold_on", DBNull.Value), ("$sale", DBNull.Value),
+                        ("$filled_at", filledAt),
+                    ], cancellation);
+
+                    written++;
+
+                    continue;
+                }
+
+                if (placed is not { } where)
                 {
                     counts[trade.Source][3]++;
 

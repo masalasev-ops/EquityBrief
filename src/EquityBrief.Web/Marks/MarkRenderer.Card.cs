@@ -155,7 +155,7 @@ public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
     // Bought where the store holds its fill; an order not yet filled otherwise, which no page calls bought or held.
     public bool Bought => Fill is not null;
 
-    public string Labelled => Bought ? Label : WaitingLabel;
+    public string Labelled => Ordered ? OrderedLabel : Bought ? Label : WaitingLabel;
 
     static string Setup(string family) => (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
 
@@ -167,9 +167,20 @@ public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
     // trading will not buy it again until it ends." and for an order not yet filled "AVY met the pullback rules again tonight.
     // Pullback placed its order on 19 Nov and it has not been filled, so paper trading places no second one."
     public string Line(string ticker, string matched) =>
-        Bought
+        Ordered && matched != Family
+            ? FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules tonight. {Capital(Setup(Family))} {(Bought ? "bought it on " + Day(BoughtOn ?? Night) + " and that trade is still open" : "placed its order on " + Day(Night) + " and it has not been filled")}; the {Setup(matched)}'s own account holds no trade in it, so its rule placed its order tonight") + (OrderedAt is { } at ? FormattableString.Invariant($": it buys if it falls to ${at:N2}.") : ".")
+        : Bought
             ? FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} bought it on {Day(BoughtOn ?? Night)} and that trade is still open, so paper trading will not buy it again until it ends.")
             : FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} placed its order on {Day(Night)} and it has not been filled, so paper trading places no second one.");
+
+    // From the operator's correction of 2026-11-24 a stock another setup holds, which this setup's live rule ordered anyway on
+    // the night, its own account holding none: the order and the price it buys at, none for one buying at the next open.
+    // see: A stock its rule's live account already holds is drawn as met again on every page and never ordered twice
+    public bool Ordered { get; init; }
+
+    public decimal? OrderedAt { get; init; }
+
+    public const string OrderedLabel = "Held by another setup, ordered by its own rule";
 
     // On a waiting order's card: "Met the pullback rules again on the night of 20 Nov. Its order of 19 Nov at $178.10 stands;
     // tonight's rules would have placed it at $176.02."
@@ -195,8 +206,15 @@ public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
         return new HeldAgainView(
             root.GetProperty("family").GetString() ?? string.Empty,
             root.TryGetProperty("night", out var night) && night.GetString() is { } day ? DateOnly.ParseExact(day, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : null,
-            root.TryGetProperty("index", out var index) ? index.GetString() ?? string.Empty : string.Empty);
+            root.TryGetProperty("index", out var index) ? index.GetString() ?? string.Empty : string.Empty)
+        {
+            Ordered = root.TryGetProperty(OrderedKey, out _),
+            OrderedAt = root.TryGetProperty(OrderedKey, out var ordered) && ordered.GetString() is { Length: > 0 } price ? decimal.Parse(price, System.Globalization.CultureInfo.InvariantCulture) : null,
+        };
     }
+
+    // The key the read adds to a held card's trade where its own setup's live rule ordered it anyway, its value the price.
+    public const string OrderedKey = "ordered";
 }
 
 // From the operator's order of 2026-11-14 a pick's take-profit price as a card draws it: the price, where it came from, the
@@ -391,7 +409,7 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<div class=\"decision-card\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, setup))}</p>");
-        body.Append(WhyItQualified(card));
+        body.Append(ChecksAndPlanApart(card));
         body.Append(ThePlan(card, setup, pick, levels is not null));
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(SetupRecordBox(card.LongRecord));
@@ -404,7 +422,7 @@ public sealed partial class MarkRenderer
         body.Append(card.Behind is { } behind ? Compares(behind) : string.Empty);
         body.Append(OperatorRecord(card));
         body.Append(Taken(card));
-        body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
+        body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"{ChartRoute}{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
         body.Append("</div>");
 
         return body.ToString();
@@ -428,7 +446,7 @@ public sealed partial class MarkRenderer
             body.Append("</section>");
             body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
             body.Append(SetupRecordBox(card.LongRecord));
-            body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
+            body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"{ChartRoute}{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
 
             return body.Append("</div>").ToString();
         }
@@ -451,7 +469,7 @@ public sealed partial class MarkRenderer
         body.Append("</section>");
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(SetupRecordBox(card.LongRecord));
-        body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
+        body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"{ChartRoute}{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
 
         return body.Append("</div>").ToString();
     }
@@ -538,6 +556,38 @@ public sealed partial class MarkRenderer
     // Words the night stored, said as the reader reads them: its counts in words and its long figures as prices are, then
     // its phrasings in the reader's words.
     static string Said(string stored) => ReaderWords.Plain(StoredWords(stored)).Replace("the Loop page", "the " + CheckUpName, StringComparison.Ordinal);
+
+    // From the operator's correction of 2026-11-24, item 8: where the plan a rule trades buys below tonight's close, the checks
+    // the rule passed read its own stop and target from that close, and the card says so under its own label; the plan it
+    // trades states its own reward against its own risk beneath its prices.
+    // see: A card labels the rule's checks and the plan it trades apart, each with its own figures and its own reward against risk
+    public const string RulesChecksHeading = "The rule's checks, at tonight's close";
+
+    static string ChecksAndPlanApart(DecisionCardView card)
+    {
+        if (card.Zone is not { NoBuy: false } zone)
+        {
+            return WhyItQualified(card);
+        }
+
+        var checks = WhyItQualified(card, RulesChecksHeading);
+
+        return checks.Length == 0
+            ? checks
+            : checks + Formatted($"<p class=\"card-why-basis\" data-checks-basis>These checks read the rule's own stop and its reward against the risk from tonight's close of {Price(zone.Close)}. The plan it trades, below, buys lower, at {Price(zone.Price)}, and places its own stop and take-profit from that price.</p>");
+    }
+
+    // The traded plan's reward against its own risk: from the price it buys at to its take-profit, over the same price to its
+    // stop; none where a figure is missing.
+    public static (decimal Reward, decimal Risk)? PlanRewardAndRisk(DecisionCardView card) =>
+        card.Zone is { NoBuy: false } zone && card.Stop is { } stop && (card.Target ?? card.Zone.Sale?.TakeProfit?.Price) is { } target && zone.Price > stop && target > zone.Price
+            ? (target - zone.Price, zone.Price - stop)
+            : null;
+
+    static string PlanRewardLine(DecisionCardView card) =>
+        PlanRewardAndRisk(card) is { } worked
+            ? Formatted($"<p class=\"card-plan-rr\" data-plan-reward-to-risk=\"{(worked.Reward / worked.Risk).ToString("0.00", Invariant)}\">The plan it trades: {Price(worked.Reward)} up to its take-profit for {Price(worked.Risk)} down to its stop from its buy, a reward of {(worked.Reward / worked.Risk).ToString("0.00", Invariant)} times its risk.</p>")
+            : string.Empty;
 
     // Why it qualified: a ticked sentence for each step the setup passed, read from the card's first line, under the heading
     // given.
@@ -894,6 +944,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
+        body.Append(PlanRewardLine(card));
         body.Append(card.Zone is { NoBuy: false } boxed ? Formatted($"<p class=\"wo-box\" data-zone-box>{Escaped(ZoneBox(boxed, card.Night))}</p>") : string.Empty);
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
         body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
