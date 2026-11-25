@@ -9,7 +9,8 @@ namespace EquityBrief.Core.History;
 // at and their volumes stand in one ratio, one company listed twice, the other's prices then put on the code's own scale.
 // Two codes whose prices or volumes drift against each other, as share classes do, never join. And each company is counted once on a
 // session: a member code holding no price of its own that session, whose company another member code holds a price of its
-// own for, is not counted there.
+// own for, is not counted there; nor is a member code holding its own price where another member code carrying one price
+// series with it holds its own and stops trading more than a quarter before it.
 // see: Two codes of one filer join as one history where they are never priced on the same day or trade in one ratio on the days they share
 public static partial class LongRenames
 {
@@ -34,6 +35,31 @@ public static partial class LongRenames
 
     // The shared days the ratio test needs at least, since a few days fit one ratio whatever the two codes are.
     public const int RatioDays = 20;
+
+    // How far apart the day's moves of two codes' stored closes stand on the median day, at most, for the two to carry one
+    // price series: a later code the provider prices back over the years its company traded under an earlier one moves with
+    // it to the rounding of the closes, where share classes part by several in 10,000 on the median day.
+    public const decimal OneSeriesMove = 0.0001m;
+
+    // Whether two codes' stored closes on the sessions given, in order, are one price series: over more moves than the ratio
+    // test needs days, the median day's two moves stand OneSeriesMove apart at most.
+    // see: Two member codes carrying one price series are one company counted once, under the code that stops trading until it stops
+    public static bool OneSeries(IReadOnlyList<(decimal Own, decimal Other)> closes)
+    {
+        if (closes.Count <= RatioDays)
+        {
+            return false;
+        }
+
+        var moves = new decimal[closes.Count - 1];
+
+        for (var at = 1; at < closes.Count; at++)
+        {
+            moves[at - 1] = Math.Abs((closes[at].Own / closes[at - 1].Own) - (closes[at].Other / closes[at - 1].Other));
+        }
+
+        return Median(moves) <= OneSeriesMove;
+    }
 
     // The code a delisted spelling stands for: the provider's "_old" and "_old2" endings and a digit added to a code, which
     // the long pull gave a code a delisted company held.

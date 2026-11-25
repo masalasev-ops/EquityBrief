@@ -208,6 +208,51 @@ public partial class FixtureExpectations
         Assert.Contains(await reader.JoinsAsync("MID", day(days[^1])), join => join is { Ticker: "NEW", Other: "NEW_old", Test: LongRenames.NeverSameDay, Sessions: 4 });
     }
 
+    // Twenty-one closes moving 1% up and down: the same closes at half the scale move with them, 0 apart, one series; a close
+    // a ten-thousandth off on half the days leaves the median day's moves within 1 in 10,000, one series; moves 2 in 1,000
+    // apart, as share classes part, are two; and twenty closes, nineteen moves, are too few whatever they are.
+    [Fact]
+    public void TwoCodesCarryOnePriceSeriesWhereTheirMovesStandOneInTenThousandApartOnTheMedianDay()
+    {
+        decimal[] closes = [.. Enumerable.Range(0, 21).Select(at => at % 2 == 0 ? 100m : 101m)];
+
+        Assert.True(LongRenames.OneSeries([.. closes.Select(close => (close, close / 2m))]));
+        Assert.True(LongRenames.OneSeries([.. closes.Select((close, at) => (close, at % 4 == 1 ? close * 1.0001m : close))]));
+        Assert.False(LongRenames.OneSeries([.. closes.Select((close, at) => (close, at % 2 == 1 ? close * 1.002m : close))]));
+        Assert.False(LongRenames.OneSeries([.. closes[..20].Select(close => (close, close))]));
+    }
+
+    // Over a constructed store of 120 sessions, every code a member throughout: OLD trades to session 30 and NEW carries OLD's
+    // series at twice its price on every session, the provider pricing the later code back; CLA and CLB are two share classes
+    // whose moves part by 1% a day, CLB trading to session 30 as OLD does. NEW is not counted while OLD trades and is counted
+    // after, more than a quarter later, so the company is counted once on every session; CLA and CLB are both counted while
+    // both trade.
+    [Fact]
+    public async Task TheLongReaderCountsACompanyTheProviderPricesUnderTwoCodesOnceUnderTheCodeThatStopsTrading()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var stamp = (DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var days = Enumerable.Range(0, 200).Select(at => new DateOnly(2019, 1, 7).AddDays(at)).Where(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)).Take(120).ToArray();
+        decimal Close(int at) => 50m + (at % 3) + (at / 10);
+
+        store.Execute("INSERT INTO long_market_bar (series, session_date, open, high, low, close, run_id) VALUES " + string.Join(", ", days.Select(day => $"('GSPC', '{stamp(day)}', '1000', '1000', '1000', '1000', 'r')")) + ";");
+        store.Execute("INSERT INTO long_span (index_code, ticker, joined, \"left\", read_from, run_id) VALUES "
+            + string.Join(", ", new[] { "OLD", "NEW", "CLA", "CLB" }.Select(ticker => $"('GSPC', '{ticker}', '{stamp(days[0])}', NULL, 'provider', 'r')")) + ";");
+        store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES "
+            + string.Join(", ", days[..31].Select((day, at) => LongBarRow("OLD", stamp(day), Close(at)))
+                .Concat(days.Select((day, at) => LongBarRow("NEW", stamp(day), 2m * Close(at))))
+                .Concat(days.Select((day, at) => LongBarRow("CLA", stamp(day), 20m + (at % 2))))
+                .Concat(days[..31].Select((day, at) => LongBarRow("CLB", stamp(day), (20m + (at % 2)) * (at % 2 == 0 ? 1m : 1.01m))))) + ";");
+
+        var read = await new LongHistoryReader(store.DatabaseFile).ReadAsync("GSPC", days[^1]);
+        var name = (string ticker) => read.Names.Single(one => one.Ticker == ticker);
+
+        Assert.All(days[..31], day => Assert.Equal(1, new[] { "OLD", "NEW" }.Count(ticker => name(ticker).MemberOn(day))));
+        Assert.All(days[..31], day => Assert.True(name("OLD").MemberOn(day)));
+        Assert.All(days[31..], day => Assert.True(name("NEW").MemberOn(day)));
+        Assert.All(days[..31], day => Assert.True(name("CLA").MemberOn(day) && name("CLB").MemberOn(day)));
+    }
+
     // At the traded price: three sessions at a stored close of 10 and a raw close of 20 on volumes of 100, 200 and 300, the
     // dollars traded 2,000, 4,000 and 6,000; the returns as stored, nought, 10% and minus 10%. A day with no raw close reads none.
     [Fact]

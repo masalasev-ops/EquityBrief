@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html - a company the provider prices under two member codes counted once, at a correction to the 24.19 correction
+Decision: Two member codes carrying one price series are one company counted once, under the code that stops trading until it stops
+Was:
+> section 17, "The long history's renames and spans": "... a span the schedules ended reads as ended at its code's last traded price where it runs 63 sessions past it at most or its filer's reports stop there; and a current member's long history is behind where its spans end more than 2 sessions before its newest bar (see: ...)", its why ending "... is the least that sets one ratio apart from chance"
+Now:
+> the same, adding before the last clause that two member codes whose stored closes move together, 0.01% apart at most on the median day over more than 20 moves, are one company counted under the code whose prices stop more than 63 sessions before the other's, citing the new decision; its why adding the measure behind the 0.01%
+Why: the operator's answer of 2026-11-25 on the member set, kept word for word in `prompts/2026-11-25-24.19-answer-member-set.md`: the S&P 500's provider dates from 2018-10-01 count about twenty-five companies twice, under the code they traded under and the later code priced back.
+
+### 2026-11-25 - docs/RUNBOOK.md - the every-session check's output in three parts and the reader's count of a company priced under two codes, at a correction to the 24.19 correction
+Decision: Two member codes carrying one price series are one company counted once, under the code that stops trading until it stops
+Was:
+> the every-session table's commands: "... each member one side holds and the other lacks named and its run log row counting the sessions held so (see: ...)."; and "... joins another code of its company only where the two are never priced on the same day or trade in one ratio and counts a company once on a session (see: ...) (see: ...), and a row the table's build works ..."
+Now:
+> the first adding that the check's output names the differences to trace, then the member lists', then the seven readings' apart and marked expected, each counted, any part still failing the check; the second adding that the reader counts a company the provider prices under two member codes once, under the code it traded under until that code stops, citing the new decision
+Why: the operator's order of 2026-11-25, item 5, and their answer on the member set, kept word for word in `prompts/2026-11-25-24.19-on-the-report-of-10-42am.md` and `prompts/2026-11-25-24.19-answer-member-set.md`
+
 ### 2026-11-25 - docs/BUILD_PLAN.md - the reward check on the traded plan joins the one pin move before the run of 2027-02-06, at a ruling on 24.29
 Decision: The reward check on the traded plan rides the one pin move before the run of 2027-02-06 and registers in the background once it lands
 Was:

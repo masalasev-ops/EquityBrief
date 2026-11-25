@@ -23067,3 +23067,39 @@ Counted:    read off Paper trading's waiting and open tabs on the operator's sto
             own sale, the S&P 600 drift's LZB 1.37 at its setup's own sale, and the S&P 600 dip's ACIW 1.57 where it turned
             down before.
 Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 24.19 - correction: a company the provider prices under two member codes counted once, and the every-session check in three parts   2026-11-25
+
+Ruled:      the operator's orders of 2026-11-25 on the report of 10:42 am, item 5, and their answer on the member set, kept
+            word for word in `prompts/2026-11-25-24.19-on-the-report-of-10-42am.md` and
+            `prompts/2026-11-25-24.19-answer-member-set.md`.
+Found:      the long history's reader counted the S&P 500 at 531 members at the end of 2018, 522 in mid-2020 and 512 in
+            mid-2022 where the fund's last schedule held 505: from 2018-10-01 the provider's dates file about twenty-five
+            companies under the code they traded under and the later code it prices back, ABC beside COR, UTX beside RTX,
+            MYL beside VTRS, and both held a price of their own, so neither was taken out. The S&P 400 and 600 stand within a
+            few of their size.
+Built:      a member code is not counted on a session where another member code holds its own price, the two codes' stored
+            closes move together, 0.01% apart at most on the median day over more than 20 moves, and the other's prices stop
+            more than 63 sessions before its own; the session check's output in three parts, the differences to trace, the
+            member lists' and the seven readings the table works its own way apart and marked expected, each counted, any
+            part still failing it.
+Measured:   over the copy of the store on C:, the reader with the rule counts the S&P 500 at 508 at the end of 2018, 506 in
+            mid-2020 and 503 from mid-2022; the S&P 400 390 to 401 and the S&P 600 585 to 601. Of the pairs it leaves, BBT
+            beside TFC and IR beside TT stand on a code another company took and go to the operator.
+Tests:      2 new: the one-series test worked by hand on both sides of its level and on too few moves; a constructed store of
+            a code priced back beside the code that stops and two share classes, the company counted once on every session
+            and both classes counted. 1 widened: the session check listing a difference on the seven apart, marked
+            expected, nothing to trace, and still failing.
+Pins:       none moved. The long reader and the session check are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the one-series
+            level inverted: red; m2 the reader's one-series sessions dropped: red; m3 the seven's differences filed as to
+            trace: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4050 of 4050 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the long ledger built from 2019 over the corrected list, folded into the long ledger rebuild already queued, its
+            hours and when it runs against the pin move and the run of 2027-02-06 stated first and started on the operator's
+            word; the every-session table written again with it in the one rewrite.

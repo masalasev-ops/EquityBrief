@@ -403,6 +403,8 @@ public sealed partial class SetupLedger
             .SelectMany(year => year.Select(session => (Session: session, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Session).Order())
             .ToArray();
         var findings = new List<string>();
+        var memberFindings = new List<string>();
+        var expected = new List<string>();
         var rebuilt = 0;
         var setups = 0;
         var nightRows = 0;
@@ -472,7 +474,7 @@ public sealed partial class SetupLedger
             if (standing.TryGetValue(session, out var ledgerMembers))
             {
                 memberSessions++;
-                findings.AddRange(MemberSetDifferences(ledgerMembers, byTicker.Keys, session));
+                memberFindings.AddRange(MemberSetDifferences(ledgerMembers, byTicker.Keys, session));
             }
 
             // One row the build worked, rebuilt from the long history cut at its session.
@@ -525,8 +527,12 @@ public sealed partial class SetupLedger
                     }
 
                     heldSetups.Add((family, ticker, stored, held));
-                    findings.AddRange(SetupDifferences(stored, held, own).Select(differ =>
-                        FormattableString.Invariant($"{family} {ticker} {Stamp(session)}: {differ.Reading} the ledger's {Shown(differ.Stored)}, the table's {Shown(differ.Rebuilt)}")));
+
+                    foreach (var differ in SetupDifferences(stored, held, own))
+                    {
+                        (TableOwnReadings.Columns.Contains(differ.Reading, StringComparer.Ordinal) ? expected : findings).Add(
+                            FormattableString.Invariant($"{family} {ticker} {Stamp(session)}: {differ.Reading} the ledger's {Shown(differ.Stored)}, the table's {Shown(differ.Rebuilt)}"));
+                    }
                 }
             }
 
@@ -577,18 +583,41 @@ public sealed partial class SetupLedger
             output.WriteLine(FormattableString.Invariant($"session-readings-unrowed: {group.Count()} setup(s): {group.Key}; e.g. {group.First().Finding}"));
         }
 
+        // From the operator's order of 2026-11-25, item 5: the differences still to trace first, then the member lists held both
+        // ways, then the seven readings the table works its own way apart and marked expected; any difference in any part still
+        // fails the check.
+        output.WriteLine(FormattableString.Invariant($"session-readings-check: to trace, {findings.Count} difference(s)"));
+
         foreach (var finding in findings)
         {
             output.WriteLine("session-readings-check: " + finding);
         }
 
-        var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table, {memberSessions} session(s) of the standing ledger's members held to the table's both ways; ")
-            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
+        output.WriteLine(FormattableString.Invariant($"session-readings-member-lists: {memberFindings.Count} difference(s) between the standing ledger's members and the table's"));
 
-        await AppendAsync(connection, runId, SessionCheckStage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
+        foreach (var finding in memberFindings)
+        {
+            output.WriteLine("session-readings-check: " + finding);
+        }
+
+        output.WriteLine(FormattableString.Invariant($"session-readings-expected: expected, by design, {expected.Count} difference(s) on the seven readings the table works its own way: ")
+            + string.Join(", ", TableOwnReadings.Columns.Select(column => FormattableString.Invariant($"{column} {expected.Count(finding => finding.Contains($": {column} the ledger's ", StringComparison.Ordinal))}"))));
+
+        foreach (var finding in expected)
+        {
+            output.WriteLine("session-readings-expected: " + finding);
+        }
+
+        var differences = findings.Count + memberFindings.Count + expected.Count;
+        var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table, {memberSessions} session(s) of the standing ledger's members held to the table's both ways; ")
+            + (differences == 0
+                ? "every reading the same"
+                : FormattableString.Invariant($"{differences} difference(s), each named on the command's output: {findings.Count} to trace, {memberFindings.Count} between the member lists and {expected.Count} expected by design on the seven readings the table works its own way"));
+
+        await AppendAsync(connection, runId, SessionCheckStage, startedAt, 0, differences == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("session-readings-check: " + detail);
 
-        return findings.Count == 0 ? 0 : 1;
+        return differences == 0 ? 0 : 1;
     }
 
     // The sessions to a sampled one whose members a rebuild over the ledger's members reads as the ledger's: the longest window
