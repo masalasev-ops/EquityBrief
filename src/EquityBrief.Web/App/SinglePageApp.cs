@@ -1255,11 +1255,11 @@ public sealed partial class SinglePageApp : IComponent
         // From the operator's correction of 2026-11-24 a setup's chip on Home shows that setup's header and cards alone, the
         // others hidden, and its carousel's count and arrows read again now that it is in view.
         document.addEventListener('change', (event) => {
-          const chosen = event.target.matches && event.target.matches('.sw-r') ? event.target : null;
-          const box = chosen ? chosen.closest('.sw') : null;
+          const chosen = event.target.matches && event.target.matches('.setup-switch-input') ? event.target : null;
+          const box = chosen ? chosen.closest('.setup-switch') : null;
           if (!box) { return; }
-          for (const panel of box.querySelectorAll('.sw-p')) { panel.hidden = panel.getAttribute('data-setup') !== chosen.value; }
-          for (const track of box.querySelectorAll('.sw-p:not([hidden]) [data-wo-track]')) { woUpdate(track); }
+          for (const panel of box.querySelectorAll('.setup-switch-panel')) { panel.hidden = panel.getAttribute('data-setup') !== chosen.value; }
+          for (const track of box.querySelectorAll('.setup-switch-panel:not([hidden]) [data-wo-track]')) { woUpdate(track); }
         });
         // From the operator's order of 2026-11-24 a card's "See it" brings its setup's header into view, the route unchanged.
         document.addEventListener('click', (event) => {

@@ -22870,3 +22870,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the after shots on the operator's 5152 once it merges, after the night.
+
+### 24.29 - correction: the setup switch's classes its own, the legend's swatch left as it is   2026-11-24
+
+Queue:      done, #786 merged; in progress, the every-session table written again with the 24.19 fixes, and this
+            correction beside it; next, the check over the ledger's members on each index once the table is written.
+Ruled:      the operator's correction of 2026-11-24 at about 9:45 pm, kept word for word in
+            `prompts/2026-11-24-24.29-setup-switcher-class-clash.md`.
+Found:      the switcher's container wrote the class "sw", which the stylesheet already gave the legend's 12 by 10 pixel
+            swatch, so on the operator's 5152 the switcher measured 12 by 10 pixels and everything beneath it overlapped.
+Built:      the switcher's classes renamed setup-switch, its bar, chip, count, hint, input and panel, its rules in a marked
+            block of the stylesheet; the swatch's ".sw" as it was.
+Measured:   before shots on the operator's 5152 at 1440 and a true 390 in both palettes, Home on the night of 24 Nov, the
+            page 15,726 pixels tall at 1440.
+Tests:      1 new: every class the switcher writes is selected in the stylesheet only inside its own block, and the swatch
+            keeps its rule. The switcher's test reads the new names.
+Pins:       none moved. Home is no source a rule pins.
+Mutated:    the rule, stated before the run: the clash put back as a rule outside the block selecting one of the switcher's
+            classes. m1 the swatch's rule also selecting the switcher's bar: red. Reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4034 of 4034 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the after shots on the operator's 5152 with each chip chosen once it merges.

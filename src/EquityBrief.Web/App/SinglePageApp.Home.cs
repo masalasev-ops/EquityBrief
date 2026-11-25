@@ -689,7 +689,7 @@ public sealed partial class SinglePageApp
         }
 
         var watchingLine = WatchingLine(view.Watching, view.Reading);
-        var html = new StringBuilder(Invariant($"<div class=\"sw\" data-setups=\"{groups.Length}\"><div class=\"sw-bar\" role=\"radiogroup\" aria-label=\"Choose a setup\">"));
+        var html = new StringBuilder(Invariant($"<div class=\"setup-switch\" data-setups=\"{groups.Length}\"><div class=\"setup-switch-bar\" role=\"radiogroup\" aria-label=\"Choose a setup\">"));
 
         for (var at = 0; at < groups.Length; at++)
         {
@@ -697,17 +697,17 @@ public sealed partial class SinglePageApp
             var key = Escaped(family + (watched ? "-watched" : string.Empty));
             var fam = Escaped(family);
 
-            html.Append(Invariant($"<input type=\"radio\" class=\"sw-r\" name=\"home-setup\" id=\"sw-{key}\" value=\"{key}\"{(at == 0 ? " checked" : string.Empty)}>"));
-            html.Append(Invariant($"<label for=\"sw-{key}\" data-family=\"{fam}\" data-setup=\"{key}\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"sw-n\">{ideas.Length}</span></label>"));
+            html.Append(Invariant($"<input type=\"radio\" class=\"setup-switch-input\" name=\"home-setup\" id=\"setup-switch-{key}\" value=\"{key}\"{(at == 0 ? " checked" : string.Empty)}>"));
+            html.Append(Invariant($"<label class=\"setup-switch-chip\" for=\"setup-switch-{key}\" data-family=\"{fam}\" data-setup=\"{key}\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"setup-switch-count\">{ideas.Length}</span></label>"));
         }
 
-        html.Append(Invariant($"<span class=\"sw-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched)))}</span></div>"));
+        html.Append(Invariant($"<span class=\"setup-switch-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched)))}</span></div>"));
 
         for (var at = 0; at < groups.Length; at++)
         {
             var (family, watched, ideas) = groups[at];
 
-            html.Append(Invariant($"<div class=\"sw-p\" data-setup=\"{Escaped(family + (watched ? "-watched" : string.Empty))}\"{(at == 0 ? string.Empty : " hidden")}>"));
+            html.Append(Invariant($"<div class=\"setup-switch-panel\" data-setup=\"{Escaped(family + (watched ? "-watched" : string.Empty))}\"{(at == 0 ? string.Empty : " hidden")}>"));
             html.Append(watched && watchingLine is not null ? watchingLine : string.Empty);
             html.Append(Invariant($"<div class=\"home-ideas\" data-group=\"{(watched ? "watch" : "buy")}\">"));
             html.Append(SetupGroups(ideas, copying, view.Reading, watched, view.Night, watched ? null : view.Since));
