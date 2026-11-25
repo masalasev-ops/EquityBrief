@@ -519,23 +519,11 @@ public sealed partial class SinglePageApp
             region.Append(Invariant($"<p class=\"home-split\">{Escaped(SplitLine(view.Reading, view.Watching.Count > 0))}</p>"));
         }
 
-        // From the operator's order of 2026-11-24, items 4 to 8, each setup present tonight under one header saying once what
-        // its cards shared, its ideas a carousel beneath it, each setup in the order the page uses.
+        // From the operator's orders of 2026-11-24, each setup present tonight under one header saying once what its cards share,
+        // its ideas a carousel beneath it; from their correction of that evening one setup at a time, chosen from a row of chips.
         // see: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it
-        if (view.IdeasCount > 0)
-        {
-            region.Append("<div class=\"home-ideas\" data-group=\"buy\">");
-            region.Append(SetupGroups(view.Ideas, marks.Copying, view.Reading, watched: false, view.Night, view.Since));
-            region.Append("</div>");
-        }
-
-        if (WatchingLine(view.Watching, view.Reading) is { } watchingLine)
-        {
-            region.Append(watchingLine);
-            region.Append("<div class=\"home-ideas\" data-group=\"watch\">");
-            region.Append(SetupGroups(view.Watching, marks.Copying, view.Reading, watched: true, view.Night, null));
-            region.Append("</div>");
-        }
+        // see: Home's ideas show one setup at a time, chosen from a row of chips each with its setup's colour and count
+        region.Append(SetupSwitcher(view, marks.Copying));
 
         // From the operator's order of 2026-11-24, item 10, the way to every idea's full plan under the rules' ideas, never read
         // as the AI stock picker's picks.
@@ -683,6 +671,56 @@ public sealed partial class SinglePageApp
     // The heading of a setup's record on Home, in the operator's words.
     public static string HeaderRecordHeading(UniverseChoice reading) =>
         Invariant($"Its record on the {reading.Name}, against buying the index's other stocks the same way");
+
+    // Tonight's setups one at a time: a row of chips, each with its setup's colour, its name as Home words it and its count, the
+    // ideas to buy's setups first and the watched after them in the page's order, and at its right how many ideas in how many
+    // setups; beneath it each setup's header and cards, the first chosen and the rest hidden until their chip is. A watched
+    // setup says above its header what watching means.
+    // see: Home's ideas show one setup at a time, chosen from a row of chips each with its setup's colour and count
+    public static string SetupSwitcher(HomeView view, bool copying)
+    {
+        var groups = view.Ideas.GroupBy(idea => idea.Family, StringComparer.Ordinal).Select(group => (Family: group.Key, Watched: false, Ideas: group.ToArray()))
+            .Concat(view.Watching.GroupBy(idea => idea.Family, StringComparer.Ordinal).Select(group => (Family: group.Key, Watched: true, Ideas: group.ToArray())))
+            .ToArray();
+
+        if (groups.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var watchingLine = WatchingLine(view.Watching, view.Reading);
+        var html = new StringBuilder(Invariant($"<div class=\"sw\" data-setups=\"{groups.Length}\"><div class=\"sw-bar\" role=\"radiogroup\" aria-label=\"Choose a setup\">"));
+
+        for (var at = 0; at < groups.Length; at++)
+        {
+            var (family, watched, ideas) = groups[at];
+            var key = Escaped(family + (watched ? "-watched" : string.Empty));
+            var fam = Escaped(family);
+
+            html.Append(Invariant($"<input type=\"radio\" class=\"sw-r\" name=\"home-setup\" id=\"sw-{key}\" value=\"{key}\"{(at == 0 ? " checked" : string.Empty)}>"));
+            html.Append(Invariant($"<label for=\"sw-{key}\" data-family=\"{fam}\" data-setup=\"{key}\" style=\"--chip:var(--fam-{fam})\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"sw-n\">{ideas.Length}</span></label>"));
+        }
+
+        html.Append(Invariant($"<span class=\"sw-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched)))}</span></div>"));
+
+        for (var at = 0; at < groups.Length; at++)
+        {
+            var (family, watched, ideas) = groups[at];
+
+            html.Append(Invariant($"<div class=\"sw-p\" data-setup=\"{Escaped(family + (watched ? "-watched" : string.Empty))}\"{(at == 0 ? string.Empty : " hidden")}>"));
+            html.Append(watched && watchingLine is not null ? watchingLine : string.Empty);
+            html.Append(Invariant($"<div class=\"home-ideas\" data-group=\"{(watched ? "watch" : "buy")}\">"));
+            html.Append(SetupGroups(ideas, copying, view.Reading, watched, view.Night, watched ? null : view.Since));
+            html.Append("</div></div>");
+        }
+
+        return html.Append("</div>").ToString();
+    }
+
+    // "4 ideas tonight in 3 setups", with the picks watched after them where any are.
+    public static string SwitcherHint(int ideas, int setups, int watched, int watchedSetups) =>
+        (ideas > 0 ? Invariant($"{ideas} {(ideas == 1 ? "idea" : "ideas")} tonight in {setups} {(setups == 1 ? "setup" : "setups")}") : string.Empty)
+        + (watched > 0 ? Invariant($"{(ideas > 0 ? ", " : string.Empty)}{watched} {(watched == 1 ? "pick" : "picks")} watched in {watchedSetups} {(watchedSetups == 1 ? "setup" : "setups")}") : string.Empty);
 
     // Each setup's picks under one header, in the order the page gives them: its tag and colour, its revision and how many it
     // picked tonight, the sentence its cards share, its verdict, for a watched setup why it is not bought, and its record; then

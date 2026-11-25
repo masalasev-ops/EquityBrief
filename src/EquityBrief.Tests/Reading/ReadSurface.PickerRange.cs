@@ -67,8 +67,17 @@ public partial class ReadSurface
         Assert.Contains("Tonight it took the same 3 picks as the version above.", five, StringComparison.Ordinal);
         Assert.Equal(["AAA", "BBB", "CCC"], System.Text.RegularExpressions.Regex.Matches(five, "<span class=\"judge-chip\" data-ticker=\"([A-Z]+)\">").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain("<article", five, StringComparison.Ordinal);
-        Assert.Contains("Bought so far: 1 of 3; waiting within the 2-day order: 1; not bought: 1 (1 opened above its range).", five, StringComparison.Ordinal);
-        Assert.Contains("bought each within its range in this version's own account", five, StringComparison.Ordinal);
+        Assert.Contains("Each buys within its range.", five, StringComparison.Ordinal);
+
+        // From the operator's correction of 2026-11-24, item 7: the tally once, under the chips, and the variant named once, in
+        // its heading, the sentence repeating both gone.
+        var chipsAt = five.IndexOf("class=\"judge-chips\"", StringComparison.Ordinal);
+        var tallyAt = five.IndexOf("Bought so far: 1 of 3. Waiting within the 2-day order: 1. Not bought: 1 (1 opened above its range).", StringComparison.Ordinal);
+
+        Assert.True(chipsAt >= 0 && tallyAt > chipsAt, "The tally is not under the chips.");
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(five, "Bought so far: "));
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(five, "A fixed 5, version \\d+'s variant"));
+        Assert.DoesNotContain("in this version's own account and walked to their exits", five, StringComparison.Ordinal);
 
         // Its account's figure: BBB's small move rounds to nothing, read as 0.0% and never as -0.0%.
         Assert.Contains("Its own account: 0.0% since Wed 25 Nov, 1 open, 0 closed.", five, StringComparison.Ordinal);
@@ -83,7 +92,7 @@ public partial class ReadSurface
 
         // A pick bought at the open that no night has read yet is counted as not yet read, never as waiting for an open that
         // may already have passed.
-        Assert.Equal("Bought so far: 0 of 2; waiting within the 2-day order: 1; its open not yet read by a night: 1; not bought: 0.", SinglePageApp.BoughtSoFarWords([waiting, waiting with { Range = null }]));
+        Assert.Equal("Bought so far: 0 of 2. Waiting within the 2-day order: 1. Its open not yet read by a night: 1. Not bought: 0.", SinglePageApp.BoughtSoFarWords([waiting, waiting with { Range = null }]));
 
         // AAA opened above and did not come back: not bought, its side named, and the open's walk not yet ended.
         Assert.Contains($"<p class=\"judge-since\" data-range-skip>Not bought: {JudgeAccounts.OpenedAbove}. What buying at the open would have made is recorded once its walk there ends.</p>", page, StringComparison.Ordinal);
