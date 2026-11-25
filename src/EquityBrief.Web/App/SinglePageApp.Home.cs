@@ -683,8 +683,13 @@ public sealed partial class SinglePageApp
     // see: Home's ideas show one setup at a time, chosen from a row of chips each with its setup's colour and count
     public static string SetupSwitcher(HomeView view, bool copying)
     {
-        var groups = view.Ideas.GroupBy(idea => idea.Family, StringComparer.Ordinal).Select(group => (Family: group.Key, Watched: false, Ideas: group.ToArray()))
-            .Concat(view.Watching.GroupBy(idea => idea.Family, StringComparer.Ordinal).Select(group => (Family: group.Key, Watched: true, Ideas: group.ToArray())))
+        // From the operator's correction of 2026-11-25, items 5 and 6, each stock its setup's rules met again tonight while its
+        // order waits stands among tonight's ideas under its setup, counted apart from the new ones.
+        // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+        (DecisionCardView Card, WaitingOrderView Order)[] again = copying ? [] : AgainIdeasOf(view);
+        var groups = view.Ideas.Select(idea => idea.Family).Concat(again.Select(one => one.Card.Family)).Distinct(StringComparer.Ordinal)
+            .Select(family => (Family: family, Watched: false, Ideas: view.Ideas.Where(idea => idea.Family == family).ToArray(), Again: again.Where(one => one.Card.Family == family).ToArray()))
+            .Concat(view.Watching.GroupBy(idea => idea.Family, StringComparer.Ordinal).Select(group => (Family: group.Key, Watched: true, Ideas: group.ToArray(), Again: Array.Empty<(DecisionCardView Card, WaitingOrderView Order)>())))
             .ToArray();
 
         if (groups.Length == 0)
@@ -697,73 +702,97 @@ public sealed partial class SinglePageApp
 
         for (var at = 0; at < groups.Length; at++)
         {
-            var (family, watched, ideas) = groups[at];
+            var (family, watched, ideas, metAgain) = groups[at];
             var key = Escaped(family + (watched ? "-watched" : string.Empty));
             var fam = Escaped(family);
 
             html.Append(Invariant($"<input type=\"radio\" class=\"setup-switch-input\" name=\"home-setup\" id=\"setup-switch-{key}\" value=\"{key}\"{(at == 0 ? " checked" : string.Empty)}>"));
-            html.Append(Invariant($"<label class=\"setup-switch-chip\" for=\"setup-switch-{key}\" data-family=\"{fam}\" data-setup=\"{key}\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"setup-switch-count\">{ideas.Length}</span></label>"));
+            html.Append(Invariant($"<label class=\"setup-switch-chip\" for=\"setup-switch-{key}\" data-family=\"{fam}\" data-setup=\"{key}\"><span class=\"fam-swatch\" data-family=\"{fam}\"></span>{Escaped(IdeaTag(family))}{(watched ? " (watched)" : string.Empty)}<span class=\"setup-switch-count\">{Escaped(ChipCount(ideas.Length, metAgain.Length))}</span></label>"));
         }
 
-        html.Append(Invariant($"<span class=\"setup-switch-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched)))}</span></div>"));
+        html.Append(Invariant($"<span class=\"setup-switch-hint\">{Escaped(SwitcherHint(view.Ideas.Count, groups.Count(group => !group.Watched), view.Watching.Count, groups.Count(group => group.Watched), again.Length))}</span></div>"));
 
         for (var at = 0; at < groups.Length; at++)
         {
-            var (family, watched, ideas) = groups[at];
+            var (family, watched, ideas, metAgain) = groups[at];
 
             html.Append(Invariant($"<div class=\"setup-switch-panel\" data-setup=\"{Escaped(family + (watched ? "-watched" : string.Empty))}\"{(at == 0 ? string.Empty : " hidden")}>"));
             html.Append(watched && watchingLine is not null ? watchingLine : string.Empty);
             html.Append(Invariant($"<div class=\"home-ideas\" data-group=\"{(watched ? "watch" : "buy")}\">"));
-            html.Append(SetupGroups(ideas, copying, view.Reading, watched, view.Night, watched ? null : view.Since));
+            html.Append(SetupGroups(ideas, copying, view.Reading, watched, view.Night, watched ? null : view.Since, metAgain, family, view.HeldCompanies));
             html.Append("</div></div>");
         }
 
         return html.Append("</div>").ToString();
     }
 
-    // "4 ideas tonight in 3 setups", with the picks watched after them where any are.
-    public static string SwitcherHint(int ideas, int setups, int watched, int watchedSetups) =>
+    // Each card of tonight's whose stock its setup's rules met again while its earlier order still waits, with that order.
+    public static (DecisionCardView Card, WaitingOrderView Order)[] AgainIdeasOf(HomeView view) =>
+    [
+        .. MetAgainOf(view).Waiting
+            .Select(card => (Card: card, Order: view.StillWaiting.FirstOrDefault(order => MarkRenderer.AgainOf(order, [card]) is not null)))
+            .Where(one => one.Order is not null)
+            .Select(one => (one.Card, one.Order!)),
+    ];
+
+    // A setup chip's count: its new ideas, and from the operator's correction of 2026-11-25, item 6, "4 new · 1 again" where
+    // any stock met its rules again.
+    public static string ChipCount(int fresh, int again) =>
+        again == 0 ? fresh.ToString(CultureInfo.InvariantCulture) : Invariant($"{fresh} new · {again} again");
+
+    // "4 ideas tonight in 3 setups", with the stocks met again and the picks watched after them where any are.
+    public static string SwitcherHint(int ideas, int setups, int watched, int watchedSetups, int again = 0) =>
         (ideas > 0 ? Invariant($"{ideas} {(ideas == 1 ? "idea" : "ideas")} tonight in {setups} {(setups == 1 ? "setup" : "setups")}") : string.Empty)
-        + (watched > 0 ? Invariant($"{(ideas > 0 ? ", " : string.Empty)}{watched} {(watched == 1 ? "pick" : "picks")} watched in {watchedSetups} {(watchedSetups == 1 ? "setup" : "setups")}") : string.Empty);
+        + (again > 0 ? Invariant($"{(ideas > 0 ? ", " : string.Empty)}{again} met the rules again") : string.Empty)
+        + (watched > 0 ? Invariant($"{(ideas > 0 || again > 0 ? ", " : string.Empty)}{watched} {(watched == 1 ? "pick" : "picks")} watched in {watchedSetups} {(watchedSetups == 1 ? "setup" : "setups")}") : string.Empty);
 
     // Each setup's picks under one header, in the order the page gives them: its tag and colour, its revision and how many it
     // picked tonight, the sentence its cards share, its verdict, for a watched setup why it is not bought, and its record; then
     // its cards, a carousel where it holds more than one, four across on a wide screen and one at a time on a phone.
     // see: Home draws each setup's ideas under one header saying once what they share, its cards a carousel beneath it
-    public static string SetupGroups(IReadOnlyList<HomeIdea> ideas, bool copying, UniverseChoice reading, bool watched, DateOnly? night, IReadOnlyDictionary<string, string>? since)
+    public static string SetupGroups(IReadOnlyList<HomeIdea> ideas, bool copying, UniverseChoice reading, bool watched, DateOnly? night, IReadOnlyDictionary<string, string>? since, IReadOnlyList<(DecisionCardView Card, WaitingOrderView Order)>? again = null, string? againFamily = null, IReadOnlyDictionary<string, string>? companies = null)
     {
         var html = new StringBuilder();
+        var families = ideas.Select(idea => idea.Family).Concat(again is { Count: > 0 } && againFamily is { } only ? [only] : []).Distinct(StringComparer.Ordinal);
 
-        foreach (var group in ideas.GroupBy(idea => idea.Family, StringComparer.Ordinal))
+        foreach (var key in families)
         {
-            HomeIdea[] cards = [.. group];
-            var first = cards[0];
-            var family = Escaped(group.Key);
-            var header = "idea-setup-" + group.Key + (watched ? "-watched" : string.Empty);
-            var shared = cards.Select(idea => idea.Why).Distinct(StringComparer.Ordinal).Count() == 1 ? first.Why : null;
-            var rolling = cards.Length > 1;
-            var counted = Invariant($"{cards.Length} {(watched ? cards.Length == 1 ? "pick" : "picks" : cards.Length == 1 ? "idea" : "ideas")} tonight");
+            HomeIdea[] cards = [.. ideas.Where(idea => idea.Family == key)];
+            (DecisionCardView Card, WaitingOrderView Order)[] metAgain = [.. (again ?? []).Where(one => one.Card.Family == key)];
+            var first = cards.FirstOrDefault();
+            var family = Escaped(key);
+            var header = "idea-setup-" + key + (watched ? "-watched" : string.Empty);
+            var shared = first is not null && cards.Select(idea => idea.Why).Distinct(StringComparer.Ordinal).Count() == 1 ? first.Why : null;
+            var total = cards.Length + metAgain.Length;
+            var rolling = total > 1;
+            var counted = (cards.Length > 0 || metAgain.Length == 0 ? Invariant($"{cards.Length} {(watched ? cards.Length == 1 ? "pick" : "picks" : cards.Length == 1 ? "idea" : "ideas")} tonight") : string.Empty)
+                + (metAgain.Length > 0 ? Invariant($"{(cards.Length > 0 ? ", " : string.Empty)}{metAgain.Length} met the rules again") : string.Empty);
 
-            html.Append(Invariant($"<div class=\"idea-setup wo\" id=\"{Escaped(header)}\" data-family=\"{family}\" data-setup-ideas=\"{cards.Length}\" data-carousel=\"{(rolling ? "true" : "false")}\">"));
-            html.Append(Invariant($"<div class=\"idea-setup-h fam-edge\" data-family=\"{family}\"><div class=\"idea-setup-t\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(group.Key))}</span>{RevisionTags.For(group.Key, night ?? DateOnly.MaxValue)}<span class=\"idea-setup-n\">{Escaped(counted)}</span></div>"));
+            html.Append(Invariant($"<div class=\"idea-setup wo\" id=\"{Escaped(header)}\" data-family=\"{family}\" data-setup-ideas=\"{cards.Length}\" data-setup-again=\"{metAgain.Length}\" data-carousel=\"{(rolling ? "true" : "false")}\">"));
+            html.Append(Invariant($"<div class=\"idea-setup-h fam-edge\" data-family=\"{family}\"><div class=\"idea-setup-t\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(key))}</span>{RevisionTags.For(key, night ?? DateOnly.MaxValue)}<span class=\"idea-setup-n\">{Escaped(counted)}</span></div>"));
             html.Append(shared is null ? string.Empty : Invariant($"<p class=\"home-why\" data-shared>{(watched ? Invariant($"<b>{PickedLabel}</b> ") : string.Empty)}{Escaped(shared)}</p>"));
-            html.Append(VerdictLine(first, reading));
 
-            // A watched setup says once why its picks are not bought.
-            // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
-            html.Append(watched ? Invariant($"<p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(first, reading))}</p>") : string.Empty);
-            html.Append(first.LongRecord is { Periods: true } record && record.State != "unread"
-                ? MarkRenderer.PeriodsBox(record, HeaderRecordHeading(reading), MarkRenderer.HeaderRecordNote)
-                : MarkRenderer.SetupRecordBox(first.LongRecord));
+            if (first is not null)
+            {
+                html.Append(VerdictLine(first, reading));
+
+                // A watched setup says once why its picks are not bought.
+                // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
+                html.Append(watched ? Invariant($"<p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(first, reading))}</p>") : string.Empty);
+                html.Append(first.LongRecord is { Periods: true } record && record.State != "unread"
+                    ? MarkRenderer.PeriodsBox(record, HeaderRecordHeading(reading), MarkRenderer.HeaderRecordNote)
+                    : MarkRenderer.SetupRecordBox(first.LongRecord));
+            }
+
             html.Append("</div>");
 
             if (rolling)
             {
-                html.Append(Invariant($"<div class=\"wo-head idea-setup-nav\"><span></span><div class=\"wo-nav\"><span class=\"wo-count\" aria-live=\"polite\" data-wo-count>1 to {Math.Min(MarkRenderer.WaitingInView, cards.Length)} of {cards.Length}</span><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"-1\" aria-label=\"Show the ideas before these\" disabled>&#8249;</button><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"1\" aria-label=\"Show the ideas after these\">&#8250;</button></div></div>"));
+                html.Append(Invariant($"<div class=\"wo-head idea-setup-nav\"><span></span><div class=\"wo-nav\"><span class=\"wo-count\" aria-live=\"polite\" data-wo-count>1 to {Math.Min(MarkRenderer.WaitingInView, total)} of {total}</span><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"-1\" aria-label=\"Show the ideas before these\" disabled>&#8249;</button><button type=\"button\" class=\"wo-arrow\" data-wo-step=\"1\" aria-label=\"Show the ideas after these\">&#8250;</button></div></div>"));
             }
 
             html.Append(rolling
-                ? Invariant($"<div class=\"wo-track\" tabindex=\"0\" role=\"group\" aria-label=\"{Escaped(IdeaTag(group.Key))}: tonight's {(watched ? "picks watched" : "ideas")}\" data-wo-track>")
+                ? Invariant($"<div class=\"wo-track\" tabindex=\"0\" role=\"group\" aria-label=\"{Escaped(IdeaTag(key))}: tonight's {(watched ? "picks watched" : "ideas")}\" data-wo-track>")
                 : "<div class=\"wo-grid\">");
 
             foreach (var idea in cards)
@@ -771,11 +800,27 @@ public sealed partial class SinglePageApp
                 html.Append(Idea(idea, copying, reading, watched, header, shared is not null, night, since?.GetValueOrDefault(idea.Family + "|" + idea.Ticker)));
             }
 
+            foreach (var (card, order) in metAgain)
+            {
+                html.Append(AgainIdea(card, order, companies?.GetValueOrDefault(card.Ticker) ?? order.Company));
+            }
+
             html.Append("</div></div>");
         }
 
         return html.ToString();
     }
+
+    // From the operator's correction of 2026-11-25, item 5: a stock its setup's rules picked again tonight while its earlier order
+    // still waits, as a card of tonight's ideas marked "Met the rules again": the standing order and tonight's would-be price in
+    // one line, tonight's checks folded, and See the plan opening its chart page, which draws the standing order's plan.
+    // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+    public static string AgainIdea(DecisionCardView card, WaitingOrderView order, string? company) =>
+        Invariant($"<article class=\"home-idea fam-edge again-idea\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-again=\"true\" data-listed=\"{order.Listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">")
+        + Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(card.Ticker)}</div>{(company is { Length: > 0 } named ? Invariant($"<div class=\"home-co\">{Escaped(named)}</div>") : string.Empty)}</div><b class=\"wo-again\">{Escaped(HeldAgainView.AgainMark)}</b></div>")
+        + Invariant($"<p class=\"again-line\">{Escaped(MarkRenderer.AgainLine(order, card))}</p>")
+        + MarkRenderer.AgainFold(card)
+        + Invariant($"<a class=\"home-plan\" href=\"{ChartHref(card.Ticker)}\">See the plan</a></article>");
 
     // A pick's card under its setup's header: what is its own, an idea to buy or a pick watched whose buy price reads as bought
     // on paper, its setup's record in one line with the way up to the header; from 24.15 on a past night with its line on what

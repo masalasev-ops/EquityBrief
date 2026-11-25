@@ -50,15 +50,30 @@ public partial class ReadSurface
         var home = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/home?universe=400"));
         var card = Assert.Single(Blocks(home, "<article class=\"wo-card fam-edge\" data-family=\"breakout\" data-ticker=\"M2\".*?</article>"));
 
+        // From the operator's correction of 2026-11-25, items 5 to 7: the waiting card keeps its mark and its standing plan alone.
         Assert.Contains("data-met-again=\"true\"", card, StringComparison.Ordinal);
         Assert.Contains($"<b class=\"wo-again\">{HeldAgainView.AgainMark}</b>", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"wo-again-line\">Met the breakout rules again on the night of 2 Oct. Its order of 30 Sep at $47.50 stands; tonight's rules would have placed it at $46.90.</p>", card, StringComparison.Ordinal);
-        Assert.Contains($"<h5>{MarkRenderer.AgainHeading}</h5>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("wo-again-line", card, StringComparison.Ordinal);
+        Assert.DoesNotContain(MarkRenderer.AgainHeading, card, StringComparison.Ordinal);
         Assert.Matches("<div data-plan=\"buy\"><span>Buy if it dips to</span><b class=\"buy\">\\$47\\.50</b>", card);
         Assert.DoesNotContain("$46.90</b>", card, StringComparison.Ordinal);
 
-        // Once on Home: no other card or row of M2, no group of full cards, and nothing on the page calls it held or bought.
-        Assert.Single(Regex.Matches(home, "data-ticker=\"M2\" data-listed=\"2026-09-30\""));
+        // Among tonight's ideas under the breakout: M2's card marked, its line in the operator's words, tonight's checks folded
+        // under "Why it qualified again on 2 Oct (n checks)" and See the plan opening its chart page; the chip and the header
+        // count it apart from the new ideas.
+        var again = Assert.Single(Blocks(home, "<article class=\"home-idea fam-edge again-idea\" data-family=\"breakout\" data-ticker=\"M2\" data-again=\"true\" data-listed=\"2026-09-30\">.*?</article>"));
+
+        Assert.Contains($"<b class=\"wo-again\">{HeldAgainView.AgainMark}</b>", again, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"again-line\">Its order of 30 Sep at $47.50 stands; no second order was placed. Tonight's rules would have placed it at $46.90.</p>", again, StringComparison.Ordinal);
+        Assert.Matches("<details class=\"again-fold\" data-checks=\"[1-9][0-9]*\"><summary>Why it qualified again on 2 Oct \\([1-9][0-9]* checks?\\)</summary>", again);
+        Assert.Contains($"<a class=\"home-plan\" href=\"{SinglePageApp.ChartHref("M2")}\">See the plan</a>", again, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"setup-switch-count\">1 new · 1 again</span>", home, StringComparison.Ordinal);
+        Assert.Contains("data-setup-ideas=\"1\" data-setup-again=\"1\"", home, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"idea-setup-n\">1 idea tonight, 1 met the rules again</span>", home, StringComparison.Ordinal);
+
+        // Twice on Home, its order's card and its card met again, and no other card or row of M2, no group of full cards, and
+        // nothing on the page calls it held or bought.
+        Assert.Equal(2, Regex.Matches(home, "data-ticker=\"M2\"[^>]*data-listed=\"2026-09-30\"").Count);
         Assert.DoesNotContain("class=\"held-card\"", home, StringComparison.Ordinal);
         Assert.DoesNotContain("data-held-again=", home, StringComparison.Ordinal);
         Assert.DoesNotContain(HeldAgainView.Label, home, StringComparison.Ordinal);
