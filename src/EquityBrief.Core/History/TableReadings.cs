@@ -108,9 +108,14 @@ public static class TableReadings
     // before the first such 8-K and after the last and the report that closes it stand, and every one of them where the
     // filings hold none.
     // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
-    public static DateOnly[] ReportDays(IEnumerable<DateOnly> results, IEnumerable<DateOnly> periodic, IEnumerable<DateOnly> prints)
+    // From the operator's ruling of 2026-11-25, item 1: each results 8-K counts on the day it reports, the announcement day, and
+    // never on the day it was filed; in a quarter holding two or more, the quarter's report is the last filed before the day of
+    // the 10-Q or 10-K closing it, one filed that same day being a supplement, and a quarter holding one takes it whatever its
+    // day.
+    // see: The every-session table counts the weekdays to the next report from the day each quarter's results 8-K reports
+    public static DateOnly[] ReportDays(IEnumerable<(DateOnly Reported, DateOnly Filed)> results, IEnumerable<DateOnly> periodic, IEnumerable<DateOnly> prints)
     {
-        var filed = results.Distinct().Order().ToArray();
+        var filed = results.Distinct().OrderBy(one => one.Filed).ThenBy(one => one.Reported).ToArray();
         var reports = periodic.Distinct().Order().ToArray();
         var calendars = prints.Distinct().Order().ToArray();
 
@@ -121,22 +126,26 @@ public static class TableReadings
 
         var kept = new List<DateOnly>();
 
-        for (var at = 0; at < filed.Length; at++)
+        foreach (var quarter in filed.GroupBy(one => Array.FindIndex(reports, report => report >= one.Filed)))
         {
-            var closing = Array.FindIndex(reports, report => report >= filed[at]);
+            (DateOnly Reported, DateOnly Filed)[] eights = [.. quarter];
 
-            if (at + 1 < filed.Length && closing >= 0 && filed[at + 1] <= reports[closing])
+            if (quarter.Key < 0)
             {
+                kept.AddRange(eights.Select(one => one.Reported));
+
                 continue;
             }
 
-            kept.Add(filed[at]);
+            var before = eights.Where(one => one.Filed < reports[quarter.Key]).ToArray();
+
+            kept.Add(eights.Length > 1 && before.Length > 0 ? before[^1].Reported : eights[^1].Reported);
         }
 
-        var lastClosing = Array.FindIndex(reports, report => report >= filed[^1]);
-        var after = lastClosing >= 0 ? reports[lastClosing] : filed[^1];
+        var lastClosing = Array.FindIndex(reports, report => report >= filed[^1].Filed);
+        var after = lastClosing >= 0 ? reports[lastClosing] : filed[^1].Filed;
 
-        kept.AddRange(calendars.Where(day => day < filed[0] || day > after));
+        kept.AddRange(calendars.Where(day => day < filed[0].Reported || day > after));
 
         return [.. kept.Distinct().Order()];
     }

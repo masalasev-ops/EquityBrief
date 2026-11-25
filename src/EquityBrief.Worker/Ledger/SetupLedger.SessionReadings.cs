@@ -707,10 +707,11 @@ public sealed partial class SetupLedger
         readonly Lazy<TradedRanks> tradedRanks = new(() => new TradedRanks(series, members));
     }
 
-    // A code's results 8-Ks, those carrying item 2.02, and its 10-Qs and 10-Ks, each by the day it was filed.
-    public sealed record ReportFiled(List<DateOnly> Results, List<DateOnly> Periodic);
+    // A code's results 8-Ks, those carrying item 2.02, each by the day it reports and the day it was filed, and its 10-Qs and
+    // 10-Ks by the day each was filed.
+    public sealed record ReportFiled(List<(DateOnly Reported, DateOnly Filed)> Results, List<DateOnly> Periodic);
 
-    const string ReportFilingsRead = "SELECT ticker, filed, form, items FROM long_filing WHERE form IN ('8-K', '10-Q', '10-K');";
+    const string ReportFilingsRead = "SELECT ticker, filed, form, items, reported FROM long_filing WHERE form IN ('8-K', '10-Q', '10-K');";
 
     // Every code's report filings as the long filings hold them.
     // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
@@ -736,7 +737,23 @@ public sealed partial class SetupLedger
                 filings[reader.GetString(0)] = held = new ReportFiled([], []);
             }
 
-            (results ? held.Results : held.Periodic).Add(DateOnly.ParseExact(reader.GetString(1)[..10], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+            var filedOn = DateOnly.ParseExact(reader.GetString(1)[..10], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+            // From the operator's ruling of 2026-11-25 a results 8-K counts on the day it reports, its filing's day where it
+            // names none or one after it.
+            if (results)
+            {
+                var reportedOn = !reader.IsDBNull(4) && reader.GetString(4) is { Length: >= 10 } reported
+                    && DateOnly.TryParseExact(reported[..10], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var day) && day <= filedOn
+                    ? day
+                    : filedOn;
+
+                held.Results.Add((reportedOn, filedOn));
+            }
+            else
+            {
+                held.Periodic.Add(filedOn);
+            }
         }
 
         return filings;

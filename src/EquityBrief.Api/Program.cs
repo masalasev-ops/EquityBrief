@@ -2583,8 +2583,17 @@ app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, Endpoint
 // From the operator's correction of 2026-11-24, item 1, every live rule's order and trade since the rules restart beside what
 // Home, Tonight and Paper trading draw for it, an index at a time; as text with `format=text` for the step after each night.
 // see: The reconciliation holds every live rule's order and trade to what Home, Tonight and Paper trading draw, and fails on any mismatch
-app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, ReadApi read, EndpointDataSource routes) =>
+app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, string? fresh, ReadApi read, EndpointDataSource routes, StoreLocation store, IClock clock) =>
 {
+    // From the operator's order of 2026-11-25, item 3, the proof the night's step worked and kept is read as stored; worked
+    // again only where none is kept or one is asked for fresh.
+    var kept = Path.Combine(store.DataRoot, PicksProof.StoredFile);
+
+    if (fresh is null && format is null && File.Exists(kept))
+    {
+        return Results.Content(await File.ReadAllTextAsync(kept), "text/html; charset=utf-8");
+    }
+
     var indexes = new List<(string, IReadOnlyList<PicksProof.PickLine>, IReadOnlyList<string>)>();
     var night = await read.NewestNightAsync();
     var since = EquityBrief.Core.Candidates.RuleFreezeDates.From;
@@ -2660,9 +2669,12 @@ app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, ReadApi
         }
     }
 
-    return string.Equals(format, "text", StringComparison.Ordinal)
-        ? Results.Text(PicksProof.Page(indexes, text: true), "text/plain; charset=utf-8")
-        : Results.Content(PicksProof.Page(indexes, text: false), "text/html; charset=utf-8");
+    return format switch
+    {
+        "text" => Results.Text(PicksProof.Page(indexes, text: true), "text/plain; charset=utf-8"),
+        "both" => Results.Json(new { text = PicksProof.Page(indexes, text: true), html = PicksProof.Page(indexes, text: false, worked: clock.UtcNow) }),
+        _ => Results.Content(PicksProof.Page(indexes, text: false), "text/html; charset=utf-8"),
+    };
 });
 
 app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRenderer marks) =>
@@ -4828,9 +4840,22 @@ if (copyServer is not null && proving)
 {
     await app.StartAsync();
 
-    var (status, said) = await copyServer.AskAsync(PicksProof.Route + "?format=text");
+    var (status, answer) = await copyServer.AskAsync(PicksProof.Route + "?fresh=1&format=both");
 
     await app.StopAsync();
+
+    // From the operator's order of 2026-11-25, item 3, the proof worked after the night is kept under the data root, which its
+    // page then reads as stored rather than working it again.
+    var said = string.Empty;
+
+    if (status == 200)
+    {
+        using var both = System.Text.Json.JsonDocument.Parse(answer);
+
+        said = both.RootElement.GetProperty("text").GetString() ?? string.Empty;
+        File.WriteAllText(Path.Combine(app.Services.GetRequiredService<StoreLocation>().DataRoot, PicksProof.StoredFile), both.RootElement.GetProperty("html").GetString() ?? string.Empty);
+    }
+
     Console.Write(said);
     Environment.ExitCode = status == 200 && said.Contains(PicksProof.Tally + " 0\n", StringComparison.Ordinal) ? 0 : PicksProof.Mismatched;
 
