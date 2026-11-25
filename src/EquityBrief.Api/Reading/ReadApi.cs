@@ -3922,7 +3922,8 @@ public sealed partial class ReadApi : IComponent
         // the same, its own account holding none, says so and the price its order buys at.
         foreach (var group in rows.Select((row, at) => (Row: row, At: at)).GroupBy(one => (one.Row.Index, one.Row.Night)).ToArray())
         {
-            var planned = await Paper.PlannedTradesAsync(group.Key.Index, group.Key.Night);
+            // From the operator's order of 2026-11-25, item 3, the trades of the cards' own stocks alone.
+            var planned = await Paper.PlannedTradesOfAsync(group.Key.Index, group.Key.Night, [.. group.Select(one => one.Row.Ticker).Distinct(StringComparer.Ordinal)]);
             var holds = EquityBrief.Core.Paper.PlannedTrades.HeldOn(planned, group.Key.Night);
 
             foreach (var (row, at) in group)

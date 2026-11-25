@@ -23,6 +23,9 @@ public static partial class PicksProof
 
     public const int Mismatched = 4;
 
+    // The file under the data root the night's step keeps the proof in, which its page reads as stored.
+    public const string StoredFile = "picks-proof.html";
+
     public sealed record PickLine(
         string Index,
         DateOnly Night,
@@ -180,7 +183,7 @@ public static partial class PicksProof
 
     // The proof as a page: each index's table of orders and trades, its mismatches first, then what was drawn with no order;
     // as text, a line a mismatch and the tally the night's step reads.
-    public static string Page(IReadOnlyList<(string Index, IReadOnlyList<PickLine> Lines, IReadOnlyList<string> Extras)> indexes, bool text)
+    public static string Page(IReadOnlyList<(string Index, IReadOnlyList<PickLine> Lines, IReadOnlyList<string> Extras)> indexes, bool text, DateTimeOffset? worked = null)
     {
         var total = indexes.Sum(one => one.Lines.Sum(line => line.Mismatches.Count) + one.Extras.Count);
 
@@ -209,7 +212,7 @@ public static partial class PicksProof
             return plain.Append(CultureInfo.InvariantCulture, $"{Tally} {total}\n").ToString();
         }
 
-        var page = new StringBuilder(FormattableString.Invariant($"<!doctype html><html><head><meta charset=\"utf-8\"><title>Picks proof</title></head><body><h1>Picks proof</h1><p data-mismatches=\"{total}\">{Tally} {total}</p>"));
+        var page = new StringBuilder(FormattableString.Invariant($"<!doctype html><html><head><meta charset=\"utf-8\"><title>Picks proof</title></head><body><h1>Picks proof</h1><p data-mismatches=\"{total}\">{Tally} {total}</p>{(worked is { } at ? FormattableString.Invariant($"<p data-worked=\"{at:yyyy-MM-ddTHH:mm:ssZ}\">Worked by the step after the night at {at:yyyy-MM-dd HH:mm} UTC and kept; add ?fresh=1 to work it again now.</p>") : string.Empty)}"));
 
         foreach (var (index, lines, extras) in indexes)
         {

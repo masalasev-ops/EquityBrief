@@ -22934,3 +22934,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the remedy on the operator's store once it merges, the fill step's run that cancels the 12 orders; the after
             shots and the reconciliation's table on 5152.
+
+### 24.19 - correction: the table's weekdays to the next report counted to the day each results 8-K reports   2026-11-25
+
+Queue:      done, #788 merged and its remedy run; in progress, this correction with the speed and the phone width beside it;
+            next, the table written again and checked, then Home's again cards, the count of plans under their own risk
+            and the held items.
+Ruled:      the operator's orders of 2026-11-25 on the report of 3:48 am, item 1, kept word for word in
+            `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`.
+Found:      after the rebuild of 25 Nov the earnings count differed on 1,835 sampled readings of the S&P 500, 2,330 of the
+            S&P 400 and 2,904 of the S&P 600, against 508, 302 and 539 before, most by one weekday: a release after the
+            close filed the next day, and a supplement filed with the 10-Q taken as the quarter's.
+Built:      each results 8-K counted on the day it reports; in a quarter holding two or more, the last filed before the day
+            of the report closing it. The table's step is no source a rule pins.
+Tests:      none new; the report days' test widened with AVB, CF, FLR and a quarter of one 8-K, worked by hand.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard taken out at its one site. m1 the filing's day counted for the
+            reported day: red; m2 the last 8-K taken whatever its day: red. Filtered to their tests and reverted before
+            anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4044 of 4044 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the table written again with the rule, its hours stated first, and checked in the operator's format.
+
+### 24.29 - correction: Home and Tonight back to their speed, the picks proof kept after the night, Tonight within a phone   2026-11-25
+
+Ruled:      the operator's orders of 2026-11-25 on the report of 3:48 am, items 3 and 4, kept word for word in
+            `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`.
+Found:      measured warm over the store, Home's S&P 500 page took 3.0 seconds before #788 and 6.5 after, the S&P 400's 2.5
+            and 5.9, the S&P 600's 2.9 and 6.5, Tonight 2.4 and 5.2: each read of a night's cards read every planned trade
+            of its index. The proof's page took over a minute. Tonight measured 660 pixels wide at 390 before #788 as after,
+            its opening lines a grid column sized to the waiting orders' row of cards.
+Built:      a night's cards read the planned trades of their own stocks alone; the proof's verb keeps its page under the data
+            root and the route reads it as stored; Tonight's opening lines one column no wider than the page.
+Measured:   over a copy of the store, Home 3.3, 2.8 and 3.1 seconds and Tonight 2.5 against 3.2, 2.7, 3.0 and 2.5 before
+            #788; the verb 71 seconds, the stored page 0.01.
+Tests:      2 new: the proof's page reading what the night kept; Tonight's opening column within the page.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard taken out at its one site. m3 the stored proof passed over: red; m4 the
+            opening column sized to its content again: red. Filtered to their tests and reverted before anything was
+            committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4044 of 4044 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the proof kept on the operator's store once it merges, run by hand then and by the night after.

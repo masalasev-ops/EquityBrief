@@ -903,7 +903,7 @@ details.expander>*:not(summary){margin:10px 12px}
 /* Tonight in the reader's words, from 22.6: the one-minute card, the six setups, each setup's card and the opened pick */
 .tonight-links{margin:12px 0 0;font-size:13.5px;color:var(--ink-2)}
 .card-summary{margin:0 0 10px;font-size:15px;color:var(--ink)}
-.one-minute{display:grid;gap:14px}
+.one-minute{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .minute-line p{margin:0}
 .minute-line .minute-said{font-size:13.5px;color:var(--ink-2)}
 .market-bar{margin:10px 0 0;max-width:560px}
