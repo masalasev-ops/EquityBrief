@@ -22984,3 +22984,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the proof kept on the operator's store once it merges, run by hand then and by the night after.
+
+### 24.29 - correction: a stock met again while its order waits stands among tonight's ideas   2026-11-25
+
+Ruled:      the operator's orders of 2026-11-25 on the report of 3:48 am, items 5 to 9, kept word for word in
+            `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`.
+Found:      on the night of 24 Nov the pullback's rules met CRL again while its order of 23 Nov at $320.04 waited, and Home
+            drew it only on its waiting card, its line and tonight's checklist there, so tonight's ideas left it out.
+Built:      such a stock drawn among tonight's ideas under its setup, marked "Met the rules again", with the line "Its order
+            of 23 Nov at $320.04 stands; no second order was placed. Tonight's rules would have placed it at $318.13.",
+            tonight's checks folded under "Why it qualified again on 24 Nov (5 checks)" and See the plan opening its chart
+            page; the chip reading "4 new · 1 again", the setup's header and the line beside the chips counting the two
+            apart; the waiting card keeping its mark alone; the bought trades' rows under "already held" as they were; the
+            picks proof reading such a card as its standing order and naming one that stands for no order still waiting.
+Measured:   over a copy of the store on C:, the S&P 500's pullback drew CRL as above, 4 new and 1 again; the S&P 400 and
+            600 drew none met again. Shots wide and at 390 before and after, light and dark.
+Tests:      1 new: the proof counting a card met again as its standing order, two planted and named. 1 widened: the
+            store test of a stock met again, its card among tonight's ideas and its waiting card keeping the mark alone.
+Pins:       none moved. Home and the proof are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the proof reading
+            a card met again as a new idea: red; m2 the proof's comparison of a card met again dropped: red; m3 the cards
+            met again found empty: red; m4 the chip counting the new ideas alone: red. Filtered to their tests and
+            reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4045 of 4045 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the picks proof over the operator's store after tonight's night, the again cards read as their orders.

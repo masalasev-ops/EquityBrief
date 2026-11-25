@@ -140,6 +140,44 @@ public partial class ReadSurface
         Assert.Contains("its revision was replaced on 2026-11-16 and its order still waits", replaced.Single(line => line.Ticker == "FERG").Mismatches);
     }
 
+    // From the operator's correction of 2026-11-25, item 9. EBAY's order of 20 Nov waits and the pullback's rules met it again
+    // tonight: Home draws it among tonight's ideas as a card met again, which the proof reads as that standing order and never
+    // as a new idea, so nothing is amiss. Planted: a card met again of MSCI, which holds no order, named; and EBAY's card met
+    // again naming the night before its order's, named.
+    // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+    [Fact]
+    public void AStockMetAgainAmongTonightsIdeasIsCountedAsItsStandingOrderAndNeverANewOne()
+    {
+        PlannedTradeRow[] planned =
+        [
+            AgreeOrder("pullback", "EBAY", new(2026, 11, 20), 111.33),
+            AgreeOrder("pullback", "MRNA", AgreeNight, 206.71),
+        ];
+        static string Card(string family, string ticker, string listed) => $"<article class=\"wo-card fam-edge\" data-family=\"{family}\" data-ticker=\"{ticker}\" data-listed=\"{listed}\" data-price=\"1\">";
+        static string Again(string ticker, string listed) => $"<article class=\"home-idea fam-edge again-idea\" data-family=\"pullback\" data-ticker=\"{ticker}\" data-again=\"true\" data-listed=\"{listed}\">";
+        var home = Card("pullback", "EBAY", "2026-11-20") + "<article class=\"home-idea fam-edge\" data-family=\"pullback\" data-ticker=\"MRNA\">";
+        var tonight = Card("pullback", "EBAY", "2026-11-20") + "<tr data-ticker=\"MRNA\" data-family=\"pullback\" data-place=\"1\">";
+        var paper = new Dictionary<string, string> { ["pullback"] = "<tr data-ticker=\"EBAY\" data-placed=\"2026-11-20\" data-take-profit=\"1\"><tr data-ticker=\"MRNA\" data-placed=\"2026-11-24\" data-take-profit=\"1\">" };
+        var nights = new Dictionary<DateOnly, string>
+        {
+            [new DateOnly(2026, 11, 20)] = "<tr data-ticker=\"EBAY\" data-family=\"pullback\" data-place=\"1\">",
+            [AgreeNight] = tonight,
+        };
+        static DateOnly? Never(string index, string owner, DateOnly listed) => null;
+        IReadOnlyList<string> Extras(string drawnHome)
+        {
+            PicksProof.Check("GSPC", AgreeNight, new DateOnly(2026, 11, 16), planned, AgreeSessions, Never, new PicksProof.DrawnPages(drawnHome, tonight, nights, paper), out var extras);
+            return extras;
+        }
+
+        var lines = PicksProof.Check("GSPC", AgreeNight, new DateOnly(2026, 11, 16), planned, AgreeSessions, Never, new PicksProof.DrawnPages(home + Again("EBAY", "2026-11-20"), tonight, nights, paper), out var agreed);
+
+        Assert.All(lines, line => Assert.Empty(line.Mismatches));
+        Assert.Empty(agreed);
+        Assert.Equal(["pullback MSCI placed 2026-11-20: Home's card met again stands for no order still waiting"], Extras(home + Again("MSCI", "2026-11-20")));
+        Assert.Equal(["pullback EBAY placed 2026-11-19: Home's card met again stands for no order still waiting"], Extras(home + Again("EBAY", "2026-11-19")));
+    }
+
     // Home's account names itself as Paper trading names it, and how many accounts it averages.
     [Fact]
     public void HomesAccountFigureIsNamedAsTheRunningRulesAccountsAveraged()

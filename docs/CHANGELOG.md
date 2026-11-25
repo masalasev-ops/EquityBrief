@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html - Home's ideas draw a stock met again while its order waits among tonight's ideas, at a correction to 24.29
+Decision: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+Was:
+> from the operator's correction of 2026-11-23 a stock its setup's rules met again tonight while its earlier order still waits drawn once on that order's card; its chip and its card marked "Met the rules again"; the card saying its order stands and the price tonight's rules would have placed it at; tonight's checklist under "Why it qualified again" and the standing order's plan alone drawn;
+Now:
+> from the operator's correction of 2026-11-23 a stock its setup's rules met again tonight while its earlier order still waits drawn on that order's card, its chip and its card marked "Met the rules again" and the standing order's plan alone drawn; from the operator's correction of 2026-11-25 the same stock drawn among tonight's ideas under its setup as a card marked "Met the rules again"; the card saying its order stands and no second order was placed with the price tonight's rules would have placed it at; tonight's checks folded under "Why it qualified again on" the night with their count; See the plan opening its chart page; the setup's chip, its header and the line beside the chips counting the new ideas and those met again apart; the waiting card keeping its mark alone (see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark);
+Why: the operator's order of 2026-11-25, items 5 to 9, kept word for word in `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`: CRL, met again on 24 Nov while its order of 23 Nov waited, was left out of tonight's ideas.
+
 ### 2026-11-25 - docs/ARCHITECTURE.html, docs/RUNBOOK.md - the picks proof kept after the night and read as stored, at a correction to 24.29
 Decision: The picks proof is worked after the night and kept, and its page reads it as stored
 Was:
