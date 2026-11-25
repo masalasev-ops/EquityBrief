@@ -95,10 +95,13 @@ public partial class ReadSurface
 
         var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Reading = Universes.Mid, Ideas = [Idea("drift", "HL"), Idea("improving", "AVNT"), Idea("quality", "QQ")], IdeasCount = 3 }, string.Empty);
 
-        Assert.Contains("<a class=\"home-plan\" href=\"#/tonight?universe=400&amp;name=HL\">See the plan</a>", home, StringComparison.Ordinal);
+        // From the operator's correction of 2026-11-24 a plan's idea opens its stock's chart page, where its plan is drawn; a buy
+        // no plan sells still opens its row on its own card.
+        // see: See the plan opens the stock's chart page with its pick's plan drawn on it
+        Assert.Contains("<a class=\"home-plan\" href=\"#/chart/HL\">See the plan</a>", home, StringComparison.Ordinal);
         Assert.Contains("<a class=\"home-how\" href=\"#/tonight?universe=400&amp;setup=improving&amp;name=AVNT\">How it sells</a>", home, StringComparison.Ordinal);
         Assert.Contains("<a class=\"home-how\" href=\"#/tonight?universe=400&amp;setup=quality&amp;name=QQ\">How it sells</a>", home, StringComparison.Ordinal);
-        Assert.DoesNotContain("#/chart/HL\">See the plan", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("name=HL\">See the plan", home, StringComparison.Ordinal);
 
         var buys = new MarkRenderer().TomorrowsBuys([Point("drift", "Earnings drift", "HL", 50m, 45m, 60m)], null, night: FixNight);
 

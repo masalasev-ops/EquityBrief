@@ -83,7 +83,8 @@ public partial class ReadSurface
             Assert.Contains($"<span class=\"fam-tag\" data-family=\"{order.Family}\">", card, StringComparison.Ordinal);
             Assert.Contains("<span class=\"wo-state\">Waiting to buy</span>", card, StringComparison.Ordinal);
             Assert.Contains("<span>Buy price $100.00</span>", card, StringComparison.Ordinal);
-            Assert.Contains($"href=\"#/name/{order.Ticker}\">See the plan</a>", card, StringComparison.Ordinal);
+            // From the operator's correction of 2026-11-24 the stock's chart page, where its plan is drawn.
+            Assert.Contains($"href=\"#/chart/{order.Ticker}\">See the plan</a>", card, StringComparison.Ordinal);
             Assert.DoesNotContain("setup-record", card, StringComparison.Ordinal);
         }
 

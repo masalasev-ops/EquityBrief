@@ -23,7 +23,11 @@ public sealed record HomeIdea(string Family, string Ticker, string? Company, str
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
 // fund over the same days; and whether a live rule still holds fewer finished trades than a verdict needs.
 // see: Every count of trades names its group and one function works the four groups
-public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null);
+public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null)
+{
+    // From the operator's correction of 2026-11-24 how many running rules' accounts the figure averages.
+    public int? Accounts { get; init; }
+}
 
 // Home as code draws it from the newest night: the index, the night drawn and whether a later night is still running; the
 // share of the index's stocks above their 200-day average with the floor the rules buy at and whether the market check
@@ -574,7 +578,7 @@ public sealed partial class SinglePageApp
             var widest = Math.Max(Math.Abs(past.Ours ?? 0), Math.Abs(past.Index ?? 0));
 
             region.Append("<div>");
-            region.Append(Bar("ours", past.AccountSince is { } counted ? Invariant($"Our paper account since {counted.ToString("d MMM", CultureInfo.InvariantCulture)}") : "Our paper account", past.Ours, widest));
+            region.Append(Bar("ours", AveragedLabel(past), past.Ours, widest));
             region.Append(Bar("index", Invariant($"The index's fund, {past.Fund}, over the same days"), past.Index, widest));
             region.Append("</div>");
             region.Append(Invariant($"<p class=\"home-system\" data-system-closed=\"{past.Closed}\" data-made-money=\"{past.Won}\">{Escaped(SystemLine(past))}</p>"));
@@ -906,11 +910,13 @@ public sealed partial class SinglePageApp
             card.Append(Invariant($"<div class=\"home-odds\">{said}</div>"));
         }
 
-        // A plan's idea opens Tonight at its row, its plan opened and in view; one no plan sells opens its row on its own card.
+        // One no plan sells opens its row on its own card; from the operator's correction of 2026-11-24, item 7, a plan's idea
+        // opens the stock's chart page, its pick's plan drawn on it, never another stock's card.
         // see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
+        // see: See the plan opens the stock's chart page with its pick's plan drawn on it
         card.Append(Planless(idea.Family)
             ? Invariant($"<a class=\"home-how\" href=\"{TonightHref(reading, idea.Family, idea.Ticker)}\">How it sells</a>")
-            : Invariant($"<a class=\"home-plan\" href=\"{TonightHref(reading, null, idea.Ticker)}\">See the plan</a>"));
+            : Invariant($"<a class=\"home-plan\" href=\"{ChartHref(idea.Ticker)}\">See the plan</a>"));
         card.Append("</article>");
 
         return card.ToString();
@@ -919,10 +925,23 @@ public sealed partial class SinglePageApp
     // What the paper account counts, as Home says it: the live setups' accounts averaged from the day every live rule on the
     // index had its current version, the latest of their starts, in the operator's words.
     // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+    // From the operator's correction of 2026-11-24, item 6, the line and the bar name the account Paper trading draws the same
+    // trades as: every running rule's own account, an equal share each, averaged.
+    // see: Home names its account figure as the running rules' accounts averaged, the same trades Paper trading draws
     public static string AccountLine(HomePast past) =>
         past.AccountSince is not { } from
             ? "Our paper account holds no trade of the rules as they stand now yet."
-            : Invariant($"Since today's rules all took effect on {from.ToString("d MMM", CultureInfo.InvariantCulture)}, our paper account has followed every one of them with an equal share.");
+            : Invariant($"Since today's rules all took effect on {from.ToString("d MMM", CultureInfo.InvariantCulture)}, this account has followed {(past.Accounts is { } held ? Invariant($"all {held} running rules") : "every running rule")} with an equal share each: Paper trading's \"{PaperAveragedName}\", from the same trades. A rule with nothing bought holds its share in cash.");
+
+    public const string PaperAveragedName = "The running revisions' accounts, averaged";
+
+    // A stock's chart page, where a pick's plan is drawn.
+    public static string ChartHref(string ticker) => MarkRenderer.ChartRoute + Uri.EscapeDataString(ticker);
+
+    public static string AveragedLabel(HomePast past) =>
+        past.AccountSince is { } counted
+            ? Invariant($"The running rules' accounts averaged, since {counted.ToString("d MMM", CultureInfo.InvariantCulture)}")
+            : "The running rules' accounts averaged";
 
     // The system's every trade, apart from the account and labelled.
     public static string SystemLine(HomePast past) =>

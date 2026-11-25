@@ -16,7 +16,8 @@ public sealed partial class PaperReads
         SELECT t.candidate, 'GSPC', t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, NULL, t.cap, t.plan,
                CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,
                CASE WHEN f.reason IS NOT NULL AND f.filled_on IS NULL THEN 1 ELSE 0 END,
-               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END
+               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END,
+               CASE WHEN f.filled_on IS NULL THEN f.reason END, CASE WHEN f.filled_on IS NULL THEN f.filled_at END
         FROM family_trade t
         LEFT JOIN trade_fill f ON f.source = 'family_trade' AND f.index_code = 'GSPC' AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE $index = 'GSPC' AND t.plan IS NOT NULL AND t.session_date <= $on
@@ -24,7 +25,8 @@ public sealed partial class PaperReads
         SELECT t.rule, t.index_code, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, NULL, t.cap, t.plan,
                CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,
                CASE WHEN f.reason IS NOT NULL AND f.filled_on IS NULL THEN 1 ELSE 0 END,
-               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END
+               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END,
+               CASE WHEN f.filled_on IS NULL THEN f.reason END, CASE WHEN f.filled_on IS NULL THEN f.filled_at END
         FROM rule_pick t
         LEFT JOIN trade_fill f ON f.source = 'rule_pick' AND f.index_code = t.index_code AND f.owner = t.rule AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE t.index_code = $index AND t.plan IS NOT NULL AND t.session_date <= $on
@@ -32,7 +34,8 @@ public sealed partial class PaperReads
         SELECT t.candidate, t.index_code, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, t.trail, t.cap, t.plan,
                CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,
                CASE WHEN f.reason IS NOT NULL AND f.filled_on IS NULL THEN 1 ELSE 0 END,
-               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END
+               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END,
+               CASE WHEN f.filled_on IS NULL THEN f.reason END, CASE WHEN f.filled_on IS NULL THEN f.filled_at END
         FROM index_rule_trade t
         LEFT JOIN trade_fill f ON f.source = 'index_rule_trade' AND f.index_code = t.index_code AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE t.index_code = $index AND t.plan IS NOT NULL AND t.session_date <= $on
@@ -40,7 +43,8 @@ public sealed partial class PaperReads
         SELECT t.rule, t.index_code, 'dip', t.ticker, t.session_date, t.place, t.entry, t.stop, NULL, NULL, t.time_limit, t.plan,
                CASE WHEN t.bought_on <= $on THEN t.bought_on END, CASE WHEN t.bought_on <= $on THEN t.fill END,
                CASE WHEN t.ended_on <= $on AND t.fill IS NULL THEN 1 ELSE 0 END,
-               CASE WHEN t.ended_on <= $on AND t.fill IS NOT NULL THEN t.ended_on END, CASE WHEN t.ended_on <= $on THEN t.result END, CASE WHEN t.ended_on <= $on THEN t.sale END
+               CASE WHEN t.ended_on <= $on AND t.fill IS NOT NULL THEN t.ended_on END, CASE WHEN t.ended_on <= $on THEN t.result END, CASE WHEN t.ended_on <= $on THEN t.sale END,
+               CASE WHEN t.ended_on <= $on AND t.fill IS NULL THEN t.end_reason END, CASE WHEN t.ended_on <= $on AND t.fill IS NULL THEN t.ended_on END
         FROM dip_trade t
         WHERE t.index_code = $index AND t.plan IS NOT NULL AND t.session_date <= $on
         ORDER BY 5, 3, 6, 4;
@@ -93,7 +97,12 @@ public sealed partial class PaperReads
                 reader.GetInt32(14) == 1,
                 DayOf(15),
                 reader.IsDBNull(16) ? null : reader.GetDouble(16),
-                Price(17)));
+                Price(17))
+            {
+                // From the operator's correction of 2026-11-24 why an order holds no fill, and the day that was written.
+                Why = reader.IsDBNull(18) ? null : reader.GetString(18),
+                WhyOn = reader.IsDBNull(19) ? null : DateOnly.ParseExact(reader.GetString(19)[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            });
         }
 
         return rows;

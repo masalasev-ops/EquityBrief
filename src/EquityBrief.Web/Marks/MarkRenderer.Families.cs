@@ -658,7 +658,7 @@ public sealed partial class MarkRenderer
                 continue;
             }
 
-            body.Append(Invariant, $"<div class=\"held-card\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\" data-bought=\"{(held.Bought ? "true" : "false")}\"><p class=\"held-label\"><b>{Escaped(held.Labelled)}</b></p><p class=\"held-line\">{Escaped(held.Line(card.Ticker, card.Family))}</p>");
+            body.Append(Invariant, $"<div class=\"held-card\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\" data-bought=\"{(held.Bought ? "true" : "false")}\"{(held.Ordered ? " data-ordered=\"true\"" : string.Empty)}><p class=\"held-label\"><b>{Escaped(held.Labelled)}</b></p><p class=\"held-line\">{Escaped(held.Line(card.Ticker, card.Family))}</p>");
             body.Append(HeldTradeFacts(held));
             body.Append(DecisionCard(card, null, linked: true));
             body.Append("</div>");

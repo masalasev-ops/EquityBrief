@@ -478,7 +478,7 @@ public static class PaperBooks
             IReadOnlyList<(PaperTrade, double?)> trades = pageList ? PageTrades(cells, [.. rows.Where(row => live is not null && row.Account == live.Candidate)]) : Of(rows.Where(head.Keeps));
             var registrations = RuleRegister.Registrations(family, large, indexName, register);
 
-            head = head with { Unfilled = pageList ? PageUnfilled(cells) : Unfilled(rows.Where(head.Keeps)) };
+            head = head with { Unfilled = pageList ? PageUnfilled(cells, trades) : Unfilled(rows.Where(head.Keeps)) };
 
             // A provisional account starts at the first night its list kept a trade, filled at the next open or not, so
             // pricing entries at the open moves no account's start.
@@ -790,11 +790,15 @@ public static class PaperBooks
                 FiredWhy: cell.FiredWords), cell.Result))),
     ];
 
-    // The S&P 500's page list's trades no fill bought, a repeat listing and one with no outcome stored left out.
-    static IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> PageUnfilled(IEnumerable<PickCell> cells) =>
+    // The S&P 500's page list's trades no fill bought, a repeat listing and one with no outcome stored left out; from the
+    // operator's correction of 2026-11-24, item 2, a stock the account already holds in a trade bought on an earlier night and
+    // not sold by this one left out as well, met again rather than ordered twice.
+    // see: A stock its rule's live account already holds is drawn as met again on every page and never ordered twice
+    static IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> PageUnfilled(IEnumerable<PickCell> cells, IReadOnlyList<(PaperTrade Trade, double? Result)> trades) =>
     [
         .. cells
             .Where(cell => cell.RepeatOf is null && cell.Status != PickStates.Missing && cell.Buy is not null && cell.FilledOn is null)
+            .Where(cell => !trades.Any(one => one.Trade.Ticker == cell.Ticker && (one.Trade.Listed ?? one.Trade.Bought) < cell.Night && one.Trade.Bought <= cell.Night && (one.Trade.Ended is not { } ended || ended > cell.Night)))
             .Select(cell => (cell.Ticker, cell.Night, cell.Unfilled ?? PaperAccount.Waiting)),
     ];
 

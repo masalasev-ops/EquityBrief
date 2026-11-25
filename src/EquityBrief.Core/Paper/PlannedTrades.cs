@@ -68,6 +68,18 @@ public static class PlannedTrades
 
     public static bool IsWaiting(PlannedTradeRow row) => row.Fill is null && !row.NotFilled;
 
+    // From the operator's correction of 2026-11-24, item 2, the stocks each family's live rule holds on a night from an earlier
+    // night: a trade it bought and has not sold, or an order still waiting for its price. A stock so held is never a new pick of
+    // that rule; every page draws it as met again.
+    // see: A stock its rule's live account already holds is drawn as met again on every page and never ordered twice
+    public static IReadOnlyDictionary<(string Family, string Ticker), PlannedTradeRow> HeldOn(IReadOnlyList<PlannedTradeRow> planned, DateOnly night) =>
+        planned
+            .Where(row => row.Live && row.Listed < night
+                && ((IsWaiting(row) && !row.Order.PlacesNoPrice() && LastDay(row.Listed, row.Order.Window) >= night)
+                    || (row.FilledOn is { } filled && filled <= night && (row.EndedOn is not { } ended || ended > night))))
+            .GroupBy(row => (row.Family, row.Ticker))
+            .ToDictionary(group => group.Key, group => group.OrderByDescending(row => row.Listed).First());
+
     public static decimal? Price(PlannedTradeRow row) => row.Order.Level is { } level ? Statistic.ToPrice(level) : null;
 
     public static string WaitingWords(PlannedTradeRow row) => PlanOrderWords.Waiting(Price(row), LastDay(row.Listed, row.Order.Window));

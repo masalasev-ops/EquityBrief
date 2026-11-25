@@ -60,6 +60,8 @@ public sealed partial class MarkRenderer
     public static DecisionCardView? AgainOf(WaitingOrderView order, IReadOnlyList<DecisionCardView> again) =>
         again.FirstOrDefault(card => card.Ticker == order.Ticker && card.HeldAgain is { Bought: false } held && held.Family == order.Family && held.Night == order.Listed);
 
+    public const string LeftHeading = "Bought, sold or left the waiting list";
+
     // Under the waiting cards for five trading days, each order that left the waiting list and why, with the revision that
     // placed it; nothing where none left.
     public static string LeftNotes(IReadOnlyList<LeftOrderView>? left)
@@ -69,11 +71,12 @@ public sealed partial class MarkRenderer
             return string.Empty;
         }
 
-        var html = new StringBuilder(Formatted($"<div class=\"left-notes\" data-left=\"{left.Count}\"><p class=\"list-count\">Left the waiting list in the last {LeftOrderView.Sessions} trading days ({left.Count})</p><ul class=\"left-list\">"));
+        // From the operator's correction of 2026-11-24 every live rule's buy and sale stands here beside the orders that left.
+        var html = new StringBuilder(Formatted($"<div class=\"left-notes\" data-left=\"{left.Count}\"><p class=\"list-count\">{LeftHeading} in the last {LeftOrderView.Sessions} trading days ({left.Count})</p><ul class=\"left-list\">"));
 
         foreach (var row in left)
         {
-            html.Append(Formatted($"<li class=\"{(row.Bought ? "bt" : "cx")}\" data-ticker=\"{Escaped(row.Ticker)}\">{Escaped(row.Words)}{(row.Family is { } family && row.Listed is { } listed ? RevisionTags.For(family, listed) : string.Empty)}</li>"));
+            html.Append(Formatted($"<li class=\"{(row.Sold ? "sd" : row.Bought ? "bt" : "cx")}\" data-ticker=\"{Escaped(row.Ticker)}\"{(row.Family is { } tagged ? Formatted($" data-family=\"{Escaped(tagged)}\"") : string.Empty)} data-on=\"{DayOf(row.On)}\">{WithSignedFigures(row.Words)}{(row.Family is { } family && row.Listed is { } listed ? RevisionTags.For(family, listed) : string.Empty)}</li>"));
         }
 
         return html.Append("</ul></div>").ToString();
@@ -167,7 +170,9 @@ public sealed partial class MarkRenderer
         card.Append("</div>");
         card.Append(Invariant, $"<p class=\"wo-placed\">{Escaped(PlacedLine(order, setup, night))}</p>");
         card.Append(again is null ? string.Empty : WhyItQualified(again, AgainHeading));
-        card.Append(Invariant, $"<a class=\"home-plan\" href=\"#/name/{Uri.EscapeDataString(order.Ticker)}\">See the plan</a>");
+        // From the operator's correction of 2026-11-24, item 7, the stock's chart page, where its plan is drawn.
+        // see: See the plan opens the stock's chart page with its pick's plan drawn on it
+        card.Append(Invariant, $"<a class=\"home-plan\" href=\"{ChartRoute}{Uri.EscapeDataString(order.Ticker)}\">See the plan</a>");
 
         return card.Append("</article>").ToString();
     }

@@ -54,4 +54,14 @@ public sealed record LeftOrderView(string Ticker, DateOnly On, bool Bought, stri
 
     public static string CancelledWords(string ticker, DateOnly last) =>
         ticker + " cancelled: not bought by its last day, " + last.ToString("d MMM", CultureInfo.InvariantCulture) + ".";
+
+    // From the operator's correction of 2026-11-24, item 5, a trade a rule bought at the open and a trade it sold.
+    public bool Sold { get; init; }
+
+    public static string BoughtAtOpenWords(string ticker, DateOnly on, decimal buy, bool soldSince) =>
+        FormattableString.Invariant($"{ticker} bought {on.ToString("d MMM", CultureInfo.InvariantCulture)} at ${buy:N2}, at the open.") + (soldSince ? string.Empty : " Now under Open trades.");
+
+    public static string SoldWords(string ticker, DateOnly on, decimal sale, decimal buy) =>
+        FormattableString.Invariant($"{ticker} sold {on.ToString("d MMM", CultureInfo.InvariantCulture)} at ${sale:N2}")
+        + (buy > 0m ? FormattableString.Invariant($", {(sale / buy - 1m) * 100m:+0.0;-0.0;0.0}% on its buy of ${buy:N2}.") : ".");
 }

@@ -29,6 +29,12 @@ public sealed record PlannedTradeRow(
 {
     // Whether the rule keeping it is its family's live rule on its index, whose trades every page draws.
     public bool Live => Owner.StartsWith(Candidates.FamilyRecords.LivePrefix, StringComparison.Ordinal);
+
+    // From the operator's correction of 2026-11-24 why it holds no fill as its fill row or its own table says, and the day that
+    // was written: its window passed, its plan placed no price, or its revision was replaced; none where it holds a fill.
+    public string? Why { get; init; }
+
+    public DateOnly? WhyOn { get; init; }
 }
 
 // One trade a list or a book kept, in the one shape every paper account reads: the account it belongs to, by the
