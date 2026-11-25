@@ -56,7 +56,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null,
         bool table = false,
-        IReadOnlyDictionary<string, SetupLedger.ReportFiled>? reportFilings = null)
+        IReadOnlyDictionary<string, SetupLedger.ReportFiled>? reportFilings = null,
+        IReadOnlyList<DateOnly>? settlements = null)
     {
         if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is not { } read)
         {
@@ -64,6 +65,8 @@ public static class LedgerPointInTime
         }
 
         var readings = LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series);
+
+        SetupLedger.CapShortInterest(readings, shortInterest, settlements, ticker, read.Calendar[read.At]);
 
         // From the 24.19 correction a row of the every-session table is rebuilt as the table reads its seven of its own.
         if (table)
@@ -94,24 +97,27 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, LedgerActions>? actions = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null)
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null,
+        IReadOnlyList<DateOnly>? settlements = null)
     {
         if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs) is not { } read)
         {
             return (false, null);
         }
 
-        if (family == HeavyweightRule.Name)
+        var readings = family == HeavyweightRule.Name
+            ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series)
+            : LedgerSetups.On(index, read.Series, read.Sessions, read.Members, read.Calendar, read.At, market, read.Context)
+                .Where(setups => setups.Family == family)
+                .SelectMany(setups => setups.Rows)
+                .FirstOrDefault(setup => string.Equals(setup.Ticker, ticker, StringComparison.Ordinal))?.Readings;
+
+        if (readings is not null)
         {
-            return (true, LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series));
+            SetupLedger.CapShortInterest(readings, shortInterest, settlements, ticker, read.Calendar[read.At]);
         }
 
-        var row = LedgerSetups.On(index, read.Series, read.Sessions, read.Members, read.Calendar, read.At, market, read.Context)
-            .Where(setups => setups.Family == family)
-            .SelectMany(setups => setups.Rows)
-            .FirstOrDefault(setup => string.Equals(setup.Ticker, ticker, StringComparison.Ordinal));
-
-        return (true, row?.Readings);
+        return (true, readings);
     }
 
     // From the operator's order of 2026-11-24, item 4, a cut whose members on its last sessions given are those a set holds on
@@ -166,7 +172,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, LedgerActions>? actions = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest = null,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null)
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? oneOffs = null,
+        IReadOnlyList<DateOnly>? settlements = null)
     {
         var rows = new Dictionary<string, (double?[] Readings, double? Alpha3Traded, double? Alpha4Traded)>(StringComparer.Ordinal);
 
@@ -189,6 +196,7 @@ public static class LedgerPointInTime
 
             var readings = LedgerSetups.Readings(index, name, read.Series[name], Closes(read.Series[name]), bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series);
 
+            SetupLedger.CapShortInterest(readings, shortInterest, settlements, ticker, read.Calendar[read.At]);
             rows[ticker] = (readings, traded.Alpha3(name, bar), traded.Alpha4(name, bar));
         }
 

@@ -23103,3 +23103,48 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the long ledger built from 2019 over the corrected list, folded into the long ledger rebuild already queued, its
             hours and when it runs against the pin move and the run of 2027-02-06 stated first and started on the operator's
             word; the every-session table written again with it in the one rewrite.
+
+### 24.19 - correction: every ledger build reads the long history, a code's long prices read against its newest pull, BB&T as TFC and IR from its entry, and a build's short interest from the two newest settlements   2026-11-25
+
+Ruled:      the operator's answer on the member set, their decisions A to E with how 24.19 finishes, and their answers on the
+            report of 4:17 pm, kept word for word in `prompts/2026-11-25-24.19-answer-member-set.md`,
+            `prompts/2026-11-25-24.19-decisions-a-to-e-and-how-it-finishes.md` and
+            `prompts/2026-11-25-24.19-on-the-report-of-4-17pm.md`. Four new decisions.
+Found:      the S&P 600's 912 own-price differences and its 21 on the fifty-day over the long average are mostly SUPN, whose
+            long prices are another filer's: the code passed to it in November 2026 and the long pull, asked after, holds its
+            history, where the October pull holds Supernus's; the store's own SUPN bars from 2025-11-24 are the new filer's
+            since the night of 2026-11-05 asked its year again. Held at one scale, ten codes' long and pulled closes part on
+            most sessions, and more step apart on one session and stay apart, a spin-off, special distribution or split one
+            side alone adjusted: WOR's fifty-day over its long average on 2024-04-16 reads 0.97 off the long prices and 1.24
+            off the pull's. The readings' version pins the source that works the short interest, so the cap is worked after
+            the catalogue's readings in the builds' own code.
+Built:      every ledger build by hand and its check read the long history reader's members and prices, the long market
+            series and the long filers and facts where the store holds the index's long spans, the pulled history where it
+            holds none; the long reader reads each code against its newest pull as the class the two fall in; BBT's S&P 500
+            span from 2018-10-01 dropped and IR's started at 2020-03-03 by hand; a build's short interest left none where its
+            report is not of the two newest settlements before the session, the nights as before, and the every-session
+            check listing the short interest expected; `ledger-build --long --again --from` writes the long ledger again
+            from a session whatever its pin.
+Tests:      5 new: the class worked by hand over constructed series, agreeing, one instrument stepped with and without the
+            store's bars, a blip, another thin and another kept; a constructed store read through the reader, a newest pull
+            read and an older one not; BBT dropped and IR started; the short interest's cap by hand on both sides of the two
+            settlements, before the first and with none given, and never on the night's paths or in a source the readings'
+            version pins; every build and the standing check reading the long history where the spans stand, and the long
+            ledger's rewrite from a session. 2 widened: PARA's hand list holding BBT, and the session check's expected
+            section naming the short interest.
+Pins:       none moved. The readings' version's sources and every file a rule pins stand as on main.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the one instrument
+            read at its own adjustment: red; m2 the thin side never thin: red; m3 IR's start not read: red; m4 the cap's
+            none not written: red; m5 the long spans never held: red. Each filtered to its tests and reverted before anything
+            was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4055 of 4055 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the folded build on the operator's go of 2026-11-25, Friday 27 Nov after the night through Sunday 29 Nov, in the
+            runbook's order; the class's list with each code's class into the 24.19 closing report; SUPN's sessions from
+            2026-10-26 to its span's end of 2026-11-03, which the October pull does not reach and the long and store's
+            bars hold as the new filer's, and whether the new filer is the S&P 600's SUPN since 2026-11-03, both to the
+            operator in that report.

@@ -1707,9 +1707,18 @@ public sealed partial class SetupLedger : IComponent
     // the sessions each row's end is dated by, the market's, the context's and the heavyweights' inputs, and what the
     // build reads past the span's end. Once the bar store no longer holds the span's end, no path is replayed past it,
     // and the words say so.
+    //
+    // From the 24.19 correction of 2026-11-25 every build reads the long history's members and prices, its market series, its
+    // filers and its facts wherever the store holds the index's long spans, the standing ledger as the long ledger and the
+    // every-session table do, so the three read one member list; a store holding none reads its pulled history as before. The
+    // heavyweights' rebalances read from the standing ledger's first scored session on it and from 2005 on the long.
+    // see: The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
     async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation, bool heavyweightsRead = true, (LiveRulesRead Rules, DateTimeOffset At)? live = null, History.LongHistoryReader? longHistory = null)
     {
         var history = new SweepHistory(databaseFile);
+        var longLedger = longHistory is not null;
+
+        longHistory ??= await LongSpansHeldAsync(connection, index, cancellation) ? new History.LongHistoryReader(databaseFile) : null;
 
         output.WriteLine($"ledger-build: reading the {DecisionCards.NameOf(index)}'s {(longHistory is null ? "history" : "long history")} through {Stamp(through)}");
 
@@ -1738,7 +1747,7 @@ public sealed partial class SetupLedger : IComponent
         string[] filers = longHistory is null ? [PulledFilers, Filers] : [LongFilers, PulledFilers, Filers];
         var facts = await FactsAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation, longHistory is null ? FactsOfFiler : LongFactsOfFiler);
         var heavyweights = index == IndexFamilies.LargeIndex && heavyweightsRead
-            ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation, longHistory is null ? null : Core.History.LongLedger.FirstScored)
+            ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation, longLedger ? Core.History.LongLedger.FirstScored : null)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
         var insiders = await InsidersAsync(connection, filers, inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
         var releases = await ReleasesAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation);
@@ -1784,6 +1793,7 @@ public sealed partial class SetupLedger : IComponent
             Live = rules,
             LiveWords = live is { } read ? read.Rules.Words(read.At) : null,
             LargeBreadth = largeBreadth,
+            Settlements = await ShortInterestSettlementsAsync(connection, cancellation),
         };
     }
 
@@ -1892,6 +1902,11 @@ public sealed partial class SetupLedger : IComponent
 
         public double?[]? LargeBreadth { get; init; }
 
+        // From the 24.19 correction of 2026-11-25 every day FINRA published a settlement on, which caps a build's short
+        // interest after its readings are worked; none reads every report as the night does.
+        // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
+        public IReadOnlyList<DateOnly>? Settlements { get; init; }
+
         // From 23.6 the same history with each series whose prices stop before the replay's end held at its last close and
         // open for every session after it, so the walks end a trade and a benchmark member on it at its last price and none
         // is left out for stopping; every reading, setup and member the same.
@@ -1914,6 +1929,7 @@ public sealed partial class SetupLedger : IComponent
                 Live = Live,
                 LiveWords = LiveWords,
                 LargeBreadth = LargeBreadth,
+                Settlements = Settlements,
             };
         }
 
@@ -1937,6 +1953,11 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var read in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
             {
+                foreach (var row in read.Rows)
+                {
+                    CapShortInterest(row.Readings, context.ShortInterest, Settlements, row.Ticker, calendar[at]);
+                }
+
                 var family = read;
 
                 if (Live.Read.TryGetValue(read.Family, out var rule))
@@ -2207,6 +2228,12 @@ public sealed partial class SetupLedger : IComponent
             ? HistoryThrough(longThrough is { } builtThrough ? Stamp(builtThrough) : null, sample.Max(row => row.Session))
             : HistoryThrough(await ScalarAsync(connection, HistoryEnd, [("$index", index), ("$source", HistorySource)], cancellation) as string, sample.Max(row => row.Session));
         var history = new SweepHistory(databaseFile);
+        var longCheck = longHistory is not null;
+
+        // From the 24.19 correction of 2026-11-25 the standing check reads the history the standing build reads.
+        // see: The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
+        longHistory ??= await LongSpansHeldAsync(connection, index, cancellation) ? new History.LongHistoryReader(databaseFile) : null;
+
         var inputs = longHistory is not null
             ? await longHistory.ReadAsync(index, through, output.WriteLine, cancellation)
             : await history.ReadAsync(through, output.WriteLine, cancellation, index: index == IndexFamilies.LargeIndex ? null : index, asItStood: index != IndexFamilies.LargeIndex);
@@ -2221,6 +2248,7 @@ public sealed partial class SetupLedger : IComponent
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var settlements = await ShortInterestSettlementsAsync(connection, cancellation);
         var largeBreadth = index == IndexFamilies.LargeIndex
             ? null
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(
@@ -2238,7 +2266,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, settlements);
 
                 if (!held)
                 {
@@ -2258,7 +2286,7 @@ public sealed partial class SetupLedger : IComponent
 
                 // From the 23.6 correction the long check leaves unread a reading the long build holds none of by design.
                 // see: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
-                var (differences, notRead) = longHistory is null ? (LedgerPointInTime.Differences(row.Readings, rebuilt), 0) : LedgerPointInTime.LongDifferences(row.Readings, rebuilt);
+                var (differences, notRead) = longCheck ? LedgerPointInTime.LongDifferences(row.Readings, rebuilt) : (LedgerPointInTime.Differences(row.Readings, rebuilt), 0);
 
                 unread += notRead;
                 findings.AddRange(differences.Select(differ =>
@@ -3006,6 +3034,77 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return trends.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerTrend>)[.. pair.Value.OrderBy(trend => trend.Session)], StringComparer.Ordinal);
+    }
+
+    const string LongSpansOnIndex = "SELECT 1 FROM long_span WHERE index_code = $index LIMIT 1;";
+
+    // Whether the store holds the long history's spans of an index, which every build then reads.
+    // see: The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
+    static async Task<bool> LongSpansHeldAsync(SqliteConnection connection, string index, CancellationToken cancellation) =>
+        await ScalarAsync(connection, LongSpansOnIndex, [("$index", index)], cancellation) is not null;
+
+    // From the 24.19 correction of 2026-11-25 how many of the newest settlements FINRA published before a session a build reads
+    // a stock's report from.
+    // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
+    public const int ShortInterestSettlementsRead = 2;
+
+    const string ShortInterestPublished = "SELECT DISTINCT published_on FROM short_interest ORDER BY published_on;";
+
+    // Every day FINRA published a settlement on, oldest first.
+    public static async Task<IReadOnlyList<DateOnly>> ShortInterestSettlementsAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var days = new List<DateOnly>();
+
+        await using var command = Command(connection, null, ShortInterestPublished, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            days.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return days;
+    }
+
+    // Whether a report published on a day is of the newest settlements read before a session.
+    public static bool ShortInterestCurrent(IReadOnlyList<DateOnly> settlements, DateOnly reported, DateOnly session)
+    {
+        var (low, high) = (0, settlements.Count);
+
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+
+            if (settlements[middle] < session)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return low > 0 && reported >= settlements[Math.Max(0, low - ShortInterestSettlementsRead)];
+    }
+
+    static readonly int ShortInterestAt = LedgerReadings.IndexOf("short_interest_share");
+
+    // A build's short interest on a session, worked by the catalogue's own reading, left none where the report it read is not
+    // of the newest settlements read before the session; none given leaves it as the night reads it. Worked after the
+    // catalogue's readings, so the readings' version and every rule's pin stand.
+    // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
+    public static void CapShortInterest(double?[] readings, IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? shortInterest, IReadOnlyList<DateOnly>? settlements, string ticker, DateOnly session)
+    {
+        if (settlements is null || readings[ShortInterestAt] is null)
+        {
+            return;
+        }
+
+        if (shortInterest?.GetValueOrDefault(ticker)?.LastOrDefault(report => report.Reported < session) is not { } report || !ShortInterestCurrent(settlements, report.Reported, session))
+        {
+            readings[ShortInterestAt] = null;
+        }
     }
 
     // From 21.6 FINRA's settlements of each stock's short interest, each under the day FINRA published it, oldest first;

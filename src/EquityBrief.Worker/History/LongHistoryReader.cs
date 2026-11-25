@@ -32,6 +32,7 @@ public sealed class LongHistoryReader : IComponent
             new StoreTouch(Store.LongSpan, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.LongSplit, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.SplitEvent, Touch.Read),
@@ -701,14 +702,17 @@ public sealed class LongHistoryReader : IComponent
     }
 
     // A code's prices, the long pull's and the store's at the store's scale, the sessions before a start left out and a bad
-    // print skipped; its history-ends mark is read by the parts.
+    // print skipped, then read against the newest pull holding the code as the class the two fall in; its history-ends mark is
+    // read by the parts.
+    // see: A code whose long prices part from the newest pull's is read at the pull's adjustment where both are one instrument, and from the pull where the long side is another and thin
     static async Task<SweepBar[]> SeriesAsync(SqliteConnection connection, string ticker, IReadOnlyList<SessionMark> marks, string through, CancellationToken cancellation)
     {
         var kept = marks.Where(mark => mark.Kind != SessionMarking.HistoryEnds).ToArray();
         var longBars = LongMarks.Parts(await BarsAsync(connection, "long_bar", ticker, through, cancellation), kept, [], true)[0].Bars;
         var stored = LongMarks.Parts(await BarsAsync(connection, "bar", ticker, through, cancellation), kept, [], true)[0].Bars;
+        var pulled = LongMarks.Parts(await BarsAsync(connection, "pulled_bar", ticker, through, cancellation), kept, [], true)[0].Bars;
 
-        return SweepHistory.Merged(longBars, stored);
+        return LongPulled.Read(SweepHistory.Merged(longBars, stored), pulled, stored.Length > 0 ? stored[0].Session : null);
     }
 
     // A part of a code's history with the prices another code of its company holds on its member sessions it holds none of,
@@ -1002,9 +1006,12 @@ public sealed class LongHistoryReader : IComponent
 
         await foreach (var row in RowsAsync(
             connection,
-            table == "bar"
-                ? "SELECT session_date, high, low, close, volume, open, raw_close FROM bar WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;"
-                : "SELECT session_date, high, low, close, volume, open, raw_close FROM long_bar WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+            table switch
+            {
+                "bar" => "SELECT session_date, high, low, close, volume, open, raw_close FROM bar WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+                "pulled_bar" => "SELECT session_date, high, low, close, volume, open, raw_close FROM pulled_bar WHERE ticker = $ticker AND pull = (SELECT MAX(pull) FROM pulled_bar WHERE ticker = $ticker) AND session_date <= $through ORDER BY session_date;",
+                _ => "SELECT session_date, high, low, close, volume, open, raw_close FROM long_bar WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+            },
             [("$ticker", ticker), ("$through", through)],
             cancellation))
         {

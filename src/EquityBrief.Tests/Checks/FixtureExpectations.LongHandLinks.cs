@@ -109,7 +109,7 @@ public partial class FixtureExpectations
     {
         var paramount = new DateOnly(2025, 8, 7);
 
-        Assert.Equal([("PARA", paramount)], LongSpans.DroppedByHand);
+        Assert.Equal([("PARA", paramount), ("BBT", new DateOnly(2018, 10, 1))], LongSpans.DroppedByHand);
 
         ProviderSpan[] rows =
         [

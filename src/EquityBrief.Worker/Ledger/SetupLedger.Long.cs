@@ -88,7 +88,13 @@ public sealed partial class SetupLedger
     // written under the catalogue's version now, each session's rows cleared and written again in one chunk's transaction, so a
     // build stopped part way resumes where it stopped and a session is never left half written.
     // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
-    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null, bool again = false)
+    //
+    // From the 24.19 correction of 2026-11-25, with `again` and a session to write from, every session from it written once
+    // more whatever its pin, as the every-session table's build writes again from a session, a build stopped part way resumed
+    // by giving the session it stopped before; the readings' version not moving, the pin alone cannot tell a row written
+    // again from one written before.
+    // see: The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
+    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null, bool again = false, DateOnly? againFrom = null)
     {
         var startedAt = clock.UtcNow;
         var pause = wait ?? Task.Delay;
@@ -113,7 +119,9 @@ public sealed partial class SetupLedger
             return 1;
         }
 
-        var stored = await LongSessionsPassedAsync(connection, index, again, cancellation);
+        var stored = again && againFrom is { } writeFrom
+            ? prepared.Calendar.Where(session => session < writeFrom).ToHashSet()
+            : await LongSessionsPassedAsync(connection, index, again, cancellation);
         var sessionsToWrite = Enumerable.Range(first, last - first + 1).Where(at => !stored.Contains(prepared.Calendar[at])).ToArray();
         var runId = FormattableString.Invariant($"{LongBuildStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
         var atLastPrice = prepared.HeldAtLastPrice();
