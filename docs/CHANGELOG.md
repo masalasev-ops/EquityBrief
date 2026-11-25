@@ -7,6 +7,23 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html, docs/RUNBOOK.md - the picks proof kept after the night and read as stored, at a correction to 24.29
+Decision: The picks proof is worked after the night and kept, and its page reads it as stored
+Was:
+> ARCHITECTURE.html, "Every count of trades names its group": "... and the night's script runs it on the night's own copy once the worker has finished and fails on any. (see: The reconciliation holds ...)"
+> RUNBOOK.md, the night built from a clean copy: "... or the page at `/proof/picks` (see: The reconciliation holds ...)."
+Now:
+> ARCHITECTURE.html and RUNBOOK.md: each the same, adding that the verb keeps its page under the data root and the route reads it as stored, worked again only where none is kept or one is asked for fresh
+Why: the operator's order of 2026-11-25, item 3, kept word for word in `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`
+
+### 2026-11-25 - docs/ARCHITECTURE.html - the table's weekdays to the next report counted to the day each results 8-K reports, at a correction to the 24.19 correction
+Decision: The every-session table counts the weekdays to the next report from the day each quarter's results 8-K reports
+Was:
+> ARCHITECTURE.html, the store row "Every member's readings on every session": "... the weekdays to the next report counted to each quarter's results 8-K off the code's filings (see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes), and its readings of a bar's volume none ..."
+Now:
+> ARCHITECTURE.html: the same, adding "from the operator's ruling of 2026-11-25 to the day each results 8-K reports and in a quarter holding two or more to the last filed before its report's day (see: The every-session table counts the weekdays to the next report from the day each quarter's results 8-K reports)"
+Why: the operator's ruling of 2026-11-25, item 1, kept word for word in `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`
+
 ### 2026-11-25 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - what is picked, ordered, bought and shown agrees across Home, Tonight and Paper trading, at a correction to 24.29
 Decision: The reconciliation holds every live rule's order and trade to what Home, Tonight and Paper trading draw, and fails on any mismatch; A stock its rule's live account already holds is drawn as met again on every page and never ordered twice; An order its revision placed and never filled is cancelled when the revision is replaced, and every page says so; Home's left notes name every live rule's buy and sale and every order that left unbought, with why; Home names its account figure as the running rules' accounts averaged, the same trades Paper trading draws; See the plan opens the stock's chart page with its pick's plan drawn on it; A card labels the rule's checks and the plan it trades apart, each with its own figures and its own reward against risk
 Was:

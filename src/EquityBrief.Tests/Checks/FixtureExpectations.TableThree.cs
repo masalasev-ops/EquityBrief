@@ -48,18 +48,33 @@ public partial class FixtureExpectations
     [Fact]
     public void TheTableCountsTheWeekdaysToEachQuartersResults8KAPreliminaryLeftOut()
     {
-        var swks = TableReadings.ReportDays([Day("2019-01-08"), Day("2019-02-05"), Day("2019-04-25")], [Day("2019-02-06"), Day("2019-05-03")], [Day("2018-11-01"), Day("2019-02-05"), Day("2019-03-01"), Day("2019-07-25")]);
+        static (DateOnly, DateOnly) Same(string day) => (Day(day), Day(day));
+
+        var swks = TableReadings.ReportDays([Same("2019-01-08"), Same("2019-02-05"), Same("2019-04-25")], [Day("2019-02-06"), Day("2019-05-03")], [Day("2018-11-01"), Day("2019-02-05"), Day("2019-03-01"), Day("2019-07-25")]);
 
         Assert.Equal([Day("2018-11-01"), Day("2019-02-05"), Day("2019-04-25"), Day("2019-07-25")], swks);
         Assert.Equal(21, LedgerSetups.EarningsSessions(swks, [Day("2019-01-07")], 0));
 
-        var wmt = TableReadings.ReportDays([Day("2024-08-15"), Day("2024-11-19")], [Day("2024-08-30"), Day("2024-12-06")], [Day("2024-08-30"), Day("2024-12-06")]);
+        var wmt = TableReadings.ReportDays([Same("2024-08-15"), Same("2024-11-19")], [Day("2024-08-30"), Day("2024-12-06")], [Day("2024-08-30"), Day("2024-12-06")]);
 
         Assert.Equal([Day("2024-08-15"), Day("2024-11-19")], wmt);
         Assert.Equal(24, LedgerSetups.EarningsSessions(wmt, [Day("2024-07-12")], 0));
         Assert.Equal(65, LedgerSetups.EarningsSessions(wmt, [Day("2024-08-20")], 0));
 
         Assert.Equal([Day("2024-08-30")], TableReadings.ReportDays([], [Day("2024-08-30")], [Day("2024-08-30")]));
+
+        // From the operator's ruling of 2026-11-25: AVB reported after the close on 30 Apr 2013 and its 8-K was filed on 1 May, so
+        // the report counts on 30 Apr, 28 weekdays after 21 Mar, as the ledger reads it; CF's results 8-K of 5 Nov 2014 is its
+        // report, the second filed on 6 Nov with its 10-Q a supplement; FLR's 8-K of 1 Nov 2018, filed the day of its 10-Q, reads
+        // as a supplement under the rule, so its quarter counts on its 8-K of 10 Oct; and a quarter with one 8-K, filed the day of
+        // its 10-Q, takes it.
+        var avb = TableReadings.ReportDays([(Day("2013-04-30"), Day("2013-05-01"))], [Day("2013-05-10")], []);
+
+        Assert.Equal([Day("2013-04-30")], avb);
+        Assert.Equal(28, LedgerSetups.EarningsSessions(avb, [Day("2013-03-21")], 0));
+        Assert.Equal([Day("2014-11-05")], TableReadings.ReportDays([Same("2014-11-05"), Same("2014-11-06")], [Day("2014-11-06")], []));
+        Assert.Equal([Day("2018-10-10")], TableReadings.ReportDays([Same("2018-10-10"), Same("2018-11-01")], [Day("2018-11-01")], []));
+        Assert.Equal([Day("2016-01-28")], TableReadings.ReportDays([Same("2016-01-28")], [Day("2016-01-28")], []));
 
         // The table's row reads the weekdays to the report days given: from Tuesday 3 Jan 2012 to Tuesday 10 Jan, five.
         SweepBar[] bars = [.. Enumerable.Range(0, 30).Select(day => Quiet(day, 20m + (day % 3), 1000, 20m + (day % 3)))];

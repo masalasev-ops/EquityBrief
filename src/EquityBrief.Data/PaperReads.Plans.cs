@@ -52,14 +52,26 @@ public sealed partial class PaperReads
 
     // Every registered rule's trade an index's plan keeps through a night, a rule's stock its family listed once a night
     // read once.
-    public async Task<IReadOnlyList<PlannedTradeRow>> PlannedTradesAsync(string index, DateOnly on)
+    public Task<IReadOnlyList<PlannedTradeRow>> PlannedTradesAsync(string index, DateOnly on) => PlannedAsync(index, on, null);
+
+    // From the operator's order of 2026-11-25, item 3, the same trades of the stocks given alone, which a page's cards read
+    // without reading every trade the index holds.
+    public Task<IReadOnlyList<PlannedTradeRow>> PlannedTradesOfAsync(string index, DateOnly on, IReadOnlyCollection<string> tickers) =>
+        tickers.Count == 0 ? Task.FromResult<IReadOnlyList<PlannedTradeRow>>([]) : PlannedAsync(index, on, tickers);
+
+    async Task<IReadOnlyList<PlannedTradeRow>> PlannedAsync(string index, DateOnly on, IReadOnlyCollection<string>? tickers)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = PlannedUpTo;
+        command.CommandText = tickers is null ? PlannedUpTo : PlannedUpTo.Replace("t.session_date <= $on", "t.session_date <= $on AND t.ticker IN (SELECT value FROM json_each($tickers))", StringComparison.Ordinal);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (tickers is not null)
+        {
+            command.Parameters.AddWithValue("$tickers", System.Text.Json.JsonSerializer.Serialize(tickers));
+        }
 
         var rows = new List<PlannedTradeRow>();
         var seen = new HashSet<(string, string, string, DateOnly)>();
