@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html - Home's list of the last five trading days becomes one line, and Paper trading gains its tab, at a correction to 24.29
+Decision: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+Was:
+> Paper trading, part 3: "... and its four tabs, Open, Waiting to buy, Closed and Left the waiting list, ten rows a page, each drawing the price its walk sells at."
+> Home, Tonight's ideas: "... under the waiting cards every live rule's buy and sale and every order that left unbought in the last five trading days with why (see: Home's left notes name every live rule's buy and sale and every order that left unbought, with why); the AI stock picker's line ..."
+Now:
+> Paper trading, part 3: the same, adding "from the operator's correction of 2026-11-25 a fifth tab on the running revision's card named Last 5 trading days" holding every rule's and every revision's moves on the index in those days with each row's fields, newest first and counted as Home's line counts them
+> Home, Tonight's ideas: the same, adding "from the operator's correction of 2026-11-25 in their place one line counting them by kind with the way to Paper trading's tab of them"
+Why: the operator's correction of 2026-11-25, kept word for word in `prompts/2026-11-25-24.29-last-five-days-tab.md`.
+
 ### 2026-11-25 - docs/ARCHITECTURE.html - Home's ideas draw a stock met again while its order waits among tonight's ideas, at a correction to 24.29
 Decision: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
 Was:

@@ -544,7 +544,11 @@ public sealed partial class SinglePageApp
         // see: On Home a stock its setup's rules met again is drawn once, on its waiting order's card or as a bought trade's one-line row
         var (waitingAgain, heldAgain) = MetAgainOf(view);
 
-        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders, marks.Copying ? null : waitingAgain));
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, null, marks.Copying ? null : waitingAgain));
+
+        // From the operator's correction of 2026-11-25 the last five trading days' moves in one line, their list on Paper trading.
+        // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+        region.Append(MarkRenderer.RecentLine(view.LeftOrders, (new PaperLink(view.Reading.Word) { Tab = MarkRenderer.RecentTab }).Href));
 
         // From 24.6 the AI stock picker's one line, its own account and never one of the rules' buys; from 24.15 on a past night that
         // night's picks, and none where the judge did not run that night.

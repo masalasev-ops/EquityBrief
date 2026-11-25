@@ -92,6 +92,15 @@ public sealed record PaperPageView(
 
     public IReadOnlyDictionary<string, IReadOnlyList<LeftOrderView>> Left { get; init; } = new Dictionary<string, IReadOnlyList<LeftOrderView>>(StringComparer.Ordinal);
 
+    // Every rule's and every revision's buys, sales and orders that left unbought in the last five trading days on the index,
+    // the rows Home counts in its line, drawn in the "Last 5 trading days" tab.
+    public IReadOnlyList<LeftOrderView> Recent { get; init; } = [];
+
+    public string IndexName { get; init; } = string.Empty;
+
+    // Each family's revisions, which the tab's rows name the one that placed each by.
+    public IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Revisions { get; init; } = new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal);
+
     // Which part of its plan placed each open trade's take-profit, in words, by its account's key, its stock and its night.
     public IReadOnlyDictionary<string, string> ProfitFrom { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
