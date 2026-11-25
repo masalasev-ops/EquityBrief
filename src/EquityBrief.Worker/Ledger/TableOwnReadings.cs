@@ -12,6 +12,9 @@ public static class TableOwnReadings
 {
     const double DaysAYear = Core.EntryCheck.EntryMeasure.YearDays;
 
+    // The seven, which the check lists apart from the ledger's and marks expected.
+    public static IReadOnlyList<string> Columns { get; } = ["alpha_three", "alpha_four", "liquidity", "illiquidity", "stretch_share", "highest_since_years", "older_days"];
+
     // The reports given are the code's report days off its filings, which the weekdays to the next report count to; none
     // given leaves that reading as the night works it.
     public static void Apply(double?[] readings, TradedRanks traded, int name, SweepSeries one, int bar, IReadOnlyList<DateOnly>? reports = null)

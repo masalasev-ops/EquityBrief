@@ -194,6 +194,7 @@ public sealed class LongHistoryReader : IComponent
 
         var names = new List<SweepName>();
         var fingerprint = new System.Text.StringBuilder();
+        var oneSeries = OneSeriesNotCounted(parts, calendar);
 
         foreach (var part in parts)
         {
@@ -203,7 +204,7 @@ public sealed class LongHistoryReader : IComponent
             names.Add(new SweepName(
                 part.Ticker,
                 part.Bars,
-                LongRenames.Without(part.Spans, NotCounted(part, parts, companies, calendar), calendar),
+                LongRenames.Without(part.Spans, NotCounted(part, parts, companies, calendar).Union(oneSeries.GetValueOrDefault(part) ?? []).ToHashSet(), calendar),
                 [.. (prints.GetValueOrDefault(part.Ticker) ?? [])],
                 sectors.GetValueOrDefault(part.Ticker),
                 [.. (surprises.GetValueOrDefault(part.Ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
@@ -837,6 +838,83 @@ public sealed class LongHistoryReader : IComponent
 
                     break;
                 }
+            }
+        }
+
+        return notCounted;
+    }
+
+    // The member sessions each part holding its own price is not counted on for its company being counted under another
+    // member code: one holding its own price that session, carrying one price series with the part over the sessions both
+    // are members and both traded, and whose own prices stop more than a quarter of sessions before the part's last, the
+    // provider pricing a later code back over the years its company traded under the earlier one. Share classes, whose moves
+    // part, and two codes both still trading are each counted. A pair is read in full only where its first moves pass.
+    // see: Two member codes carrying one price series are one company counted once, under the code that stops trading until it stops
+    static Dictionary<LongPart, HashSet<DateOnly>> OneSeriesNotCounted(IReadOnlyList<LongPart> parts, IReadOnlyList<DateOnly> calendar)
+    {
+        var at = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
+        var views = parts.Select(part =>
+        {
+            var closes = new Dictionary<int, decimal>();
+
+            foreach (var bar in LongTraded.Of(part.Bars).Where(bar => bar.Close > 0 && !part.Joined.Contains(bar.Session)))
+            {
+                if (at.TryGetValue(bar.Session, out var index))
+                {
+                    closes[index] = bar.Close;
+                }
+            }
+
+            var member = calendar.Select(session => Holds(part.Spans, session)).ToArray();
+
+            return (Part: part, Closes: closes, Member: member, First: Array.IndexOf(member, true), Last: Array.LastIndexOf(member, true), LastTraded: closes.Count == 0 ? -1 : closes.Keys.Max());
+        }).ToArray();
+        var notCounted = new Dictionary<LongPart, HashSet<DateOnly>>(ReferenceEqualityComparer.Instance);
+
+        foreach (var own in views)
+        {
+            if (own.First < 0 || own.LastTraded < 0)
+            {
+                continue;
+            }
+
+            foreach (var other in views)
+            {
+                if (other.Part.Ticker == own.Part.Ticker || other.First < 0 || other.LastTraded < 0 || own.LastTraded - other.LastTraded <= LongMarks.QuarterSessions)
+                {
+                    continue;
+                }
+
+                var from = Math.Max(own.First, other.First);
+                var to = Math.Min(Math.Min(own.Last, other.Last), other.LastTraded);
+                var both = new List<int>();
+
+                for (var index = from; index <= to; index++)
+                {
+                    if (own.Member[index] && other.Member[index] && own.Closes.ContainsKey(index) && other.Closes.ContainsKey(index))
+                    {
+                        both.Add(index);
+
+                        if (both.Count == LongRenames.RatioDays + 1 && !LongRenames.OneSeries(Paired(both)))
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (both.Count <= LongRenames.RatioDays || !LongRenames.OneSeries(Paired(both)))
+                {
+                    continue;
+                }
+
+                if (!notCounted.TryGetValue(own.Part, out var sessions))
+                {
+                    notCounted[own.Part] = sessions = [];
+                }
+
+                sessions.UnionWith(both.Select(index => calendar[index]));
+
+                IReadOnlyList<(decimal Own, decimal Other)> Paired(List<int> indices) => [.. indices.Select(index => (own.Closes[index], other.Closes[index]))];
             }
         }
 
