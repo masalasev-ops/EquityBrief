@@ -23042,3 +23042,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the picks proof over the operator's store after the night that follows its merge, Home's line against the tab.
+
+### 24.29 ruling - the reward check on the traded plan rides the one pin move before the run of 2027-02-06   2026-11-25
+
+Not a checkpoint entry: it records the operator's order of 2026-11-25, item 2, their answer on it and their orders on the report
+            of 9:24 am, items 1 and 2, and lands nothing.
+Ruled:      word for word in `prompts/2026-11-25-24.29-orders-on-the-report-of-3-48am.md`, item 2,
+            `prompts/2026-11-25-24.29-answer-reward-check-variant.md` and `prompts/2026-11-25-24.29-on-the-report-of-9-24am.md`.
+            The variant "the reward check uses the traded plan's own stop and take-profit, at 2 times its risk" is built
+            into the one pin move before the run of 2027-02-06 at today's behaviour, carried by the same replay, and
+            registered in the background on each live rule it applies to once the move lands (see: The reward check on the
+            traded plan rides the one pin move before the run of 2027-02-06 and registers in the background once it lands).
+            The question put to the operator stated 15 plans under 1 time their risk and 28 under 2 times; both figures were
+            wrong, and the count below replaces them.
+Counted:    read off Paper trading's waiting and open tabs on the operator's store on 2026-11-25 at about 14:30 UTC, each
+            plan's take-profit less its buy over its buy less its stop. Of the 44 live plans, 3 Fundamentals trades (NJR,
+            WMG, NPK) hold no take-profit price, and 7 sell half at a take-profit and the rest by their rule's own sale, so
+            their whole plan holds no fixed reward and they are counted in neither figure: the S&P 400 pullback's CART, G,
+            SN and TTC, half at 1.5 times the risk; the S&P 600 drift's WWW, half at 2; the S&P 400 dip's HZN and the S&P 400
+            drift's AAON, half at 3. Of the 34 left, 10 make under 1 time their risk: the S&P 500 pullback's MET 0.42, EL
+            0.52 and MRNA 0.54, each at the band above read on its night; the S&P 600 pullback's RHP 0.76, QTWO 0.79, MD 0.88,
+            DFIN 0.90, EVTC 0.92, RHI 0.93 and DXC 0.99, each at its setup's own sale. And 17 under 2 times: those 10, the S&P
+            500 drift's BBY 1.14, TGT 1.24, DLTR 1.26 and TJX 1.33 and the S&P 600 pullback's PAYC 1.10, each at its setup's
+            own sale, the S&P 600 drift's LZB 1.37 at its setup's own sale, and the S&P 600 dip's ACIW 1.57 where it turned
+            down before.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.

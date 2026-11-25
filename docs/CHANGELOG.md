@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/BUILD_PLAN.md - the reward check on the traded plan joins the one pin move before the run of 2027-02-06, at a ruling on 24.29
+Decision: The reward check on the traded plan rides the one pin move before the run of 2027-02-06 and registers in the background once it lands
+Was:
+> phase 24's order on the operator's answers of 2026-11-22 and 2026-11-23: "... and the year limit from 2027 a growing window, 2027 read as a ninth year and each later year added with none dropped; its report of every live trade ..."
+Now:
+> the same, adding before "its report": "and from the operator's answer of 2026-11-25 each price family's reward check taught to read the traded plan's own stop and take-profit as a setting at today's behaviour, its variant at 2 times the risk on each live rule it applies to registered in the background once the move lands"
+Why: the operator's answer of 2026-11-25, kept word for word in `prompts/2026-11-25-24.29-answer-reward-check-variant.md`.
+
 ### 2026-11-25 - docs/ARCHITECTURE.html - Home's list of the last five trading days becomes one line, and Paper trading gains its tab, at a correction to 24.29
 Decision: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
 Was:
