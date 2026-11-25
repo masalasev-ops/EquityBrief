@@ -46,6 +46,28 @@ public sealed record LeftOrderView(string Ticker, DateOnly On, bool Bought, stri
 
     public DateOnly? Listed { get; init; }
 
+    // From the operator's correction of 2026-11-25, Paper trading's "Last 5 trading days" tab: what happened, in one of four
+    // words; the price it was bought, sold or ordered at, none where its order placed none; and its result in words.
+    // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+    public const string BoughtKind = "bought";
+
+    public const string SoldKind = "sold";
+
+    public const string CancelledKind = "cancelled";
+
+    public const string NotPlacedKind = "not placed";
+
+    public static IReadOnlyList<string> Kinds { get; } = [BoughtKind, SoldKind, CancelledKind, NotPlacedKind];
+
+    public string Kind => Sold ? SoldKind : Bought ? BoughtKind : Unplaced ? NotPlacedKind : CancelledKind;
+
+    // An order whose plan placed no price, which left unbought on its own night.
+    public bool Unplaced { get; init; }
+
+    public decimal? Price { get; init; }
+
+    public string Result { get; init; } = string.Empty;
+
     public static string BoughtWords(string ticker, DateOnly on, decimal fill, decimal? price) =>
         FormattableString.Invariant($"{ticker} bought {on.ToString("d MMM", CultureInfo.InvariantCulture)} at ${fill:N2}, ")
         + (price is { } level && fill < level

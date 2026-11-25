@@ -23013,3 +23013,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the picks proof over the operator's store after tonight's night, the again cards read as their orders.
+
+### 24.29 - correction: Home's list of the last five trading days becomes one line, and Paper trading lists them in a tab   2026-11-25
+
+Ruled:      the operator's correction of 2026-11-25, kept word for word in
+            `prompts/2026-11-25-24.29-last-five-days-tab.md`.
+Found:      on the night of 24 Nov Home's list under its waiting cards ran to 36 rows on the S&P 500.
+Built:      Home's one line in the operator's words, "In the last 5 trading days: 6 bought, 26 sold, 2 cancelled, 2 not
+            placed. See them on Paper trading", a kind with none left out, linking to the tab; Paper trading's fifth tab
+            "Last 5 trading days" on the running revision's card, across every rule and every revision of the index, read
+            from the one list Home's line counts, each row with its session, stock, what happened, price, result, rule and
+            revision, newest first and ten a page; the picks proof holding each move to a row of the tab and Home's line to
+            the tab's count of each kind. Tonight's notes are as they were.
+Measured:   over a copy of the store on C:, the S&P 500's line counted 6 bought, 26 sold, 2 cancelled and 2 not placed and
+            the tab listed the 36 over four pages, each with its revision. Shots wide and at 390 before and after.
+Tests:      3 new: the line and the rows' fields worked by hand; the proof holding the line to the tab, two planted and
+            named; Home's line and Paper trading's tab over a store, every page read. 1 widened: a past night's Home reading
+            its buy off the line and the tab.
+Pins:       none moved. Home, Paper trading and the proof are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the proof's count
+            of the line against the tab dropped: red; m2 Home drawing its list again in place of the line: red; m3 an order
+            not placed counted as cancelled: red; m4 the tab given no rows: red. Filtered to their tests and reverted before
+            anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4048 of 4048 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the picks proof over the operator's store after the night that follows its merge, Home's line against the tab.

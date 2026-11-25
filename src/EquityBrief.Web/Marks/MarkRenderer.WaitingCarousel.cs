@@ -88,6 +88,23 @@ public sealed partial class MarkRenderer
 
     public const string LeftHeading = "Bought, sold or left the waiting list";
 
+    // From the operator's correction of 2026-11-25, in their words: "In the last 5 trading days: 2 bought, 31 sold, 2
+    // cancelled, 1 not placed. See them on Paper trading", each kind counted off the rows Paper trading's tab draws, a kind
+    // with none left out, and nothing where none moved.
+    // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+    public static string RecentLine(IReadOnlyList<LeftOrderView>? left, string href)
+    {
+        if (left is not { Count: > 0 })
+        {
+            return string.Empty;
+        }
+
+        var counts = LeftOrderView.Kinds.ToDictionary(kind => kind, kind => left.Count(row => row.Kind == kind), StringComparer.Ordinal);
+        var said = string.Join(", ", LeftOrderView.Kinds.Where(kind => counts[kind] > 0).Select(kind => FormattableString.Invariant($"{counts[kind]} {kind}")));
+
+        return FormattableString.Invariant($"<p class=\"recent-line\" data-bought=\"{counts[LeftOrderView.BoughtKind]}\" data-sold=\"{counts[LeftOrderView.SoldKind]}\" data-cancelled=\"{counts[LeftOrderView.CancelledKind]}\" data-not-placed=\"{counts[LeftOrderView.NotPlacedKind]}\">In the last {LeftOrderView.Sessions} trading days: {said}. <a href=\"{Escaped(href)}\">See them on Paper trading</a></p>");
+    }
+
     // Under the waiting cards for five trading days, each order that left the waiting list and why, with the revision that
     // placed it; nothing where none left.
     public static string LeftNotes(IReadOnlyList<LeftOrderView>? left)

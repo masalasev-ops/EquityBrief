@@ -24,7 +24,14 @@ public sealed partial class MarkRenderer
 
     public const string LeftTab = "left";
 
-    public static IReadOnlyList<string> RevisionTabs { get; } = [OpenTab, WaitingTab, ClosedTab, LeftTab];
+    // From the operator's correction of 2026-11-25, every rule's and revision's moves on the index in the last five trading
+    // days, on the running revision's card alone.
+    // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+    public const string RecentTab = "recent";
+
+    public const string RecentTabName = "Last 5 trading days";
+
+    public static IReadOnlyList<string> RevisionTabs { get; } = [OpenTab, WaitingTab, ClosedTab, LeftTab, RecentTab];
 
     public const string RunningWords = "Running now";
 
@@ -178,7 +185,10 @@ public sealed partial class MarkRenderer
         }
 
         html.Append(RevisionTiles(running ? head : null, trades, waiting));
-        html.Append(Tabbed(trades, waiting, left, link.Tab, link.Page, tab => link with { Tab = tab, Page = 1 }, number => link with { Page = number }, null, null, (ticker, listed) => page.ProfitFrom.GetValueOrDefault(PaperPageView.ProfitKey(key, ticker, listed))));
+
+        using var tags = running && link.Tab == RecentTab ? RevisionTags.Use(link.Universe, page.Revisions) : null;
+
+        html.Append(Tabbed(trades, waiting, left, link.Tab, link.Page, tab => link with { Tab = tab, Page = 1 }, number => link with { Page = number }, null, null, (ticker, listed) => page.ProfitFrom.GetValueOrDefault(PaperPageView.ProfitKey(key, ticker, listed)), running ? page.Recent : null, page.IndexName));
 
         return html.Append("</div>").ToString();
     }
@@ -236,6 +246,37 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
+    // The "Last 5 trading days" tab's rows: the session, the stock, what happened, its price, its result, its rule and the
+    // revision that placed it.
+    static string RecentRows(IReadOnlyList<LeftOrderView> rows)
+    {
+        var html = new StringBuilder(FormattableString.Invariant($"<div class=\"tbl-wrap\"><table class=\"paper-bought paper-recent\" data-tab=\"{RecentTab}\" data-rows=\"{rows.Count}\"><thead><tr>"));
+
+        html.Append(TippedHeading("Date", "the session it was bought, sold or left the waiting list on"));
+        html.Append(TippedHeading("Stock", "the stock, opening its chart"));
+        html.Append(TippedHeading("What happened", "bought, sold, cancelled, or an order its plan placed no price for"));
+        html.Append(TippedHeading("Price", "the price it was bought or sold at, or the price its cancelled order waited for", "r"));
+        html.Append(TippedHeading("Result", "how it was bought, what the sale made on its buy, or why its order left unbought"));
+        html.Append(TippedHeading("Rule", "the rule whose live account placed it"));
+        html.Append(TippedHeading("Revision", "the revision of the rule that placed it"));
+        html.Append("</tr></thead><tbody>");
+
+        foreach (var row in rows)
+        {
+            html.Append(FormattableString.Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-kind=\"{row.Kind}\" data-family=\"{Escaped(row.Family ?? string.Empty)}\" data-on=\"{DayOf(row.On)}\">"));
+            html.Append(FormattableString.Invariant($"<td class=\"num\">{row.On:d MMM}</td>"));
+            html.Append(StockCell(row.Ticker, null, null));
+            html.Append(FormattableString.Invariant($"<td><span class=\"recent-kind\" data-kind=\"{row.Kind}\">{Escaped(Capitalised(row.Kind))}</span></td>"));
+            html.Append(row.Price is { } price ? FormattableString.Invariant($"<td class=\"r num\">{Figures.Price(price)}</td>") : "<td class=\"r\"><span class=\"degraded\">none placed</span></td>");
+            html.Append(FormattableString.Invariant($"<td>{WithSignedFigures(row.Result)}</td>"));
+            html.Append(row.Family is { } family ? FamilyCell(family) : "<td></td>");
+            html.Append(FormattableString.Invariant($"<td>{(row.Family is { } tagged && row.Listed is { } listed ? RevisionTags.For(tagged, listed) : Escaped(row.Revision))}</td>"));
+            html.Append("</tr>");
+        }
+
+        return html.Append("</tbody></table></div>").ToString();
+    }
+
     static string PerRisk(double risks) => FormattableString.Invariant($"{(risks >= 0 ? "+" : "-")}${Math.Abs(risks):0.00} per $1");
 
     // The four tabs, one list showing at a time, each list ten rows a page in its stated order. A variant's rows each say what
@@ -250,16 +291,20 @@ public sealed partial class MarkRenderer
         Func<int, PaperLink> pageLink,
         Func<string, DateOnly, string>? against,
         string? revisionName,
-        Func<string, DateOnly, string?>? placedBy = null)
+        Func<string, DateOnly, string?>? placedBy = null,
+        IReadOnlyList<LeftOrderView>? recent = null,
+        string? indexName = null)
     {
-        var tab = chosen is { } named && RevisionTabs.Contains(named) ? named : OpenTab;
+        var tab = chosen is { } named && RevisionTabs.Contains(named) && (named != RecentTab || recent is not null) ? named : OpenTab;
         PaperBoughtView[] open = [.. trades.Where(trade => trade.Open is not null).OrderBy(NearestSale).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)];
         PaperBoughtView[] closed = [.. trades.Where(trade => trade.Closed is not null).OrderByDescending(trade => trade.Ended).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)];
         var html = new StringBuilder();
 
         html.Append(FormattableString.Invariant($"<div class=\"tabset\" role=\"tablist\" data-tab=\"{tab}\">"));
 
-        foreach (var (name, words, count) in new[] { (OpenTab, "Open", open.Length), (WaitingTab, "Waiting to buy", waiting.Count), (ClosedTab, "Closed", closed.Length), (LeftTab, "Left the waiting list", left.Count) })
+        (string, string, int)[] tabs = [(OpenTab, "Open", open.Length), (WaitingTab, "Waiting to buy", waiting.Count), (ClosedTab, "Closed", closed.Length), (LeftTab, "Left the waiting list", left.Count), .. recent is null ? Array.Empty<(string, string, int)>() : [(RecentTab, RecentTabName, recent.Count)]];
+
+        foreach (var (name, words, count) in tabs)
         {
             html.Append(FormattableString.Invariant($"<a class=\"chip tab\" role=\"tab\" aria-selected=\"{(name == tab ? "true" : "false")}\" aria-pressed=\"{(name == tab ? "true" : "false")}\" data-tab-name=\"{name}\" href=\"{Escaped(tabLink(name).Href)}\">{words} · {count}</a>"));
         }
@@ -279,6 +324,10 @@ public sealed partial class MarkRenderer
             case ClosedTab:
                 html.Append("<p class=\"sub-l\">Newest first.</p>");
                 html.Append(Paged(closed, page, "newest first", pageLink, rows => ClosedRows(rows, against, revisionName)));
+                break;
+            case RecentTab:
+                html.Append(FormattableString.Invariant($"<p class=\"sub-l\">Every buy, sale, cancelled order and order not placed in the last {LeftOrderView.Sessions} trading days, across every rule and every revision on the {Escaped(indexName is { Length: > 0 } index ? index : "index")}. Newest first.</p>"));
+                html.Append(Paged(recent!, page, "newest first", pageLink, RecentRows));
                 break;
             default:
                 html.Append(FormattableString.Invariant($"<p class=\"sub-l\">Orders that left the waiting list in the last {LeftOrderView.Sessions} trading days.</p>"));

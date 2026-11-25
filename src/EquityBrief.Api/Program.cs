@@ -2636,16 +2636,17 @@ app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, string?
 
             var waiting = new Dictionary<string, string>(StringComparer.Ordinal);
 
-            foreach (var family in planned.Where(row => row.Live).Select(row => row.Family).Distinct(StringComparer.Ordinal))
+            // A tab of the running revision's card read over every page of it.
+            async Task<string> TabRows(string asked, string tabName)
             {
                 var rows = new System.Text.StringBuilder();
 
                 for (var page = 1; page < 50; page++)
                 {
-                    var drawn = await Drawn("/screens/paper", FormattableString.Invariant($"{query}&rule={family}&tab=waiting&page={page}"));
+                    var drawn = await Drawn("/screens/paper", FormattableString.Invariant($"{query}{asked}&tab={tabName}&page={page}"));
                     var card = drawn.IndexOf("data-card=\"paper-revision\"", StringComparison.Ordinal);
                     var section = card < 0 ? string.Empty : drawn[card..(drawn.IndexOf("<section", card + 10, StringComparison.Ordinal) is var end && end > card ? end : drawn.Length)];
-                    var tab = section.IndexOf("data-tab=\"waiting\"", StringComparison.Ordinal);
+                    var tab = section.IndexOf(FormattableString.Invariant($"data-tab=\"{tabName}\""), StringComparison.Ordinal);
 
                     rows.Append(tab < 0 ? string.Empty : section[tab..]);
 
@@ -2655,14 +2656,20 @@ app.MapGet(PicksProof.Route, async (HttpRequest request, string? format, string?
                     }
                 }
 
-                waiting[family] = rows.ToString();
+                return rows.ToString();
+            }
+
+            foreach (var family in planned.Where(row => row.Live).Select(row => row.Family).Distinct(StringComparer.Ordinal))
+            {
+                waiting[family] = await TabRows("&rule=" + family, MarkRenderer.WaitingTab);
             }
 
             var pages = new PicksProof.DrawnPages(
                 await Drawn("/screens/home/{night?}", query),
                 nights.TryGetValue(newest, out var tonight) ? tonight : await Drawn("/screens/tonight/{night?}", query),
                 nights,
-                waiting);
+                waiting,
+                await TabRows(string.Empty, MarkRenderer.RecentTab));
             var lines = PicksProof.Check(universe.Code, newest, since, planned, sessions, replacedOn, pages, out var extras);
 
             indexes.Add((universe.Name, lines, extras));
@@ -2826,6 +2833,10 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     {
         drawn = RevisionScreen.WithOrders(drawn, ordered.Sources, ordered.Planned, orderedOn, ordered.Sessions ?? [], ordered.Close, ticker => ordered.Stocks?.GetValueOrDefault(ticker)?.Company);
         drawn = drawn with { Plans = RevisionScreen.Plans(ordered.Sources, await read.RegisteredCandidatesAsync(), reading.Code) };
+
+        // From the operator's correction of 2026-11-25 the rows Home's line counts, the one list Home's line reads.
+        // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab
+        drawn = drawn with { Recent = ordered.Groups?.LeftOrders ?? [], IndexName = reading.Name, Revisions = ordered.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) };
     }
 
     // From 21.20 the variants registered after the newest night, which no night has read yet.

@@ -128,12 +128,27 @@ public static class RevisionScreen
 
                 if (filled >= since && filled <= night)
                 {
-                    left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
+                    left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), string.Empty)
+                    {
+                        Family = row.Family,
+                        Listed = row.Listed,
+                        Price = fill,
+                        Result = BoughtResult(fill, PlannedTrades.Price(row), row.EndedOn is { } ended && ended <= night),
+                    });
                 }
             }
             else if (LeftUnbought(row, night, sessions) is { } gone && gone.On >= since && gone.On <= night)
             {
-                left.Add(new LeftOrderView(row.Ticker, gone.On, false, gone.Words, string.Empty) { Family = row.Family, Listed = row.Listed });
+                var unplaced = row.Order.PlacesNoPrice();
+
+                left.Add(new LeftOrderView(row.Ticker, gone.On, false, gone.Words, string.Empty)
+                {
+                    Family = row.Family,
+                    Listed = row.Listed,
+                    Unplaced = unplaced,
+                    Price = unplaced ? null : PlannedTrades.Price(row),
+                    Result = Why(row.Ticker, gone.Words),
+                });
             }
         }
 
@@ -145,17 +160,50 @@ public static class RevisionScreen
 
                 if (trade.Bought >= since && trade.Bought <= night && noted.Add((trade.Ticker, trade.Bought)))
                 {
-                    left.Add(new LeftOrderView(trade.Ticker, trade.Bought, true, LeftOrderView.BoughtAtOpenWords(trade.Ticker, trade.Bought, trade.Buy, trade.Ended is { } sold && sold <= night), version ?? string.Empty) { Family = account.Family, Listed = listed });
+                    var soldSince = trade.Ended is { } sold && sold <= night;
+
+                    left.Add(new LeftOrderView(trade.Ticker, trade.Bought, true, LeftOrderView.BoughtAtOpenWords(trade.Ticker, trade.Bought, trade.Buy, soldSince), version ?? string.Empty)
+                    {
+                        Family = account.Family,
+                        Listed = listed,
+                        Price = trade.Buy,
+                        Result = "At the open. " + (soldSince ? "Sold since." : "Now under Open trades."),
+                    });
                 }
 
                 if (trade.Ended is { } ended && ended >= since && ended <= night && trade.Sale is { } sale)
                 {
-                    left.Add(new LeftOrderView(trade.Ticker, ended, false, LeftOrderView.SoldWords(trade.Ticker, ended, sale, trade.Buy), version ?? string.Empty) { Family = account.Family, Listed = listed, Sold = true });
+                    left.Add(new LeftOrderView(trade.Ticker, ended, false, LeftOrderView.SoldWords(trade.Ticker, ended, sale, trade.Buy), version ?? string.Empty)
+                    {
+                        Family = account.Family,
+                        Listed = listed,
+                        Sold = true,
+                        Price = sale,
+                        Result = trade.Buy > 0m ? FormattableString.Invariant($"{(sale / trade.Buy - 1m) * 100m:+0.0;-0.0;0.0}% on its buy of ${trade.Buy:N2}.") : "Sold.",
+                    });
                 }
             }
         }
 
         return [.. left.OrderByDescending(row => row.On).ThenBy(row => row.Ticker, StringComparer.Ordinal)];
+    }
+
+    // An order's buy in words: under its buy price at the open, at its buy price, or at the open with none; and whether it has
+    // sold since.
+    static string BoughtResult(decimal fill, decimal? price, bool soldSince) =>
+        (price is { } level && fill < level
+            ? FormattableString.Invariant($"Opened under its buy price of ${level:N2}.")
+            : price is { } at ? FormattableString.Invariant($"The price fell to its buy price of ${at:N2}.") : "At the open.")
+        + (soldSince ? " Sold since." : " Now under Open trades.");
+
+    // Why an order left unbought, its stock and the word before the colon taken off: "Not bought by its last day, 21 Dec.".
+    static string Why(string ticker, string words)
+    {
+        var said = words.StartsWith(ticker + " ", StringComparison.Ordinal) ? words[(ticker.Length + 1)..] : words;
+        var colon = said.IndexOf(": ", StringComparison.Ordinal);
+        var reason = colon >= 0 && colon < 20 ? said[(colon + 2)..] : said;
+
+        return reason.Length == 0 ? reason : char.ToUpperInvariant(reason[0]) + reason[1..];
     }
 
     // Why an order of a live rule's plan left the waiting list unbought, and on which session; none while it waits and once it
