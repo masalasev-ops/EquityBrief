@@ -1689,6 +1689,21 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .judge-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
 .judge-chip{font:600 12.5px var(--sans);padding:3px 9px;border:1px solid var(--hair-2);border-radius:12px;background:var(--surface);color:var(--ink)}
 .judge-bought{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.sw{display:flex;flex-direction:column;gap:12px}
+.sw-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sw-r{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.sw-bar label{display:inline-flex;align-items:center;gap:8px;flex:none;white-space:nowrap;border:1px solid var(--hair-2);border-radius:999px;padding:7px 14px;font:600 14.5px var(--sans);color:var(--ink);background:var(--surface);cursor:pointer}
+.sw-n{font:700 12px var(--sans);border-radius:999px;padding:1px 7px;background:var(--plot);color:var(--ink)}
+.sw-r:checked+label{border-width:2px;padding:6px 13px;color:var(--ink)}
+.sw-r:checked+label[data-family='pullback']{background:var(--fam-pullback-tint);border-color:var(--fam-pullback)} .sw-r:checked+label[data-family='breakout']{background:var(--fam-breakout-tint);border-color:var(--fam-breakout)}
+.sw-r:checked+label[data-family='drift']{background:var(--fam-drift-tint);border-color:var(--fam-drift)} .sw-r:checked+label[data-family='fundamentals']{background:var(--fam-fundamentals-tint);border-color:var(--fam-fundamentals)}
+.sw-r:checked+label[data-family='heavyweight']{background:var(--fam-heavyweight-tint);border-color:var(--fam-heavyweight)} .sw-r:checked+label[data-family='dip']{background:var(--fam-dip-tint);border-color:var(--fam-dip)}
+.sw-r:checked+label[data-family='quality']{background:var(--fam-quality-tint);border-color:var(--fam-quality)} .sw-r:checked+label[data-family='improving']{background:var(--fam-improving-tint);border-color:var(--fam-improving)}
+.sw-r:focus-visible+label{outline:2px solid var(--ink);outline-offset:2px}
+.sw-hint{margin-left:auto;font:500 13px var(--sans);color:var(--soft)}
+.sw-p[hidden]{display:none}
+.sw-p{display:flex;flex-direction:column;gap:12px}
+@media (max-width:600px){.sw-bar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.sw-hint{display:none}}
 .home-idea.fam-edge{border-left-width:4px}
 .home-idea-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .home-ticker{font:700 20px var(--sans)} .home-co{font-size:13.5px;color:var(--soft)}

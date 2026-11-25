@@ -22837,3 +22837,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the check over the ledger's members on each index once this merges; the table written again and checked; the
             stock's own price readings, the older days, the market series and the readings one side holds none of traced
             beside the later stages.
+
+### 24.29 - correction: Home's ideas one setup at a time from a row of chips, and the fixed 5 named once with its tally once   2026-11-24
+
+Queue:      done, #784 merged and the S&P 500's check over the ledger's members run; in progress, this correction, built
+            while the night runs; next, the S&P 400's and 600's checks over the ledger's members, the table written again and
+            checked, after the night.
+Ruled:      the operator's correction of 2026-11-24, kept word for word in
+            `prompts/2026-11-24-24.29-setup-switcher-and-fixed-five.md`, from the mockup
+            `prompts/2026-11-24-setup-switcher-mockup.html`: nothing either page shows is lost, each fact moved.
+Built:      Home's tonight's ideas: one row of chips under the card's two opening lines, a chip a setup with its colour, its
+            name and its count, the ideas to buy's first and the watched after them, and at its right how many ideas in how
+            many setups; the first chosen when the page opens and filled with its colour, the others' headers and carousels
+            hidden until their chip is, the chosen carousel's count and arrows read again; on a phone the row scrolls
+            sideways. The picker page: the fixed 5 named once, in its heading; its tally once, under the chips, in sentences;
+            the sentence repeating its name and tally gone; each account's chart drawing no frame until a night reads its
+            first buy, saying "Its account's line starts once a night reads its first buy." One decision, two architecture
+            rows and the changelog.
+Measured:   before shots on the operator's 5152 at 1440 and a true 390 in both palettes: Home on the night of 20 Nov, the
+            newest past night holding two or more setups on the S&P 500, the pullback's and the dip's, and the picker page.
+Tests:      2 new: a night with a pullback pair, one drift idea and one dip idea drawing three chips counting 2, 1 and 1, the
+            pullback chosen and each panel holding its own header and cards alone; an account's chart drawing no frame until
+            one of its values moves. 4 widened to the new layout and the tally's sentences.
+Pins:       none moved. Home and the picker page are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 every setup shown at
+            once: red; m2 a flat account drawn as a frame: red; m3 the sentence repeating the name and tally put back: red.
+            Filtered to their tests and reverted before anything was committed.
+Claims:     1754, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4033 of 4033 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1754
+            claims, 1754 passing, none out of scope and none unexamined, 1769 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the after shots on the operator's 5152 once it merges, after the night.

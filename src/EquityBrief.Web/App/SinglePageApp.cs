@@ -1252,6 +1252,15 @@ public sealed partial class SinglePageApp : IComponent
         function carousels() { for (const track of screen.querySelectorAll('[data-wo-track]')) { woUpdate(track); } }
         document.addEventListener('scroll', (event) => { if (event.target.matches && event.target.matches('[data-wo-track]')) { woUpdate(event.target); } }, true);
         addEventListener('resize', () => carousels(), { passive: true });
+        // From the operator's correction of 2026-11-24 a setup's chip on Home shows that setup's header and cards alone, the
+        // others hidden, and its carousel's count and arrows read again now that it is in view.
+        document.addEventListener('change', (event) => {
+          const chosen = event.target.matches && event.target.matches('.sw-r') ? event.target : null;
+          const box = chosen ? chosen.closest('.sw') : null;
+          if (!box) { return; }
+          for (const panel of box.querySelectorAll('.sw-p')) { panel.hidden = panel.getAttribute('data-setup') !== chosen.value; }
+          for (const track of box.querySelectorAll('.sw-p:not([hidden]) [data-wo-track]')) { woUpdate(track); }
+        });
         // From the operator's order of 2026-11-24 a card's "See it" brings its setup's header into view, the route unchanged.
         document.addEventListener('click', (event) => {
           const jump = event.target.closest ? event.target.closest('[data-jump]') : null;

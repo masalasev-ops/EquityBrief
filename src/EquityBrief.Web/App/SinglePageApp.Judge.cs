@@ -279,7 +279,8 @@ public sealed partial class SinglePageApp
 
         if (view.FixedFive is { } five)
         {
-            region.Append(Cards.Computed(VersionWords(five), FixedFiveBody(view, five, chosen), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
+            // From the operator's correction of 2026-11-24, item 7, the variant named once, in its heading.
+            region.Append(Cards.Computed("A variant of the version above", FixedFiveBody(view, five, chosen), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
         }
 
         foreach (var earlier in view.Earlier)
@@ -356,14 +357,21 @@ public sealed partial class SinglePageApp
         var opens = version.Picks.Count > 0 && version.Picks.All(pick => pick.Range is not null) ? "each within its range"
             : version.Picks.Any(pick => pick.Range is not null) ? "at the open before its range began and within its range from then"
             : version.First == version.Last ? "at the open on " + Open(version.First).ToString("ddd d MMM", CultureInfo.InvariantCulture) : "each at the open after its night";
-        var closed = version.Score.Closed == 0
-            ? "None of its trades has closed yet."
-            : string.Create(CultureInfo.InvariantCulture, $"{version.Score.Closed} of its trades {(version.Score.Closed == 1 ? "has" : "have")} closed, {version.Score.Winners} of them winners") + (version.Score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked." : ".");
+        var closed = ClosedWords(version.Score);
 
         return string.Create(CultureInfo.InvariantCulture, $"{VersionWords(version)}: {count} pick{(count == 1 ? string.Empty : "s")}, bought {opens} in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. {BoughtSoFarWords(version.Picks)} They are never added to ")
             + (recordNumber is { } number ? string.Create(CultureInfo.InvariantCulture, $"version {number}'s record. ") : "the record. ")
             + closed;
     }
+
+    // "None of its trades has closed yet.", or how many have, their winners and what they made per $1 risked.
+    static string ClosedWords(JudgeScoreboard score) =>
+        score.Closed == 0
+            ? "None of its trades has closed yet."
+            : string.Create(CultureInfo.InvariantCulture, $"{score.Closed} of its trades {(score.Closed == 1 ? "has" : "have")} closed, {score.Winners} of them winners") + (score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked." : ".");
+
+    // From the operator's correction of 2026-11-24, item 6, what an account's chart says until a night reads its first buy.
+    public const string AccountLineWaits = "Its account's line starts once a night reads its first buy.";
 
     // From the operator's order of 2026-11-24, item 13, what an account did with its picks as the store holds it: bought,
     // waiting within the order a range places, bought at the open before the range began or not with no night having read that
@@ -383,10 +391,10 @@ public sealed partial class SinglePageApp
         sides.AddRange(below > 0 ? [string.Create(CultureInfo.InvariantCulture, $"{below} below it")] : []);
         sides.AddRange(cash > 0 ? [string.Create(CultureInfo.InvariantCulture, $"{cash} for want of cash")] : []);
 
-        return string.Create(CultureInfo.InvariantCulture, $"Bought so far: {bought} of {picks.Count}")
-            + (inRange > 0 ? string.Create(CultureInfo.InvariantCulture, $"; waiting within the {Core.Loop.BuyRanges.OrderSessions}-day order: {inRange}") : string.Empty)
-            + (atOpen > 0 ? string.Create(CultureInfo.InvariantCulture, $"; its open not yet read by a night: {atOpen}") : string.Empty)
-            + string.Create(CultureInfo.InvariantCulture, $"; not bought: {above + below + cash}")
+        return string.Create(CultureInfo.InvariantCulture, $"Bought so far: {bought} of {picks.Count}.")
+            + (inRange > 0 ? string.Create(CultureInfo.InvariantCulture, $" Waiting within the {Core.Loop.BuyRanges.OrderSessions}-day order: {inRange}.") : string.Empty)
+            + (atOpen > 0 ? string.Create(CultureInfo.InvariantCulture, $" Its open not yet read by a night: {atOpen}.") : string.Empty)
+            + string.Create(CultureInfo.InvariantCulture, $" Not bought: {above + below + cash}")
             + (sides.Count > 0 ? " (" + string.Join(", ", sides) + ")" : string.Empty)
             + ".";
     }
@@ -411,10 +419,10 @@ public sealed partial class SinglePageApp
     static string ApartCharts(JudgeView view) =>
         string.Concat(view.Earlier.Select(version =>
             $"<div class=\"judge-apart\" data-apart=\"{version.Number.ToString(CultureInfo.InvariantCulture)}\"><p class=\"judge-apart-h\"><b>{Escaped(VersionWords(version))}, apart from the record.</b> Its own account, the same money, sizing and costs, never added to the four above.</p>"
-            + JudgeChart([new JudgeLineView(VersionWords(version) + ", its own account", version.Values)], [], VersionWords(version) + "'s own account") + "</div>"))
+            + JudgeChart([new JudgeLineView(VersionWords(version) + ", its own account", version.Values)], [], VersionWords(version) + "'s own account", AccountLineWaits) + "</div>"))
         + (view.Across is { } across
             ? $"<div class=\"judge-apart\" data-apart=\"across\"><p class=\"judge-apart-h\"><b>{Escaped(AcrossName)}, apart from the record.</b> Its own account, the same money, sizing and costs, never added to the four above.</p>"
-                + JudgeChart([new JudgeLineView(AcrossName + ", its own account", across.Values)], [], AcrossName + "'s own account") + "</div>"
+                + JudgeChart([new JudgeLineView(AcrossName + ", its own account", across.Values)], [], AcrossName + "'s own account", AccountLineWaits) + "</div>"
             : string.Empty);
 
     // From the operator's order of 2026-11-24, item 11, the fixed 5 on the night shown beside its version: where it took the
@@ -432,12 +440,14 @@ public sealed partial class SinglePageApp
 
         if (its.Length > 0)
         {
-            html.Append(CultureInfo.InvariantCulture, $"<p class=\"judge-same\" data-same=\"{(differ.Length == 0 && shared.Length == view.Picks.Count ? "all" : shared.Length.ToString(CultureInfo.InvariantCulture))}\"><b>{Escaped(SameWords(shared.Length, differ.Length, view.Past))}</b> {Escaped(FixedFiveWhy(view.Marked, view.Picks.Count))} {Escaped(OwnAccountWords(five))}</p>");
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"judge-same\" data-same=\"{(differ.Length == 0 && shared.Length == view.Picks.Count ? "all" : shared.Length.ToString(CultureInfo.InvariantCulture))}\"><b>{Escaped(SameWords(shared.Length, differ.Length, view.Past))}</b> {Escaped(FixedFiveWhy(view.Marked, view.Picks.Count))}{(its.All(pick => pick.Range is not null) ? " Each buys within its range." : string.Empty)} {Escaped(OwnAccountWords(five))}</p>");
             html.Append(shared.Length > 0 ? "<p class=\"judge-chips\">" + string.Concat(shared.Select(pick => $"<span class=\"judge-chip\" data-ticker=\"{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</span>")) + "</p>" : string.Empty);
         }
 
-        html.Append($"<p class=\"judge-bought\" data-bought>{Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>");
-        html.Append(JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account"));
+        // From the operator's correction of 2026-11-24, item 7, the tally once, under the chips, and the sentence repeating the
+        // variant's name and the tally gone; its closed trades said where any have closed.
+        html.Append($"<p class=\"judge-bought\" data-bought>{Escaped(BoughtSoFarWords(five.Picks) + (five.Score.Closed > 0 ? " " + ClosedWords(five.Score) : string.Empty))}</p>");
+        html.Append(JudgeChart([new JudgeLineView("Its own account", five.Values)], [], VersionWords(five) + "'s own account", AccountLineWaits));
         html.Append(PickCards([.. differ, .. five.Picks.Where(pick => pick.Night != view.Shown)], five.Score, five, "fixed-five", chosen));
 
         return html.ToString();
@@ -924,13 +934,15 @@ public sealed partial class SinglePageApp
 
     // The four accounts as their return from the first session drawn, each a line, the random accounts' band shaded behind; or
     // from the 24.14 correction of 2026-11-21 an earlier version's own account alone.
-    static string JudgeChart(IReadOnlyList<JudgeLineView> drawn, IReadOnlyList<JudgeBand> drawnBand, string label)
+    // From the operator's correction of 2026-11-24, item 6, a chart none of whose accounts has yet moved from its first value, no
+    // buy read by a night, draws no frame and says so in the words given.
+    public static string JudgeChart(IReadOnlyList<JudgeLineView> drawn, IReadOnlyList<JudgeBand> drawnBand, string label, string waiting = "No account has a session to draw yet.")
     {
         var lines = drawn.Where(line => line.Values.Count > 0).ToArray();
 
-        if (lines.Length == 0)
+        if (!lines.Any(line => line.Values.Any(value => value.Value != line.Values[0].Value)))
         {
-            return "<p class=\"empty\">No account has a session to draw yet.</p>";
+            return $"<p class=\"empty\" data-account-waits>{Escaped(waiting)}</p>";
         }
 
         var sessions = lines.SelectMany(line => line.Values.Select(value => value.Session)).Distinct().Order().ToArray();

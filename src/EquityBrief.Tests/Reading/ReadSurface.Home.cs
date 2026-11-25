@@ -186,8 +186,8 @@ public partial class ReadSurface
         Assert.EndsWith($"<p class=\"home-disclaimer\">{SinglePageApp.Disclaimer}</p></section>", page, StringComparison.Ordinal);
 
         // No word Home bans reaches the reader, the card's line in the operator's words of 2026-11-24, item 7, "Its setup's
-        // record", set aside.
-        Assert.DoesNotMatch(new Regex("\\b(breadth|stops?|setups?|variants?|edges?|R|risk units|typical days' moves)\\b", RegexOptions.IgnoreCase), text.Replace("Its setup's record", string.Empty, StringComparison.Ordinal));
+        // record", and the chips' count in their words of that evening, "4 ideas tonight in 3 setups", set aside.
+        Assert.DoesNotMatch(new Regex("\\b(breadth|stops?|setups?|variants?|edges?|R|risk units|typical days' moves)\\b", RegexOptions.IgnoreCase), Regex.Replace(text.Replace("Its setup's record", string.Empty, StringComparison.Ordinal), "(ideas?|picks?)( watched)? (tonight )?in \\d+ setups?", string.Empty));
     }
 
     [Fact]

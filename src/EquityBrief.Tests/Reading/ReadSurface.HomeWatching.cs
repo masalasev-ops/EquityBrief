@@ -20,20 +20,22 @@ public partial class ReadSurface
     static HomeIdea Watched(string family, string ticker) =>
         new(family, ticker, null, "Why.", 100m, 90m, 120m, false, null, LongRecord: new SetupLongRecord("GSPC", family, -0.12, 2933, 2019, 2026));
 
-    // A group's cards, read from the group's opening to the next group or to the way to every plan beneath them.
+    // A group's cards, read from each of its setups' openings to the next group or to the way to every plan beneath them, the
+    // setups in the page's order.
     static string[] Tickers(string region, string group)
     {
-        var start = region.IndexOf("<div class=\"home-ideas\" data-group=\"" + group + "\">", StringComparison.Ordinal);
+        var cards = new List<string>();
+        var marker = "<div class=\"home-ideas\" data-group=\"" + group + "\">";
 
-        if (start < 0)
+        for (var start = region.IndexOf(marker, StringComparison.Ordinal); start >= 0; start = region.IndexOf(marker, start + 1, StringComparison.Ordinal))
         {
-            return [];
+            var next = region.IndexOf("<div class=\"home-ideas\" data-group=", start + 1, StringComparison.Ordinal);
+            var end = next >= 0 ? next : region.IndexOf("class=\"home-all\"", start, StringComparison.Ordinal);
+
+            cards.AddRange(Regex.Matches(region[start..(end < 0 ? region.Length : end)], "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([A-Z0-9]+)\"").Select(match => match.Groups[1].Value));
         }
 
-        var next = region.IndexOf("<div class=\"home-ideas\" data-group=", start + 1, StringComparison.Ordinal);
-        var end = next >= 0 ? next : region.IndexOf("class=\"home-all\"", start, StringComparison.Ordinal);
-
-        return [.. Regex.Matches(region[start..(end < 0 ? region.Length : end)], "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([A-Z0-9]+)\"").Select(match => match.Groups[1].Value)];
+        return [.. cards];
     }
 
     [Fact]
