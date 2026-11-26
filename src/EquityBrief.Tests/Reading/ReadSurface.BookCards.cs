@@ -69,11 +69,15 @@ public partial class ReadSurface
         Assert.DoesNotContain("No price is set in advance", card, StringComparison.Ordinal);
         Assert.DoesNotContain("its filings weaken", card, StringComparison.Ordinal);
 
-        // Tonight's rows of the two buys: the buy, the stop, the take-profit and what each risks for it, (74 - 50) / (50 - 42) = 3
-        // and (62 - 50) / (50 - 44) = 2.
-        Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"42\">42.00</td><td class=\"r num plan-target\" data-target=\"74\">74.00</td><td class=\"r num\" data-reward-to-risk=\"3\">$3.00</td>", Row(drawnTonight, "improving"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"44\">44.00</td><td class=\"r num plan-target\" data-target=\"62\">62.00</td><td class=\"r num\" data-reward-to-risk=\"2\">$2.00</td>", Row(drawnTonight, "quality"), StringComparison.Ordinal);
-        Assert.DoesNotContain("data-sells", Row(drawnTonight, "improving"), StringComparison.Ordinal);
+        // From 24.46 Tonight's plans of the two buys: the last close, the stop, the take-profit and what each risks for it from the
+        // close, (74 - 50) / (50 - 42) = 3 and (62 - 50) / (50 - 44) = 2.
+        Assert.Contains("<span class=\"lad-m stop\" data-stop=\"42\"", Row(drawnTonight, "improving"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"lad-m now\" data-now=\"50\"", Row(drawnTonight, "improving"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"lad-m tp\" data-tp=\"74\"", Row(drawnTonight, "improving"), StringComparison.Ordinal);
+        Assert.Contains("data-reward-to-risk=\"3.00\"", Row(drawnTonight, "improving"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"lad-m stop\" data-stop=\"44\"", Row(drawnTonight, "quality"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"lad-m tp\" data-tp=\"62\"", Row(drawnTonight, "quality"), StringComparison.Ordinal);
+        Assert.Contains("data-reward-to-risk=\"2.00\"", Row(drawnTonight, "quality"), StringComparison.Ordinal);
 
         // Each book's own card on Tonight draws M1's stop and take-profit beside it.
         var fundamentals = Read(Assert.Single(Blocks(drawnTonight, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>")));
@@ -85,6 +89,6 @@ public partial class ReadSurface
         Assert.Contains("Take profit at 62.00", quality, StringComparison.Ordinal);
 
         static string Row(string page, string family) =>
-            Regex.Match(page, $"<tr data-ticker=\"M1\" data-family=\"{family}\" data-place=\"\\d+\" data-planless>.*?</tr>", RegexOptions.Singleline).Value;
+            Regex.Match(page, $"<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"M1\" data-g=\"new\" data-family=\"{family}\".*?</article>", RegexOptions.Singleline).Value;
     }
 }

@@ -39,7 +39,7 @@ public partial class PlainWords
     internal static readonly (string Page, string From, string[] Regions, bool Whole)[] Covered =
     [
         (BriefPage, "22.5", ["chart-page-brief"], false),
-        (TonightPage, "22.6", ["market-strip", "one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "quality", "improving", "words"], true),
+        (TonightPage, "22.6", ["market-strip", "one-minute", "plans", "close-to-buy", "setups", "family", "heavyweights", "quality", "improving", "words"], true),
         (FundamentalsPage, "22.8", ["chart-page-fundamentals", "fundamentals"], false),
         (PaperPage, "21.13", ["account", "paper-chart", "paper-revision", "paper-variants", "paper-scorecard", "paper-yours"], true),
         (LoopPage, "21.13", ["loop-none", "loop-headline", "loop-passed", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm", "loop-long", "loop-survivors", "loop-research", "loop-notebook", "loop-ranges", "loop-pullbacks", "loop-idea-box", "loop-stuck"], true),
@@ -195,6 +195,9 @@ public partial class PlainWords
         return Regex.Replace(WebUtility.HtmlDecode(text), @"\s+", " ").Trim();
     }
 
+    // The state a held stock's plan names, in the operator's words of 2026-11-26.
+    internal const string HeldSince = "Held since";
+
     // What the check finds wrong with the cards a page draws for a region: a term of the list in a card's visible text
     // outside its glossary and tooltips, a card whose body opens on anything visible before its summary sentence, a card
     // with no summary sentence or an empty one, and a page drawing no card for the region.
@@ -229,8 +232,9 @@ public partial class PlainWords
             }
 
             // The operator's phrase "already held" of 2026-11-14 is their words and not the glossary's "held", which is the
-            // drift's step; it alone is read past, so "held" anywhere else is still a fault.
-            var said = Regex.Replace(Visible(WithoutAsides(card)), @"(?<![\w'’-])" + Regex.Escape(ReaderWords.AlreadyHeld) + @"(?![\w'’-])", " ", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            // drift's step, and so from 24.46 is their "Held since" a plan's state names, on their order of 2026-11-26; those
+            // alone are read past, so "held" anywhere else is still a fault.
+            var said = Regex.Replace(Visible(WithoutAsides(card)), @"(?<![\w'’-])(?:" + Regex.Escape(ReaderWords.AlreadyHeld) + "|" + Regex.Escape(HeldSince) + @")(?![\w'’-])", " ", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
             foreach (var term in terms)
             {

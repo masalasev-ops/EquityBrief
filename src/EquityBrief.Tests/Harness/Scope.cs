@@ -3262,6 +3262,27 @@ internal static class Scope
             Verdict.Pass,
             "the glossary read off the foot of the rendered page with every word it holds, on both kinds of index, and no card of the page drawing a guide behind a press",
             ByReadSurface),
+        // 24.46's five, Tonight redesigned on the operator's order of 2026-11-26.
+        [CheckReach.Key("15.7 Tonight", "Tonight at a glance")] = new Scoped(
+            Verdict.Pass,
+            "the five tiles read off the rendered page over constructed nights on both kinds of index, each tile's count and sentence and the press opening its group of the plans or Paper trading's tab",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Every plan tonight")] = new Scoped(
+            Verdict.Pass,
+            "the list's three groups and their counts worked by hand over constructed plans, the waiting orders nearest first, and each plan opened from its address for a new idea, a waiting order and a held stock over constructed stores, the one named shown and every other hidden",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A plan")] = new Scoped(
+            Verdict.Pass,
+            "a new idea's, a waiting order's and a held stock's plan read off the rendered page: its state, its buy condition, its price line, its four figures and its card's parts in its tabs, every check the night stored read back",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A waiting order's plan")] = new Scoped(
+            Verdict.Pass,
+            "a constructed order's plan with no card stored on its night saying so and drawing the order as stored, and with one stored drawing that card, its checks under that night's heading with no word of tonight",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The setups' table")] = new Scoped(
+            Verdict.Pass,
+            "a row a setup in the one family order read off the rendered page, the one the link names opened with its card whole and every other closed",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
             "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none over a night storing only the first part each member failed, and from 20.11 the S&P 400's card, line and breakout expander drawing the four a closed market check alone keeps off over a constructed night with no press and no link to Universe; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
@@ -8276,6 +8297,12 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The pullbacks' search")] = "24.35",
         [CheckReach.Key(LoopPage, "The idea box")] = "24.39",
         [CheckReach.Key(LoopPage, "Never stuck")] = "24.40",
+        // 24.46's five, Tonight redesigned.
+        [CheckReach.Key("15.7 Tonight", "Tonight at a glance")] = "24.46",
+        [CheckReach.Key("15.7 Tonight", "Every plan tonight")] = "24.46",
+        [CheckReach.Key("15.7 Tonight", "A plan")] = "24.46",
+        [CheckReach.Key("15.7 Tonight", "A waiting order's plan")] = "24.46",
+        [CheckReach.Key("15.7 Tonight", "The setups' table")] = "24.46",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

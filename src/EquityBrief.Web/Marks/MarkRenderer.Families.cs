@@ -1404,7 +1404,22 @@ public sealed partial class MarkRenderer
         }
 
         cells.Append(control);
+        cells.Append(ReportPart(row));
 
+        if (row.Distance?.Name is { Length: > 0 } company)
+        {
+            cells.Append(Invariant, $"<span class=\"co\">{Escaped(company)}</span>");
+        }
+
+        cells.Append(row.Suspect is { } suspect ? SuspectMark(suspect) + "</td>" : "</td>");
+
+        return cells.ToString();
+    }
+
+    // The way to a pick's report: its state, the press asking for one where none is written or queued, and the queue's state.
+    string ReportPart(ListingCell row)
+    {
+        var cells = new StringBuilder();
         var researched = row.ResearchedOn is not null;
 
         cells.Append(Invariant, $" <a class=\"open{(researched ? string.Empty : " unwritten")}\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" ");
@@ -1430,13 +1445,6 @@ public sealed partial class MarkRenderer
         {
             cells.Append(Invariant, $"<span class=\"report-state\" data-report-state=\"{Escaped(queued.State)}\" data-at=\"{Escaped(queued.At ?? string.Empty)}\">{Escaped(queued.Words)}</span>");
         }
-
-        if (row.Distance?.Name is { Length: > 0 } company)
-        {
-            cells.Append(Invariant, $"<span class=\"co\">{Escaped(company)}</span>");
-        }
-
-        cells.Append(row.Suspect is { } suspect ? SuspectMark(suspect) + "</td>" : "</td>");
 
         return cells.ToString();
     }

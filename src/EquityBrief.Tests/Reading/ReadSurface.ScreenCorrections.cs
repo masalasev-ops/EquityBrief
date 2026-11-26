@@ -58,9 +58,10 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"tonight-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}{TheSwitch}\">What ran tonight</a> · <a class=\"market-watch\" data-watching=\"2\" href=\"{SinglePageApp.WatchRoute}\">Your watch list (2)</a></p>", page, StringComparison.Ordinal);
         Assert.True(page.IndexOf("<p class=\"tonight-links\">", StringComparison.Ordinal) < page.IndexOf("data-card=\"one-minute\"", StringComparison.Ordinal));
 
-        // The night drew buy points, so the table stands beneath the sentence counting them.
-        Assert.Contains("<table class=\"list-table buy-points\"", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("No stock to buy at tomorrow's open", page, StringComparison.Ordinal);
+        // The night drew buy points, so from 24.46 the list of every plan holds them beneath the sentence counting them.
+        Assert.Matches("<p class=\"card-summary\" data-summary>[0-9]+ plans tonight: 7 new,", page);
+        Assert.Contains("data-g=\"new\" data-ticker=\"F1\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("No stock holds a plan tonight", page, StringComparison.Ordinal);
     }
 
     // From 22.6 a night no setup picks from draws tomorrow's buys as its one sentence with no table, and tonight in one
@@ -72,8 +73,10 @@ public partial class ReadSurface
         var line = new MarketLineView(true, 0.48, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600");
         var region = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line, [], null);
 
-        Assert.Contains("<p class=\"card-summary\" data-summary data-buy-points=\"0\">No stock to buy at tomorrow's open: no setup picked one tonight.</p>", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("list-table buy-points", region, StringComparison.Ordinal);
+        // From 24.46 the new ideas' tile says so in a sentence, and the list of every plan holds none and says why.
+        Assert.Contains("<span class=\"g-s\">No new picks to buy at tomorrow's open.</span>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-summary\" data-summary>No stock holds a plan tonight: no setup found a new idea, no order waits for its price and no stock already held met the rules again.</p>", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"pl-row", region, StringComparison.Ordinal);
         Assert.Contains("<b>32 stocks are one step from qualifying.</b>", region, StringComparison.Ordinal);
 
         // The S&P 600's page links what ran on its own Run page and draws no watch list, which is the S&P 500's.

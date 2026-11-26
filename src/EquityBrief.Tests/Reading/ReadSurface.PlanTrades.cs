@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
@@ -186,13 +187,20 @@ public partial class ReadSurface
         Assert.True(home.IndexOf("<div class=\"waiting-orders wo\"", StringComparison.Ordinal) > home.IndexOf("<h2>Tonight's ideas:", StringComparison.Ordinal));
         StillWaitingCardOnce(home);
 
-        // Tonight: one new pick, and the order still waiting beneath the open trades.
+        // Tonight: one new pick, and from 24.46 the order still waiting a plan of its own in the waiting group, once, its buy
+        // the order's 47.50, its last day 14 Oct, the waiting group counted apart from the new.
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
         Assert.Contains("1 new pick, each bought only if its price dips to the buy price", tonight, StringComparison.Ordinal);
-        Assert.Contains("1 new, each bought only if its price dips to the buy price.", tonight, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"still-waiting\"><div class=\"waiting-orders wo\"", tonight, StringComparison.Ordinal);
-        StillWaitingCardOnce(tonight);
+        Assert.Contains("<div class=\"pl-g\" data-g=\"new\">New tonight, bought only on a dip</div>", tonight, StringComparison.Ordinal);
+        Assert.Contains("data-new=\"1\" data-waiting=\"1\"", tonight, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(tonight, "data-g=\"waiting\" data-ticker=\"M2\""));
+
+        var waiting = PlanArticle(tonight, "waiting", "M2");
+
+        Assert.Contains("<div data-figure=\"buy\"><dt>Buy if it dips to</dt><dd class=\"buy\">$47.50</dd><small>by 14 Oct</small></div>", waiting, StringComparison.Ordinal);
+        Assert.Contains("data-state=\"waiting\">Waiting since 30 Sep", waiting, StringComparison.Ordinal);
+        Assert.DoesNotContain("<div class=\"waiting-orders wo\"", tonight, StringComparison.Ordinal);
 
         // Past picks: tonight's new order and the one still waiting each counted as its own group, none to buy at the open.
         var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));

@@ -53,13 +53,13 @@ public partial class PlainWords
 
     static LadderRow LadderOf(string plan) => new("XYZ", new DateOnly(2026, 10, 23), "uptrend", plan);
 
-    // A pick's card holding the entry and exit plan beneath its setup's own, as tomorrow's buys draws it.
+    // A pick's card holding the entry and exit plan beneath its setup's own, as from 24.46 the list of every plan draws it.
     static string FoldWith(string levels)
     {
         var card = CardsDrawn().First(one => one.Index == "GSPC" && one.Family == EquityBrief.Core.Families.SetupFamilies.Pullback);
         var drawn = new MarkRenderer().DecisionCard(card, linked: true, levels: levels);
 
-        return Cards.Computed("Tomorrow's buys", "<p class=\"card-summary\" data-summary>One stock to buy at tomorrow's open.</p>" + drawn, region: "buy-points");
+        return Cards.Computed("Every plan tonight", "<p class=\"card-summary\" data-summary>1 plan tonight: 1 new, 0 waiting to buy and 0 already held that met the rules again.</p>" + drawn, region: "plans");
     }
 
     [Fact]
@@ -112,9 +112,9 @@ public partial class PlainWords
         var levels = "<section class=\"card-levels\"><h5>Entry and exit plan</h5>" + marks.PlanColumn("XYZ", 100m, rows) + marks.PlanTables("XYZ", NameScreen.PlanRows(LadderOf(NothingToBuy))) + "</section>";
         var faults = Faults(FoldWith(levels), RegionsOf(TonightPage), terms);
 
-        Assert.Contains(faults, fault => fault.StartsWith("'trail' in the card 'buy-points'", StringComparison.Ordinal));
-        Assert.Contains(faults, fault => fault.StartsWith("'held' in the card 'buy-points'", StringComparison.Ordinal));
-        Assert.Contains(faults, fault => fault.StartsWith("'tranche' in the card 'buy-points'", StringComparison.Ordinal));
+        Assert.Contains(faults, fault => fault.StartsWith("'trail' in the card 'plans'", StringComparison.Ordinal));
+        Assert.Contains(faults, fault => fault.StartsWith("'held' in the card 'plans'", StringComparison.Ordinal));
+        Assert.Contains(faults, fault => fault.StartsWith("'tranche' in the card 'plans'", StringComparison.Ordinal));
         Assert.Empty(Faults(FoldWith(NameScreen.EntryAndExitPlan(marks, "XYZ", LadderOf(WholeTrails), 100m)), RegionsOf(TonightPage), terms));
     }
 }

@@ -497,6 +497,11 @@ public sealed partial class SinglePageApp : IComponent
             const date = path.startsWith('{{{HomeNightRoute}}}') ? path.slice('{{{HomeNightRoute}}}'.length) : '';
             const home = await fetch('/screens/home' + (date === '' ? '' : '/' + encodeURIComponent(date)) + (query ? '?' + query : ''));
             screen.innerHTML = await home.text();
+          } else if (path.startsWith('{{{MarkRenderer.PlanRoute}}}')) {
+            // One plan of tonight's at its own address: tonight's page with the plan named shown beside the list.
+            const planned = decodeURIComponent(path.slice('{{{MarkRenderer.PlanRoute}}}'.length));
+            const tonight = await fetch('/screens/tonight?' + (query ? query + '&' : '') + 'plan=' + encodeURIComponent(planned));
+            screen.innerHTML = await tonight.text();
           } else if (path === '{{{TonightRoute}}}' || path.startsWith('{{{NightRoute}}}')) {
             const date = path.startsWith('{{{NightRoute}}}') ? path.slice('{{{NightRoute}}}'.length) : '';
             const night = date === '' ? '' : '/' + encodeURIComponent(date);
@@ -617,6 +622,7 @@ public sealed partial class SinglePageApp : IComponent
           const placedCard = placed ? (keptPlace.self ? placed : placed.closest('section.card')) : null;
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
+          else if (hash.startsWith('{{{MarkRenderer.PlanRoute}}}') && document.getElementById('plans')) { document.getElementById('plans').scrollIntoView({ block: 'start' }); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { const buyRow = screen.querySelector('.buy-points tr.sel[data-fold]'); const buyFold = document.getElementById(buyRow.getAttribute('data-fold')); const buyPlan = buyFold ? buyFold.querySelector('.card-plan') : null; (buyPlan || buyRow).scrollIntoView({ block: 'start' }); }
@@ -1297,6 +1303,59 @@ public sealed partial class SinglePageApp : IComponent
             ? screen.querySelector('section.card[data-card="heavyweights"]')
             : (screen.querySelector('section.family-card[data-family="' + CSS.escape(family) + '"]') || { closest: () => null }).closest('section.card');
           if (card) { card.scrollIntoView({ block: 'start' }); }
+        });
+        // Tonight's plans: a row shows its plan beside the list and takes its own address without drawing the page again, full
+        // screen on a phone with All plans to go back; the filter and a tile at a glance show one group; a plan's tabs show one
+        // panel; and a setup's row opens its card beneath it, closing the one open.
+        function showPlan(id) {
+          const plans = screen.querySelector('.tn-plans');
+          if (!plans) { return; }
+          for (const article of plans.querySelectorAll('.pl-plan')) { const on = article.id === id; article.hidden = !on; article.classList.toggle('on', on); }
+          for (const row of plans.querySelectorAll('.pl-row')) { row.classList.toggle('on', row.getAttribute('data-plan-id') === id); }
+          plans.classList.add('sheet');
+        }
+        function filterPlans(group) {
+          const plans = screen.querySelector('.tn-plans');
+          if (!plans) { return; }
+          for (const button of plans.querySelectorAll('.pl-filter button')) { button.classList.toggle('on', button.getAttribute('data-plan-filter') === group); }
+          for (const part of plans.querySelectorAll('.pl-list [data-g]')) { part.style.display = group === 'all' || part.getAttribute('data-g') === group ? '' : 'none'; }
+          plans.querySelector('.pl-list').classList.toggle('all', group === 'waiting');
+        }
+        screen.addEventListener('click', (event) => {
+          const row = event.target.closest('.pl-row[data-plan-id]');
+          if (row) {
+            event.preventDefault();
+            showPlan(row.getAttribute('data-plan-id'));
+            history.pushState(null, '', row.getAttribute('href'));
+            return;
+          }
+          const back = event.target.closest('.pl-back');
+          if (back) { const plans = back.closest('.tn-plans'); if (plans) { plans.classList.remove('sheet'); plans.scrollIntoView({ block: 'start' }); } return; }
+          const filter = event.target.closest('[data-plan-filter]');
+          if (filter) {
+            filterPlans(filter.getAttribute('data-plan-filter'));
+            if (filter.classList.contains('g-tile')) { const plans = document.getElementById('plans'); if (plans) { plans.scrollIntoView({ block: 'start' }); } }
+            return;
+          }
+          const goTo = event.target.closest('[data-scroll]');
+          if (goTo) { const target = document.getElementById(goTo.getAttribute('data-scroll')); if (target) { target.scrollIntoView({ block: 'start' }); } return; }
+          const more = event.target.closest('.pl-more');
+          if (more) { more.closest('.pl-list').classList.add('all'); more.hidden = true; return; }
+          const tab = event.target.closest('.pp-tabs button[data-p]');
+          if (tab) {
+            const article = tab.closest('.pl-plan');
+            for (const button of article.querySelectorAll('.pp-tabs button')) { button.classList.toggle('on', button === tab); }
+            for (const panel of article.querySelectorAll('.pp-panel')) { panel.classList.toggle('on', panel.getAttribute('data-p') === tab.getAttribute('data-p')); }
+            return;
+          }
+          const toggle = event.target.closest('[data-setup-toggle]');
+          if (toggle) {
+            const family = toggle.getAttribute('data-setup-toggle');
+            const table = toggle.closest('.st-tbl');
+            const opening = toggle.getAttribute('aria-expanded') !== 'true';
+            for (const button of table.querySelectorAll('[data-setup-toggle]')) { const on = opening && button === toggle; button.setAttribute('aria-expanded', on ? 'true' : 'false'); button.textContent = on ? 'Close' : 'Open'; button.closest('tr').classList.toggle('on', on); }
+            for (const panel of table.querySelectorAll('tr.st-open')) { panel.hidden = !(opening && panel.getAttribute('data-for') === family); }
+          }
         });
         // The Loop's badge: the proposals put to the operator that hold no decision, read off the surface on every screen
         // drawn and shown at one or more.
@@ -3168,7 +3227,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyDictionary<string, string>? plans = null,
         QualityCardView? quality = null,
         ImprovingCardView? improving = null,
-        SetupRecords? longRecords = null)
+        SetupRecords? longRecords = null,
+        TonightExtras? extras = null)
     {
         using var tags = RevisionTags.Use(Universes.Large.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
@@ -3238,7 +3298,8 @@ public sealed partial class SinglePageApp : IComponent
                 plans: plans,
                 quality: quality,
                 improving: improving,
-                longRecords: longRecords));
+                longRecords: longRecords,
+                extras: extras));
         }
         else if (families is null)
         {
@@ -3360,7 +3421,8 @@ public sealed partial class SinglePageApp : IComponent
         EndedTonightView? ended = null,
         QualityCardView? quality = null,
         ImprovingCardView? improving = null,
-        SetupRecords? longRecords = null)
+        SetupRecords? longRecords = null,
+        TonightExtras? extras = null)
     {
         using var tags = RevisionTags.Use(universe.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
@@ -3396,7 +3458,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
         var open = families.SelectMany(card => card.Picks).Any(pick => pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
-        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving, longRecords: longRecords));
+        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving, longRecords: longRecords, extras: extras));
         region.Append("</section>");
 
         return ReaderText.Revisions(region.ToString());

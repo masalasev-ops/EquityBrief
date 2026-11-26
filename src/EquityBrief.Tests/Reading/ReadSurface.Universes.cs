@@ -108,12 +108,16 @@ public partial class ReadSurface
         // the 3 members qualifying under some setup; no trade open from an earlier night and none ended tonight, the trades'
         // link keeping the index; and the stocks one step short not read on an index whose night stores only the first step
         // each stock missed.
-        var minute = Assert.Single(Blocks(page, "<div class=\"one-minute\".*?</div></div></div>"));
-        // From the operator's order of 2026-11-14 the line beneath names the setups that found nothing, and the open line
-        // names the index and those the current rules bought.
-        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at Monday's open, all from the breakout.</b></p><p class=\"minute-said\">Pullback and the earnings drift found nothing tonight.</p></div>", minute, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>2 trades are open on the S&P 400, 2 of them bought under the current rules since 28 Sep. None ended tonight.</b></p><p class=\"minute-said\"><a href=\"#/picks?status=open&universe=400\">See them on Past picks</a>, and those bought under the current rules on <a href=\"#/paper?universe=400\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", minute, StringComparison.Ordinal);
+        // From 24.46 the tiles at a glance: the new ideas' tile says the picks, the setups' table the setups that found nothing,
+        // the line beneath the tiles the open trades with the way to them, and the setups' table the stocks one step short.
+        var glance = Assert.Single(Blocks(page, "<section class=\"tn-glance\".*?</section>"));
+        var setups = Assert.Single(Blocks(page, "<section class=\"card tn-setups\".*?</thead>"));
+
+        Assert.Contains("<span class=\"g-s\">1 new pick to buy at Monday's open, all from the breakout.</span>", glance, StringComparison.Ordinal);
+        Assert.Contains("Pullback and the earnings drift found nothing tonight.", setups, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"g-s\">None ended tonight.</span>", glance, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"tn-open\" data-line=\"open\">2 trades are open on the S&P 400, 2 of them bought under the current rules since 28 Sep. <a href=\"#/picks?status=open&universe=400\">See them on Past picks</a>, and those bought under the current rules on <a href=\"#/paper?universe=400\">Paper trading</a></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", setups, StringComparison.Ordinal);
         Assert.DoesNotContain("S&P 500 members", page, StringComparison.Ordinal);
 
         // Every card provisional, Quality at a fair price's among them from 22.9 and from 22.13 the Fundamentals family's in
@@ -124,7 +128,7 @@ public partial class ReadSurface
         var breakout = FamilyCardOf(page, "breakout");
 
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", breakout, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Contains("data-plan=\"M1\" data-g=\"new\" data-family=\"breakout\"", PickRowOf(page, "M1"), StringComparison.Ordinal);
         Assert.Contains("<span class=\"co\">Mid One</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
         Assert.Equal(["M1"], CardPicksOf(breakout));
 
@@ -200,7 +204,7 @@ public partial class ReadSurface
 
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-            Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
+            Assert.Contains("<span class=\"pp-business\">The business: <span class=\"degraded\" data-state=\"none\">not read</span></span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
         }
 
         // Its reading stored for the night, improving: its row draws the state as the S&P 500's rows draw theirs.
@@ -213,7 +217,7 @@ public partial class ReadSurface
 
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-            Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", PickRowOf(page, "M1"), StringComparison.Ordinal);
+            Assert.Contains("<span class=\"pp-business\">The business:  <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", PickRowOf(page, "M1"), StringComparison.Ordinal);
         }
     }
 

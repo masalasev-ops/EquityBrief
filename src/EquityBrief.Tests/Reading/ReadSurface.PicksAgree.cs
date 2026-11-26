@@ -218,20 +218,26 @@ public partial class ReadSurface
         Assert.DoesNotContain("card-plan-rr", open, StringComparison.Ordinal);
     }
 
-    // Every See the plan on Home opens its own stock's chart page, on a night with several ideas, and a card's way to the stock's
-    // full page opens the chart page as well.
+    // Every See the plan on Home opens its own stock's plan on Tonight at its own address, on a night with several ideas, on the
+    // S&P 500 and the S&P 400, and a card's way to the stock's full page opens the chart page as well.
+    // see: See the plan opens the stock's plan on Tonight at its own address
     [Fact]
-    public void EverySeeThePlanOnHomeOpensItsOwnStocksChartPage()
+    public void EverySeeThePlanOnHomeOpensItsOwnStocksPlanOnTonight()
     {
         HomeIdea Idea(string ticker) => new("pullback", ticker, null, "Why.", 100m, 90m, 120m, false, null);
 
         string[] tickers = ["MRNA", "MA", "SPGI", "APD"];
-        var region = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [.. tickers.Select(Idea)], IdeasCount = 4 }, string.Empty);
-        var links = Regex.Matches(region, "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([^\"]+)\".*?<a class=\"home-plan\" href=\"([^\"]+)\">See the plan</a>", RegexOptions.Singleline);
 
-        Assert.Equal(tickers, links.Select(link => link.Groups[1].Value));
-        Assert.All(links, link => Assert.Equal("#/chart/" + link.Groups[1].Value, link.Groups[2].Value));
-        Assert.DoesNotContain("href=\"#/tonight?name=", region, StringComparison.Ordinal);
+        foreach (var (reading, query) in new[] { (Universes.Large, string.Empty), (Universes.Mid, "?universe=400") })
+        {
+            var region = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Reading = reading, Ideas = [.. tickers.Select(Idea)], IdeasCount = 4 }, string.Empty);
+            var links = Regex.Matches(region, "<article class=\"home-idea[^\"]*\" data-family=\"[^\"]+\" data-ticker=\"([^\"]+)\".*?<a class=\"home-plan\" href=\"([^\"]+)\">See the plan</a>", RegexOptions.Singleline);
+
+            Assert.Equal(tickers, links.Select(link => link.Groups[1].Value));
+            Assert.All(links, link => Assert.Equal("#/tonight/plan/" + link.Groups[1].Value + query, link.Groups[2].Value));
+            Assert.DoesNotContain("class=\"home-plan\" href=\"#/chart/", region, StringComparison.Ordinal);
+            Assert.DoesNotContain("href=\"#/tonight?name=", region, StringComparison.Ordinal);
+        }
 
         var card = new DecisionCardView("GSPC", AgreeNight, "pullback", "MA", "the pullback rule", 631.46m, 574.88m, 744.61m, [], null);
 

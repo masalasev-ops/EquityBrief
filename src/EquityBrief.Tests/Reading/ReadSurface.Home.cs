@@ -167,7 +167,7 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"home-odds home-noloss\" data-no-loss=\"54\">The trade can no longer lose once the stock reaches about $54.00.</div>", page, StringComparison.Ordinal);
         Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
         Assert.Contains("<div><span>Sell when</span><b class=\"stop\">its filings weaken</b></div>", page, StringComparison.Ordinal);
-        Assert.Contains("<a class=\"home-plan\" href=\"#/chart/AAA\">See the plan</a>", page, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"home-plan\" href=\"#/tonight/plan/AAA\">See the plan</a>", page, StringComparison.Ordinal);
         Assert.Contains("<a href=\"#/tonight\">See all 7 of tonight's ideas with their full plans</a>", page, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);
 

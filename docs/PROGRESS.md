@@ -23170,3 +23170,71 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures 
             0 warnings, 0 errors, 4055 of 4055 tests ran with none failed, migrations 0 to 172 with none pending, schema
             version 172, against `data-ci` and never `data`.
 Carried:    none.
+
+### 24.0 planning - amendment: 24.46, Tonight redesigned   2026-11-26
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it; 24.46's own entry below builds it.
+Queue:      done, 24.0 to 24.29, 24.35's built parts, 24.39 and 24.40, and the 24.19 correction's code to its 5a part; in
+            progress, 24.46, the next track ahead of everything queued; next, the folded build of the 24.19 correction from
+            Friday 27 Nov, the correction of 2026-11-26's text on Monday 30 Nov, then the Waiting to buy redesign, applying
+            to Home's carousel alone.
+Ruled:      the operator's order of 2026-11-26, kept word for word as Appendix AJ of the plan's file, with their mockup
+            `prompts/2026-11-26-tonight-redesign-mockup.html`.
+Planned:    `BUILD_PLAN.md`'s 24.46 with its done condition, its line among the phase's visible output and its five claims
+            in the phase's count.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the one run 24.46's entry below states the figures of.
+Carried:    none.
+
+### 24.46 - Tonight redesigned: every plan in one list at its own address in one design, the tiles at a glance, the markets in one strip and the setups one row each   2026-11-26
+
+Ruled:      the operator's order of 2026-11-26, kept word for word as Appendix AJ of the plan's file, built to their mockup.
+            Three decisions: Tonight lists every plan in one place at its own address; a waiting order's plan is the card its
+            placing night stored; See the plan opens the plan on Tonight, superseding its opening the chart page.
+Built:      Tonight on every index draws five tiles at a glance, the market strip beneath them with the market check's
+            sentence and bar, one list of every plan in three groups, new tonight, waiting to buy nearest its price first
+            and already held met again, with a filter counting each and the plan chosen beside the list or full screen under
+            760 pixels, each plan at `#/tonight/plan/<TICKER>`, a row taking its address without drawing the page again;
+            every plan in one design, its tabs the card's own parts; a waiting order's plan the card its placing night
+            stored, a card met again among them, its checks said as that night's; the setups as one table row each, one
+            opened beneath its row holding its card whole; the page's words in a fold. Home's See the plan, on an idea, a
+            stock met again, a waiting order's card and a bought stock met again, opens the plan's address. The counts proof
+            reads tonight's new picks and the orders waiting off the plans' sentence.
+Placed:     every fact the page drew before. The notice and the links stand as they were. Tonight in one minute: the market
+            line and its bar beneath the strip and the market tile's gauge; the picks' sentence on the new ideas' tile; the
+            setups finding nothing on the setups' line; the open trades on the line beneath the tiles with Past picks and
+            Paper trading linked, those ended tonight on the open trades' tile; the stocks one step short on the setups'
+            line; the waiting carousel as the waiting group; the orders that left the list in five trading days on the
+            fifth tile and Paper trading's tab. Friday's buys, column by column: the stock with its company, its report's
+            state and press, its suspect mark and its other setups' labels on the plan's header and the list's row; the setup
+            and its revision on the header; why it qualified, the business and the news over 30 days in the plan's why; the
+            buy, the stop, the target and the risk for $1 on the price line, the four figures and the setup's own row; the
+            folded card in the plan's tabs, the levels plan in its sizing tab; its sentence on the new ideas' tile and the
+            group's heading; the line beneath it in each plan's buy condition; a book's buy as a plan saying how it sells and
+            opening its row. The six setups' tiles as the table's rows, each tile's sentence opening its row. Each setup's
+            card, its rule, its variants' tabs and folds, its funnel, its picks, its stocks one step short, its notes and its
+            cards met again, the Fundamentals family's tabs, the heavyweights' and Quality's holdings tables and rows, all
+            whole in the opened row. The stocks one step short's card beneath the table. The words in a fold.
+Measured:   over a copy of the store on C: of the night of 2026-11-25: the S&P 500 24 plans, 3 new, 19 waiting and 2 held;
+            the S&P 400 8, 1, 7 and 0; the S&P 600 6, 1, 4 and 1. Every waiting order's placing night stored its card, three
+            of them, CART's of 17 Nov and SN's of 20 Nov on the S&P 400 and DFIN's of 23 Nov on the S&P 600, as cards met
+            again, the rule having ordered while another setup held the stock. Read back at 1440 and a true 390 in both
+            palettes with no sideways scroll on any index, a plan full screen at 390 among them.
+Tests:      4 new: each plan opened from its address for a new idea, a waiting order and a held stock, and the setups' row
+            the link names; a waiting order's plan with no card on its night and with that night's card, plain and met
+            again; the groups and the waiting order worked by hand; Home's waiting orders and held stocks. 1 renamed, Home's
+            See the plan opening the plan's address on the S&P 500 and 400. Every test reading the buys table, the one-minute
+            card, the tiles or the carousel on Tonight rewritten onto the plans, the setups' rows and the tiles at a glance,
+            and the plain words' check reading the operator's "Held since" past as it reads "already held".
+Pins:       none moved. No source a rule's version pins is touched.
+Mutated:    the rule, stated before the run: each guard this stage adds taken out at its one site. m1 the address ignored,
+            the list's first always chosen: red; m2 a waiting order's checks not said as that night's: red; m3 the placing
+            night's card never read: red; m4 Home's link back to the chart page: red; m5 the setups' table ignoring the
+            setup its link names: red. Each filtered to its tests and reverted before anything was committed.
+Claims:     1759, 5 added, section 15.7's rows of the tiles at a glance, every plan, a plan, a waiting order's plan and the
+            setups' table.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4059 of 4059 tests ran with none failed, migrations 0 to
+            172 with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1759
+            claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the held Waiting to buy redesign, applying to Home's carousel alone, follows this track.
