@@ -68,8 +68,8 @@ public partial class ReadSurface
         // sixth and E2 seventh.
         Assert.Equal(["E1", "E2"], CardPicksOf(card));
         Assert.Contains("<a class=\"name-link\" href=\"#/chart/E1\">E1</a>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
-        Assert.StartsWith("<tr data-ticker=\"E1\" data-family=\"drift\" data-place=\"6\"", PickRowOf(page, "E1"), StringComparison.Ordinal);
-        Assert.StartsWith("<tr data-ticker=\"E2\" data-family=\"drift\" data-place=\"7\"", PickRowOf(page, "E2"), StringComparison.Ordinal);
+        Assert.Equal(5, NewIdeasOf(page).ToList().IndexOf("E1"));
+        Assert.Equal(6, NewIdeasOf(page).ToList().IndexOf("E2"));
 
         // E1's trade and its reward to risk, as its trade gate stored it, on its buy point's row.
         var first = PickRowOf(page, "E1");
@@ -93,15 +93,15 @@ public partial class ReadSurface
         Assert.Contains($"<td class=\"why\">{WhyE2}</td>", second, StringComparison.Ordinal);
         Assert.Contains($"<td class=\"why\">{WhyE1}</td>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
 
-        // Read back against the store in both directions.
-        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
+        // Read back against the store in both directions: the drift's plans in the list of every plan, and its card's own rows.
+        var points = Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>"));
 
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND family = 'drift' AND state = 'listed' ORDER BY place;"),
-            Regex.Matches(points, "<tr data-ticker=\"([^\"]+)\" data-family=\"drift\"").Select(match => match.Groups[1].Value));
+            Regex.Matches(page, "<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"[^\"]+\" data-g=\"new\" data-ticker=\"([^\"]+)\" data-family=\"drift\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
             Strings(store, $"SELECT entry || '|' || stop || '|' || target FROM family_result WHERE session_date = '{TheSwitch}' AND family = 'drift' ORDER BY place;"),
-            Regex.Matches(points, "<tr data-ticker=\"[^\"]+\" data-family=\"drift\".*?data-buy=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-stop\" data-stop=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-target\" data-target=\"([^\"]+)\"", RegexOptions.Singleline)
+            Regex.Matches(points, "<tr data-ticker=\"[^\"]+\" data-card-pick=\"true\">.*?data-buy=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-stop\" data-stop=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-target\" data-target=\"([^\"]+)\"", RegexOptions.Singleline)
                 .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}"));
     }
 }

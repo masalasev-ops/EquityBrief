@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Bars;
 using EquityBrief.Web.Marks;
 
@@ -32,9 +33,10 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
-        Assert.Contains("Monday's buys", page, StringComparison.Ordinal);
-        Assert.Contains("7 stocks to buy at Monday's open, at whatever price each opens.", page, StringComparison.Ordinal);
-        Assert.Contains("7 new picks to buy at Monday's open", page, StringComparison.Ordinal);
+        // From 24.46 the new ideas' tile names the session, and each plan bought at the open says it buys at whatever price
+        // it opens.
+        Assert.Contains("<span class=\"g-s\">7 new picks to buy at Monday's open", page, StringComparison.Ordinal);
+        Assert.Equal(7, Regex.Matches(page, "<p class=\"pp-cond\">Buys at the next open, at whatever price it opens\\.").Count);
         Assert.DoesNotContain("omorrow's buys", page, StringComparison.Ordinal);
         Assert.DoesNotContain("tomorrow's open", page, StringComparison.Ordinal);
     }

@@ -2064,8 +2064,13 @@ async Task<IResult> TonightScreenAsync(
             return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high, heavyweightCard, await QualityCardAsync(read, reading.Code, dated, indexCells));
         }
 
+        // From the operator's order of 2026-11-26 the strip beneath the tiles, each waiting order's plan read off the card the night
+        // it was placed stored, the plan the address names and the setup the link opens.
+        // see: A waiting order's plan is the one stored on the night it was placed, its checks said as that night's
+        var indexExtras = new SinglePageApp.TonightExtras(strip, await PlacedCardsAsync(read, reading.Code, indexLine.Groups, indexCardContext), request.Query["plan"].FirstOrDefault(), request.Query[SinglePageApp.HomeSetupKey].FirstOrDefault());
+
         return Results.Content(
-            notice + strip + page.IndexTonightRegion(
+            notice + page.IndexTonightRegion(
                 marks,
                 dated,
                 reading,
@@ -2088,7 +2093,8 @@ async Task<IResult> TonightScreenAsync(
                 ended: TonightScreen.EndedTonight(dated, [], indexTrades),
                 quality: await QualityCardAsync(read, reading.Code, dated, indexCells),
                 improving: await ImprovingCardAsync(read, reading.Code, dated, indexCells),
-                longRecords: indexCardContext.LongRecords),
+                longRecords: indexCardContext.LongRecords,
+                extras: indexExtras),
             "text/html; charset=utf-8");
     }
 
@@ -2482,8 +2488,16 @@ async Task<IResult> TonightScreenAsync(
         return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)), heavyweights: heavyweights, quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells));
     }
 
+    // From the operator's order of 2026-11-26, on a night the families drew the page, the strip beneath the tiles and each
+    // waiting order's plan read off the card the night it was placed stored.
+    // see: A waiting order's plan is the one stored on the night it was placed, its checks said as that night's
+    var largeGroups = line is null ? null : (await PaperAccountsAsync(read, reading, dated, null)).Groups;
+    var largeExtras = cards is null || line is null
+        ? null
+        : new SinglePageApp.TonightExtras(strip, await PlacedCardsAsync(read, reading.Code, largeGroups, cardContext), request.Query["plan"].FirstOrDefault(), request.Query[SinglePageApp.HomeSetupKey].FirstOrDefault());
+
     return Results.Content(
-        notice + strip + page.TonightRegion(
+        notice + (largeExtras is null ? strip : string.Empty) + page.TonightRegion(
             marks,
             dated,
             universe.Count,
@@ -2501,7 +2515,7 @@ async Task<IResult> TonightScreenAsync(
             close: nearRows,
             stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks),
             families: cards,
-            line: line is null ? null : line with { Groups = (await PaperAccountsAsync(read, reading, dated, null)).Groups, FirstLive = TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code) },
+            line: line is null ? null : line with { Groups = largeGroups, FirstLive = TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code) },
             closeAcross: closeAcross,
             heavyweights: heavyweights,
             selector: selector,
@@ -2514,8 +2528,35 @@ async Task<IResult> TonightScreenAsync(
             plans: plans,
             quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells),
             improving: cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells),
-            longRecords: cardContext.LongRecords),
+            longRecords: cardContext.LongRecords,
+            extras: largeExtras),
         "text/html; charset=utf-8");
+}
+
+// Each order still waiting for its price with the card the night it was placed stored for it, matched by its setup and stock,
+// none where that night stored no card; nothing is worked out again from tonight's figures.
+// see: A waiting order's plan is the one stored on the night it was placed, its checks said as that night's
+static async Task<IReadOnlyDictionary<string, DecisionCardView>> PlacedCardsAsync(ReadApi read, string index, TradeGroupsView? groups, CardContext context)
+{
+    var placed = new Dictionary<string, DecisionCardView>(StringComparer.Ordinal);
+    var orders = groups?.StillWaitingOrders ?? [];
+
+    foreach (var night in orders.Select(order => order.Listed).Distinct())
+    {
+        var stored = await read.DecisionCardsAsync(index, night);
+
+        foreach (var order in orders.Where(order => order.Listed == night))
+        {
+            // The night's card of the stock under the order's setup, a card of a stock met again among them where the rule
+            // ordered it while another setup held it, a plain card first where the night stored both.
+            if (stored.Where(row => row.Family == order.Family && row.Ticker == order.Ticker).OrderBy(row => row.HeldAgain is null ? 0 : 1).FirstOrDefault() is { } row)
+            {
+                placed[SinglePageApp.TonightExtras.Key(order.Family, order.Ticker, night)] = CardScreen.View(row, context);
+            }
+        }
+    }
+
+    return placed;
 }
 
 // The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from

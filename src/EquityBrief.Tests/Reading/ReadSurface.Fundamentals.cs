@@ -57,7 +57,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("id=\"setup-fundamentals\"", mid, StringComparison.Ordinal);
         Assert.DoesNotContain("<section class=\"family-card\" data-family=\"fundamentals\"", mid, StringComparison.Ordinal);
         Assert.DoesNotContain("data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<section[^>]*id=\"setups\".*?</section>")), StringComparison.Ordinal);
-        Assert.DoesNotContain("data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
+        Assert.DoesNotMatch("data-g=\"new\"[^>]*data-family=\"fundamentals\"", mid);
         Assert.Contains("id=\"setup-improving\"", mid, StringComparison.Ordinal);
         Assert.Contains("data-passed=\"2\"", Assert.Single(Blocks(mid, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
 
@@ -125,7 +125,7 @@ public partial class ReadSurface
             System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.Contains($"data-passed=\"{ownPasses}\"", Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
-        Assert.DoesNotContain("data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
+        Assert.DoesNotMatch("data-g=\"new\"[^>]*data-family=\"fundamentals\"", page);
 
         // Past picks draws no card of its trades.
         var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));

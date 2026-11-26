@@ -89,7 +89,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Equal(["M1", "M3", "M2"], Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), "<tr data-ticker=\"([^\"]+)\" data-family=").Select(match => match.Groups[1].Value));
+        Assert.Equal(["M1", "M3", "M2"], NewIdeasOf(page));
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.9975\">$3.00</td>", PickRowOf(page, "M3"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on a rising stop</td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on its exit signal</td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
@@ -107,21 +107,19 @@ public partial class ReadSurface
     [Fact]
     public async Task ABuyHoldingNoLabelSaysNoLabelOnEveryIndexAndAnSAndP400PickHoldingLabelsDrawsItsCounts()
     {
-        const string None = "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>";
+        const string None = "<span class=\"pp-news\" data-positive=\"none\" data-negative=\"none\">News, 30 days: no label</span>";
 
         using var store = EachKindStore();
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        static string Buys(string page) => Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
-
-        var before = Buys(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+        var before = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
         Assert.Equal(3, Regex.Matches(before, Regex.Escape(None)).Count);
         Assert.DoesNotContain("News labels cover", before, StringComparison.Ordinal);
 
-        // One good story of the window naming Mid One, labelled for the first pick, M1: its row draws one good and none bad.
-        var ticker = Regex.Match(before, "<tr data-ticker=\"([^\"]+)\"").Groups[1].Value;
+        // One good story of the window naming Mid One, labelled for the first pick, M1: its plan draws one good and none bad.
+        var ticker = NewIdeasOf(before)[0];
 
         Assert.Equal("M1", ticker);
         store.Execute(
@@ -131,9 +129,9 @@ public partial class ReadSurface
             "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
             $"('{ticker}', 'g1', 'gemma-4', 2, 'google/gemma-4-26b-a4b-qat', 'labelled', NULL, 'results', 'positive', 'The company beat.', '2026-10-01T04:10:00Z', 'label-news-test');");
 
-        var row = Regex.Match(Buys(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), $"<tr data-ticker=\"{Regex.Escape(ticker)}\".*?</tr>", RegexOptions.Singleline).Value;
+        var row = PickRowOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), ticker);
 
-        Assert.Contains("<td class=\"news-counts\" data-positive=\"1\" data-negative=\"0\"><span class=\"np gain\">1 good</span> · <span class=\"nn flat\">0 bad</span></td>", row, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pp-news\" data-positive=\"1\" data-negative=\"0\">News, 30 days: 1 good, 0 bad</span>", row, StringComparison.Ordinal);
     }
 
     // The night of 2026-10-02 run again at noon on 2026-10-04 with the register as it stood, after a freeze registered

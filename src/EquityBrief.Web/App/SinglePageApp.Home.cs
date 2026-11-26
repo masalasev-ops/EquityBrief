@@ -195,16 +195,16 @@ public sealed partial class SinglePageApp
             .Where(line => line.Length > 0 && (char.IsLower(line[0]) || char.IsPunctuation(line[0]) && line[0] is not ('(' or '"' or '\'')))];
 
     // On the operator's ruling of 2026-11-15 on the review of PR 699 each book's pick a page draws with no price it takes profit
-    // at: a card of Home's with no profit row, and a row of Tonight's buys with no take-profit in its target's column.
+    // at: a card of Home's with no profit row, and from 24.46 a book's plan on Tonight whose price line marks no take-profit.
     // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public static IReadOnlyList<string> BookPicksWithNoProfitRow(string page) =>
     [
         .. System.Text.RegularExpressions.Regex.Matches(page, "<article class=\"home-idea[^\"]*\" data-family=\"(improving|quality|heavyweight)\" data-ticker=\"([^\"]+)\">.*?</article>", System.Text.RegularExpressions.RegexOptions.Singleline)
             .Where(card => !card.Value.Contains("<span>" + TakeProfitView.Label + "</span>", StringComparison.Ordinal) && !card.Value.Contains("<span>" + TakeProfitView.HalfLabel + "</span>", StringComparison.Ordinal))
             .Select(card => "Home " + card.Groups[1].Value + " " + card.Groups[2].Value),
-        .. System.Text.RegularExpressions.Regex.Matches(page, "<tr data-ticker=\"([^\"]+)\" data-family=\"([a-z]+)\" data-place=\"[0-9]+\" data-planless>.*?</tr>", System.Text.RegularExpressions.RegexOptions.Singleline)
-            .Where(row => !System.Text.RegularExpressions.Regex.IsMatch(row.Value, "data-target=\"[0-9]"))
-            .Select(row => "Tonight " + row.Groups[2].Value + " " + row.Groups[1].Value),
+        .. System.Text.RegularExpressions.Regex.Matches(page, "<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"([^\"]+)\" data-g=\"new\" data-family=\"(improving|quality|heavyweight)\".*?</article>", System.Text.RegularExpressions.RegexOptions.Singleline)
+            .Where(plan => !System.Text.RegularExpressions.Regex.IsMatch(plan.Value, "data-tp=\"[0-9]"))
+            .Select(plan => "Tonight " + plan.Groups[2].Value + " " + plan.Groups[1].Value),
     ];
 
     public const string FootLine = "Want every number, every rule and every change to one being tested?";
@@ -658,7 +658,7 @@ public sealed partial class SinglePageApp
 
             body.Append(Invariant($"<li class=\"held-row\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\" data-bought=\"{(held.Bought ? "true" : "false")}\"><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(card.Ticker)}\">{Escaped(card.Ticker)}</a>"));
             body.Append(companies.TryGetValue(card.Ticker, out var company) ? Invariant($"<span class=\"held-co\">{Escaped(company)}</span>") : string.Empty);
-            body.Append(Invariant($"<span class=\"held-by\">{Escaped(setup)}, {Escaped(when)}</span><b class=\"held-label\">{Escaped(held.Labelled)}</b><a class=\"held-go\" href=\"{paper}\">See its trade on Paper trading</a></li>"));
+            body.Append(Invariant($"<span class=\"held-by\">{Escaped(setup)}, {Escaped(when)}</span><b class=\"held-label\">{Escaped(held.Labelled)}</b><a class=\"home-plan held-plan\" href=\"{Escaped(MarkRenderer.PlanHref(card.Ticker, reading.Word))}\">See the plan</a><a class=\"held-go\" href=\"{paper}\">See its trade on Paper trading</a></li>"));
         }
 
         return body.Append("</ul></div>").ToString();
@@ -806,7 +806,7 @@ public sealed partial class SinglePageApp
 
             foreach (var (card, order) in metAgain)
             {
-                html.Append(AgainIdea(card, order, companies?.GetValueOrDefault(card.Ticker) ?? order.Company));
+                html.Append(AgainIdea(card, order, companies?.GetValueOrDefault(card.Ticker) ?? order.Company, reading.Word));
             }
 
             html.Append("</div></div>");
@@ -817,14 +817,15 @@ public sealed partial class SinglePageApp
 
     // From the operator's correction of 2026-11-25, item 5: a stock its setup's rules picked again tonight while its earlier order
     // still waits, as a card of tonight's ideas marked "Met the rules again": the standing order and tonight's would-be price in
-    // one line, tonight's checks folded, and See the plan opening its chart page, which draws the standing order's plan.
+    // one line, tonight's checks folded, and See the plan opening its plan on Tonight, the one its order's night stored.
     // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
-    public static string AgainIdea(DecisionCardView card, WaitingOrderView order, string? company) =>
+    // see: See the plan opens the stock's plan on Tonight at its own address
+    public static string AgainIdea(DecisionCardView card, WaitingOrderView order, string? company, string universeWord = "500") =>
         Invariant($"<article class=\"home-idea fam-edge again-idea\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-again=\"true\" data-listed=\"{order.Listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">")
         + Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(card.Ticker)}</div>{(company is { Length: > 0 } named ? Invariant($"<div class=\"home-co\">{Escaped(named)}</div>") : string.Empty)}</div><b class=\"wo-again\">{Escaped(HeldAgainView.AgainMark)}</b></div>")
         + Invariant($"<p class=\"again-line\">{Escaped(MarkRenderer.AgainLine(order, card))}</p>")
         + MarkRenderer.AgainFold(card)
-        + Invariant($"<a class=\"home-plan\" href=\"{ChartHref(card.Ticker)}\">See the plan</a></article>");
+        + Invariant($"<a class=\"home-plan\" href=\"{Escaped(MarkRenderer.PlanHref(card.Ticker, universeWord))}\">See the plan</a></article>");
 
     // A pick's card under its setup's header: what is its own, an idea to buy or a pick watched whose buy price reads as bought
     // on paper, its setup's record in one line with the way up to the header; from 24.15 on a past night with its line on what
@@ -959,13 +960,13 @@ public sealed partial class SinglePageApp
             card.Append(Invariant($"<div class=\"home-odds\">{said}</div>"));
         }
 
-        // One no plan sells opens its row on its own card; from the operator's correction of 2026-11-24, item 7, a plan's idea
-        // opens the stock's chart page, its pick's plan drawn on it, never another stock's card.
+        // One no plan sells opens its row on its own card; from the operator's order of 2026-11-26 a plan's idea opens its plan on
+        // Tonight at its own address, the chart linked from the plan's header.
         // see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
-        // see: See the plan opens the stock's chart page with its pick's plan drawn on it
+        // see: See the plan opens the stock's plan on Tonight at its own address
         card.Append(Planless(idea.Family)
             ? Invariant($"<a class=\"home-how\" href=\"{TonightHref(reading, idea.Family, idea.Ticker)}\">How it sells</a>")
-            : Invariant($"<a class=\"home-plan\" href=\"{ChartHref(idea.Ticker)}\">See the plan</a>"));
+            : Invariant($"<a class=\"home-plan\" href=\"{Escaped(MarkRenderer.PlanHref(idea.Ticker, reading.Word))}\">See the plan</a>"));
         card.Append("</article>");
 
         return card.ToString();

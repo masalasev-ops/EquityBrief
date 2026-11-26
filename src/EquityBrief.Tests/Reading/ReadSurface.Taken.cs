@@ -563,18 +563,23 @@ public partial class ReadSurface
             $"{(exited ? "'52', '2026-10-02'" : "NULL, NULL")}, NULL);");
 
     // A card off its index's Tonight, decoded: a holding's from its row of its own, hidden beneath the holding's, and from
-    // the 19.2 correction of 2026-10-21 a buy point's from its fold, read from the card to the fold's end.
+    // the 19.2 correction of 2026-10-21 a buy point's from its fold, read from the card to the fold's end, and from 24.46 from
+    // its plan in Tonight's list of every plan.
     static async Task<string> CardRowOf(HttpClient client, string index, string family, string ticker, string night = IndexNight)
     {
         var page = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf(index, night)));
         var id = $"card-{index}-{family}-{ticker}".ToLowerInvariant();
         var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
-        var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{MarkRenderer.FoldId(family, ticker)}\" data-fold-for=\"{Regex.Escape(ticker)}\"(?: hidden)?><td colspan=\"\\d+\">.*?(<div class=\"decision-card\" data-index=\"{index}\" data-family=\"{family}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-read\">)", RegexOptions.Singleline);
+        var plan = PlanOf(page, index, family, ticker);
 
-        Assert.True(row.Success || fold.Success, $"The {index} page draws no card for {ticker}'s {family}, drawing {string.Join(", ", Regex.Matches(page, "<tr class=\"(?:card|fold)-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value))}.");
+        Assert.True(row.Success || plan.Success, $"The {index} page draws no card for {ticker}'s {family}, drawing {string.Join(", ", Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"|<article class=\"pl-plan[^\"]*\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value + match.Groups[2].Value))}.");
 
-        return row.Success ? row.Groups[1].Value : fold.Groups[1].Value;
+        return row.Success ? row.Groups[1].Value : plan.Groups[1].Value;
     }
+
+    // From 24.46 a new idea's card off its plan in Tonight's list of every plan, read from the card to the plan's end.
+    internal static Match PlanOf(string page, string index, string family, string ticker) =>
+        Regex.Match(page, $"<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"{Regex.Escape(ticker)}\" data-g=\"new\" data-family=\"{Regex.Escape(family)}\"[^>]*>.*?(<div class=\"decision-card\" data-index=\"{Regex.Escape(index)}\" data-family=\"{Regex.Escape(family)}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)</article>", RegexOptions.Singleline);
 
     // The management a card states, step by step.
     static string[] ManagementOf(string card) =>

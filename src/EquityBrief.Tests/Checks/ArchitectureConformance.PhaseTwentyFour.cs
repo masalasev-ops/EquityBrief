@@ -22,7 +22,8 @@ public partial class ArchitectureConformance
     // clauses of section 15.20's route and the renamed row of choosing a variant; and 24.17's three regions of the case for
     // promotion, section 18's row of a press on a case and section 17's row of the rule; and none at 24.18, the AI stock
     // picker's rows renamed where they stood and the word check landing as a clause of banned-prose's roster row; and
-    // 24.19's two stores and the History page's row; and 24.27's survivors; and 24.28's researcher; and 24.29's buy range; and 24.39's idea box; and 24.40's never stuck.
+    // 24.19's two stores and the History page's row; and 24.27's survivors; and 24.28's researcher; and 24.29's buy range; and 24.39's idea box; and 24.40's never stuck; and
+    // 24.46's five rows of Tonight redesigned.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -57,6 +58,7 @@ public partial class ArchitectureConformance
         ("24.39", [.. FixtureExpectations.IdeaBoxRows], []),
         ("24.40", [.. FixtureExpectations.NeverStuckRows], []),
         ("24.35", [.. FixtureExpectations.PullbackSearchRows], []),
+        ("24.46", [.. Reading.ReadSurface.TonightPlanRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -140,6 +142,7 @@ public partial class ArchitectureConformance
         ("24.39", 3),
         ("24.40", -1),
         ("24.35", 1),
+        ("24.46", 0),
     ];
 
     [Fact]
@@ -193,6 +196,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1754), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1759), (before, low, high, actual));
     }
 }

@@ -137,22 +137,21 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
-        // From 22.6 the S&P 600's buy points fold each row's pick's card beneath it alone, closed where the link names no
-        // row: S1's fold hidden, holding its card, whose one plan is its setup's own, and no levels plan, which stays on the
-        // stock's full page, though the night stored a band for it beneath its close of 50.
-        var points = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))));
-        var s1 = Assert.Single(Folds(points));
+        // From 24.46 the S&P 600's one new idea is the list's first plan, shown with no plan in the link: S1's plan holding its
+        // card, whose one plan is its setup's own, and no levels plan, which stays on the stock's full page, though the night
+        // stored a band for it beneath its close of 50.
+        var points = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight)));
+        var s1 = Assert.Single(Plans(points), plan => plan.Group == "new");
 
-        Assert.Equal(("fold-breakout-s1", "S1", true), (s1.Id, s1.Ticker, s1.Hidden));
-        Assert.StartsWith("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body, StringComparison.Ordinal);
+        Assert.Equal(("plan-new-breakout-s1", "S1", false), (s1.Id, s1.Ticker, s1.Hidden));
+        Assert.Contains("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("level-summary", s1.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("selected-name", s1.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("data-low-edge=\"46\"", s1.Body, StringComparison.Ordinal);
-        Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);
 
-        // From 19.11 the row's stock opens its chart page, and its report link the report.
-        Assert.Contains("<a class=\"name-link\" href=\"#/chart/S1\">S1</a>", points, StringComparison.Ordinal);
-        Assert.Matches("<a class=\"open[^\"]*\" href=\"#/name/S1\"", points);
+        // From 19.11 the stock opens its chart page, and its report link the report, from 24.46 off its plan's header.
+        Assert.Contains("<a href=\"#/chart/S1\">Chart</a>", s1.Header, StringComparison.Ordinal);
+        Assert.Matches("<a class=\"open[^\"]*\" href=\"#/name/S1\"", s1.Header);
 
         // With S3 listed second and its card written, a link naming S3 opens its fold and no other, its row selected, and a
         // link naming a stock no row holds opens none.
@@ -165,15 +164,15 @@ public partial class ReadSurface
 
         await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 55, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards-again");
 
-        var named = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")));
+        var named = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3"));
 
-        Assert.Equal(["S3"], Folds(named).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
-        Assert.Contains("<tr data-ticker=\"S3\" data-family=\"breakout\" data-place=\"2\" data-fold=\"fold-breakout-s3\" class=\"sel\">", named, StringComparison.Ordinal);
+        Assert.Equal(["S3"], Plans(named).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
+        Assert.Contains("<a class=\"pl-row on\" href=\"#/tonight/plan/S3?universe=600\" data-plan-id=\"plan-new-breakout-s3\"", named, StringComparison.Ordinal);
 
-        var unnamed = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")));
+        var unnamed = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ"));
 
-        Assert.All(Folds(unnamed), fold => Assert.True(fold.Hidden, $"{fold.Ticker}'s fold is open for a name no row holds."));
-        Assert.Equal(2, Folds(unnamed).Count);
+        Assert.Equal(["S1"], Plans(unnamed).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
+        Assert.Equal(2, Plans(unnamed).Count(plan => plan.Group == "new"));
 
         // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
         Assert.Contains("<section class=\"behind-it card-compares\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
@@ -302,19 +301,19 @@ public partial class ReadSurface
 
             foreach (var card in index)
             {
-                // From the 19.2 correction of 2026-10-21 a buy point's card stands in its fold after its plan, the control
-                // in its row's stock cell naming the fold; a holding's stands in a card row with its control in its row.
-                var foldId = MarkRenderer.FoldId(card.Family, card.Ticker);
-                var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{foldId}\" data-fold-for=\"{Regex.Escape(card.Ticker)}\" hidden><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-read\">)", RegexOptions.Singleline);
+                // From 24.46 a buy point's card stands in its plan in Tonight's list of every plan, the list's row naming the
+                // plan before it; a holding's stands in a card row with its control in its row.
+                var fold = PlanOf(page, card.Index, card.Family, card.Ticker);
                 var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{card.Id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
                 string body;
 
-                if (fold.Success && fold.Groups[1].Value.Contains($"<div class=\"decision-card\" data-index=\"{card.Index}\" data-family=\"{card.Family}\" data-ticker=\"{card.Ticker}\"", StringComparison.Ordinal))
+                if (fold.Success)
                 {
-                    var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle fold-toggle\" aria-expanded=\"false\" aria-controls=\"{foldId}\"");
+                    var planId = Regex.Match(fold.Value, "^<article class=\"pl-plan[^\"]*\" id=\"([^\"]+)\"").Groups[1].Value;
+                    var control = Regex.Matches(page, $"<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"{Regex.Escape(planId)}\"");
 
-                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s fold.");
-                    Assert.True(control[0].Index < fold.Index, $"{card.Ticker}'s fold stands before the control opening it.");
+                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s plan.");
+                    Assert.True(control[0].Index < fold.Index, $"{card.Ticker}'s plan stands after the row opening it.");
                     Assert.False(row.Success, $"The {index.Key} page draws {card.Ticker}'s card twice.");
                     folded.Add(card.Id);
                     body = fold.Groups[1].Value;
@@ -337,11 +336,11 @@ public partial class ReadSurface
                 rows[card.Ticker] = body;
             }
 
-            // Every card no fold holds stands in a card row, and with no name in the link no fold is open.
+            // Every card no plan holds stands in a card row, and with no plan in the link one plan alone is shown.
             Assert.Equal(
                 index.Select(card => card.Id).Where(id => !folded.Contains(id)).Order(StringComparer.Ordinal),
                 Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal));
-            Assert.DoesNotMatch("<tr class=\"fold-row\" id=\"[^\"]+\" data-fold-for=\"[^\"]+\"><td", page);
+            Assert.True(Regex.Matches(page, "<article class=\"pl-plan[^\"]*\" [^>]*>").Count(match => !match.Value.Contains(" hidden>", StringComparison.Ordinal)) <= 1, "More than one plan is shown.");
         }
 
         foreach (var card in stored)

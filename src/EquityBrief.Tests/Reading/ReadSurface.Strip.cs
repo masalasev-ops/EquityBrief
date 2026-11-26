@@ -66,7 +66,9 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
         Assert.Equal(0, quotes.Requests);
-        Assert.True(page.IndexOf("data-card=\"market-strip\"", StringComparison.Ordinal) < page.IndexOf("data-card=\"one-minute\"", StringComparison.Ordinal));
+        // From 24.46 the strip stands beneath the tiles at a glance and above every plan.
+        Assert.True(page.IndexOf("data-card=\"market-strip\"", StringComparison.Ordinal) > page.IndexOf("data-card=\"one-minute\"", StringComparison.Ordinal));
+        Assert.True(page.IndexOf("data-card=\"market-strip\"", StringComparison.Ordinal) < page.IndexOf("data-card=\"plans\"", StringComparison.Ordinal));
         Assert.Contains("<p class=\"strip-line\" data-quoted=\"false\">Prices as of the close of 2 Oct</p>", page, StringComparison.Ordinal);
         Assert.Contains("<b class=\"st-level\">7,575.00</b><span class=\"st-change gain\"><span class=\"st-arrow\" aria-label=\"up\">▲</span> +1.00%</span>", page, StringComparison.Ordinal);
         Assert.Contains("<b class=\"st-level\">77.22</b><span class=\"st-change loss\"><span class=\"st-arrow\" aria-label=\"down\">▼</span> -1.00%</span>", page, StringComparison.Ordinal);

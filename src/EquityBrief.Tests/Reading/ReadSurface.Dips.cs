@@ -122,16 +122,15 @@ public partial class ReadSurface
         // The tiles: every swing family's by the check, the dip's by its own setting, listing with M3 held back, from 22.9
         // Quality at a fair price's, which reads no market check, and from 22.13 the Fundamentals family's in the
         // fundamentals-first family's slot, which reads none either.
-        var tiles = Regex.Matches(Assert.Single(Blocks(page, "<nav class=\"setup-tiles\".*?</nav>")), "data-family=\"([^\"]+)\" data-card=\"[^\"]+\" data-count=\"[0-9]+\" data-state=\"([^\"]+)\"").Select(match => $"{match.Groups[1].Value}: {match.Groups[2].Value}");
-        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "improving: read nightly", "dip: 1 held back by a trade still open", "heavyweight: rebalanced tonight", "quality: kept monthly"], tiles);
+        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "improving: read nightly", "dip: 1 held back by a trade still open", "heavyweight: rebalanced tonight", "quality: kept monthly"], SetupStates(page));
 
-        // The breakout's buy point of M1, the stock the dip gave way on, carries the dip's label beside the breakout's own in
-        // tonight's table of buy points, and M1 is listed once there.
-        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
-        var m1 = Assert.Single(Blocks(points, "<tr data-ticker=\"M1\".*?</tr>"));
+        // The breakout's plan of M1, the stock the dip gave way on, carries the dip's label beside the breakout's own in the
+        // list of every plan, and M1 is listed once there.
+        var m1 = PlanArticle(page, "new", "M1");
 
         Assert.Contains("<span class=\"also-family\" data-also=\"Short-term dip\">", m1, StringComparison.Ordinal);
         Assert.Contains("data-family=\"breakout\"", m1, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(page, "data-g=\"new\" data-ticker=\"M1\""));
     }
 
     // A dip answer stored with the named gates failed and every other passed, at a 2-session RSI.

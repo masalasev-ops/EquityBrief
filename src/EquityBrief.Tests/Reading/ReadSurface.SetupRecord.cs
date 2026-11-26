@@ -187,15 +187,17 @@ public partial class ReadSurface
         using var client = host.CreateClient();
         var tonight = await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400");
 
-        string Tile(string family) => Regex.Match(tonight, $"<button type=\"button\" class=\"setup-tile[^>]*data-family=\"{family}\".*?</button>", RegexOptions.Singleline).Value;
+        // From 24.46 each setup's record stands in its row of the setups' table, the fifth cell.
+        string Row(string family) => Regex.Match(tonight, $"<tr class=\"st-row[^\"]*\" data-setup=\"{family}\".*?</tr>", RegexOptions.Singleline).Value;
+        string Tile(string family) => Regex.Matches(Row(family), "<td>(.*?)</td>", RegexOptions.Singleline)[4].Groups[1].Value;
 
         // The breakout's run made money; the sector heavyweights' filings reach back to 23.5's year on the S&P 400 less three;
-        // the drift's run wrote no count and the pullback's none at all, so neither tile draws a line.
+        // the drift's run wrote no count and the pullback's none at all, so neither row draws a line.
         Assert.EndsWith("2019 to 2026 on the S&P 400, with its plan as it stands: made $0.03 per $1 risked against the index's stocks bought the same way.", Read(Tile(BreakoutRule.Name)), StringComparison.Ordinal);
         Assert.EndsWith("No long record yet: the walk from 2019 replays prices alone, and this setup buys on filings; its own test over the long history judges it from 2015.", Read(Tile(HeavyweightRule.Name)), StringComparison.Ordinal);
         Assert.DoesNotContain("tile-record", Tile(DriftRule.Name), StringComparison.Ordinal);
         Assert.DoesNotContain("tile-record", Tile(SetupFamilies.Pullback), StringComparison.Ordinal);
-        Assert.NotEqual(string.Empty, Tile(SetupFamilies.Pullback));
+        Assert.NotEqual(string.Empty, Row(SetupFamilies.Pullback));
     }
 
     [Fact]
@@ -220,7 +222,7 @@ public partial class ReadSurface
         Assert.Contains(Made, Read(page), StringComparison.Ordinal);
 
         var tonight = await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400");
-        var fold = Regex.Match(tonight, "<tr class=\"fold-row\"[^>]*data-fold-for=\"M1\".*?</div></td></tr>", RegexOptions.Singleline).Value;
+        var fold = PlanArticle(tonight, "new", "M1");
 
         Assert.Contains(Made, Read(fold), StringComparison.Ordinal);
 

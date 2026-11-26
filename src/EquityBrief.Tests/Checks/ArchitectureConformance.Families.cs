@@ -456,9 +456,10 @@ public partial class ArchitectureConformance
         // 1736 with the buy range, and 1743 with the idea box, and 1745 with never stuck, and 1747 with the 24.19 correction's
         // marks ruled and the History page's row of the marks to rule, and 1751 with the pullbacks' search's catalogue and
         // matrix rows, section 17's grid and the Loop page's card, and 1752 with the correction's second part's section 17 row, and 1753 with the store of the sessions held none
-        // of the renames and spans, and 1754 with the picker's page one night at a time.
+        // of the renames and spans, and 1754 with the picker's page one night at a time, and 1759 with 24.46's five rows of
+        // Tonight redesigned.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1754),
+            (789, 853, 6, 4, 855, 876, 1759),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

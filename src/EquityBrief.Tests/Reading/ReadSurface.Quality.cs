@@ -69,7 +69,7 @@ public partial class ReadSurface
         Assert.True(page.IndexOf("id=\"setup-quality\"", StringComparison.Ordinal) > page.IndexOf("data-card=\"heavyweights\"", StringComparison.Ordinal));
         Assert.True(page.IndexOf("id=\"setup-quality\"", StringComparison.Ordinal) < page.IndexOf("id=\"words\"", StringComparison.Ordinal));
         Assert.Equal("The six setups", Regex.Match(page, "The [a-z0-9]+ setups").Value);
-        Assert.Equal(6, Regex.Matches(Assert.Single(Blocks(page, "<section[^>]*id=\"setups\".*?</section>")), "<span class=\"fam-tag\"").Count);
+        Assert.Equal(6, SetupStates(page).Count);
 
         // Its tile: two holdings kept monthly, the next reshuffle on 2 November in 21 trading days, the 20 of October
         // after the 2nd and the 2nd of November.

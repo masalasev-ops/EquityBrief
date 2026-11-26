@@ -160,16 +160,24 @@ public partial class ReadSurface
         return picks[at..picks.IndexOf("</tr>", at, StringComparison.Ordinal)];
     }
 
-    // A pick's row off tonight's buy points, the summary across every setup.
+    // A pick as Tonight draws it from 24.46: its row on its setup's card, holding its plan's prices and what it risks for what it
+    // aims at, then its plan in the list of every plan, holding its business, its news and its card.
     static string PickRowOf(string page, string ticker)
     {
-        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
-        var at = points.IndexOf($"<tr data-ticker=\"{ticker}\"", StringComparison.Ordinal);
+        var at = page.IndexOf($"<tr data-ticker=\"{ticker}\" data-card-pick=\"true\">", StringComparison.Ordinal);
 
-        Assert.True(at >= 0, $"no buy point row for {ticker}");
+        Assert.True(at >= 0, $"no row of a setup's card for {ticker}");
 
-        return points[at..points.IndexOf("</tr>", at, StringComparison.Ordinal)];
+        var plan = Regex.Match(page, $"<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"{Regex.Escape(ticker)}\" data-g=\"new\".*?</article>", RegexOptions.Singleline);
+
+        Assert.True(plan.Success, $"no plan for {ticker}");
+
+        return page[at..page.IndexOf("</tr>", at, StringComparison.Ordinal)] + plan.Value;
     }
+
+    // Tonight's new ideas in the list of every plan, in the list's order.
+    static IReadOnlyList<string> NewIdeasOf(string page) =>
+        [.. Regex.Matches(page, "<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"[^\"]+\" data-g=\"new\" data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value)];
 
     [Fact]
     public async Task TonightDrawsACardAFamilyWithItsPicksInThePagesOrderEachWithItsTradeAndWhyItIsListed()
@@ -211,7 +219,7 @@ public partial class ReadSurface
         Assert.Equal(
             ["#", "Stock", "Why it's here", "Buy about", "Stop", "Target", "Risk $1 to make"],
             Regex.Matches(Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>")), "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Equal(BuyPointHeadingsDrawn, Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["F1", "F2", "F3", "F4", "F5"], NewIdeasOf(page).Take(5));
 
         // F1's trade on its buy point's row: bought at 100, stopped at 96, won at 110, the reward to risk the 3 its
         // trade gate stored, drawn as the dollars a dollar risked would make.
@@ -230,10 +238,10 @@ public partial class ReadSurface
 
         // The state its reported quarters gave it, and its stories of the thirty days before: two positive
         // and one negative. F2 holds no reading and no label, and its row says so.
-        Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">2 good</span> · <span class=\"nn loss\">1 bad</span></td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pp-business\">The business:  <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pp-news\" data-positive=\"2\" data-negative=\"1\">News, 30 days: 2 good, 1 bad</span>", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pp-business\">The business: <span class=\"degraded\" data-state=\"none\">not read</span></span>", PickRowOf(page, "F2"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pp-news\" data-positive=\"none\" data-negative=\"none\">News, 30 days: no label</span>", PickRowOf(page, "F2"), StringComparison.Ordinal);
         Assert.Contains("data-reward-to-risk=\"2.75\">$2.75</td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
 
         // The key the card repeated is gone, its guide in its place.

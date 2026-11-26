@@ -223,6 +223,85 @@ public sealed partial class MarkRenderer
         body.Append(MarketBar(line));
         body.Append("</div>");
 
+        var (picks, said) = PicksWords(view);
+
+        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(said)}</p></div>");
+
+        var (open, why) = OpenWords(view);
+        var paper =Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and those {TradeGroupsView.CurrentWords} on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
+
+        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + " " + why)}</b></p><p class=\"minute-said\">{paper}</p></div>");
+
+        // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above,
+        // drawn as Home draws them.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        if ((view.Groups ?? line.Groups) is { } waiting && (waiting.StillWaitingOrders.Count > 0 || waiting.LeftOrders.Count > 0))
+        {
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders)}</div>");
+        }
+
+        body.Append(OneStepLine(line));
+        body.Append("</div>");
+
+        return body.ToString();
+    }
+
+    // The way to the open trades on Past picks, and to those the current rules bought on Paper trading.
+    public static string OpenLinks(OneMinuteView view)
+    {
+        var line = view.Line;
+
+        return Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and those {TradeGroupsView.CurrentWords} on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
+    }
+
+    // The open trades in a sentence beneath the tiles, with the way to them; those that ended tonight stand on the tile.
+    public static string OpenLine(OneMinuteView view)
+    {
+        var (open, _) = OpenWords(view);
+
+        return Formatted($"<p class=\"tn-open\" data-line=\"open\">{Escaped(open)} {OpenLinks(view)}</p>");
+    }
+
+    // How many setups found a pick tonight, in a sentence.
+    public static string FindingWords(int finding, int setups) =>
+        finding == 0
+            ? Formatted($"None of the {setups} setups found a pick tonight.")
+            : Formatted($"{finding} of the {setups} setups found {(finding == 1 ? "a pick" : "picks")} tonight.");
+
+    // The setups that found nothing tonight, or the stocks met again, as the one-minute card's line beneath the picks said it.
+    public static string QuietWords(OneMinuteView view) => PicksWords(view).Said;
+
+    // How many words the page's fold holds, the read-only copy's leaving out the two it draws none of.
+    public int WordsCount => Copying ? TonightWords.Count(word => word.Term is not ("Variant" or "One step short")) : TonightWords.Count;
+
+    // The stocks one step from qualifying in a sentence, which from 22.17 the read-only copy draws none of.
+    public string OneStepLine(MarketLineView line)
+    {
+        if (Copying)
+        {
+            return string.Empty;
+        }
+
+        if (!line.CloseRead)
+        {
+            return "<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>";
+        }
+
+        var near = line.Close == 0
+            ? "No stock is one step from qualifying."
+            : line.Close == 1 ? "1 stock is one step from qualifying." : Formatted($"{line.Close} stocks are one step from qualifying.");
+        var see = line.Close > 0 && line.CloseHref is { } href
+            ? Formatted($" <a class=\"close-open\" href=\"{Escaped(href)}\">See which, and the step each is missing</a>")
+            : string.Empty;
+
+        return Formatted($"<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>{Escaped(near)}</b></p><p class=\"minute-said\">{(line.Close > 0 ? "They could become picks in the next few nights." : "None is close tonight.")}{see}</p></div>");
+    }
+
+    // Tonight's new picks in a sentence, and beneath it the setups that found nothing or the stocks met again.
+    static (string Picks, string Said) PicksWords(OneMinuteView view)
+    {
+        var line = view.Line;
+
         // Tonight's picks and the setups they came from.
         var listing = view.Tiles.Where(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Count > 0).Select(tile => tile.Label).ToList();
         var setups = view.Tiles.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name) + (view.Fundamentals is null ? 0 : 1);
@@ -274,7 +353,14 @@ public sealed partial class MarkRenderer
                     ? Formatted($"No {line.Index} stock met all the rules of any of the {setups} setups tonight.")
                     : "No setup found anything new.";
 
-        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(said)}</p></div>");
+        return (picks, said);
+    }
+
+    // The trades from earlier nights still open in a sentence, and those that ended tonight with why.
+    static (string Open, string Why) OpenWords(OneMinuteView view)
+    {
+        var line = view.Line;
+        var opens = OpenDay(view.Night);
 
         // The system's trades still open on the index, every setup's live or provisional rule under any version, how many of
         // them the current rules bought since they started, and those that ended tonight, each named, selling at the next
@@ -290,42 +376,60 @@ public sealed partial class MarkRenderer
             : (view.Groups ?? line.Groups) is { System.Selling: > 0 } selling
                 ? Formatted($"{selling.System.Selling} {(selling.System.Selling == 1 ? "sells" : "sell")} at {opens} open.")
                 : "None ended tonight.";
-        var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and those {TradeGroupsView.CurrentWords} on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
 
-        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + " " + why)}</b></p><p class=\"minute-said\">{paper}</p></div>");
-
-        // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above,
-        // drawn as Home draws them.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-        if ((view.Groups ?? line.Groups) is { } waiting && (waiting.StillWaitingOrders.Count > 0 || waiting.LeftOrders.Count > 0))
-        {
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders)}</div>");
-        }
-
-        // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
-        if (Copying)
-        {
-        }
-        else if (line.CloseRead)
-        {
-            var near = line.Close == 0
-                ? "No stock is one step from qualifying."
-                : line.Close == 1 ? "1 stock is one step from qualifying." : Formatted($"{line.Close} stocks are one step from qualifying.");
-            var see = line.Close > 0 && line.CloseHref is { } href
-                ? Formatted($" <a class=\"close-open\" href=\"{Escaped(href)}\">See which, and the step each is missing</a>")
-                : string.Empty;
-
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>{Escaped(near)}</b></p><p class=\"minute-said\">{(line.Close > 0 ? "They could become picks in the next few nights." : "None is close tonight.")}{see}</p></div>");
-        }
-        else
-        {
-            body.Append("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>");
-        }
-
-        body.Append("</div>");
-
-        return body.ToString();
+        return (open, why);
     }
+
+    // From the operator's order of 2026-11-26 Tonight's five tiles at a glance, each a sentence and one press: the market check
+    // with its gauge, tonight's new ideas, the orders waiting to buy, the open trades, each opening its group of the plans, and
+    // the last five trading days, opening Paper trading's tab.
+    // see: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design
+    public string Glance(OneMinuteView view, int newIdeas, IReadOnlyList<PlanEntryView> plans, string recentHref)
+    {
+        var line = view.Line;
+        var groups = view.Groups ?? line.Groups;
+        var body = new StringBuilder(Formatted($"<section class=\"tn-glance\" aria-label=\"Tonight at a glance\" data-card=\"one-minute\" data-picks=\"{line.BuyPoints}\" data-open-trades=\"{line.OpenTrades}\" data-ended=\"{(view.Ended is { } ended ? ended.Count.ToString(Invariant) : "none")}\" data-one-step=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\">"));
+        var share = line.Breadth is { } breadth && line.Floor is { } floor
+            ? Formatted($"{Percent(breadth)} of stocks above their 200-day average; the rules need {Percent(floor)}.")
+            : "Each setup reads its own market check; their states are under the markets.";
+
+        body.Append(Invariant, $"<button type=\"button\" class=\"g-tile\" data-scroll=\"mk\" data-glance=\"market\" data-open=\"{Flag(line.Open)}\"><span class=\"g-k\">The market check</span><span class=\"g-v {(line.Open ? "ok" : "no")}\">{(line.Open ? "Healthy: the rules buy" : "Weak: the rules buy nothing")}</span>{GlanceGauge(line)}<span class=\"g-s\">{Escaped(share)}</span></button>");
+
+        var (picks, _) = PicksWords(view);
+
+        body.Append(Invariant, $"<button type=\"button\" class=\"g-tile\" data-plan-filter=\"{PlanEntryView.New}\" data-glance=\"new\"><span class=\"g-k\">New ideas tonight</span><span class=\"g-v\">{newIdeas}</span><span class=\"g-s\">{Escaped(picks)}</span></button>");
+
+        var waiting = plans.Where(plan => plan.Group == PlanEntryView.Waiting).ToArray();
+        var nearest = waiting.Select(plan => plan.Gap).OfType<decimal>().DefaultIfEmpty().Min();
+        var waits = waiting.Length == 0
+            ? "No order from an earlier night waits for its price."
+            : Formatted($"Orders from earlier nights.{(waiting.Any(plan => plan.Gap is not null) ? Formatted($" The nearest is {Math.Max(nearest, 0m) * 100:0.0}% above its buy price.") : string.Empty)}");
+
+        body.Append(Invariant, $"<button type=\"button\" class=\"g-tile\" data-plan-filter=\"{PlanEntryView.Waiting}\" data-glance=\"waiting\"><span class=\"g-k\">Waiting to buy</span><span class=\"g-v\">{waiting.Length}</span><span class=\"g-s\">{Escaped(waits)}</span></button>");
+
+        var (_, why) = OpenWords(view);
+        var again = plans.Count(plan => plan.Group == PlanEntryView.Held);
+
+        body.Append(Invariant, $"<button type=\"button\" class=\"g-tile\" data-plan-filter=\"{PlanEntryView.Held}\" data-glance=\"open\"><span class=\"g-k\">Open trades</span><span class=\"g-v\">{groups?.System.Open ?? line.OpenTrades}</span><span class=\"g-s\">{Escaped(why + (again == 0 ? string.Empty : " " + Counted(again, "met the rules again.", "met the rules again.")))}</span></button>");
+
+        var left = groups?.LeftOrders ?? [];
+        var counts = LeftOrderView.Kinds.ToDictionary(kind => kind, kind => left.Count(row => row.Kind == kind), StringComparer.Ordinal);
+
+        body.Append(Invariant, $"<a class=\"g-tile\" href=\"{Escaped(recentHref)}\" data-glance=\"recent\" data-bought=\"{counts[LeftOrderView.BoughtKind]}\" data-sold=\"{counts[LeftOrderView.SoldKind]}\" data-cancelled=\"{counts[LeftOrderView.CancelledKind]}\" data-not-placed=\"{counts[LeftOrderView.NotPlacedKind]}\"><span class=\"g-k\">Last {LeftOrderView.Sessions} trading days</span><span class=\"g-v\">{counts[LeftOrderView.BoughtKind]} {LeftOrderView.BoughtKind}, {counts[LeftOrderView.SoldKind]} {LeftOrderView.SoldKind}</span><span class=\"g-s\">{counts[LeftOrderView.CancelledKind]} {LeftOrderView.CancelledKind}, {counts[LeftOrderView.NotPlacedKind]} {LeftOrderView.NotPlacedKind}. Listed on Paper trading.</span></a>");
+
+        return body.Append("</section>").ToString();
+    }
+
+    // The market tile's gauge: the share above the 200-day average filled, the floor marked; none where either is unread.
+    static string GlanceGauge(MarketLineView line) =>
+        line.Breadth is { } share && line.Floor is { } floor
+            ? Formatted($"<span class=\"g-gauge\" data-share=\"{share.ToString("R", Invariant)}\" data-floor=\"{floor.ToString("R", Invariant)}\"><i class=\"{(line.Open ? "open" : "closed")}\" style=\"width:{(Math.Clamp(share, 0, 1) * 100).ToString("0.#", Invariant)}%\"></i><b style=\"left:{(Math.Clamp(floor, 0, 1) * 100).ToString("0.#", Invariant)}%\"></b></span>")
+            : string.Empty;
+
+    // The market check's sentence as the one-minute card states it, each index's setups' own checks among it, beneath the
+    // markets.
+    public string MarketCheckLine(MarketLineView line) =>
+        Formatted($"<div class=\"tn-check\" data-line=\"market\">{MarketLine(line)}{MarketBar(line)}</div>");
 
     // Why the trades that ended tonight ended, where the store says why, each group's stocks named and selling at the next
     // session's open: "2 reached their target and sell at Monday's open: TTWO and ROP."

@@ -165,7 +165,7 @@ public sealed partial class MarkRenderer
 
         foreach (var order in sorted)
         {
-            body.Append(WaitingCard(order, night, widest, AgainOf(order, again)));
+            body.Append(WaitingCard(order, night, widest, AgainOf(order, again), App.Universes.Offered.FirstOrDefault(choice => choice.Name == index)?.Word ?? App.Universes.Large.Word));
         }
 
         return body.Append("</div></div>").ToString();
@@ -175,7 +175,7 @@ public sealed partial class MarkRenderer
     // the bar to its buy price, the rows of its plan, when and by which setup it was placed and when it is cancelled, and the
     // way to its plan; where its stock met the rules again tonight, the mark, the line and tonight's checklist, the standing
     // order's plan alone drawn.
-    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again = null)
+    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again = null, string universeWord = "500")
     {
         var card = new StringBuilder();
         var family = Escaped(order.Family);
@@ -209,9 +209,9 @@ public sealed partial class MarkRenderer
         // From the operator's correction of 2026-11-25, item 7, a stock met again keeps only its mark here: the sentence saying its
         // order stands and tonight's checks stand on its card among tonight's ideas.
         // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
-        // From the operator's correction of 2026-11-24, item 7, the stock's chart page, where its plan is drawn.
-        // see: See the plan opens the stock's chart page with its pick's plan drawn on it
-        card.Append(Invariant, $"<a class=\"home-plan\" href=\"{ChartRoute}{Uri.EscapeDataString(order.Ticker)}\">See the plan</a>");
+        // From the operator's order of 2026-11-26 its plan on Tonight at its own address, the one its order's night stored.
+        // see: See the plan opens the stock's plan on Tonight at its own address
+        card.Append(Invariant, $"<a class=\"home-plan\" href=\"{Escaped(PlanHref(order.Ticker, universeWord))}\">See the plan</a>");
 
         return card.Append("</article>").ToString();
     }

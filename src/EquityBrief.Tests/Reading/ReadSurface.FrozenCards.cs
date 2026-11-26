@@ -425,7 +425,7 @@ public partial class ReadSurface
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
             var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400"));
-            var tiles = Regex.Matches(Assert.Single(Blocks(page, "<nav class=\"setup-tiles\".*?</nav>")), "data-family=\"([^\"]+)\" data-card=\"[^\"]+\" data-count=\"[0-9]+\" data-state=\"([^\"]+)\"").Select(match => $"{match.Groups[1].Value}: {match.Groups[2].Value}");
+            var tiles = SetupStates(page);
 
             return (Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>")), FamilyCardOf(page, SetupFamilies.Pullback), FamilyCardOf(page, DriftRule.Name), Assert.Single(Blocks(run, "<ul class=\"index-night\".*?</ul>")), [.. tiles]);
         }

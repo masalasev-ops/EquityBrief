@@ -115,7 +115,7 @@ public partial class ReadSurface
         Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, frozen.Card, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(frozen.Page, Regex.Escape(FrozenRule)));
         Assert.Equal(["M1"], CardPicksOf(frozen.Card));
-        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", frozen.Page, StringComparison.Ordinal);
+        Assert.Contains("data-g=\"new\" data-ticker=\"M1\" data-family=\"breakout\"", frozen.Page, StringComparison.Ordinal);
 
         // A sweep recorded after the freeze that found none draws the line again beneath the live rule's standing.
         var answeredAfter = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true, "2026-10-02T13:00:00Z");

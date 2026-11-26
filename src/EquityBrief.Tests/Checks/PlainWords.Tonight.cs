@@ -194,7 +194,7 @@ public partial class PlainWords
         foreach (var card in cards)
         {
             var drawn = marks.DecisionCard(card, linked: true);
-            var page = Cards.Computed("Tomorrow's buys", "<p class=\"card-summary\" data-summary>One stock to buy at tomorrow's open.</p>" + drawn, region: "buy-points");
+            var page = Cards.Computed("Every plan tonight", "<p class=\"card-summary\" data-summary>1 plan tonight: 1 new, 0 waiting to buy and 0 already held that met the rules again.</p>" + drawn, region: "plans");
 
             Assert.Empty(Faults(page, RegionsOf(TonightPage), terms));
 
@@ -284,16 +284,17 @@ public partial class PlainWords
 
         Assert.Empty(Faults(page, RegionsOf(TonightPage), terms));
 
-        var planted = page.Replace("<p class=\"card-summary\" data-summary>Picked by the", "<p class=\"card-summary\" data-summary>Its reaction session held. Picked by the", StringComparison.Ordinal);
+        // From 24.46 a pick's card stands in its plan in the list of every plan.
+        var planted = page.Replace("<p class=\"card-summary pp-said\" data-summary>Picked by the", "<p class=\"card-summary pp-said\" data-summary>Its reaction session held. Picked by the", StringComparison.Ordinal);
 
         Assert.NotEqual(page, planted);
-        Assert.Contains(Faults(planted, RegionsOf(TonightPage), terms), fault => fault.StartsWith("'held' in the card 'buy-points'", StringComparison.Ordinal));
-        Assert.Contains(Faults(planted, RegionsOf(TonightPage), terms), fault => fault.StartsWith("'reaction session' in the card 'buy-points'", StringComparison.Ordinal));
+        Assert.Contains(Faults(planted, RegionsOf(TonightPage), terms), fault => fault.StartsWith("'held' in the card 'plans'", StringComparison.Ordinal));
+        Assert.Contains(Faults(planted, RegionsOf(TonightPage), terms), fault => fault.StartsWith("'reaction session' in the card 'plans'", StringComparison.Ordinal));
 
-        var before = page.Replace("<div class=\"card-b\"><div class=\"one-minute\"", "<div class=\"card-b\"><p>Before it</p><div class=\"one-minute\"", StringComparison.Ordinal);
+        var before = page.Replace("<h2>Every plan tonight</h2></div></div><div class=\"card-b\">", "<h2>Every plan tonight</h2></div></div><div class=\"card-b\"><p>Before it</p>", StringComparison.Ordinal);
 
         Assert.NotEqual(page, before);
-        Assert.Contains(Faults(before, RegionsOf(TonightPage), terms), fault => fault == "The card 'one-minute' draws 'Before it' before its summary sentence.");
+        Assert.Contains(Faults(before, RegionsOf(TonightPage), terms), fault => fault == "The card 'plans' draws 'Before it' before its summary sentence.");
 
         var stray = page.Replace("data-card=\"words\"", "data-card=\"glossary\"", StringComparison.Ordinal);
 

@@ -44,7 +44,8 @@ public static partial class CountsProof
             Same("Tonight's open trades selling at the next open are the system's", Sum(onTonight, @"(\d+) (?:reached|hit|ran|ended|sells?)[^.:]*? at " + NextOpen + " open", TonightOpen), groups.System.Selling),
             Same("Paper trading's open trades selling at the next open are the system's", Read(onPaper, @"The system has bought [^:]*: \d+ open, (\d+) of them sells? at " + NextOpen + " open", "The system has bought"), groups.System.Selling),
             Same("Tonight's new picks are those to buy less the reshuffle", Split(onTonight, @"(\d+) new picks?(?: to buy|, each bought only if)" + MoreOnADip, "No new picks to buy"), groups.NewPicks),
-            Same("Tomorrow's buys count the same new picks", Split(onTonight, @"(\d+)(?: stocks?)? (?:to buy at [^.,:]+ open, at whatever price each opens|new, each bought only if)" + MoreOnADip, "No stock to buy at"), groups.NewPicks),
+            // From 24.46 the list of every plan counts tonight's new ideas, the monthly books' reshuffle named apart.
+            Same("Tonight's plans count the same new picks", NewPlans(onTonight), groups.NewPicks),
             Same("Paper trading's bought are the system's", Read(onPaper, @"The system has bought (\d+)"), groups.System.Bought),
             Same("Paper trading's open are the system's", Read(onPaper, @"The system has bought [^:]*: (\d+) open"), groups.System.Open),
             Same("Paper trading's reached target are the system's", Read(onPaper, @"(\d+) reached their target"), groups.System.AtTarget),
@@ -58,9 +59,18 @@ public static partial class CountsProof
             // of their own on Home beneath its heading and on Tonight beneath the open trades.
             // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
             Same("Home's orders still waiting are those earlier nights placed", Read(onHome, StillWaitingCount, "Tonight's ideas:"), groups.StillWaiting),
-            Same("Tonight's orders still waiting are those earlier nights placed", Read(onTonight, StillWaitingCount, TonightOpen), groups.StillWaiting),
+            Same("Tonight's orders still waiting are those earlier nights placed", Read(onTonight, @"(\d+) waiting to buy and", NoPlans), groups.StillWaiting),
         ];
     }
+
+    // What the list of every plan says where it holds none.
+    const string NoPlans = "No stock holds a plan tonight";
+
+    // The new ideas the list of every plan counts, less the monthly books' reshuffle it names apart.
+    static int? NewPlans(string text) =>
+        Regex.Match(text, @"\d+ plans? tonight: (\d+) new(?:, (\d+) of them from the monthly books' reshuffle)?") is { Success: true } found
+            ? int.Parse(found.Groups[1].Value, CultureInfo.InvariantCulture) - (found.Groups[2].Success ? int.Parse(found.Groups[2].Value, CultureInfo.InvariantCulture) : 0)
+            : Regex.IsMatch(text, NoPlans) ? 0 : null;
 
     // Past picks' first table held to the system's trades of the setups it lists, with from the 22.25 correction of
     // 2026-11-11 those of its setups the line names as drawing no row; an index's table draws no count of targets and stops,

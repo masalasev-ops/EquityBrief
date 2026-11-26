@@ -29,7 +29,8 @@ public sealed partial class SinglePageApp
         IReadOnlyDictionary<string, string>? plans = null,
         QualityCardView? quality = null,
         ImprovingCardView? improving = null,
-        SetupRecords? longRecords = null)
+        SetupRecords? longRecords = null,
+        TonightExtras? extras = null)
     {
         var region = new StringBuilder();
 
@@ -49,13 +50,21 @@ public sealed partial class SinglePageApp
         region.Append("</p>");
 
         var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks, line.DipOpen);
+        var planless = PlanlessBuys(universe, improving, heavyweights, quality, longRecords);
 
-        // The buys' title names the session they are bought at, as their sentences do: Monday's buys on a Friday.
-        var opens = MarkRenderer.OpenDay(night);
+        // From the operator's order of 2026-11-26 Tonight redesigned: five tiles at a glance, the markets in one strip, every plan
+        // in one list beside the plan chosen, the setups one table row each with one opened beneath its row, and the page's
+        // words in a fold.
+        // see: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design
+        var view = new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought) { HeldAgain = [.. families.SelectMany(family => family.HeldAgain.Select(card => (card.Ticker, card.Family)))], NotFilled = families.SelectMany(family => family.HeldAgain).Where(card => card.HeldAgain is { Bought: false }).Select(card => card.Ticker).ToHashSet(StringComparer.Ordinal), OnDip = points.Count(point => MarkRenderer.WaitsForAPrice(point, line.Groups)) };
+        var entries = PlanEntries(families, points, planless, line.Groups, extras?.Placed);
+        var newIdeas = entries.Count(entry => entry.Group == PlanEntryView.New);
 
-        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought) { HeldAgain = [.. families.SelectMany(family => family.HeldAgain.Select(card => (card.Ticker, card.Family)))], NotFilled = families.SelectMany(family => family.HeldAgain).Where(card => card.HeldAgain is { Bought: false }).Select(card => card.Ticker).ToHashSet(StringComparer.Ordinal), OnDip = points.Count(point => MarkRenderer.WaitsForAPrice(point, line.Groups)) }), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, PlanlessBuys(universe, improving, heavyweights, quality, longRecords), line.Groups), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
-        region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
+        region.Append("<div class=\"tn\" data-redesigned=\"2026-11-26\">");
+        region.Append(marks.Glance(view, newIdeas, entries, (new PaperLink(universe) { Tab = MarkRenderer.RecentTab }).Href));
+        region.Append(MarkRenderer.OpenLine(view));
+        region.Append(Invariant($"<section class=\"tn-markets\" id=\"mk\" aria-label=\"The markets\">{extras?.Strip ?? string.Empty}{marks.MarketCheckLine(line)}</section>"));
+        region.Append(marks.EveryPlan(entries, night, universe, extras?.Plan, open, plans));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
         // stock closest to it; from 22.9 Quality at a fair price's tile after the sector heavyweights', the card's title
@@ -92,40 +101,137 @@ public sealed partial class SinglePageApp
         // From the 22.6 correction of 2026-11-09 each tile ends on its setup's record over the long history on the index.
         shown = [.. shown.Select(tile => tile with { LongRecord = longRecords?.Of(Universes.Of(universe).Code, tile.Family) })];
 
-        region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight, line.FirstLive), stamp: Cards.Night(night), id: "setups", region: "setups"));
-
-        // The Fundamentals family's card in the fundamentals-first family's place, before the dip's.
-        var improvingDrawn = improving is null;
+        // Each setup's card as it was drawn before, whole, opened beneath its row of the setups' table: the swing families' in
+        // the page's order, the Fundamentals family's in the fundamentals-first family's place before the dip's, then the books'.
+        var panels = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var card in families)
         {
-            if (!improvingDrawn && card.Family == EquityBrief.Core.Families.DipRule.Name)
-            {
-                region.Append(ImprovingSection(marks, improving!, night));
-                improvingDrawn = true;
-            }
-
-            region.Append(SetupCard(marks, card, night));
+            panels[card.Family] = SetupCard(marks, card, night);
         }
 
-        if (!improvingDrawn)
+        if (improving is not null)
         {
-            region.Append(ImprovingSection(marks, improving!, night));
+            panels[EquityBrief.Core.Families.ImprovingRule.Name] = ImprovingSection(marks, improving, night);
         }
 
         if (heavyweights is not null)
         {
-            region.Append(HeavyweightsCard(marks, heavyweights, night));
+            panels[EquityBrief.Core.Families.HeavyweightRule.Name] = HeavyweightsCard(marks, heavyweights, night);
         }
 
         if (quality is not null)
         {
-            region.Append(FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.QualityRule.Name}\" data-card=\"quality\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.QualityCardHead(quality)}</div></div><div class=\"card-b\">{marks.QualityCard(quality)}</div></section>"));
+            panels[EquityBrief.Core.Families.QualityRule.Name] = FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.QualityRule.Name}\" data-card=\"quality\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.QualityCardHead(quality)}</div></div><div class=\"card-b\">{marks.QualityCard(quality)}</div></section>");
         }
 
-        region.Append(Cards.Computed("Words used on this page", marks.WordsOnThisPage(), id: "words", region: "words"));
+        region.Append(SetupsTable(marks, shown, liveSince, tonight, line.FirstLive, panels, extras?.Setup, view, line));
+        region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
+        region.Append(Invariant($"<section class=\"card tn-words\" id=\"words\" data-card=\"words\"><details><summary><h2>Words used on this page ({marks.WordsCount})</h2></summary><div class=\"card-b\">{marks.WordsOnThisPage()}</div></details></section>"));
+        region.Append("</div>");
 
         return region.ToString();
+    }
+
+    // What a page reading Tonight hands it beyond its cards: the market strip, drawn beneath the tiles; the card each waiting
+    // order's night stored for it, by its setup, stock and night; the plan its address names; and the setup its link opens.
+    public sealed record TonightExtras(string Strip, IReadOnlyDictionary<string, DecisionCardView> Placed, string? Plan = null, string? Setup = null)
+    {
+        public static string Key(string family, string ticker, DateOnly night) =>
+            family + "|" + ticker + "|" + night.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    // Every plan the rules hold on the night, in the list's order: tonight's new ideas in the order the page draws the setups,
+    // the books' buys among them; the orders waiting from earlier nights nearest their buy price first, each drawn from the card
+    // the night it was placed stored and marked where its stock met the rules again; then the stocks held that met the rules
+    // again.
+    // see: A waiting order's plan is the one stored on the night it was placed, its checks said as that night's
+    public static IReadOnlyList<PlanEntryView> PlanEntries(IReadOnlyList<FamilyCardView> families, IReadOnlyList<BuyPointView> points, IReadOnlyList<PlanlessBuyView> planless, TradeGroupsView? groups, IReadOnlyDictionary<string, DecisionCardView>? placed)
+    {
+        var entries = new List<PlanEntryView>();
+
+        foreach (var (point, book) in MarkRenderer.BuysInOrder(points, planless))
+        {
+            if (point is { } drawn)
+            {
+                entries.Add(new PlanEntryView(PlanEntryView.New, drawn.Family, drawn.Pick.Row.Ticker)
+                {
+                    Company = drawn.Pick.Row.Distance?.Name,
+                    Card = drawn.Pick.Card,
+                    Pick = drawn.Pick,
+                    Close = drawn.Pick.Card?.Zone?.Close ?? drawn.Pick.Card?.Entry ?? drawn.Pick.Buy,
+                    OnDip = MarkRenderer.WaitsForAPrice(drawn, groups),
+                });
+            }
+            else if (book is { } bought)
+            {
+                entries.Add(new PlanEntryView(PlanEntryView.New, bought.Family, bought.Ticker) { Company = bought.Company, Planless = bought, Close = bought.Close });
+            }
+        }
+
+        var again = families.SelectMany(family => family.HeldAgain).Where(card => card.HeldAgain is not null).ToArray();
+        var orders = (groups?.StillWaitingOrders ?? [])
+            .Select(order => new PlanEntryView(PlanEntryView.Waiting, order.Family, order.Ticker)
+            {
+                Company = order.Company,
+                Card = placed?.GetValueOrDefault(TonightExtras.Key(order.Family, order.Ticker, order.Listed)),
+                Order = order,
+                Since = order.Listed,
+                MetAgain = again.Any(card => card.Ticker == order.Ticker && card.HeldAgain is { Bought: false }),
+                Close = order.LastClose,
+            })
+            .OrderBy(entry => entry.Gap ?? decimal.MaxValue)
+            .ThenBy(entry => entry.Ticker, StringComparer.Ordinal)
+            .ToArray();
+
+        entries.AddRange(orders);
+
+        // A stock met again while its order waits with no waiting order drawn for it stands in the waiting group on its own card.
+        entries.AddRange(again
+            .Where(card => card.HeldAgain is { Bought: false, Ordered: false } && !orders.Any(order => order.Ticker == card.Ticker))
+            .Select(card => new PlanEntryView(PlanEntryView.Waiting, card.HeldAgain!.Family, card.Ticker) { Card = card, Since = card.HeldAgain.Night, MetAgain = true, Close = card.HeldAgain.LastClose }));
+
+        entries.AddRange(again
+            .Where(card => card.HeldAgain is { Bought: true } or { Ordered: true })
+            .Select(card => new PlanEntryView(PlanEntryView.Held, card.Family, card.Ticker) { Card = card, Since = card.HeldAgain!.BoughtOn ?? card.HeldAgain.Night, MetAgain = true, Close = card.HeldAgain.LastClose }));
+
+        return entries;
+    }
+
+    // The setups' table: a row a setup, its plain words and its rule's name, its revision, tonight's line, its quiet nights and
+    // its record from 2019, one row opened at a time with its card beneath it, the one the link names or the first.
+    static string SetupsTable(MarkRenderer marks, IReadOnlyList<SetupTileView> shown, IReadOnlyDictionary<string, DateOnly?> liveSince, IReadOnlyDictionary<string, string> tonight, IReadOnlyDictionary<string, DateOnly?>? firstLive, IReadOnlyDictionary<string, string> panels, string? named, OneMinuteView view, MarketLineView line)
+    {
+        var html = new StringBuilder();
+        var finding = shown.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Family != EquityBrief.Core.Families.QualityRule.Name && tile.Count > 0);
+        var opened = named is not null && panels.ContainsKey(named) ? named : shown.FirstOrDefault(tile => panels.ContainsKey(tile.Family))?.Family;
+
+        html.Append(Invariant($"<section class=\"card tn-setups\" id=\"setups\" data-card=\"setups\"><div class=\"card-h\"><div><h2>{Escaped(SetupsTitle(shown.Count))} tonight</h2></div></div><div class=\"card-b\">"));
+        html.Append(Invariant($"<p class=\"tn-sub card-summary\" data-summary>{Escaped(MarkRenderer.FindingWords(finding, shown.Count))} {Escaped(MarkRenderer.QuietWords(view))} Open a setup for its rule, how the stocks it read were narrowed, its variants and its record.</p>"));
+        html.Append(marks.OneStepLine(line));
+        html.Append("<div class=\"tbl-wrap\"><table class=\"list-table st-tbl\"><thead><tr><th>Setup</th><th>Running</th><th>Tonight</th><th>Quiet nights</th><th>From 2019, against the index's stocks</th><th></th></tr></thead><tbody>");
+
+        foreach (var tile in shown)
+        {
+            var since = liveSince.GetValueOrDefault(tile.Family);
+            var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
+            var running = RevisionTags.For(tile.Family, DateOnly.MaxValue) is { Length: > 0 } tag
+                ? tag
+                : Invariant($"<span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(first is { } live ? "First ran " + live.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "Not yet tested")}</span>");
+            var on = tile.Family == opened;
+
+            html.Append(Invariant($"<tr class=\"st-row{(on ? " on" : string.Empty)}\" data-setup=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">"));
+            html.Append(Invariant($"<td><i class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></i> <b>{Escaped(MarkRenderer.ShortOf(tile.Family))}</b><small>{Escaped(tile.Label)}</small></td>"));
+            html.Append(Invariant($"<td>{running}</td><td>{Escaped(tonight.GetValueOrDefault(tile.Family) ?? tile.State)}</td><td>{Escaped(tile.Quiet ?? string.Empty)}</td><td>{MarkRenderer.TileRecordLine(tile.LongRecord)}</td>"));
+            html.Append(Invariant($"<td>{(panels.ContainsKey(tile.Family) ? Invariant($"<button type=\"button\" class=\"btn-2\" data-setup-toggle=\"{Escaped(tile.Family)}\" aria-expanded=\"{(on ? "true" : "false")}\">{(on ? "Close" : "Open")}</button>") : string.Empty)}</td></tr>"));
+
+            if (panels.GetValueOrDefault(tile.Family) is { } panel)
+            {
+                html.Append(Invariant($"<tr class=\"st-open\" data-for=\"{Escaped(tile.Family)}\"{(on ? string.Empty : " hidden")}><td colspan=\"6\"><div class=\"st-panel fam-edge\" data-family=\"{Escaped(tile.Family)}\"><p class=\"st-about\">{Escaped(MarkRenderer.WordsOf(tile.Family, tile.Label).About)}</p>{panel}</div></td></tr>"));
+            }
+        }
+
+        return html.Append("</tbody></table></div></div></section>").ToString();
     }
 
     // The books' buys: the Fundamentals family's in its card's order, then the sector heavyweights' and Quality at a fair

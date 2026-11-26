@@ -135,7 +135,7 @@ public partial class ReadSurface
     }
 
     const string HomeAfterTheRestart = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 2 ideas bought and sold on paper, 1 made money.</p>";
-    const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>2 trades are open on the S&P 500, 1 of them bought under the current rules since 3 Nov.</p><p>1 stock to buy at tomorrow's open, at whatever price each opens.</p>";
+    const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>2 trades are open on the S&P 500, 1 of them bought under the current rules since 3 Nov.</p><p>1 plan tonight: 1 new, 0 waiting to buy and 0 already held that met the rules again.</p>";
     const string PaperAfterTheRestart = "<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
 
     [Fact]
@@ -157,7 +157,7 @@ public partial class ReadSurface
     [InlineData("2 trades are open", "1 trades are open", "tonight", "Tonight's open trades are the system's")]
     [InlineData("1 of them bought", "2 of them bought", "tonight", "Tonight's open trades bought under the current rules are this version's")]
     [InlineData("1 new pick to", "3 new picks to", "tonight", "Tonight's new picks are those to buy less the reshuffle")]
-    [InlineData("1 stock to buy at tomorrow's open, at", "3 stocks to buy at tomorrow's open, at", "tonight", "Tomorrow's buys count the same new picks")]
+    [InlineData("plan tonight: 1 new", "plan tonight: 3 new", "tonight", "Tonight's plans count the same new picks")]
     [InlineData("bought 4 trades", "bought 1 trades", "paper", "Paper trading's bought are the system's")]
     [InlineData(": 2 open,", ": 1 open,", "paper", "Paper trading's open are the system's")]
     [InlineData("1 reached", "0 reached", "paper", "Paper trading's reached target are the system's")]
@@ -349,7 +349,7 @@ public partial class ReadSurface
     const string HomeWithTheSame = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 3 ideas bought and sold on paper, 1 made money.</p>";
 
     static string TonightWithTheSame(TradeGroupsView groups) =>
-        $"<p>1 new pick to buy at Thursday's open, all from the earnings drift.</p><p>{groups.OpenLine("S&P 500")} None ended tonight.</p><p>1 stock to buy at Thursday's open, at whatever price each opens.</p>";
+        $"<p>1 new pick to buy at Thursday's open, all from the earnings drift.</p><p>{groups.OpenLine("S&P 500")} None ended tonight.</p><p>1 plan tonight: 1 new, 0 waiting to buy and 0 already held that met the rules again.</p>";
 
     static string PaperWithTheSame(TradeGroupsView groups) =>
         $"<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>{groups.SystemLine} {groups.SameLine}</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";

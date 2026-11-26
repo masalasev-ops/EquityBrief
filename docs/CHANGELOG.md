@@ -7,6 +7,29 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/ARCHITECTURE.html - Tonight redesigned: every plan in one place at its own address, the tiles at a glance, the markets' strip and the setups' table, at 24.46
+Decision: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design
+Was:
+> section 15.7's Route: "... marks the night drawn, and draws every other day as no link."
+> section 15.7: no paragraph on the redesign of 2026-11-26, and no rows "Tonight at a glance", "Every plan tonight", "A plan", "A waiting order's plan" or "The setups' table"
+> section 15.24, Home's ideas: "... from the operator's correction of 2026-11-24 See the plan opening the stock's chart page with its pick's plan drawn on it (see: See the plan opens the stock's chart page with its pick's plan drawn on it)" and, of a stock met again while its order waits, "See the plan opening its chart page;"
+Now:
+> the Route adding `#/tonight/plan/<TICKER>`, opening tonight's page on the index the link names with that stock's plan chosen
+> a paragraph saying the page is laid out as the operator's mockup draws it, ruling where a row below differs, tomorrow's buys, the one-minute card and the waiting carousel drawn no more on Tonight; and the five rows
+> Home's See the plan opening the stock's plan on Tonight at its own address (see: See the plan opens the stock's plan on Tonight at its own address), and a stock met again opening its plan on Tonight, the one its order's night stored
+Why: the operator's order of 2026-11-26, kept word for word as Appendix AJ of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, with their mockup `prompts/2026-11-26-tonight-redesign-mockup.html`.
+
+### 2026-11-26 - docs/BUILD_PLAN.md - 24.46, Tonight redesigned, at the 24.0 planning amendment
+Was:
+> phase 24's stages ending at 24.45
+> the visible output: "... At 24.36 the reviewer's line on each pick's card."
+> the claims phase 24 predicts: "- about 3 at 24.41; about 4 at 24.42; about 2 at 24.43; about 1 at 24.44; about 2 at 24.45."
+Now:
+> the visible output adding "At 24.46 Tonight redesigned, every plan at its own address."
+> the claims adding "- about 5 at 24.46, section 15.7's rows of the tiles at a glance, every plan, a plan, a waiting order's plan and the setups' table."
+> 24.46, Tonight redesigned, with its done condition: every plan opening from its address for a new idea, a waiting order and a held stock; a waiting order's checks its placing night's; Home's links opening Tonight's plans; the mapping placing every fact; the read-back at 1440 and 390 in both palettes; no rule's code version moving; one mutation of each property red
+Why: the operator's order of 2026-11-26, kept word for word as Appendix AJ of the plan's file.
+
 ### 2026-11-25 - docs/BUILD_PLAN.md - the finishing order: five stages' code before 24.19 closes, the two pin moves, one approval table and the picker's chain, at the 24.0 planning amendment
 Was:
 > 24.30, 24.31, 24.36 and 24.37: "It reads 24.19's table, so it starts only once the 24.19 correction has closed." (24.37: "... for the readings a book ranks by, so it starts only once ...")

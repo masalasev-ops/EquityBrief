@@ -134,15 +134,16 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
         var section = Assert.Single(Blocks(page, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>"));
-        var setups = Assert.Single(Blocks(page, "<section[^>]*id=\"setups\".*?</section>"));
+        // From 24.46 the setups are the rows of the setups' table, each opened with its sentence above its card.
+        var setups = string.Concat(Regex.Matches(page, "<tr class=\"st-row.*?</tr>", RegexOptions.Singleline).Select(match => match.Value));
 
-        // The fundamentals-first family's card and tile are drawn nowhere; the Fundamentals family's tile stands after the
+        // The fundamentals-first family's card and row are drawn nowhere; the Fundamentals family's row stands after the
         // drift's, its line counting tonight's pick and the stock flagged and waiting for its filing.
         Assert.DoesNotContain("id=\"setup-fundamentals\"", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-family=\"fundamentals\"", setups, StringComparison.Ordinal);
-        Assert.True(setups.IndexOf("data-family=\"improving\"", StringComparison.Ordinal) > setups.IndexOf("data-family=\"drift\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("data-setup=\"fundamentals\"", setups, StringComparison.Ordinal);
+        Assert.True(setups.IndexOf("data-setup=\"improving\"", StringComparison.Ordinal) > setups.IndexOf("data-setup=\"drift\"", StringComparison.Ordinal));
         Assert.Contains("1 pick tonight. 1 flagged, waiting for the filing.", setups, StringComparison.Ordinal);
-        Assert.Contains(ImprovingRule.Looks, setups, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"st-about\">{ImprovingRule.Description}</p>", page, StringComparison.Ordinal);
 
         // Its header as a setup card's, not yet tested, its picks tonight, how soon it reads, the night it was computed for,
         // and its sentence from tonight's figures.
