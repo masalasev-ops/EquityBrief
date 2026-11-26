@@ -2254,17 +2254,21 @@ static async Task<int> LedgerBuildRun(string[] args)
     // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
     if (args.Contains("--long", StringComparer.Ordinal))
     {
-        if (index is null || from is not null || through is not null)
+        var longAgain = args.Contains("--again", StringComparer.Ordinal);
+        DateOnly? longFrom = from is not null && DateOnly.TryParseExact(from, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var longDay) ? longDay : null;
+
+        if (index is null || (from is not null && (!longAgain || longFrom is null)) || through is not null)
         {
-            Console.Error.WriteLine("ledger-build: give '--long --index <GSPC, MID or SML>', the long ledger's span being 2005 to 2018.");
+            Console.Error.WriteLine("ledger-build: give '--long --index <GSPC, MID or SML>', the long ledger's span being 2005 to 2018, and with '--again' and '--from yyyy-MM-dd' to write it once more from that session whatever its pin.");
 
             return 1;
         }
 
-        // From 23.10's second part `--again` writes the long ledger once more, resuming by the rows' pin.
+        // From 23.10's second part `--again` writes the long ledger once more, resuming by the rows' pin, and from the 24.19
+        // correction of 2026-11-25 with `--from` every session from it whatever its pin.
         // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
         return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-            .LongBuildAsync(store.DataRoot, index, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
+            .LongBuildAsync(store.DataRoot, index, Console.Out, again: longAgain, againFrom: longFrom);
     }
 
     if (index is null || from is null || through is null

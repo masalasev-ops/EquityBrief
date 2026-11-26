@@ -44,8 +44,21 @@ public static class LongSpans
     // from the operator's answers of 2026-11-23, item 2, PARA from 2025-08-07, the day Paramount Skydance's PSKY took Paramount
     // Global's place, where the provider names PARA Banzai International, whose filer the long filings hold PARA under and not
     // Paramount Global's, and the long pull's PARA carries Banzai's prices; PSKY holds Paramount's sessions from that day.
+    // From the operator's decisions of 2026-11-25, item B, BBT from 2018-10-01, its provider span to Truist's rename of 2019-12-09,
+    // BB&T read as TFC throughout, whose spans hold it from 2004 with no gap; BBT's code later another company's.
     // see: PARA's provider span from 2025-08-07 is dropped by hand, its code then Banzai International's and PSKY holding Paramount
-    public static IReadOnlyList<(string Ticker, DateOnly From)> DroppedByHand { get; } = [("PARA", new DateOnly(2025, 8, 7))];
+    // see: BB&T is read as TFC throughout, BBT's S&P 500 span to Truist's rename dropped by hand and IR's span started by hand at its entry
+    public static IReadOnlyList<(string Ticker, DateOnly From)> DroppedByHand { get; } =
+    [
+        ("PARA", new DateOnly(2025, 8, 7)),
+        ("BBT", new DateOnly(2018, 10, 1)),
+    ];
+
+    // The provider's S&P 500 spans the operator started by hand, each a code and the session its span starts at where the
+    // provider dates it earlier: from the operator's decisions of 2026-11-25, item C, IR at Ingersoll Rand Inc.'s entry as the
+    // membership rows date it, 2020-03-03, the code before it Ingersoll-Rand plc's, which TT's spans hold.
+    // see: BB&T is read as TFC throughout, BBT's S&P 500 span to Truist's rename dropped by hand and IR's span started by hand at its entry
+    public static IReadOnlyList<(string Ticker, DateOnly From)> StartedByHand { get; } = [("IR", new DateOnly(2020, 3, 3))];
 
     // The larger index first: a code two funds hold at one quarter end reads in the first of these holding it.
     public static IReadOnlyList<string> Larger { get; } = ["GSPC", "MID", "SML"];
@@ -137,9 +150,14 @@ public static class LongSpans
             {
                 var first = Dated(span);
 
-                if (first is { } joined && !DroppedByHand.Any(drop => drop.Ticker == span.Ticker && joined >= drop.From))
+                if (first is { } dated && !DroppedByHand.Any(drop => drop.Ticker == span.Ticker && dated >= drop.From))
                 {
-                    spans.Add(new LongSpan("GSPC", span.Ticker, joined < cutover ? cutover : joined, span.Left, FromProvider));
+                    var joined = StartedByHand.FirstOrDefault(start => start.Ticker == span.Ticker) is { Ticker: not null } start && start.From > dated ? start.From : dated;
+
+                    if (!(span.Left <= joined))
+                    {
+                        spans.Add(new LongSpan("GSPC", span.Ticker, joined < cutover ? cutover : joined, span.Left, FromProvider));
+                    }
                 }
             }
         }

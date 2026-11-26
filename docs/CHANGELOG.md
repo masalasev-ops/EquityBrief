@@ -7,6 +7,30 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-25 - docs/ARCHITECTURE.html - every build reads the long history, a code's long prices read against its newest pull, BB&T as TFC and IR from its entry, and a build's short interest from the two newest settlements, at a correction to the 24.19 correction
+Decision: A code whose long prices part from the newest pull's is read at the pull's adjustment where both are one instrument, and from the pull where the long side is another and thin; BB&T is read as TFC throughout, BBT's S&P 500 span to Truist's rename dropped by hand and IR's span started by hand at its entry; A build reads a stock's short interest only from the two newest settlements FINRA published before the session; The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
+Was:
+> the Long history reader's row: "by hand, in the ledger's long build and its check", reading "long spans, long holdings, long bars, long market bars, ...", its work ending "... (see: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand)"
+> the long spans' row: its work ending "... writes the spans again without PARA's from 2025-08-07, dropped by hand (see: PARA's provider span from 2025-08-07 is dropped by hand, ...)"
+> the Setup ledger's row: its work ending "... (see: Each S&P 400 and 600 pullback setup stores whether its live rule's other gates pass it, as the night read them)"
+> section 17, "The long history's renames and spans": "... and a current member's long history is behind where its spans end more than 2 sessions before its newest bar (see: ...)", its why ending "... at least 0.07% apart, measured before the rule was built"
+> section 17, "FINRA's short interest": "... and the history from FINRA's first settlement is read once by hand (see: ...)", its why opening "FINRA's consolidated short interest is free and keyless at its own address and none of the provider's allowance; 21.2 read its schedule ..."
+Now:
+> the Long history reader's row: run also in every build of the setup ledger and its check over an index the store holds long spans of, reading the pulled bars, and adding each code's prices held against the newest pull holding it and read as the class the two fall in
+> the long spans' row: adding BBT's S&P 500 span from 2018-10-01 dropped by hand, BB&T read as TFC throughout, and IR's span started at 2020-03-03
+> the Setup ledger's row: adding that every build by hand and its check read the long history's members and prices, market series, filers and facts where the store holds the index's long spans, and a build's short interest from the two newest settlements
+> section 17, "The long history's renames and spans": adding the class rule's levels, 1% on more than 50% of the sessions both hold, 10,000 shares, a lasting step over 1%, one instrument within 2% of one ratio on 90%, and the 21 sessions' median, its why the levels' sources
+> section 17, "FINRA's short interest": adding that a build reads a report only from the 2 newest settlements published before the session, a night with no cap until the pin move, its why the operator's decision
+Why: the operator's decisions of 2026-11-25, items B to D, their answer on the member set and their order on SUPN as a class, kept word for word in `prompts/2026-11-25-24.19-decisions-a-to-e-and-how-it-finishes.md`, `prompts/2026-11-25-24.19-answer-member-set.md` and `prompts/2026-11-25-24.19-on-the-report-of-4-17pm.md`
+
+### 2026-11-25 - docs/RUNBOOK.md - the standing history read over the long history where the store holds its spans, and the store run carrying the 24.19 correction's fixes in one order, at a correction to the 24.19 correction
+Decision: The standing ledger reads the long history's members and prices from 2019, the list the every-session table reads
+Was:
+> the setup ledger's history: "The history before the store's own nights is built by hand, one index over a span of sessions, over the pulled bars merged with the store's on membership as it stood, each setup replayed to its end ... (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood):"
+Now:
+> the same, read over the long history reader's members and prices where the store holds the index's long spans and over the pulled bars where it holds none, citing the new decision; and after the long spans' commands a paragraph naming BBT's span dropped and IR's started by hand, the reader's prices against the newest pull, a build's short interest from the two newest settlements, and the store run's order, the long ledger written again from a session whatever its pin
+Why: the operator's answer of 2026-11-25 on the member set and their decisions of that day, kept word for word in `prompts/2026-11-25-24.19-answer-member-set.md` and `prompts/2026-11-25-24.19-decisions-a-to-e-and-how-it-finishes.md`
+
 ### 2026-11-25 - docs/ARCHITECTURE.html - a company the provider prices under two member codes counted once, at a correction to the 24.19 correction
 Decision: Two member codes carrying one price series are one company counted once, under the code that stops trading until it stops
 Was:

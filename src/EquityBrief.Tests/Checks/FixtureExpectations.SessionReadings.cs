@@ -122,7 +122,8 @@ public partial class FixtureExpectations
 
         Assert.Equal(1, await apart.SessionCheckAsync("GSPC", designed, perYear: 60));
         Assert.Contains("session-readings-check: to trace, 0 difference(s)", designed.ToString(), StringComparison.Ordinal);
-        Assert.Contains("session-readings-expected: expected, by design, 1 difference(s) on the seven readings the table works its own way: alpha_three 0, alpha_four 0, liquidity 1, illiquidity 0,", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains("session-readings-expected: expected, by design, 1 difference(s) on the seven readings the table works its own way and the short interest a night reads with no cap until the pin move: alpha_three 0, alpha_four 0, liquidity 1, illiquidity 0,", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains(", older_days 0, short_interest_share 0", designed.ToString(), StringComparison.Ordinal);
         Assert.Contains($"session-readings-expected: pullback AAA {SessionDay(days[30])}: liquidity the ledger's 99, the table's ", designed.ToString(), StringComparison.Ordinal);
         Assert.Contains("1 difference(s), each named on the command's output: 0 to trace, 0 between the member lists and 1 expected by design", designed.ToString(), StringComparison.Ordinal);
 
