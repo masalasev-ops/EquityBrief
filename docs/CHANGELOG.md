@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/ARCHITECTURE.html - Home's waiting orders chosen by setup, each card one height with its checks folded, at a correction to 24.29
+Decision: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
+Was:
+> 15.24's row "Tonight's ideas": "... its waiting orders are cards of their own nearest their buy price first); from the operator's correction of 2026-11-23 a stock its setup's rules met again tonight ..."
+Now:
+> "... its waiting orders are cards of their own nearest their buy price first); from the operator's correction of 2026-11-24 the orders still waiting chosen by setup from a row of chips under their heading with "All" chosen when the page opens and each card's setup named as Home names it; every waiting card drawn with the same rows in the same places so the cards stand one height; the checks of the night that placed an order folded on its card and opened over the card's lower half; its notes on how it takes profit standing under its plan's take-profit on Tonight (see: Home's waiting orders are chosen by setup ...); from the operator's correction of 2026-11-23 a stock its setup's rules met again tonight ..."
+Why: the operator's correction of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-waiting-by-setup.md`, from the mockup `prompts/2026-11-24-waiting-by-setup-mockup.html`, applying to Home's carousel alone on their order of 2026-11-26: the cards stood 1,026 pixels tall, each stretched to the tallest card's checklist.
+
 ### 2026-11-26 - docs/BUILD_PLAN.md - a change a rule pins lands in the first pin move it is ready for, the order after the redesign, and 24.45 after the sign-off, at the 24.0 planning amendment
 Decision: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
 Was:

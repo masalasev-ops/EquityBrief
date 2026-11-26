@@ -262,7 +262,12 @@ public static class RevisionScreen
                 ? price is { } buy && close is { } last && buy > 0m ? FormattableString.Invariant($"The last close stands {Math.Abs(Statistic.FromRatio((last / buy) - 1m)) * 100:0.0}% {(last >= buy ? "above" : "below")} its buy price.") : "It buys at the next open."
                 : string.Join("; ", new[] { Away(stop, "its stop"), Away(take, "its take-profit") }.Where(part => part.Length > 0)) is { Length: > 0 } said ? Capitalise(said) + "." : "Held.";
 
-            rows.Add(new NameTradeView(row.Family, revision?.Tag ?? "before its rule was first registered", waiting, row.Listed, row.FilledOn, price, stop, take, left, close, standing));
+            // From the operator's correction of 2026-11-24 a waiting order's sale notes, as its card on Home drew them before.
+            var notes = waiting && CardScreen.PlanOf(row.Order).Sale is { } sale
+                ? string.Join(" ", MarkRenderer.PlanSaleLines(sale).Select(line => line.Note).Where(note => !string.IsNullOrWhiteSpace(note)))
+                : string.Empty;
+
+            rows.Add(new NameTradeView(row.Family, revision?.Tag ?? "before its rule was first registered", waiting, row.Listed, row.FilledOn, price, stop, take, left, close, standing) { TakeProfitNote = notes.Length > 0 ? notes : null });
         }
 
         return rows;

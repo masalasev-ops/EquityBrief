@@ -798,7 +798,7 @@ public sealed partial class MarkRenderer
             html.Append(FormattableString.Invariant($"<td>{(trade.Waiting ? FormattableString.Invariant($"Waiting to buy, placed {trade.Placed:d MMM}") : FormattableString.Invariant($"Bought {trade.Bought:d MMM yyyy}"))}</td>"));
             html.Append(MoneyTd(trade.Price, trade.Waiting ? "its buy price" : "paid"));
             html.Append(MoneyTd(trade.Stop));
-            html.Append(MoneyTd(trade.TakeProfit, trade.TakeProfit is null ? "none: sells on its time limit" : null));
+            html.Append(MoneyTd(trade.TakeProfit, trade.TakeProfit is null ? "none: sells on its time limit" : trade.TakeProfitNote));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{(trade.DaysLeft is { } days ? days.ToString(Invariant) : "-")}</td><td>{Escaped(trade.Standing)}</td></tr>"));
         }
 

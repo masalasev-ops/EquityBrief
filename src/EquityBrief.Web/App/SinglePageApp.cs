@@ -1230,8 +1230,10 @@ public sealed partial class SinglePageApp : IComponent
         });
         // The orders still waiting on Home and Tonight: one row of cards that snaps to a card, moved by swipe, by the arrows,
         // by a chip and by the keyboard; the counter and the chips outlined say which cards are in view.
+        // From the operator's correction of 2026-11-24 the cards a setup chip has hidden stand outside the counter and the arrows.
+        function woAll(track) { return [...track.querySelectorAll('.wo-card, .home-idea')]; }
         function woSeen(track) {
-          const cards = [...track.querySelectorAll('.wo-card, .home-idea')];
+          const cards = woAll(track).filter((card) => !card.hidden);
           const box = track.getBoundingClientRect();
           let first = -1, last = -1;
           cards.forEach((card, at) => { const r = card.getBoundingClientRect(); if (r.left >= box.left - 4 && r.right <= box.right + 4) { if (first < 0) { first = at; } last = at; } });
@@ -1244,16 +1246,19 @@ public sealed partial class SinglePageApp : IComponent
           const [first, last, cards] = woSeen(track);
           const count = group.querySelector('[data-wo-count]');
           if (count) { count.textContent = (first + 1) + ' to ' + (last + 1) + ' of ' + cards.length; }
-          for (const chip of group.querySelectorAll('.wo-chip')) { const at = parseInt(chip.getAttribute('data-at'), 10); chip.classList.toggle('in-view', at >= first && at <= last); }
+          const all = woAll(track);
+          for (const chip of group.querySelectorAll('.wo-chip')) { const at = cards.indexOf(all[parseInt(chip.getAttribute('data-at'), 10)]); chip.classList.toggle('in-view', at >= 0 && at >= first && at <= last); }
           const back = group.querySelector('[data-wo-step="-1"]');
           const on = group.querySelector('[data-wo-step="1"]');
           if (back) { back.disabled = first <= 0; }
           if (on) { on.disabled = last >= cards.length - 1; }
         }
+        function woTo(track, card) {
+          if (card && !card.hidden) { track.scrollBy({ left: card.getBoundingClientRect().left - track.getBoundingClientRect().left, behavior: 'smooth' }); }
+        }
         function woGo(track, at) {
-          const cards = track.querySelectorAll('.wo-card, .home-idea');
-          const card = cards[Math.max(0, Math.min(at, cards.length - 1))];
-          if (card) { track.scrollBy({ left: card.getBoundingClientRect().left - track.getBoundingClientRect().left, behavior: 'smooth' }); }
+          const cards = woAll(track).filter((card) => !card.hidden);
+          woTo(track, cards[Math.max(0, Math.min(at, cards.length - 1))]);
         }
         function carousels() { for (const track of screen.querySelectorAll('[data-wo-track]')) { woUpdate(track); } }
         document.addEventListener('scroll', (event) => { if (event.target.matches && event.target.matches('[data-wo-track]')) { woUpdate(event.target); } }, true);
@@ -1267,6 +1272,27 @@ public sealed partial class SinglePageApp : IComponent
           for (const panel of box.querySelectorAll('.setup-switch-panel')) { panel.hidden = panel.getAttribute('data-setup') !== chosen.value; }
           for (const track of box.querySelectorAll('.setup-switch-panel:not([hidden]) [data-wo-track]')) { woUpdate(track); }
         });
+        // From the operator's correction of 2026-11-24 a setup's chip over Waiting to buy narrows its ticker chips and its cards to
+        // that setup, still nearest to its buy price first, and the heading's count and the counter follow; "All" shows every one.
+        document.addEventListener('change', (event) => {
+          const chosen = event.target.matches && event.target.matches('.wo-setup-input') ? event.target : null;
+          const group = chosen ? chosen.closest('.wo') : null;
+          if (!group) { return; }
+          const kept = (one) => chosen.value === 'all' || one.getAttribute('data-family') === chosen.value;
+          let shown = 0;
+          for (const card of group.querySelectorAll('.wo-card')) { card.hidden = !kept(card); shown += card.hidden ? 0 : 1; for (const fold of card.querySelectorAll('details[open]')) { fold.open = false; } }
+          for (const chip of group.querySelectorAll('.wo-chip')) { chip.hidden = !kept(chip); }
+          const title = group.querySelector('[data-wo-title]');
+          if (title) { title.textContent = 'Waiting to buy (' + shown + ')'; }
+          const track = group.querySelector('[data-wo-track]');
+          if (track) { track.scrollLeft = 0; woUpdate(track); }
+        });
+        // A waiting card's checks, opened over its lower half, close from the panel's own button.
+        document.addEventListener('click', (event) => {
+          const close = event.target.closest ? event.target.closest('.wo-close') : null;
+          const fold = close ? close.closest('details') : null;
+          if (fold) { fold.open = false; }
+        });
         // From the operator's order of 2026-11-24 a card's "See it" brings its setup's header into view, the route unchanged.
         document.addEventListener('click', (event) => {
           const jump = event.target.closest ? event.target.closest('[data-jump]') : null;
@@ -1277,7 +1303,7 @@ public sealed partial class SinglePageApp : IComponent
           const control = event.target.closest ? event.target.closest('[data-wo-step], .wo-chip') : null;
           const track = control && control.closest('.wo') ? control.closest('.wo').querySelector('[data-wo-track]') : null;
           if (!track) { return; }
-          if (control.classList.contains('wo-chip')) { woGo(track, parseInt(control.getAttribute('data-at'), 10)); return; }
+          if (control.classList.contains('wo-chip')) { woTo(track, woAll(track)[parseInt(control.getAttribute('data-at'), 10)]); return; }
           const [first, last] = woSeen(track);
           const page = Math.max(1, last - first + 1);
           woGo(track, control.getAttribute('data-wo-step') === '1' ? first + page : first - page);

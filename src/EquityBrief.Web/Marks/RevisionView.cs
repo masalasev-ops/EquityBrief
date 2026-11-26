@@ -5,7 +5,12 @@ namespace EquityBrief.Web.Marks;
 // A trade or an order a revision holds on a stock, as the top of its own page names it: its setup, the revision that placed
 // it, whether it waits, the night it was placed and the session it was bought, its price, stop and one take-profit, the
 // trading days left to it, the night's close and where it stands.
-public sealed record NameTradeView(string Family, string Revision, bool Waiting, DateOnly Placed, DateOnly? Bought, decimal? Price, decimal? Stop, decimal? TakeProfit, int? DaysLeft, decimal? LastClose, string Standing);
+public sealed record NameTradeView(string Family, string Revision, bool Waiting, DateOnly Placed, DateOnly? Bought, decimal? Price, decimal? Stop, decimal? TakeProfit, int? DaysLeft, decimal? LastClose, string Standing)
+{
+    // From the operator's correction of 2026-11-24 a waiting order's notes on how it takes profit, "2 times the risk: ..." or
+    // "Take-profit added at the rules restart ...", which its card on Home no longer carries; none where its plan says none.
+    public string? TakeProfitNote { get; init; }
+}
 
 // A revision's plan in five plain rows, read from its registration.
 public sealed record PlanRowsView(string LooksFor, string Buys, string Loss, string Profit, string Limit);

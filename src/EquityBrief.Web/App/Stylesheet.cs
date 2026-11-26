@@ -1771,19 +1771,19 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-track:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wo-track>.wo-card{scroll-snap-align:start}
 .wo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.wo-card{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+.wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 10;row-gap:8px;align-items:start;position:relative;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
 .wo-card.fam-edge{border-left-width:4px}
-.wo-card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.wo-card-h a.home-ticker{text-decoration:none;color:var(--ink)}
-.wo-badge{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.wo-card[hidden],.wo-chip[hidden]{display:none}
+.wo-card a.home-ticker{justify-self:start;text-decoration:none;color:var(--ink)}
+.wo-badge{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
 .wo-state{font-size:12px;font-weight:600;color:var(--wait)}
 .wo-cond,.wo-box{margin:0;padding:8px 10px;border:1px solid var(--wait);border-radius:6px;background:var(--wait-fill);font-size:13.5px;line-height:1.45;color:var(--ink)}
 .wo-bar-track{height:8px;border-radius:4px;background:var(--s1);overflow:hidden}
 .wo-fill{height:8px;border-radius:4px;background:var(--wait)}
 .wo-bar-labels{display:flex;justify-content:space-between;gap:8px;margin:4px 0 0;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .wo-plan .buy{color:var(--ink)} .home-prices.wo-plan div[data-plan]{flex-wrap:wrap}
-.wo-placed{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)}
-.wo-card .home-plan{margin-top:auto}
+.wo-placed{margin:0;min-height:calc(2em * 1.45);font-size:13px;line-height:1.45;color:var(--ink-2)}
+.wo-card .home-plan{align-self:end;justify-self:start}
 /* A waiting order whose stock met the rules again, and the stocks met again while a bought trade holds them, from the operator's correction of 2026-11-23 */
 .wo-again{display:inline-block;font:600 11px var(--sans);color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 7px;white-space:nowrap}
 .wo-chip .wo-again{margin-left:6px}
@@ -1800,7 +1800,30 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .held-row .held-label{color:var(--ink);font-weight:600}
 .held-row .held-go{margin-left:auto}
 @media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
-@media (max-width:600px){.wo-track{grid-auto-columns:84%}}
+@media (max-width:600px){.wo-track{grid-auto-columns:84%}.wo-placed{font-size:12px}}
+/* waiting by setup: begin. Waiting to buy's row of setup chips and its cards' own rows; every class they write is selected here alone. */
+.waiting-orders .wo-track,.waiting-orders .wo-grid{grid-template-rows:repeat(10,auto)}
+.wo-setup-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 10px}
+.wo-setup-input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.wo-setup-chip{display:inline-flex;align-items:center;gap:7px;flex:none;white-space:nowrap;border:1px solid var(--hair-2);border-radius:999px;padding:5px 12px;font:600 13.5px var(--sans);color:var(--ink);background:var(--surface);cursor:pointer}
+.wo-setup-count{font:700 11.5px var(--sans);border-radius:999px;padding:1px 6px;background:var(--plot);color:var(--ink)}
+.wo-setup-input:checked+.wo-setup-chip{border-width:2px;padding:4px 11px;color:var(--ink)}
+.wo-setup-input:checked+.wo-setup-chip[data-setup='all']{background:var(--plot);border-color:var(--ink)}
+.wo-setup-input:checked+.wo-setup-chip[data-family='pullback']{background:var(--fam-pullback-tint);border-color:var(--fam-pullback)} .wo-setup-input:checked+.wo-setup-chip[data-family='breakout']{background:var(--fam-breakout-tint);border-color:var(--fam-breakout)}
+.wo-setup-input:checked+.wo-setup-chip[data-family='drift']{background:var(--fam-drift-tint);border-color:var(--fam-drift)} .wo-setup-input:checked+.wo-setup-chip[data-family='fundamentals']{background:var(--fam-fundamentals-tint);border-color:var(--fam-fundamentals)}
+.wo-setup-input:checked+.wo-setup-chip[data-family='heavyweight']{background:var(--fam-heavyweight-tint);border-color:var(--fam-heavyweight)} .wo-setup-input:checked+.wo-setup-chip[data-family='dip']{background:var(--fam-dip-tint);border-color:var(--fam-dip)}
+.wo-setup-input:checked+.wo-setup-chip[data-family='quality']{background:var(--fam-quality-tint);border-color:var(--fam-quality)} .wo-setup-input:checked+.wo-setup-chip[data-family='improving']{background:var(--fam-improving-tint);border-color:var(--fam-improving)}
+.wo-setup-input:focus-visible+.wo-setup-chip{outline:2px solid var(--ink);outline-offset:2px}
+.wo-co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.wo-rev{min-width:0}
+.wo-rev-chip{white-space:nowrap}
+.wo-why{min-width:0}
+.wo-fold>summary{cursor:pointer;font:600 13px var(--sans);line-height:1.45;color:var(--ink-2)}
+.wo-panel{position:absolute;left:0;right:0;bottom:0;top:45%;overflow:auto;padding:10px 14px 12px;border-top:2px solid var(--hair-2);border-radius:0 0 8px 8px;background:var(--surface);z-index:2}
+.wo-close{float:right;margin:0 0 6px 8px;font:600 12px var(--sans);padding:2px 9px;border:1px solid var(--hair-2);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.wo-none{margin:0;font-size:13px;line-height:1.45;color:var(--soft)}
+@media (max-width:600px){.wo-setup-bar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}}
+/* waiting by setup: end */
 /* Paper trading by revisions */
 .pick-bar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;padding:14px 16px;border:1px solid var(--hair-2);border-radius:10px;background:var(--surface);margin:18px 0 0}
 .pick-bar label{display:flex;flex-direction:column;gap:5px;font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}

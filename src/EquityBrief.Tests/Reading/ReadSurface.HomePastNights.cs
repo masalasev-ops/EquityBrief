@@ -94,7 +94,7 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"home-since\" data-since><b>Since then:</b> Bought on 5 Oct at $48.00 and open, +2.5% so far.</p>", m1, StringComparison.Ordinal);
 
         // The waiting cards as they stood that night: M2's order still waiting, M1 tonight's new one and in none of them.
-        Assert.Contains("<p class=\"list-count wo-title\">Waiting to buy (1)</p>", past, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"list-count wo-title\" data-wo-title>Waiting to buy (1)</p>", past, StringComparison.Ordinal);
         Assert.Matches("<article class=\"wo-card fam-edge\" data-family=\"breakout\" data-ticker=\"M2\" data-listed=\"2026-09-30\"", past);
 
         // The judge's line names that night's one pick, not the newest night's two.

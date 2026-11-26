@@ -463,7 +463,10 @@ public sealed partial class MarkRenderer
 
         var multiple = card?.TakeProfit?.Multiple ?? card?.Zone?.Sale?.TakeProfit?.Multiple ?? entry.Order?.Sale?.TakeProfit?.Multiple;
 
-        Figure("target", "Take profit at", take is { } aim ? "$" + Price(aim) : card?.Zone?.Sale is { OnTimeAlone: true } ? "None" : trailing ? "None" : "None", take is null ? (trailing ? "its stop rises with the price" : card?.Zone?.Sale is { OnTimeAlone: true } ? "it sells on its time limit" : entry.Pick?.Exit is { } exit ? ReaderWords.Plain(exit) : null) : multiple is { } times ? Formatted($"{times:0.##} times the risk") : null);
+        // From the operator's correction of 2026-11-24, item 4, a waiting order's notes on how it takes profit leave its card on
+        // Home for its plan here, under its take-profit.
+        // see: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
+        Figure("target", "Take profit at", take is { } aim ? "$" + Price(aim) : card?.Zone?.Sale is { OnTimeAlone: true } ? "None" : trailing ? "None" : "None", entry.Group == PlanEntryView.Waiting && WaitingTargetNote(entry.Order) is { } said ? said : take is null ? (trailing ? "its stop rises with the price" : card?.Zone?.Sale is { OnTimeAlone: true } ? "it sells on its time limit" : entry.Pick?.Exit is { } exit ? ReaderWords.Plain(exit) : null) : multiple is { } times ? Formatted($"{times:0.##} times the risk") : null);
 
         var cap = entry.Order?.Sale?.Cap ?? card?.Zone?.Sale?.Cap ?? card?.Cap;
 
@@ -471,6 +474,11 @@ public sealed partial class MarkRenderer
 
         return html.Append("</dl>").ToString();
     }
+
+    // The note a waiting order's take-profit row carries, as its card drew it before the operator's correction of 2026-11-24;
+    // none where its sale holds no take-profit or the row no note.
+    public static string? WaitingTargetNote(WaitingOrderView? order) =>
+        order?.Sale is { } sale ? PlanSaleLines(sale).Where(line => line.Key == "target").Select(line => line.Note).FirstOrDefault(note => note is { Length: > 0 }) : null;
 
     // Why it is here, with the business, the news and the entry check where the night stored them.
     string WhyHere(PlanEntryView entry)

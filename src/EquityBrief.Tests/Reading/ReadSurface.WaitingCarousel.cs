@@ -51,7 +51,7 @@ public partial class ReadSurface
         string[] nearest = ["W02", "W08", "W12", "W05", "W14", "W09", "W16", "W01", "W11", "W06", "W13", "W04", "W15", "W07", "W10", "W03"];
 
         Assert.Contains("data-carousel=\"true\"", html, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"list-count wo-title\">Waiting to buy (16)</p>", html, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"list-count wo-title\" data-wo-title>Waiting to buy (16)</p>", html, StringComparison.Ordinal);
         Assert.Contains("1 to 4 of 16", html, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(html, "class=\"wo-arrow\"").Count);
         Assert.Contains(MarkRenderer.WaitingLine, html, StringComparison.Ordinal);
@@ -75,7 +75,8 @@ public partial class ReadSurface
 
             Assert.Contains($"href=\"#/chart/{order.Ticker}\">{order.Ticker}</a>", card, StringComparison.Ordinal);
             // On the operator's answer of 2026-11-17, item 6, the company in full, as the pick cards draw it.
-            Assert.Contains($"<div class=\"home-co\">Company {order.Ticker} Inc.</div>", card, StringComparison.Ordinal);
+            // From the correction of 2026-11-24 on one line, cut with an ellipsis, its full name its title.
+            Assert.Contains($"<div class=\"home-co wo-co\" data-row=\"company\" title=\"Company {order.Ticker} Inc.\">Company {order.Ticker} Inc.</div>", card, StringComparison.Ordinal);
             Assert.Contains(FormattableString.Invariant($"data-listed=\"{order.Listed:yyyy-MM-dd}\" data-price=\"100.00\" data-close=\"{order.LastClose:0.00}\" data-last-day=\"{order.LastDay:yyyy-MM-dd}\""), card, StringComparison.Ordinal);
             Assert.Contains(System.Net.WebUtility.HtmlEncode(MarkRenderer.WaitingCondition(order)), card, StringComparison.Ordinal);
             Assert.Matches(FormattableString.Invariant($"Buys only if it falls to \\$100\\.00\\. Last close \\${order.LastClose:#,##0.00}, [0-9.]+% above\\."), System.Net.WebUtility.HtmlDecode(card));

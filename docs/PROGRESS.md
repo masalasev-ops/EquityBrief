@@ -23264,3 +23264,38 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures 
             0 warnings, 0 errors, 4059 of 4059 tests ran with none failed, migrations 0 to 172 with none pending, schema
             version 172, against `data-ci` and never `data`.
 Carried:    none.
+
+### 24.29 - correction: Home's waiting orders chosen by setup, each card one height with its checks folded   2026-11-26
+
+Ruled:      the operator's correction of 2026-11-24, kept word for word in `prompts/2026-11-24-24.29-waiting-by-setup.md`,
+            from the mockup `prompts/2026-11-24-waiting-by-setup-mockup.html`, applying to Home's carousel alone on their
+            order of 2026-11-26.
+Found:      Home's waiting cards on the S&P 500 stood one height only by stretching to the tallest card, 109 pixels of
+            empty space in a card at 390 on the S&P 600 on main.
+Built:      a row of setup chips under the heading, "All" chosen first, each setup with its colour, Home's name and its
+            count, narrowing the ticker chips, the cards, the heading's count and the counter; every card the same ten rows
+            on the track's own grid, the company on one line, the revision one short chip and the placing line two lines;
+            the placing night's checks folded under "Why it qualified on 20 Nov (n checks)", opened over the card's lower
+            half; a stock met again keeping its mark alone, its sentence and tonight's checks on its card among tonight's
+            ideas as the correction of 2026-11-25 set; a take-profit row's notes moved from the card to the order's plan on
+            Tonight under its take-profit; See the plan opening that plan.
+Measured:   over a copy of the store on C:, in a browser: the S&P 500's 19 cards one height at 492 pixels at 1440, the most
+            empty space in a card 21 pixels, and at 390 22; the S&P 400's 0 and 22; the S&P 600's 26 at 390 once the placing
+            line keeps to two lines on a phone; opening a card's checks changed no card's height; each setup chip showed its
+            own cards alone, the heading and the counter matching its count; the setup switcher's cards one height, within 12
+            pixels of the tallest card's content. No sideways scroll. Shots wide and at 390, both palettes, before and after.
+Tests:      6 new: the setup row and its narrowing; every card's rows in order; the revision chip; the placing night's
+            checks folded, a stock met again folding them alone; the classes in their own block of the stylesheet; the
+            take-profit notes on the order's plan on Tonight. 4 widened to the new markup.
+Pins:       none moved. Home, Tonight's plans and the stylesheet are no source a rule pins.
+Mutated:    the rule, stated before the run: each guard this correction adds taken out at its one site. m1 the "All" chip
+            left out: red; m2 the revision row left out of the card: red; m3 the placing night's checks never read: red; m4
+            the take-profit notes not carried to the plan: red. Filtered to their tests and reverted before anything was
+            committed.
+Claims:     1759, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4065 of 4065 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1759
+            claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none.
