@@ -118,13 +118,16 @@ public sealed class FactorRanks(IReadOnlyList<SweepSeries> series, SweepBenchmar
         return places;
     }
 
+    // From the pin move before the run of 2027-02-06 Alpha#3's open and Alpha#4's low are ranked at the price the stock traded
+    // at on the day, its stored price times its raw close over its close, a day holding no raw close holding no place.
+    // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
     static double? Figure(Ranked value, IReadOnlyList<SweepBar> bars, int bar) => value switch
     {
         Ranked.ArgMax => FactorReadings.ArgMaxValue(bars, bar),
         Ranked.VolumeChange => FactorReadings.VolumeChange(bars, bar),
         Ranked.Intraday => FactorReadings.IntradayReturn(bars, bar),
-        Ranked.Open => bars[bar].Open > 0 ? Statistic.FromPrice(bars[bar].Open) : null,
+        Ranked.Open => bars[bar].Open > 0 && EquityBrief.Core.History.TableReadings.Traded(bars[bar], bars[bar].Open) is { } open ? Statistic.FromPrice(open) : null,
         Ranked.Volume => Statistic.FromVolume(bars[bar].Volume),
-        _ => bars[bar].Low > 0 ? Statistic.FromPrice(bars[bar].Low) : null,
+        _ => bars[bar].Low > 0 && EquityBrief.Core.History.TableReadings.Traded(bars[bar], bars[bar].Low) is { } low ? Statistic.FromPrice(low) : null,
     };
 }

@@ -4,21 +4,21 @@ using EquityBrief.Worker.Sweep;
 
 namespace EquityBrief.Worker.Ledger;
 
-// The seven readings the every-session table reads its own way over a member's readings as the night works them, which its
-// build writes and its check rebuilds alike: the third and fourth alphas off the members' places at the traded price, the two
-// liquidity readings off the dollars traded, and the three reach readings over the fixed length of history.
+// What the every-session table reads its own way over a member's readings as the night works them, which its build writes and
+// its check rebuilds alike: the weekdays to the next report off the code's filings, and the readings of a bar's volume none
+// where its close moved with no volume. From the pin move before the run of 2027-02-06 the seven it read its own way, the
+// third and fourth alphas and the two liquidity readings at the traded price and the three reach readings over the fixed
+// length of history, are the shared code's, the night's and every build's alike, and none is listed expected.
 // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
 public static class TableOwnReadings
 {
-    const double DaysAYear = Core.EntryCheck.EntryMeasure.YearDays;
-
-    // The seven, which the check lists apart from the ledger's and marks expected.
-    public static IReadOnlyList<string> Columns { get; } = ["alpha_three", "alpha_four", "liquidity", "illiquidity", "stretch_share", "highest_since_years", "older_days"];
+    // The readings the check lists apart from the ledger's and marks expected: none once the shared code reads the seven.
+    public static IReadOnlyList<string> Columns { get; } = [];
 
     // From the operator's decisions of 2026-11-25, item D, the short interest, which the builds read from the two newest
-    // settlements and a night with no cap until the pin move carries the cap into the nights, listed expected until then.
+    // settlements and a night with no cap until the pin move carried the cap into the shared code: none listed since.
     // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
-    public static IReadOnlyList<string> UntilThePinMove { get; } = ["short_interest_share"];
+    public static IReadOnlyList<string> UntilThePinMove { get; } = [];
 
     // Whether the check lists a difference on a reading as expected where the ledger's setup is held to the table's row.
     public static bool Expected(string reading) =>
@@ -26,29 +26,9 @@ public static class TableOwnReadings
 
     // The reports given are the code's report days off its filings, which the weekdays to the next report count to; none
     // given leaves that reading as the night works it.
-    public static void Apply(double?[] readings, TradedRanks traded, int name, SweepSeries one, int bar, IReadOnlyList<DateOnly>? reports = null)
+    public static void Apply(double?[] readings, SweepSeries one, int bar, IReadOnlyList<DateOnly>? reports = null)
     {
         void Set(string column, double? value) => readings[LedgerReadings.IndexOf(column)] = value;
-
-        Set("alpha_three", traded.Alpha3(name, bar));
-        Set("alpha_four", traded.Alpha4(name, bar));
-        Set("liquidity", TableReadings.Liquidity(one.Bars, bar));
-        Set("illiquidity", TableReadings.Illiquidity(one.Bars, bar, FactorReadings.MonthSessions));
-
-        var held = one.Bars.Select(each => new Core.EntryCheck.EntryBar(each.Session, each.High, each.Low, each.Close, each.Volume)).ToArray();
-        var start = one.WindowStart[bar];
-        var older = TableReadings.OlderFrom(start, bar);
-        var entry = Core.EntryCheck.EntryReadings.Of(
-            one.Name.Ticker,
-            new ArraySegment<Core.EntryCheck.EntryBar>(held, start, bar + 1 - start),
-            new ArraySegment<Core.EntryCheck.EntryBar>(held, older, start - older),
-            double.IsFinite(one.Atr[bar]) ? one.Atr[bar] : null,
-            double.IsFinite(one.Rsi[bar]) ? one.Rsi[bar] : null,
-            double.IsFinite(one.Volume50[bar]) ? one.Volume50[bar] : null);
-
-        Set("stretch_share", entry?.StretchShare);
-        Set("highest_since_years", entry is { } read && (read.HighestSince ?? read.HistoryStart) is { } matched ? (read.Session.DayNumber - matched.DayNumber) / DaysAYear : null);
-        Set("older_days", entry?.OlderDays);
 
         // see: The every-session table counts the weekdays to the next report from the results 8-K each quarter's 10-Q or 10-K closes
         if (reports is not null)
@@ -64,96 +44,5 @@ public static class TableOwnReadings
                 Set(column, null);
             }
         }
-    }
-}
-
-// The third and fourth published alphas over the members' places at the price each traded at that day, as the ledger's own
-// ranks place them at the stored price: on a session the members are those holding a bar there with no gap, each one's place
-// the share of them under its value and half the share level with it, worked once a session from the bars to it alone. A
-// member whose day holds no raw close holds no place there. The ledger's own ranks stay as the readings' version pins them.
-// see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
-public sealed class TradedRanks(IReadOnlyList<SweepSeries> series, SweepBenchmark.Members members)
-{
-    readonly System.Collections.Concurrent.ConcurrentDictionary<int, Lazy<double?[][]>> sessions = new();
-
-    // Alpha#3, (-1 * correlation(rank(open), rank(volume), 10)), the open as traded.
-    public double? Alpha3(int name, int bar) =>
-        Placed(name, bar, FactorReadings.Alpha3Sessions, 0) is { } opens
-        && Placed(name, bar, FactorReadings.Alpha3Sessions, 1) is { } volumes
-        && FactorReadings.Correlation(opens, volumes) is { } correlation
-            ? -correlation
-            : null;
-
-    // Alpha#4, (-1 * Ts_Rank(rank(low), 9)), the low as traded.
-    public double? Alpha4(int name, int bar) =>
-        Placed(name, bar, FactorReadings.Alpha4Sessions, 2) is { } lows ? -FactorReadings.TimeRank(lows) : null;
-
-    double[]? Placed(int name, int bar, int count, int value)
-    {
-        if (bar - count + 1 < 0)
-        {
-            return null;
-        }
-
-        var one = series[name];
-        var placed = new double[count];
-
-        for (var at = 0; at < count; at++)
-        {
-            var session = one.SessionAt[bar - count + 1 + at];
-
-            if (session < 0 || session >= members.Names.Length)
-            {
-                return null;
-            }
-
-            var held = Array.BinarySearch(members.Names[session], name);
-
-            if (held < 0 || sessions.GetOrAdd(session, day => new Lazy<double?[][]>(() => Work(day))).Value[value][held] is not { } place)
-            {
-                return null;
-            }
-
-            placed[at] = place;
-        }
-
-        return placed;
-    }
-
-    // A session's places on the traded open, the volume and the traded low.
-    double?[][] Work(int session)
-    {
-        var names = members.Names[session];
-        var bars = members.Bars[session];
-        var places = new double?[3][];
-
-        for (var value = 0; value < 3; value++)
-        {
-            var figures = new double?[names.Length];
-
-            for (var at = 0; at < names.Length; at++)
-            {
-                var bar = series[names[at]].Bars[bars[at]];
-
-                figures[at] = value switch
-                {
-                    0 => bar.Open > 0 && TableReadings.Traded(bar, bar.Open) is { } open ? Core.Prices.Statistic.FromPrice(open) : null,
-                    1 => Core.Prices.Statistic.FromVolume(bar.Volume),
-                    _ => bar.Low > 0 && TableReadings.Traded(bar, bar.Low) is { } low ? Core.Prices.Statistic.FromPrice(low) : null,
-                };
-            }
-
-            var held = figures.OfType<double>().ToArray();
-            var placed = new double?[names.Length];
-
-            for (var at = 0; at < names.Length; at++)
-            {
-                placed[at] = figures[at] is { } one ? FactorReadings.Place(one, held) : null;
-            }
-
-            places[value] = placed;
-        }
-
-        return places;
     }
 }

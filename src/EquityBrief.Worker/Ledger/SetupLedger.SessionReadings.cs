@@ -605,8 +605,9 @@ public sealed partial class SetupLedger
             output.WriteLine("session-readings-check: " + finding);
         }
 
-        output.WriteLine(FormattableString.Invariant($"session-readings-expected: expected, by design, {expected.Count} difference(s) on the seven readings the table works its own way and the short interest a night reads with no cap until the pin move: ")
-            + string.Join(", ", TableOwnReadings.Columns.Concat(TableOwnReadings.UntilThePinMove).Select(column => FormattableString.Invariant($"{column} {expected.Count(finding => finding.Contains($": {column} ", StringComparison.Ordinal))}"))));
+        // From the pin move before the run of 2027-02-06 the shared code reads the seven and the short interest as the table
+        // does, so nothing is expected by design and every difference is one to trace.
+        output.WriteLine(FormattableString.Invariant($"session-readings-expected: expected, by design, {expected.Count} difference(s); none since the pin move, the night and every build reading the seven and the short interest as the table does"));
 
         foreach (var finding in expected)
         {
@@ -617,7 +618,7 @@ public sealed partial class SetupLedger
         var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table, {memberSessions} session(s) of the standing ledger's members held to the table's both ways; ")
             + (differences == 0
                 ? "every reading the same"
-                : FormattableString.Invariant($"{differences} difference(s), each named on the command's output: {findings.Count} to trace, {memberFindings.Count} between the member lists and {expected.Count} expected by design on the seven readings the table works its own way and the short interest until the pin move"));
+                : FormattableString.Invariant($"{differences} difference(s), each named on the command's output: {findings.Count} to trace, {memberFindings.Count} between the member lists and {expected.Count} expected by design"));
 
         await AppendAsync(connection, runId, SessionCheckStage, startedAt, 0, differences == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("session-readings-check: " + detail);
@@ -728,7 +729,7 @@ public sealed partial class SetupLedger
                 var readings = LedgerSetups.Readings(index, name, one, ownCloses.Value[name], bar, sessions[at], members, calendar, at, market, context, series);
 
                 CapShortInterest(readings, context.ShortInterest, Settlements, one.Name.Ticker, calendar[at]);
-                TableOwnReadings.Apply(readings, tradedRanks.Value, name, one, bar, ReportFilings is { } filings ? ReportDaysOf(filings, one) : null);
+                TableOwnReadings.Apply(readings, one, bar, ReportFilings is { } filings ? ReportDaysOf(filings, one) : null);
                 rows.Add((one.Name.Ticker, ReadingsText(readings)));
             }
 
@@ -737,9 +738,6 @@ public sealed partial class SetupLedger
 
         // Each code's results 8-Ks and quarterly and annual reports, which the table's weekdays to the next report read.
         public IReadOnlyDictionary<string, ReportFiled>? ReportFilings { get; set; }
-
-        // The members' places at the traded price, which the table's third and fourth alphas read.
-        readonly Lazy<TradedRanks> tradedRanks = new(() => new TradedRanks(series, members));
     }
 
     // A code's results 8-Ks, those carrying item 2.02, each by the day it reports and the day it was filed, and its 10-Qs and
