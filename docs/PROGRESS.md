@@ -23238,3 +23238,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the held Waiting to buy redesign, applying to Home's carousel alone, follows this track.
+
+### 24.0 planning - amendment: a change a rule pins lands in the first pin move it is ready for, the order after the redesign, and 24.45 after the sign-off   2026-11-26
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.29, 24.35's built parts, 24.39, 24.40 and 24.46, and the 24.19 correction's code to its 5a
+            part; in progress, this amendment; next, the Waiting to buy redesign, then the January pin move's code, then
+            24.30a and 24.31a.
+Ruled:      the operator's correction of 2026-11-26 of their amendment of 2026-11-25, their answers of that day and their
+            word withdrawing the estimates, kept word for word as Appendices AG, AH and AI of the plan's file, final. The
+            rules parts of 24.30, 24.37 and 24.38 back in one pin move carried by the replay over two copies or not landed,
+            with no date, each done when that replay reproduces every live trade on a branch; a change a rule pins landing
+            in the first pin move it is ready for, the one before the run of 2027-02-06 where its code is complete by the
+            deadline of Friday 2027-01-08, otherwise the next; two operating rows carrying the landing, due at the pin move
+            that carries each, the phase closing without waiting for one and an unmerged one named open in 24.44's report;
+            the order after the Waiting to buy redesign; 24.42's first lessons and its replay on the approval table, its
+            replay once the first version exists; 24.45 after phase 24's sign-off; and every stage built as soon as the one
+            before merges and merged as soon as it is ready, held only by the order, the operator's word on the 24.19 check
+            and the buy-range widths, and no merge while a night, an off-peak run, a local run or a monthly run is writing.
+Planned:    `BUILD_PLAN.md`'s finishing order, its estimate's count of operating rows, 24.19, 24.27, 24.29, 24.30, 24.36,
+            24.37, 24.38, 24.44 and 24.45, and the two rows of the carried obligations table; `DECISIONS.md`'s reward check
+            on the traded plan riding the first pin move it is ready for, the decision tying it to the one before the run of
+            2027-02-06 moved to Previously decided. No claim added and no stage renumbered.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps,
+            0 warnings, 0 errors, 4059 of 4059 tests ran with none failed, migrations 0 to 172 with none pending, schema
+            version 172, against `data-ci` and never `data`.
+Carried:    none.

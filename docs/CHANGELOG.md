@@ -7,6 +7,34 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/BUILD_PLAN.md - a change a rule pins lands in the first pin move it is ready for, the order after the redesign, and 24.45 after the sign-off, at the 24.0 planning amendment
+Decision: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+Was:
+> the finishing order: "The a parts are built one track at a time after the 5a code and the Waiting to buy redesign, in that order, and the b parts in the same order after the close."
+> the finishing order: "**The pin move before the run of 2027-02-06** carries only the 24.19 correction's shared code, 24.29's ranged variants, the families' time limit and cap, the reward check on the traded plan and the short-interest cap. ..." and "**The pin move after the run of 2027-02-06** carries the parts of 24.30, 24.37 and 24.38 that teach the rules, together, with its own replay over two copies; until it lands each runs on test in its own tables. The picker's chain waits for neither pin move."
+> the finishing order's approval table: "... 24.42's replay; 24.38b's SEC read; and 24.45's search, whose row comes back with 24.44's draft."
+> the finishing order: "**The picker's chain**, after the store runs: 24.32, 24.33 and 24.34, then 24.41, 24.42 and 24.43, then 24.44 with a fresh session's sign-off, and 24.45 drafted after it." and "24.29's items ... the Waiting to buy redesign after the 5a code, ..."
+> the estimate: "Four operating rows opened, cited at 24.6, 24.17 and 24.38, which build the surfaces they are read on."
+> 24.19's order: "Then one pin move before the run of 2027-02-06, carried by one replay over two copies of the store: ..."
+> 24.27: "... until the one pin move before the run of 2027-02-06 teaches every price family a time limit and a cap a night ..."
+> 24.29: "teaching the families a range lands in the one pin move planned before the run of 2027-02-06 with the 24.19 correction, as the operator ruled for the families' time limit and cap, carried by ..." and its carried clause "at the one pin move each live rule's ranged variant registers ..."
+> 24.30: "built after the 5a code and the Waiting to buy redesign" and "the rules' \"also requires\" is taught once to read one, in the one pin move after the run of 2027-02-06 that carries 24.37's and 24.38's parts teaching the rules, carried by the replay over two copies or not landed, the recipe running on test in its own table until then." Its done condition: "the pin move's replay reproduces every live trade"
+> 24.36: "24.36a, ... after 24.31a"
+> 24.37: "24.37a, ... after 24.36a" and "are taught the grammar's parts in the one pin move after the run of 2027-02-06 that carries 24.30's and 24.38's parts teaching the rules, each defaulting to what the book does today, carried by the replay over two copies or not landed, a book idea running on test in its own tables until then." Its done condition: "the pin move's replay reproduces every live book's holdings"
+> 24.38: "join the grammar's list in the one pin move after the run of 2027-02-06 that carries 24.30's and 24.37's parts teaching the rules, carried by the replay over two copies or not landed, and the two ideas waiting for them are tested." Its done condition: "the pin move's replay reproduces every live trade"
+> 24.44: "... the operating rows opened; and `tools/verify-phase` reaching every claim ..."
+> 24.45: "a stage of its own built once 24.44's report is drafted, its result added to that report before the phase's sign-off."
+> the carried obligations table: no row for the pin moves
+Now:
+> the finishing order with the order after the Waiting to buy redesign, the three holds, one bullet on the pin moves landing a change in the first pin move it is ready for with the January cut-off a deadline, the approval table holding 24.42's first lessons and its replay once the first version exists, and 24.45 moved after the sign-off
+> the estimate: six operating rows opened, the two pin moves' rows cited at 24.19, 24.29, 24.30, 24.37 and 24.38
+> 24.19, 24.29, 24.30, 24.37 and 24.38 citing the two rows, each rules part "in one pin move carried by the replay over two copies or not landed" with no date, and each done condition "the replay over two copies reproduces every live trade, proven on a branch", 24.37's with every live book's holdings
+> 24.27 queueing until the pin move carrying the 24.19 correction's shared code; 24.36a after 24.34; 24.37a after 24.43
+> 24.44 naming the two pin moves' rows open where the pin move carrying them has not merged, and discharging neither
+> 24.45 moved unchanged to the first stage after phase 24's sign-off, 24.44's report not waiting for it
+> the carried obligations table: **The rules parts of 24.30, 24.37 and 24.38 land in the first pin move they are ready for** and **The 24.19 correction's shared code and 24.29's ranged variants land in the first pin move they are ready for**, each operating, read on the case page 24.17 builds
+Why: the operator's correction of 2026-11-26, their answers of that day and their word withdrawing the estimates, kept word for word as Appendices AG, AH and AI of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`.
+
 ### 2026-11-26 - docs/ARCHITECTURE.html - Tonight redesigned: every plan in one place at its own address, the tiles at a glance, the markets' strip and the setups' table, at 24.46
 Decision: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design
 Was:
