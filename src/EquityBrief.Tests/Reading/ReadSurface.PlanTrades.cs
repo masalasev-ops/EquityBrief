@@ -169,7 +169,7 @@ public partial class ReadSurface
 
             Assert.Contains("data-still-waiting=\"1\"", group, StringComparison.Ordinal);
             Assert.Contains("data-carousel=\"false\"", group, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"list-count wo-title\">Waiting to buy (1)</p>", group, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"list-count wo-title\" data-wo-title>Waiting to buy (1)</p>", group, StringComparison.Ordinal);
             Assert.Matches("<article class=\"wo-card fam-edge\" data-family=\"breakout\" data-ticker=\"M2\" data-listed=\"2026-09-30\" data-price=\"47.50\" data-close=\"[^\"]+\" data-last-day=\"2026-10-14\"", group);
             Assert.Contains("Buys only if it falls to $47.50.", group, StringComparison.Ordinal);
             Assert.Matches("Placed 30 Sep by [a-z ]+\\. Cancelled if not filled by 14 Oct", group);

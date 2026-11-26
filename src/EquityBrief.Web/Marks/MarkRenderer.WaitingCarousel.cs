@@ -71,15 +71,22 @@ public sealed partial class MarkRenderer
     // The waiting orders' group on Home and Tonight; nothing where none waits. From the operator's correction of 2026-11-23 an
     // order whose stock its setup's rules met again tonight, given as that night's card, carries the mark on its chip and its
     // card, the line saying its order stands and the price tonight's rules would have placed, and tonight's checklist.
-    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<LeftOrderView>? left = null, IReadOnlyList<DecisionCardView>? again = null)
+    // From the operator's correction of 2026-11-24 the setups are named as the page given words them, Home's own names on Home,
+    // each setup's label where none is given.
+    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<LeftOrderView>? left = null, IReadOnlyList<DecisionCardView>? again = null, Func<string, string>? setupName = null)
     {
         if (orders.Count == 0)
         {
             return LeftNotes(left);
         }
 
-        return Carousel(orders, index, night, again ?? []) + LeftNotes(left);
+        return Carousel(orders, index, night, again ?? [], setupName ?? SetupLabel) + LeftNotes(left);
     }
+
+    static string SetupLabel(string family) => EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
+
+    // The rows every waiting card draws, in this order, so the cards stand one height with their rows lined up.
+    public static readonly string[] WaitingCardRows = ["ticker", "company", "setup", "revision", "buy", "bar", "plan", "placed", "checks", "see-plan"];
 
     // The card of tonight's whose stock met its setup's rules again while this order waits: the same stock, the setup that
     // placed the order and the night it placed it.
@@ -125,15 +132,16 @@ public sealed partial class MarkRenderer
         return html.Append("</ul></div>").ToString();
     }
 
-    static string Carousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<DecisionCardView> again)
+    static string Carousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<DecisionCardView> again, Func<string, string> setupName)
     {
         var sorted = NearestFirst(orders);
         var rolling = sorted.Count > WaitingGridAtMost;
         var widest = sorted.Select(order => PlanOrderWords.Gap(order.Price, order.LastClose) ?? 0m).DefaultIfEmpty(0m).Max();
+        var universeWord = App.Universes.Offered.FirstOrDefault(choice => choice.Name == index)?.Word ?? App.Universes.Large.Word;
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<div class=\"waiting-orders wo\" data-group=\"still-waiting\" data-still-waiting=\"{sorted.Count}\" data-index=\"{Escaped(index)}\" data-carousel=\"{(rolling ? "true" : "false")}\">");
-        body.Append(Invariant, $"<div class=\"wo-head\"><p class=\"list-count wo-title\">{Escaped(WaitingHeading(sorted.Count))}</p>");
+        body.Append(Invariant, $"<div class=\"wo-head\"><p class=\"list-count wo-title\" data-wo-title>{Escaped(WaitingHeading(sorted.Count))}</p>");
 
         if (rolling)
         {
@@ -141,6 +149,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
+        body.Append(SetupRow(sorted, index, setupName));
         body.Append(Invariant, $"<p class=\"wo-said\">{Escaped(WaitingLine)}</p>");
 
         if (rolling)
@@ -153,7 +162,7 @@ public sealed partial class MarkRenderer
                 var near = gap is { } apart && apart <= WaitingNear;
                 var metAgain = AgainOf(order, again) is not null;
 
-                body.Append(Invariant, $"<button type=\"button\" role=\"listitem\" class=\"wo-chip{(near ? " near" : string.Empty)}{(at < WaitingInView ? " in-view" : string.Empty)}\" data-at=\"{at}\" data-ticker=\"{Escaped(order.Ticker)}\" data-near=\"{(near ? "true" : "false")}\" data-met-again=\"{(metAgain ? "true" : "false")}\" aria-label=\"{Escaped(order.Ticker)}, {Escaped(ToGo(gap))} to its buy price{(metAgain ? ", " + Escaped(HeldAgainView.AgainMark.ToLowerInvariant()) : string.Empty)}\">{Escaped(order.Ticker)}<span>{Escaped(Share(gap))}</span>{(metAgain ? Formatted($"<b class=\"wo-again\" title=\"{Escaped(HeldAgainView.AgainMark)}\">{Escaped(HeldAgainView.AgainMark)}</b>") : string.Empty)}</button>");
+                body.Append(Invariant, $"<button type=\"button\" role=\"listitem\" class=\"wo-chip{(near ? " near" : string.Empty)}{(at < WaitingInView ? " in-view" : string.Empty)}\" data-at=\"{at}\" data-ticker=\"{Escaped(order.Ticker)}\" data-family=\"{Escaped(order.Family)}\" data-near=\"{(near ? "true" : "false")}\" data-met-again=\"{(metAgain ? "true" : "false")}\" aria-label=\"{Escaped(order.Ticker)}, {Escaped(ToGo(gap))} to its buy price{(metAgain ? ", " + Escaped(HeldAgainView.AgainMark.ToLowerInvariant()) : string.Empty)}\">{Escaped(order.Ticker)}<span>{Escaped(Share(gap))}</span>{(metAgain ? Formatted($"<b class=\"wo-again\" title=\"{Escaped(HeldAgainView.AgainMark)}\">{Escaped(HeldAgainView.AgainMark)}</b>") : string.Empty)}</button>");
             }
 
             body.Append("</div>");
@@ -165,55 +174,105 @@ public sealed partial class MarkRenderer
 
         foreach (var order in sorted)
         {
-            body.Append(WaitingCard(order, night, widest, AgainOf(order, again), App.Universes.Offered.FirstOrDefault(choice => choice.Name == index)?.Word ?? App.Universes.Large.Word));
+            body.Append(WaitingCard(order, night, widest, AgainOf(order, again), setupName, universeWord));
         }
 
         return body.Append("</div></div>").ToString();
     }
 
-    // One waiting order's card: its stock and company, its setup's badge and that it waits, the line saying what it buys at,
-    // the bar to its buy price, the rows of its plan, when and by which setup it was placed and when it is cancelled, and the
-    // way to its plan; where its stock met the rules again tonight, the mark, the line and tonight's checklist, the standing
-    // order's plan alone drawn.
-    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again = null, string universeWord = "500")
+    // From the operator's correction of 2026-11-24 a row of setup chips under the heading: "All" with every waiting order's
+    // count, chosen when the page opens, then each setup present in the order its first order stands nearest its buy price,
+    // with its colour, its name and its count. Choosing one narrows the ticker chips and the cards to that setup.
+    // see: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
+    public static string SetupRow(IReadOnlyList<WaitingOrderView> sorted, string index, Func<string, string> setupName)
+    {
+        var group = "wo-setup-" + System.Text.RegularExpressions.Regex.Replace(index, "[^A-Za-z0-9]", string.Empty).ToLowerInvariant();
+        var html = new StringBuilder("<div class=\"wo-setup-bar\" role=\"radiogroup\" aria-label=\"Show the orders of one setup\">");
+
+        void Chip(string key, string? family, string name, int count, bool chosen)
+        {
+            html.Append(Invariant, $"<input type=\"radio\" class=\"wo-setup-input\" name=\"{group}\" id=\"{group}-{Escaped(key)}\" value=\"{Escaped(key)}\"{(chosen ? " checked" : string.Empty)}>");
+            html.Append(Invariant, $"<label class=\"wo-setup-chip\" for=\"{group}-{Escaped(key)}\" data-setup=\"{Escaped(key)}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>"))}{Escaped(name)}<span class=\"wo-setup-count\">{count}</span></label>");
+        }
+
+        Chip("all", null, "All", sorted.Count, chosen: true);
+
+        foreach (var family in sorted.Select(order => order.Family).Distinct(StringComparer.Ordinal))
+        {
+            Chip(family, family, setupName(family), sorted.Count(order => order.Family == family), chosen: false);
+        }
+
+        return html.Append("</div>").ToString();
+    }
+
+    // One waiting order's card, from the operator's correction of 2026-11-24 the same rows in the same places on every card,
+    // each a row of the track's grid so the cards stand one height with their rows lined up: the stock; its company on one
+    // line; its setup's tag and that it waits; its revision as one short chip; the line saying what it buys at; the bar to its
+    // buy price; the rows of its plan, their notes on its plan on Tonight; when and by which setup it was placed and when it is
+    // cancelled; the checks of the night that placed it, folded; and the way to its plan. Where its stock met the rules again
+    // tonight its mark stands beside its tag, the sentence and tonight's checks standing on its card among tonight's ideas.
+    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again, Func<string, string> setupName, string universeWord)
     {
         var card = new StringBuilder();
         var family = Escaped(order.Family);
-        var setup = EquityBrief.Core.Families.SetupFamilies.Named(order.Family)?.Label ?? order.Family;
+        var setup = SetupLabel(order.Family);
         var gap = PlanOrderWords.Gap(order.Price, order.LastClose);
         var price = order.Price is { } at ? at.ToString("0.00", CultureInfo.InvariantCulture) : "none";
         var close = order.LastClose is { } last ? last.ToString("0.00", CultureInfo.InvariantCulture) : "none";
 
         card.Append(Invariant, $"<article class=\"wo-card fam-edge\" data-family=\"{family}\" data-ticker=\"{Escaped(order.Ticker)}\" data-listed=\"{DayOf(order.Listed)}\" data-price=\"{price}\" data-close=\"{close}\" data-last-day=\"{DayOf(order.LastDay)}\" data-gap=\"{(gap is { } apart ? apart.ToString("0.0000", CultureInfo.InvariantCulture) : "none")}\" data-met-again=\"{(again is null ? "false" : "true")}\">");
-        card.Append(Invariant, $"<div class=\"wo-card-h\"><div><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{(order.Company is { Length: > 0 } company ? Formatted($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div>");
-        card.Append(Invariant, $"<div class=\"wo-badge\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setup)}</span><span class=\"wo-state\">{WaitingState}</span>{(again is null ? string.Empty : Formatted($"<b class=\"wo-again\">{Escaped(HeldAgainView.AgainMark)}</b>"))}{RevisionTags.For(order.Family, order.Listed, order: true)}</div></div>");
-        card.Append(Invariant, $"<p class=\"wo-cond\">{Escaped(WaitingCondition(order))}</p>");
+        card.Append(Invariant, $"<a class=\"home-ticker name-link\" data-row=\"ticker\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>");
+        card.Append(order.Company is { Length: > 0 } company
+            ? Formatted($"<div class=\"home-co wo-co\" data-row=\"company\" title=\"{Escaped(company)}\">{Escaped(company)}</div>")
+            : "<div class=\"home-co wo-co\" data-row=\"company\">&#160;</div>");
+        card.Append(Invariant, $"<div class=\"wo-badge\" data-row=\"setup\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setupName(order.Family))}</span><span class=\"wo-state\">{WaitingState}</span>{(again is null ? string.Empty : Formatted($"<b class=\"wo-again\">{Escaped(HeldAgainView.AgainMark)}</b>"))}</div>");
+        card.Append(Invariant, $"<div class=\"wo-rev\" data-row=\"revision\">{RevisionTags.Short(order.Family, order.Listed)}</div>");
+        card.Append(Invariant, $"<p class=\"wo-cond\" data-row=\"buy\">{Escaped(WaitingCondition(order))}</p>");
 
         if (order.Price is { } buy)
         {
             var filled = widest > 0m && gap is { } share ? Math.Clamp(share / widest, 0.02m, 1m) * 100m : 2m;
 
-            card.Append(Invariant, $"<div class=\"wo-bar\" role=\"img\" aria-label=\"{Escaped(ToGo(gap))} to its buy price of {Escaped(Dollars(buy))}\"><div class=\"wo-bar-track\"><div class=\"wo-fill\" style=\"width:{filled.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div><p class=\"wo-bar-labels\"><span>Buy price {Escaped(Dollars(buy))}</span><span>{Escaped(ToGo(gap))}</span></p></div>");
+            card.Append(Invariant, $"<div class=\"wo-bar\" data-row=\"bar\" role=\"img\" aria-label=\"{Escaped(ToGo(gap))} to its buy price of {Escaped(Dollars(buy))}\"><div class=\"wo-bar-track\"><div class=\"wo-fill\" style=\"width:{filled.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div><p class=\"wo-bar-labels\"><span>Buy price {Escaped(Dollars(buy))}</span><span>{Escaped(ToGo(gap))}</span></p></div>");
+        }
+        else
+        {
+            card.Append("<div class=\"wo-bar\" data-row=\"bar\"></div>");
         }
 
+        card.Append("<div class=\"home-prices wo-plan\" data-row=\"plan\">");
         card.Append(order.Sale is { } parted ? SalePartsMark(parted) : string.Empty);
-        card.Append("<div class=\"home-prices wo-plan\">");
 
-        foreach (var (key, label, value, note) in WaitingPlanRows(order))
+        foreach (var (key, label, value, _) in WaitingPlanRows(order))
         {
-            card.Append(Invariant, $"<div data-plan=\"{key}\"><span>{Escaped(label)}</span><b class=\"{(key == "stop" ? "stop" : key == "buy" ? "buy" : "aim")}\">{Escaped(value)}</b>{(note is { } said ? Formatted($"<span class=\"sale-note\">{Escaped(said)}</span>") : string.Empty)}</div>");
+            card.Append(Invariant, $"<div data-plan=\"{key}\"><span>{Escaped(label)}</span><b class=\"{(key == "stop" ? "stop" : key == "buy" ? "buy" : "aim")}\">{Escaped(value)}</b></div>");
         }
 
         card.Append("</div>");
-        card.Append(Invariant, $"<p class=\"wo-placed\">{Escaped(PlacedLine(order, setup, night))}</p>");
+        card.Append(Invariant, $"<p class=\"wo-placed\" data-row=\"placed\">{Escaped(PlacedLine(order, setup, night))}</p>");
         // From the operator's correction of 2026-11-25, item 7, a stock met again keeps only its mark here: the sentence saying its
         // order stands and tonight's checks stand on its card among tonight's ideas.
         // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
+        card.Append(Invariant, $"<div class=\"wo-why\" data-row=\"checks\">{ChecksFold(order)}</div>");
         // From the operator's order of 2026-11-26 its plan on Tonight at its own address, the one its order's night stored.
         // see: See the plan opens the stock's plan on Tonight at its own address
-        card.Append(Invariant, $"<a class=\"home-plan\" href=\"{Escaped(PlanHref(order.Ticker, universeWord))}\">See the plan</a>");
+        card.Append(Invariant, $"<a class=\"home-plan\" data-row=\"see-plan\" href=\"{Escaped(PlanHref(order.Ticker, universeWord))}\">See the plan</a>");
 
         return card.Append("</article>").ToString();
+    }
+
+    // The checks of the night that placed the order, folded under one line, "Why it qualified on 20 Nov (5 checks)", the count
+    // read off the card that night stored; opened, they stand in a panel over the card's lower half. A night that stored no
+    // checks for the order says so.
+    public static string ChecksFold(WaitingOrderView order)
+    {
+        var count = order.Placing is { } placing ? AgainChecks(placing) : 0;
+        var placed = order.Placing is { } stored && WhyItQualified(stored, FormattableString.Invariant($"On {order.Listed:d MMM}, when its order was placed")) is { Length: > 0 } drawn
+            ? drawn
+            : Formatted($"<p class=\"wo-none\">The night of {order.Listed:d MMM} stored no checks for this order.</p>");
+        var summary = FormattableString.Invariant($"Why it qualified on {order.Listed:d MMM}") + (count > 0 ? FormattableString.Invariant($" ({count} {(count == 1 ? "check" : "checks")})") : string.Empty);
+
+        return Formatted($"<details class=\"wo-fold\" data-checks=\"{count}\"><summary>{Escaped(summary)}</summary><div class=\"wo-panel\"><button type=\"button\" class=\"wo-close\" aria-label=\"Close the checks\">Close</button>{placed}</div></details>");
     }
 
     // The highlighted line in the operator's words: "Buys only if it falls to $x. Last close $x, x% above."

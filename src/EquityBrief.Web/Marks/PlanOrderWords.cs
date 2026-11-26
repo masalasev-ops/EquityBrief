@@ -13,6 +13,10 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
 
     public PlanSaleView? Sale { get; init; }
 
+    // From the operator's correction of 2026-11-24 the card the night that placed it stored for the stock under its setup,
+    // whose checks its card carries folded; none where that night stored none.
+    public DecisionCardView? Placing { get; init; }
+
     public string Words => PlanOrderWords.Waiting(Price, LastDay);
 
     // The row in the operator's words: what it buys at, the last close and how far above, and when it was placed by which

@@ -542,9 +542,11 @@ public sealed partial class SinglePageApp
         // From the operator's correction of 2026-11-23 a stock met again while its order waits is drawn once, on that order's card
         // with the mark; one held on a bought trade is a row of its own beneath.
         // see: On Home a stock its setup's rules met again is drawn once, on its waiting order's card or as a bought trade's one-line row
+        // From their correction of 2026-11-24 the setups named as Home names them, on the chips and on each card's tag.
+        // see: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
         var (waitingAgain, heldAgain) = MetAgainOf(view);
 
-        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, null, marks.Copying ? null : waitingAgain));
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, null, marks.Copying ? null : waitingAgain, IdeaTag));
 
         // From the operator's correction of 2026-11-25 the last five trading days' moves in one line, their list on Paper trading.
         // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab

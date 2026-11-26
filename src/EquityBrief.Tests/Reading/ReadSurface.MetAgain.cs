@@ -34,6 +34,14 @@ public partial class ReadSurface
             "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap, trail, plan, held_again) VALUES " +
             $"('MID', '{IndexNight}', 'breakout', 'M2', 0, '50', '47', NULL, 'The breakout on the S&P 400', '{{}}', '{lines}', NULL, 63, '3', '{plan}', '{{\"family\":\"breakout\",\"night\":\"2026-09-30\",\"index\":\"MID\"}}');");
 
+        // From the operator's correction of 2026-11-24 the card the night of 30 Sep stored for M2 when it placed the order, three
+        // checks passed, which the order's card folds with tonight's.
+        const string placingLines = "[{\"line\":1,\"name\":\"Trend and strength\",\"verdict\":\"pass\",\"words\":\"Passed every step: market, share above the 200-day average 52.0% at or above 45%; new high, a close of 50.00 above its high of the year at 49.10; volume, 1.8 times its average.\"}]";
+
+        store.Execute(
+            "INSERT OR REPLACE INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap, trail, plan, held_again) VALUES " +
+            $"('MID', '2026-09-30', 'breakout', 'M2', 0, '50', '47', NULL, 'The breakout on the S&P 400', '{{}}', '{placingLines}', NULL, 63, '3', NULL, NULL);");
+
         // From the second correction of 2026-11-23 a background version's trade in M2 of the same night, bought at the open and
         // filled, its name sorting before the live rule's: the live rule's order still waiting is the one read.
         Assert.StartsWith(EquityBrief.Core.Candidates.FamilyRecords.LivePrefix, Strings(store, "SELECT candidate FROM index_rule_trade WHERE ticker = 'M2' AND session_date = '2026-09-30';").Single(), StringComparison.Ordinal);
@@ -55,6 +63,12 @@ public partial class ReadSurface
         Assert.Contains($"<b class=\"wo-again\">{HeldAgainView.AgainMark}</b>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("wo-again-line", card, StringComparison.Ordinal);
         Assert.DoesNotContain(MarkRenderer.AgainHeading, card, StringComparison.Ordinal);
+
+        // From the operator's correction of 2026-11-24 its fold holds the checks of the night that placed it alone, tonight's
+        // standing on its card among tonight's ideas.
+        Assert.Contains("<summary>Why it qualified on 30 Sep (3 checks)</summary>", card, StringComparison.Ordinal);
+        Assert.Contains("<h5>On 30 Sep, when its order was placed</h5>", card, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(card, "<li class=\"card-tick\"").Count);
         Assert.Matches("<div data-plan=\"buy\"><span>Buy if it dips to</span><b class=\"buy\">\\$47\\.50</b>", card);
         Assert.DoesNotContain("$46.90</b>", card, StringComparison.Ordinal);
 

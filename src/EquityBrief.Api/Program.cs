@@ -3493,10 +3493,23 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         var named = await read.PaperStocksAsync(waitingOn, night);
         var lastCloses = await read.ClosesAsync(waitingOn, night);
 
+        // From the operator's correction of 2026-11-24 each with the card the night that placed it stored for the stock under its
+        // setup, whose checks its card carries folded.
+        var placing = new Dictionary<(DateOnly Night, string Family, string Ticker), DecisionCardView>();
+
+        foreach (var placedOn in stillWaiting.Select(order => order.Listed).Distinct())
+        {
+            foreach (var row in await read.DecisionCardsAsync(reading.Code, placedOn))
+            {
+                placing.TryAdd((placedOn, row.Family, row.Ticker), CardScreen.View(row));
+            }
+        }
+
         stillWaiting = [.. stillWaiting.Select(order => order with
         {
             Company = named.TryGetValue(order.Ticker, out var stock) ? stock.Company : null,
             LastClose = lastCloses.TryGetValue((order.Ticker, night), out var last) ? last : null,
+            Placing = placing.GetValueOrDefault((order.Listed, order.Family, order.Ticker)),
         })];
     }
 

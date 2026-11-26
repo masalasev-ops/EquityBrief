@@ -43,6 +43,37 @@ public static class RevisionTags
         return "<a class=\"vtag\" data-revision=\"" + revision.Number.ToString(CultureInfo.InvariantCulture) + "\" data-family=\"" + System.Net.WebUtility.HtmlEncode(family) + "\" href=\"" + System.Net.WebUtility.HtmlEncode(link.Href) + "\">" + System.Net.WebUtility.HtmlEncode(order && !revision.Running ? PlacedBy(revision) : revision.Tag) + "</a>";
     }
 
+    // From the operator's correction of 2026-11-24 a waiting order's card names its revision as one short chip, "Revision 7 ·
+    // since 16 Nov" or "Revision 3 · ran 10 to 13 Nov", the full words its title; nothing where no revision is read.
+    public static string Short(string family, DateOnly listed)
+    {
+        if (Held.Value is not { } held || At(family, listed) is not { } revision)
+        {
+            return string.Empty;
+        }
+
+        var link = new PaperLink(held.Universe, Rule: family) { Pick = revision.Running ? null : PaperLink.RevisionPrefix + revision.Number.ToString(CultureInfo.InvariantCulture) };
+        var full = revision.Running ? revision.Tag : PlacedBy(revision);
+
+        return "<a class=\"vtag wo-rev-chip\" data-revision=\"" + revision.Number.ToString(CultureInfo.InvariantCulture) + "\" data-family=\"" + System.Net.WebUtility.HtmlEncode(family) + "\" title=\"" + System.Net.WebUtility.HtmlEncode(full) + "\" href=\"" + System.Net.WebUtility.HtmlEncode(link.Href) + "\">" + System.Net.WebUtility.HtmlEncode(ShortWords(revision)) + "</a>";
+    }
+
+    // "Revision 7 · since 16 Nov", or for one no longer running "Revision 3 · ran 10 to 13 Nov", its month named once where both
+    // days fall in one.
+    public static string ShortWords(RevisionView revision)
+    {
+        static string Day(DateOnly day) => day.ToString("d MMM", CultureInfo.InvariantCulture);
+
+        if (revision.Running || revision.Until is not { } until)
+        {
+            return revision.Name + " · since " + Day(revision.From);
+        }
+
+        var from = revision.From.Month == until.Month && revision.From.Year == until.Year ? revision.From.Day.ToString(CultureInfo.InvariantCulture) : Day(revision.From);
+
+        return revision.Name + " · ran " + from + " to " + Day(until);
+    }
+
     // When a rule's running revision started, as a record's line says it: "Revision 7 started running on 16 Nov 2026", or
     // the day its rule was registered where no revision is handed in.
     public static string StartedRunning(string family, DateOnly registered) =>

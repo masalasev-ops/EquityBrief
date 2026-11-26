@@ -226,8 +226,8 @@ public partial class ReadSurface
         var orders = SixteenOrders()[..2];
         var carousel = MarkRenderer.WaitingCarousel(orders, "S&P 400", CarouselNight);
 
-        Assert.All(orders, order => Assert.Contains($"<a class=\"home-plan\" href=\"{MarkRenderer.PlanHref(order.Ticker, "400")}\">See the plan</a>", carousel, StringComparison.Ordinal));
-        Assert.DoesNotContain("<a class=\"home-plan\" href=\"#/chart/", carousel, StringComparison.Ordinal);
+        Assert.All(orders, order => Assert.Contains($"<a class=\"home-plan\" data-row=\"see-plan\" href=\"{MarkRenderer.PlanHref(order.Ticker, "400")}\">See the plan</a>", carousel, StringComparison.Ordinal));
+        Assert.DoesNotContain("href=\"#/chart/" + orders.First().Ticker + "\">See the plan", carousel, StringComparison.Ordinal);
 
         var held = new DecisionCardView("GSPC", CarouselNight, "pullback", "HELD", "the rule", 100m, 95m, null, [], null)
         {

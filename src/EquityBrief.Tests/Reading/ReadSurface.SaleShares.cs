@@ -43,7 +43,7 @@ public partial class ReadSurface
 
         var html = MarkRenderer.WaitingCarousel([Kratos()], "S&P 400", SharesNight);
 
-        Assert.Contains("<p class=\"sale-parts\" data-sale-parts>Sells in 4 parts as the price rises.</p><div class=\"home-prices wo-plan\">", html, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"home-prices wo-plan\" data-row=\"plan\"><p class=\"sale-parts\" data-sale-parts>Sells in 4 parts as the price rises.</p>", html, StringComparison.Ordinal);
         Assert.Equal(
             [
                 "Sell at the next trading day's open after a day that closes below 26.38.",
