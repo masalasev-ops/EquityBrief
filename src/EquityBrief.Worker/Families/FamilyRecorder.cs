@@ -305,8 +305,8 @@ public sealed class FamilyRecorder : IComponent
         foreach (var rule in standing.Where(Keeps))
         {
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
-            var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;
             var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).With(trees);
+            var cap = hooks.HeldAtMost(SetupFamilies.Named(family)?.CapSessions ?? 0);
             (string Ticker, ShadowOutcome Outcome)[] own = [.. verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome))];
 
             // From 21.4 a rule stating the ranking lists from its family's setups at the ledger's loose gates, handed in by
@@ -384,8 +384,8 @@ public sealed class FamilyRecorder : IComponent
     }
 
     // The trades one rule keeps on a night from its own verdicts: the members it fired on in the family's own
-    // order, the order's figure and then the second figure each largest first and then the ticker, at most five,
-    // none it holds a trade on still open and none whose values place no plan. The night's record keeps its list
+    // order, the order's figure and then the second figure each largest first and then the ticker, at most five or
+    // the cap a night the rule states, none it holds a trade on still open and none whose values place no plan. The night's record keeps its list
     // by it, and a replay of the rule keeps the list the same way.
     // Where the rule states hooks reading readings, its fired members are kept and ordered by them first, its own order
     // breaking a tie; a rule stating none keeps its own order. From 21.4 a rule stating the exposure keeps as well the
@@ -409,9 +409,11 @@ public sealed class FamilyRecorder : IComponent
                 .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal),
         ];
 
+        var most = (hooks ?? RuleHooks.Off).ListedAtMost(SetupFamilies.ListedANight);
+
         foreach (var fire in (hooks ?? RuleHooks.Off).Order(own, verdict => readings?.Invoke(verdict.Ticker), verdict => expected?.Invoke(verdict.Ticker)))
         {
-            if (kept.Count == SetupFamilies.ListedANight)
+            if (kept.Count == most)
             {
                 break;
             }
@@ -438,9 +440,11 @@ public sealed class FamilyRecorder : IComponent
     {
         var kept = new List<(string, int, (decimal, decimal, decimal?, double?, double?))>();
 
+        var most = hooks.ListedAtMost(SetupFamilies.ListedANight);
+
         foreach (var setup in hooks.Order(setups, setup => setup.Readings, setup => expected?.Invoke(setup.Ticker)))
         {
-            if (kept.Count == SetupFamilies.ListedANight)
+            if (kept.Count == most)
             {
                 break;
             }

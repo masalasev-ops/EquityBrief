@@ -413,7 +413,7 @@ public sealed partial class IndexSweepRunner
         // A setting's trades at the next open before costs, five a night in the family's order and one open trade a stock,
         // each walked by the rule's walk and priced at its own next open; where a map is handed in, the sessions to each
         // trade's sale are kept in it by its stock and its session.
-        public IReadOnlyList<FamilyTrade> AtOpen(IEnumerable<FamilyListing> chosen, int[] setting, ConcurrentDictionary<(int Name, int Session), int>? held = null, bool atTrigger = false)
+        public IReadOnlyList<FamilyTrade> AtOpen(IEnumerable<FamilyListing> chosen, int[] setting, ConcurrentDictionary<(int Name, int Session), int>? held = null, bool atTrigger = false, int perNight = FamilySweep.PerNight)
         {
             var (exit, limit, stop) = (setting[2], setting[3], setting[4]);
 
@@ -432,7 +432,8 @@ public sealed partial class IndexSweepRunner
 
                     return Fills.Bought((atTrigger ? walked.AtTrigger : walked.AtClose, walked.Held), listing);
                 },
-                listing => Fills.BenchmarkBought(BenchmarkAtClose(listing.Session, exit, limit, stop), listing));
+                listing => Fills.BenchmarkBought(BenchmarkAtClose(listing.Session, exit, limit, stop), listing),
+                perNight);
         }
 
         // From 21.5 one walk of a listing under an exit of the menu, sold as the dip sells: the menu's own replay of its path
@@ -525,7 +526,7 @@ public sealed partial class IndexSweepRunner
         // From 21.5 a setting's trades at the next open before costs under an exit of the menu, five a night in the order
         // handed in and one open trade a stock, the benchmark the same exit on every member; where a map is handed in, the
         // sessions to each trade's sale are kept in it.
-        public IReadOnlyList<FamilyTrade> AtOpenUnder(IEnumerable<FamilyListing> chosen, int[] setting, ExitChoice exit, ConcurrentDictionary<(int Name, int Session), int>? held = null)
+        public IReadOnlyList<FamilyTrade> AtOpenUnder(IEnumerable<FamilyListing> chosen, int[] setting, ExitChoice exit, ConcurrentDictionary<(int Name, int Session), int>? held = null, int perNight = FamilySweep.PerNight)
         {
             var (limit, stop) = (setting[3], setting[4]);
 
@@ -544,7 +545,8 @@ public sealed partial class IndexSweepRunner
 
                     return Fills.Bought((walked.AtClose, walked.Held), listing);
                 },
-                listing => Fills.BenchmarkBought(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing));
+                listing => Fills.BenchmarkBought(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing),
+                perNight);
         }
 
         // Each trade's result after its round trip at a multiple of the published table, the benchmark paying none.

@@ -37,10 +37,11 @@ public partial class FixtureExpectations
     [Fact]
     public void ASurvivorRegistersWhereItCanRunAndHasRoomTheWorstPastTheMinimumMakingRoomAndQueuesOtherwise()
     {
-        // Its setup cannot yet run a time limit, a cap or a loose event of its own; each queues and says why.
+        // From the January pin move its setup runs a time limit and a cap a night of its own; it cannot run every setup it keeps
+        // or a loose event, and each of those queues and says why.
         Assert.Null(Survivors.CannotRunYet(Survivor(Runs)));
-        Assert.Contains("its own time limit of 63 sessions", Survivors.CannotRunYet(Survivor(Runs.Replace("sell after 63", "sell after 20", StringComparison.Ordinal))), StringComparison.Ordinal);
-        Assert.Contains("lists 5 a night", Survivors.CannotRunYet(Survivor(Runs.Replace("cap 5", "cap 3", StringComparison.Ordinal))), StringComparison.Ordinal);
+        Assert.Null(Survivors.CannotRunYet(Survivor(Runs.Replace("sell after 63", "sell after 20", StringComparison.Ordinal))));
+        Assert.Null(Survivors.CannotRunYet(Survivor(Runs.Replace("cap 5", "cap 3", StringComparison.Ordinal))));
         Assert.Contains("buys every setup it keeps", Survivors.CannotRunYet(Survivor(Runs.Replace(" · cap 5 a night by strength highest", string.Empty, StringComparison.Ordinal))), StringComparison.Ordinal);
         Assert.Contains("loose gates", Survivors.CannotRunYet(Survivor(Runs.Replace("breakout(500)", "breakout(500) loose", StringComparison.Ordinal))), StringComparison.Ordinal);
         Assert.Equal(60, IdeaGrammar.FamilyTimeLimit("drift"));
@@ -117,7 +118,7 @@ public partial class FixtureExpectations
     public async Task AQueuedSurvivorIsWalkedEachNightItsPicksStoredAndItsStateWrittenOnceForAReason()
     {
         using var store = new TemporaryStore().Migrated();
-        var line = Survivor(Runs.Replace("sell after 63", "sell after 20", StringComparison.Ordinal));
+        var line = Survivor(Runs.Replace(" · cap 5 a night by strength highest", string.Empty, StringComparison.Ordinal));
         var cuts = new Dictionary<string, double[]> { ["volume_ratio"] = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 2.0, 3.0] };
 
         store.Execute("INSERT INTO notebook (entered_at, source, index_code, family, words, line, verdict, why, tested_on, run_id) VALUES ('2026-11-20T00:00:00Z', 'the operator', 'GSPC', 'breakout', 'w', 'l', 'passed', 'y', '2026-11-20', 'r');");
@@ -139,7 +140,7 @@ public partial class FixtureExpectations
         var admitted = await desk.AdmitAsync(1, line, cuts, new DateOnly(2026, 11, 20), "test-admit");
 
         Assert.Equal(Survivors.Queued, admitted.Outcome);
-        Assert.StartsWith("Its setup sells on its own time limit of 63 sessions", admitted.Why, StringComparison.Ordinal);
+        Assert.StartsWith("Its setup lists at most a number a night in an order", admitted.Why, StringComparison.Ordinal);
 
         // The night of 24 Nov, the newest the ledger wrote: AAA's volume, 2.6 times, stands above the 8th cut point of 2.0.
         Assert.Equal("1 survivor(s) queued walked, 1 pick(s) stored among no buys, 0 registered", await desk.NightAsync("night-1"));

@@ -1331,6 +1331,12 @@ public static class RuleWording
 
         public static string Exposure(int exposureFull, double breadth, int vixMedianSessions, int exposureHalf) =>
             FormattableString.Invariant($"exposure: {exposureFull} picks where the index's breadth is at or above {breadth.ToString("0.####", CultureInfo.InvariantCulture)} and the VIX at or under its median of the {vixMedianSessions} sessions before, {exposureHalf} where one holds and none where neither, in the market check's place");
+
+        public static string TimeLimit(int sessions) =>
+            FormattableString.Invariant($"held at most {sessions} sessions");
+
+        public static string PerNight(int picks) =>
+            FormattableString.Invariant($"at most {picks} a night");
     }
 
     // TreeScore.cs

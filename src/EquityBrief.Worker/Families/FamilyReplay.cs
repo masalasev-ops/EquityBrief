@@ -301,7 +301,7 @@ public sealed class FamilyReplay : IComponent
 
                 foreach (var (ticker, place, plan) in hooks.ReadsReadings || hooks.ReadsExpected || hooks.Plan is not null ? [] : FamilyRecorder.Keep(verdicts.Where(verdict => verdict.Outcome.Candidate == rule.Candidate), held, hooks))
                 {
-                    var ended = FamilyRecorder.Walk(night, plan.Entry, plan.Stop, plan.Target, cap, closes.GetValueOrDefault(ticker), calendar, at, hooks.Exit, plan.RiskMoves);
+                    var ended = FamilyRecorder.Walk(night, plan.Entry, plan.Stop, plan.Target, hooks.HeldAtMost(cap), closes.GetValueOrDefault(ticker), calendar, at, hooks.Exit, plan.RiskMoves);
 
                     kept[rule.Candidate].Add(new Trade(ticker, night, place, plan.Entry, plan.Stop, plan.Target, ended?.On, ended?.Result));
                 }

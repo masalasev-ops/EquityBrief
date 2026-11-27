@@ -2595,7 +2595,7 @@ public static class IndexRuleTrades
 
             var place = 0;
 
-            foreach (var answer in Candidates(hooks, rule.Family, answers, holding, readings, setups, expected).Take(IndexRules.PerNight))
+            foreach (var answer in Candidates(hooks, rule.Family, answers, holding, readings, setups, expected).Take(hooks.ListedAtMost(IndexRules.PerNight)))
             {
                 var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, answer.Ticker, StringComparison.Ordinal));
                 var move = inputs.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];
@@ -2644,7 +2644,7 @@ public static class IndexRuleTrades
         Func<string, IReadOnlyList<LooseSetup>>? setups,
         Func<string, double?>? expected) =>
         hooks.Ranks
-            ? [.. hooks.Order(setups!(family), setup => setup.Readings, setup => expected?.Invoke(setup.Ticker)).Where(setup => !holding.Contains(setup.Ticker)).Select((setup, at) => new IndexAnswer(setup.Ticker, family, true, at + 1, setup.Entry, setup.Stop, setup.Target, setup.Trail, setup.Cap, hooks.Ranker?.Score(setup.Readings), null))]
+            ? [.. hooks.Order(setups!(family), setup => setup.Readings, setup => expected?.Invoke(setup.Ticker)).Where(setup => !holding.Contains(setup.Ticker)).Select((setup, at) => new IndexAnswer(setup.Ticker, family, true, at + 1, setup.Entry, setup.Stop, setup.Target, setup.Trail, hooks.HeldAtMost(setup.Cap), hooks.Ranker?.Score(setup.Readings), null))]
             : hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker), one => expected?.Invoke(one.Ticker));
 
     static async Task<(int Ended, int Benchmarked)> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, CancellationToken cancellation)

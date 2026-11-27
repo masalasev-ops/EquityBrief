@@ -40,7 +40,7 @@ public sealed class DriftSweep
     readonly IReadOnlyList<SweepSeries> series;
     readonly SweepBenchmark.Members members;
     readonly double[][] closes;
-    readonly Dictionary<(int Session, double Stop, double Target), double> benchmarks = [];
+    readonly Dictionary<(int Session, double Stop, double Target, int Cap), double> benchmarks = [];
 
     public DriftSweep(IReadOnlyList<SweepSeries> series, SweepBenchmark.Members members)
     {
@@ -209,7 +209,7 @@ public sealed class DriftSweep
 
         var stopMoves = risk / move;
         var rewardToRisk = (listing.Target - listing.Entry) / risk;
-        var key = (listing.Session, Math.Round(stopMoves, 6), Math.Round(rewardToRisk, 6));
+        var key = (listing.Session, Math.Round(stopMoves, 6), Math.Round(rewardToRisk, 6), listing.Cap);
 
         if (!benchmarks.TryGetValue(key, out var value))
         {

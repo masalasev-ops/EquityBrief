@@ -25,9 +25,12 @@ public sealed record AlsoRequires(int Reading, bool Above, double Level)
 // stating none of them is walked, listed and ordered exactly as before they existed. A tree model is found by the reader
 // that holds the stored models, and one not found scores no member, so the rule lists none; the ranking's score and the
 // expected value are handed in by the step that lists, since neither is a registered parameter, and a ranking handed
-// no score lists none.
+// no score lists none. From the January pin move two more: the sessions a trade is held at most and the picks the rule
+// lists at most a night, each its family's own where none is stated, so a rule stating neither is held and listed as
+// before they existed.
 // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+// see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
 public sealed record RuleHooks(
     int Exit,
     IReadOnlyList<AlsoRequires> Also,
@@ -39,9 +42,25 @@ public sealed record RuleHooks(
     int Ranking = 0,
     bool ByExpected = false,
     IScoreModel? Ranker = null,
-    PlanCombination? Plan = null)
+    PlanCombination? Plan = null,
+    int? TimeLimit = null,
+    int? PerNight = null)
 {
     public const string ExitParameter = "exit";
+
+    // The sessions a trade is held at most and the picks listed at most a night, whole numbers from 1, the time limit at
+    // most a market's year.
+    public const string TimeLimitParameter = "time_limit";
+
+    public const string PerNightParameter = "per_night";
+
+    public const int LongestTimeLimit = 252;
+
+    // The sessions a trade of the rule is held at most, its family's own where it states none.
+    public int HeldAtMost(int own) => TimeLimit ?? own;
+
+    // The picks the rule lists at most a night, its family's own where it states none.
+    public int ListedAtMost(int own) => PerNight ?? own;
 
     public const string AlsoPrefix = "also_";
 
@@ -105,7 +124,7 @@ public sealed record RuleHooks(
 
     public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", "src/EquityBrief.Core/Loop/TakeProfit.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
 
-    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
+    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null;
 
     // Whether a member's readings are needed: a condition, a score, the exposure's two switches or a ranking by the
     // learned score.
@@ -118,8 +137,8 @@ public sealed record RuleHooks(
     public bool Ranks => Ranking != 0;
 
     // Whether the hooks stated are the ones a book's rule reads: its conditions and its score, and none of the exit, the
-    // exposure, the ranking or the expected-value order, which pick a night's trades.
-    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
+    // exposure, the ranking, the expected-value order, the time limit or the cap a night, which pick a night's trades.
+    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null;
 
     public const string NotABooks = RuleWording.RuleHooks.NotABooks;
 
@@ -133,6 +152,8 @@ public sealed record RuleHooks(
         || name == ExposureParameter
         || name == RankingParameter
         || name == ExpectedOrderParameter
+        || name == TimeLimitParameter
+        || name == PerNightParameter
         || PlanHook.Parameters.Contains(name)
         || (name.StartsWith(ScorePrefix, StringComparison.Ordinal) && Column(name[ScorePrefix.Length..]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(AboveSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^AboveSuffix.Length]) >= 0)
@@ -159,10 +180,30 @@ public sealed record RuleHooks(
         double? exposure = null;
         var ranking = 0;
         var byExpected = false;
+        int? timeLimit = null;
+        int? perNight = null;
 
         foreach (var (name, value) in parameters.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            if (name == ExitParameter)
+            if (name == TimeLimitParameter)
+            {
+                if (value != Math.Floor(value) || value < 1 || value > LongestTimeLimit)
+                {
+                    throw new ArgumentException(FormattableString.Invariant($"The time limit states {value}, and it states the sessions a trade is held at most, a whole number from 1 to {LongestTimeLimit}; a rule held on its family's own states none."), nameof(parameters));
+                }
+
+                timeLimit = (int)value;
+            }
+            else if (name == PerNightParameter)
+            {
+                if (value != Math.Floor(value) || value < 1 || value > int.MaxValue)
+                {
+                    throw new ArgumentException(FormattableString.Invariant($"The cap a night states {value}, and it states the picks listed at most a night, a whole number from 1; a rule listing its family's own states none."), nameof(parameters));
+                }
+
+                perNight = (int)value;
+            }
+            else if (name == ExitParameter)
             {
                 exit = (int)Math.Round(value);
 
@@ -234,7 +275,7 @@ public sealed record RuleHooks(
             throw new ArgumentException("A rule states its sale once: an exit of the menu or a plan's sale.", nameof(parameters));
         }
 
-        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan);
+        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan, timeLimit, perNight);
     }
 
     // The hooks with the tree model they name found by the reader given, none where they name none.
@@ -326,7 +367,7 @@ public sealed record RuleHooks(
                 .Where(one => one.Rank is not null)
                 .OrderByDescending(one => one.Rank)
                 .ThenBy(one => one.Place)
-                .Take(RankingPicks)
+                .Take(ListedAtMost(RankingPicks))
                 .Select(one => one.Candidate);
         }
         else if (Score.Count > 0 || Trees is not null)
@@ -403,6 +444,16 @@ public sealed record RuleHooks(
         if (Exposure is { } breadth)
         {
             parts.Add(RuleWording.RuleHooks.Exposure(ExposureFull, breadth, LedgerReadings.VixMedianSessions, ExposureHalf));
+        }
+
+        if (TimeLimit is { } limit)
+        {
+            parts.Add(RuleWording.RuleHooks.TimeLimit(limit));
+        }
+
+        if (PerNight is { } most)
+        {
+            parts.Add(RuleWording.RuleHooks.PerNight(most));
         }
 
         return string.Join("; ", parts);

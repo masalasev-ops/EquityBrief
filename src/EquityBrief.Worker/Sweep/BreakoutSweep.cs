@@ -30,7 +30,7 @@ public sealed class BreakoutSweep
     readonly IReadOnlyList<SweepSeries> series;
     readonly SweepBenchmark.Members members;
     readonly double[][] closes;
-    readonly Dictionary<(int Session, double Stop), double> benchmarks = [];
+    readonly Dictionary<(int Session, double Stop, int Cap), double> benchmarks = [];
 
     public BreakoutSweep(IReadOnlyList<SweepSeries> series, SweepBenchmark.Members members)
     {
@@ -124,7 +124,7 @@ public sealed class BreakoutSweep
     public double Benchmark(FamilyListing listing)
     {
         var moves = listing.Trail / series[listing.Name].Atr[listing.Bar];
-        var key = (listing.Session, Math.Round(moves, 6));
+        var key = (listing.Session, Math.Round(moves, 6), listing.Cap);
 
         if (benchmarks.TryGetValue(key, out var held))
         {

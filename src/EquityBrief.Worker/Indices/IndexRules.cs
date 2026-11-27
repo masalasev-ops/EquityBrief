@@ -145,6 +145,14 @@ public static class IndexRules
             return $"'{evaluator.Name}' reads '{missing}', and the registration states none.";
         }
 
+        // From the January pin move a swing rule's time limit may be stated as the hooks' time limit, in its hold's place, and
+        // a rule states it once.
+        // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+        if (hooked && parameters.ContainsKey(EquityBrief.Core.Loop.RuleHooks.TimeLimitParameter) && parameters.TryGetValue(IndexRuleCandidate.HoldParameter, out var held) && held > 0)
+        {
+            return FormattableString.Invariant($"the registration states a hold of {held} sessions and a time limit, and a rule states its time limit once.");
+        }
+
         // The breadth the market check reads: the index's own and the S&P 500's, the two its index's sweep read, or none.
         // A pullback reading none states its own market dial off as well, since the provisional pullback's setting reads
         // the index's breadth at the same floor inside it. From 20.11 the floor the breadth is read against: one of the
@@ -904,7 +912,7 @@ public static class IndexRules
             IndexRuleCandidate.NoMarketCheck => IndexNightRead.NoMarketGate,
             _ => IndexNightRead.MarketGate(inputs.Breadth, p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor) ? floor : FamilySweep.MarketFloor),
         };
-        var hold = (int)p[IndexRuleCandidate.HoldParameter];
+        var hold = EquityBrief.Core.Loop.RuleHooks.Of(p).TimeLimit ?? (int)p[IndexRuleCandidate.HoldParameter];
         var floors = p[IndexRuleCandidate.FloorsParameter] switch { 0.5 => IndexSweepRunner.DollarVolumeHalf, 2 => 2m, _ => 1m };
         var lowest = p[IndexRuleCandidate.LowestCloseParameter] == Statistic.FromPrice(IndexSweepRunner.HigherPrice) ? IndexSweepRunner.HigherPrice : MemberReadings.LowestPrice;
         var quality = (IndexQuality)(int)p[IndexRuleCandidate.QualityParameter];

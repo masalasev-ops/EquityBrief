@@ -216,8 +216,9 @@ public static class ExitProcedures
     // A rule's trades over the listings it is handed under an exit, or its own where none is given, each result after its
     // round trip and against the same plan under the same exit on every member that session.
     // From 21.3 a listing a skip names is not bought, its place on the night spent and its stock left free, as the record
-    // command replays the drift's open floor; with no skip the walk is the family's own.
-    public static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, double[][] closes, IReadOnlyList<FamilyListing> listings, ExitChoice? exit, Func<FamilyListing, bool>? skip = null)
+    // command replays the drift's open floor; with no skip the walk is the family's own. From the January pin move the walk
+    // keeps the picks a night the rule states, five where it states none.
+    public static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, double[][] closes, IReadOnlyList<FamilyListing> listings, ExitChoice? exit, Func<FamilyListing, bool>? skip = null, int perNight = FamilySweep.PerNight)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
@@ -249,8 +250,8 @@ public static class ExitProcedures
         int YearOf(int session) => read.YearOf(session);
 
         var trades = skip is null
-            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark)
-            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, Benchmark, skip);
+            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark, perNight)
+            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, Benchmark, skip, perNight: perNight);
 
         return
         [
@@ -275,7 +276,7 @@ public static class ExitProcedures
     // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
     // On the operator's ruling of 2026-11-14, under an exit of the menu each listing is bought as the plan buys it and sold by
     // the exit in place of the plan's sale, against the same exit on every member that session bought at its next open.
-    public static IReadOnlyList<Walked> WalkPlanned(LoopRead read, PlannedListings planned, IReadOnlyList<FamilyListing> listings, Func<FamilyListing, bool>? skip = null, ExitChoice? under = null)
+    public static IReadOnlyList<Walked> WalkPlanned(LoopRead read, PlannedListings planned, IReadOnlyList<FamilyListing> listings, Func<FamilyListing, bool>? skip = null, ExitChoice? under = null, int perNight = FamilySweep.PerNight)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
 
@@ -301,8 +302,8 @@ public static class ExitProcedures
         }
 
         var trades = skip is null
-            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, benchmark)
-            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, benchmark, skip);
+            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, benchmark, perNight)
+            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, benchmark, skip, perNight: perNight);
 
         return
         [

@@ -276,6 +276,10 @@ public static class RuleTests
     // a window or an industries count no sweep on the index's own history read.
     public const string NoOwnRead = "a level its sweep's own reading would walk, which the run laid out no reading for";
 
+    // From the January pin move a pullback stating a time limit or a cap a night of its own at a level only its search's own
+    // reading walks, which walks its family's.
+    public const string OwnSearchHoldsItsOwn = "a time limit or a cap a night of its own at a level its search's own reading walks, which holds its family's";
+
     // From 23.10's second part why a rule stating conditions on the ledger's readings is not walked over its own sweep's reading.
     public const string NoReadings = "its conditions read the ledger's catalogue, and the run read no readings";
 
@@ -663,7 +667,13 @@ public static class RuleTests
             var parameters = CandidateEvaluator.Read(row.Parameters);
             var setting = ((DipCandidate)CandidateEvaluators.Find(row.Evaluator)!).SettingOf(parameters);
 
-            yield return new RuleUnderTest(DipRule.Name, row.Candidate, StandingOf(row), setting.WordsOn(index), LoopProcedures.Risks, setting.TimeLimit + 1, Trades: trades(parameters));
+            // From the January pin move a rule's time limit in its dial's place, walked only under a plan it states.
+            // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+            var held = DipCandidate.HooksOf(parameters).HeldAtMost(setting.TimeLimit) + 1;
+
+            yield return RuleWalk.CannotHold(DipRule.Name, LoopRegistrations.HooksOf(new DipCandidate(index), parameters)) is { } why
+                ? new RuleUnderTest(DipRule.Name, row.Candidate, StandingOf(row), setting.WordsOn(index), LoopProcedures.Risks, held, Why: why)
+                : new RuleUnderTest(DipRule.Name, row.Candidate, StandingOf(row), setting.WordsOn(index), LoopProcedures.Risks, held, Trades: trades(parameters));
         }
     }
 
@@ -775,7 +785,7 @@ public static class RuleTests
                 : p.GetValueOrDefault(SwingFilterRule.RaisedEstimatesParameter) == 1 ? Estimates
                 : p.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 ? Leadership
                 : inputs.Filter is null ? NoFilterVersion
-                : null;
+                : RuleWalk.CannotHold(SetupFamilies.Pullback, HooksOf(p));
 
             if (why is not null)
             {
@@ -937,6 +947,13 @@ public static class RuleTests
                 continue;
             }
 
+            if (RuleWalk.CannotHold(SetupFamilies.Pullback, HooksOf(p)) is { } unheld)
+            {
+                yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: unheld);
+
+                continue;
+            }
+
             var walk = RuleWalk.Pullback(inputs.Read, inputs.Market, inputs.Progress, LoopChange.OfHooks(HooksOf(p)), inputs.Readings, inputs.Trees, dials, candidates());
 
             yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
@@ -979,6 +996,14 @@ public static class RuleTests
         if (at is null)
         {
             return Kept(refused!);
+        }
+
+        // From the January pin move a rule stating a time limit or a cap a night of its own, which the search's own reading
+        // walks at its family's.
+        // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+        if (RuleHooks.Of(HooksOf(p)) is { TimeLimit: not null } or { PerNight: not null })
+        {
+            return Kept(OwnSearchHoldsItsOwn);
         }
 
         // From 21.16 a pullback stating the graded exposure is walked with its market check off, each night's picks as its
@@ -1187,6 +1212,11 @@ public static class RuleTests
     public static (RuleWalk? Walk, string? Why) LivePullbackWalk(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow row, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates, IndexSweepRunner.OwnPullbackRead? ownRead = null)
     {
         var p = CandidateEvaluator.Read(row.Parameters);
+
+        if (RuleWalk.CannotHold(SetupFamilies.Pullback, HooksOf(p)) is { } unheld)
+        {
+            return (null, unheld);
+        }
 
         // From 21.16 one stating a level only its search's own reading walks is read by the engines over that reading.
         // see: Every change the engines propose is one its family's night reads, so each is put to the operator
