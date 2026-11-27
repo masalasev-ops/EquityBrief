@@ -362,13 +362,8 @@ public static class PlanHook
     // never filled, as the test leaves it.
     public static PlanTradeState Walk(PlanOrder order, ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int pick, ReadOnlySpan<double> rsi = default, int takeProfitFrom = 0)
     {
-        // From the January pin move an order in a range fills as the range fills: waiting while its sessions have not passed, and
+        // From the January pin move an order in a range fills as the range fills, waiting while its sessions have not passed and
         // never filled where it opened under its floor or stayed above its ceiling.
-        if (order.Range is { } range && BuyRanges.FillOf(opens, lows, pick, range) is { Fill: null } open)
-        {
-            return new PlanTradeState(open.Waiting, null, null, null, null);
-        }
-
         var fill = order.Range is { } bought ? BuyRanges.FillOf(opens, lows, pick, bought).Fill
             : order.Entry == PlanPoints.FirstPullback
             ? PlanPoints.PullbackFillOf(closes, opens, pick, order.Window)
