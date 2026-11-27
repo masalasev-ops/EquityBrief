@@ -4138,6 +4138,34 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and an order written once it has ended and never twice over a constructed store",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Recipe desk")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the every-session table it reads, the recipes' four tables and the run log it writes, each reconciled against the row; over a constructed store a recipe entered once and again said so, a field the store lacks listed and not entered, a rank within the industry entered and its industry as it stood listed once, a line outside the grammar writing nothing, a run without the word working nothing, a working reading a later session refused with nothing written, and a change's 50 figures written by hand",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Recipe desk")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Reading recipes")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a line entered once over a constructed store, two spellings read as one",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Recipe runs")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a run's row written with its figures, members and checked sessions by hand over a constructed store, none for a recipe refused",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Recipe readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a change's figures written by hand over a constructed store, none on a session its span does not reach",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Data requests")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and each need listed once with its source over a constructed store",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Reading recipes")] = new Scoped(
+            Verdict.Pass,
+            "each operation worked by hand at a constructed session and the panel's whole working agreeing with each figure alone, a span off the list and a third operation refused, a run's figures written only where its 20 sessions read nothing later, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Survivor desk")] = new Scoped(
             Verdict.Pass,
             "the class declares the survivors' three tables, the setups, setup nights, bars and indicators it reads and the run log it writes, each reconciled against the row, and over a constructed store a queued survivor is walked to the newest night, its pick stored once and its state written once for its reason",
@@ -5441,6 +5469,10 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The notebook")] = new Scoped(
             Verdict.Pass,
             "over a constructed store of four ideas on two indices and the operator's, the S&P 600's page read back with its three newest first under the count of each verdict, an idea's words above its grammar line, its figures and its verdict and why, the S&P 500's idea absent; the S&P 500's page drawing its own; and an empty store saying none is in it",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, "Reading recipes")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of three recipes and two data requests, the S&P 600's page read back newest first with the one worked there, its figures, stocks, span and checked sessions, one waiting for each member's industry as it stood and one not worked yet, each request with who asked and its line and the line that it blocks nothing; the S&P 500's page drawing none worked; and an empty store saying none has been entered",
             ByReadSurface),
         [CheckReach.Key(LoopPage, "Survivors and the queue")] = new Scoped(
             Verdict.Pass,
@@ -8339,6 +8371,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The pullbacks' search")] = "24.35",
         [CheckReach.Key(LoopPage, "The idea box")] = "24.39",
         [CheckReach.Key(LoopPage, "Never stuck")] = "24.40",
+        [CheckReach.Key(LoopPage, "Reading recipes")] = "24.30",
         // 24.46's five, Tonight redesigned.
         [CheckReach.Key("15.7 Tonight", "Tonight at a glance")] = "24.46",
         [CheckReach.Key("15.7 Tonight", "Every plan tonight")] = "24.46",

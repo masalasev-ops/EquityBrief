@@ -23,7 +23,7 @@ public partial class ArchitectureConformance
     // promotion, section 18's row of a press on a case and section 17's row of the rule; and none at 24.18, the AI stock
     // picker's rows renamed where they stood and the word check landing as a clause of banned-prose's roster row; and
     // 24.19's two stores and the History page's row; and 24.27's survivors; and 24.28's researcher; and 24.29's buy range; and 24.39's idea box; and 24.40's never stuck; and
-    // 24.46's five rows of Tonight redesigned.
+    // 24.46's five rows of Tonight redesigned; and 24.30's reading recipes.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -59,6 +59,7 @@ public partial class ArchitectureConformance
         ("24.40", [.. FixtureExpectations.NeverStuckRows], []),
         ("24.35", [.. FixtureExpectations.PullbackSearchRows], []),
         ("24.46", [.. Reading.ReadSurface.TonightPlanRows], []),
+        ("24.30", [.. FixtureExpectations.RecipeRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -111,6 +112,8 @@ public partial class ArchitectureConformance
     // landing in the card's one row where the plan counted them as a row of their own.
     // The pullbacks' search, four of three: its catalogue and matrix rows, section 17's grid and the Loop page's card, where
     // the plan counted the search's report rows.
+    // The reading recipes, eight of six: the desk's catalogue and matrix rows, its four stores, section 17's row and the Loop
+    // page's card, where the plan counted the recipes' store as one and no card.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -146,6 +149,7 @@ public partial class ArchitectureConformance
         ("24.40", -1),
         ("24.35", 1),
         ("24.46", 0),
+        ("24.30", 2),
     ];
 
     [Fact]
@@ -199,6 +203,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1769), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1777), (before, low, high, actual));
     }
 }

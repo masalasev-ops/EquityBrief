@@ -200,6 +200,9 @@ public class SchemaColumns
     // The 24.19 correction's background variants waiting for a slot and their live rules' orders walked under each floor.
     internal static string[] WaitingVariantStoreRows => [.. new[] { "Waiting variants", "Waiting variant trades" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // 24.30's reading recipes, their runs, their figures and the data they asked for that the store lacks.
+    internal static string[] RecipeStoreRows => [.. new[] { "Reading recipes", "Recipe runs", "Recipe readings", "Data requests" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // The ideas that passed, their standing and the picks of those queued.
     internal static string[] SurvivorStoreRows => [.. new[] { "Survivors", "Survivor states", "Survivor picks" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
@@ -368,6 +371,7 @@ public class SchemaColumns
             .. NotebookStoreRows,
             .. SurvivorStoreRows,
             .. WaitingVariantStoreRows,
+            .. RecipeStoreRows,
             .. ResearchStoreRows,
             .. BuyRangeStoreRows,
             .. IdeaBoxStoreRows,

@@ -134,8 +134,34 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "buy-range-widths" => await BuyRangeWidthsVerb(args),
     "idea-box" => await IdeaBoxVerb(args),
     "pullback-search" => await PullbackSearchVerb(args),
+    "recipe" => await RecipeVerb(args),
     _ => NoVerb(),
 };
+
+// A reading recipe entered with '--add <line> --words <words>', its source '--source' or the operator's, refused outside the
+// grammar and what it lacks listed for the operator; or with '--run --index <code>' each recipe not yet run on the index
+// printed, and worked over the every-session table only with '--word'.
+// see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue
+static async Task<int> RecipeVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var desk = new EquityBrief.Worker.Loop.RecipeDesk(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out);
+
+    if (VerbArguments.Value(args, "--add") is { } line)
+    {
+        return await desk.EnterAsync(line, VerbArguments.Value(args, "--words") ?? line, VerbArguments.Value(args, "--source") ?? EquityBrief.Worker.Loop.RecipeDesk.OperatorSource);
+    }
+
+    if (args.Contains("--run", StringComparer.Ordinal) && VerbArguments.Value(args, "--index") is { } index)
+    {
+        return await desk.RunAsync(index, args.Contains(EquityBrief.Worker.Loop.RecipeDesk.WordFlag, StringComparer.Ordinal));
+    }
+
+    Console.Error.WriteLine("recipe: '--add <line> --words <words>' enters a recipe, '--run --index <code>' lists what a run would work, with '--word' to run it");
+
+    return 2;
+}
 
 // The pullbacks' search on one index: its lines, their count and the time measured on the live setting's line printed, and
 // every line walked and judged together only with '--word'.
@@ -1484,7 +1510,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 100 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 101 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1783,6 +1809,7 @@ static int NoVerb()
         "'pullback-search --index GSPC' prints the pullbacks' search's lines, their count and the time measured on the live setting's line, and with '--word' walks them in two stages and writes each to the notebook, " +
         "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, and with '--picker' the AI stock picker's menu over every setup the price families flagged, or with '--every-member' over every member on every session the every-session table holds, registering nothing, " +
         "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
+        "'recipe --add <line> --words <words>' enters a reading recipe, refusing a line outside the recipes' grammar and listing for the operator what it lacks, and 'recipe --run --index <code>' prints each recipe not yet run on the index and with '--word' works it over the every-session table, refusing one whose figures read a later session, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

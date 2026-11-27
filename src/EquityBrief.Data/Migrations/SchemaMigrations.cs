@@ -794,6 +794,7 @@ public static class SchemaMigrations
         new Migration(171, "remove the long_held_none rows of LPI, PVAC, WTW_old and SIX", RemoveHeldNoneLinkedByHand),
         new Migration(172, "write the operator's rulings of 2026-11-23 on eight marks", RuleEightMarks),
         new Migration(173, "create waiting_variant and waiting_variant_trade", CreateWaitingVariants),
+        new Migration(174, "create recipe, recipe_run, recipe_reading and data_request", CreateRecipes),
     ];
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
@@ -1135,6 +1136,71 @@ public static class SchemaMigrations
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone: a trade is written once it has ended.'); END;
         CREATE TRIGGER waiting_variant_trade_takes_inserts_alone_on_removal BEFORE DELETE ON waiting_variant_trade
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone.'); END;
+    ";
+
+    // The reading recipes: each recipe entered, its canonical line once; each run of one on an index, with what it wrote;
+    // each member's figure of it on each session, written once a run has worked it; and each piece of data a recipe asked
+    // for that the store lacks, listed once for the operator. Each takes inserts alone.
+    // see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue
+    const string CreateRecipes = @"
+        CREATE TABLE recipe (
+            id          INTEGER PRIMARY KEY,
+            line        TEXT NOT NULL UNIQUE,
+            words       TEXT NOT NULL,
+            source      TEXT NOT NULL,
+            entered_at  TEXT NOT NULL,
+            run_id      TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE recipe_run (
+            recipe_id      INTEGER NOT NULL,
+            index_code     TEXT NOT NULL,
+            figures        INTEGER NOT NULL,
+            members        INTEGER NOT NULL,
+            first_session  TEXT,
+            last_session   TEXT,
+            checked        INTEGER NOT NULL,
+            ran_at         TEXT NOT NULL,
+            run_id         TEXT NOT NULL,
+            PRIMARY KEY (recipe_id, index_code)
+        ) STRICT;
+
+        CREATE TABLE recipe_reading (
+            recipe_id     INTEGER NOT NULL,
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            value         REAL NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (recipe_id, index_code, session_date, ticker)
+        ) STRICT, WITHOUT ROWID;
+
+        CREATE TABLE data_request (
+            id          INTEGER PRIMARY KEY,
+            need        TEXT NOT NULL UNIQUE,
+            line        TEXT NOT NULL,
+            words       TEXT NOT NULL,
+            source      TEXT NOT NULL,
+            entered_at  TEXT NOT NULL,
+            run_id      TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TRIGGER recipe_takes_inserts_alone_on_change BEFORE UPDATE ON recipe
+        BEGIN SELECT RAISE(ABORT, 'recipe takes inserts alone.'); END;
+        CREATE TRIGGER recipe_takes_inserts_alone_on_removal BEFORE DELETE ON recipe
+        BEGIN SELECT RAISE(ABORT, 'recipe takes inserts alone.'); END;
+        CREATE TRIGGER recipe_run_takes_inserts_alone_on_change BEFORE UPDATE ON recipe_run
+        BEGIN SELECT RAISE(ABORT, 'recipe_run takes inserts alone.'); END;
+        CREATE TRIGGER recipe_run_takes_inserts_alone_on_removal BEFORE DELETE ON recipe_run
+        BEGIN SELECT RAISE(ABORT, 'recipe_run takes inserts alone.'); END;
+        CREATE TRIGGER recipe_reading_takes_inserts_alone_on_change BEFORE UPDATE ON recipe_reading
+        BEGIN SELECT RAISE(ABORT, 'recipe_reading takes inserts alone: a figure is written once its run has worked it.'); END;
+        CREATE TRIGGER recipe_reading_takes_inserts_alone_on_removal BEFORE DELETE ON recipe_reading
+        BEGIN SELECT RAISE(ABORT, 'recipe_reading takes inserts alone.'); END;
+        CREATE TRIGGER data_request_takes_inserts_alone_on_change BEFORE UPDATE ON data_request
+        BEGIN SELECT RAISE(ABORT, 'data_request takes inserts alone.'); END;
+        CREATE TRIGGER data_request_takes_inserts_alone_on_removal BEFORE DELETE ON data_request
+        BEGIN SELECT RAISE(ABORT, 'data_request takes inserts alone.'); END;
     ";
 
     // The survivors: each idea the one tester passed, with the line and the early years' cut points it is walked by; each

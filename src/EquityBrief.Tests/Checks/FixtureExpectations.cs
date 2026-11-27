@@ -193,6 +193,9 @@ public partial class FixtureExpectations
             // Section 18's row of an idea the box cannot read.
             .. IdeaBoxClaims,
 
+            // Section 17's row of the reading recipes' spans, depth and check.
+            .. RecipeClaims,
+
             // Section 18's row of a month in which no idea passes.
             .. NeverStuckClaims,
 

@@ -144,6 +144,13 @@ public enum Store
     WaitingVariant,
     WaitingVariantTrade,
 
+    // The reading recipes: each recipe entered, each run of one on an index, each member's figure of it on each session, and
+    // each piece of data a recipe asked for that the store lacks.
+    Recipe,
+    RecipeRun,
+    RecipeReading,
+    DataRequest,
+
     // The researcher's asks of the local model, each setup's failure lists, and the ideas it answered with what became of each.
     ResearchAsk,
     ResearchFailure,

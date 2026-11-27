@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/ARCHITECTURE.html - the reading recipes' Loop page row and section 17 row worded as the checks read them, at 24.30
+Decision: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue
+Was:
+> <tr><td>Reading recipes</td><td>from 24.30 a card after the notebook holding every reading recipe entered, newest first, and how many of them a run has worked on the index the page reads; each recipe's day; its source; ... or that no recipe has been entered (see: ...)</td></tr>
+> <tr><td>Reading recipes</td><td>from 24.30 a change, an average and a difference from its own history read over 5, 10, 21, 63, 126 or 252 sessions; ...
+Now:
+> <tr><td>Reading recipes</td><td>from 24.30 a card after the notebook holding every reading recipe entered newest first in its words above its line with what a run worked of it on the index the page reads or why it waits, and beneath them the data the recipes asked for that the store lacks and which blocks nothing (see: ...)</td></tr>
+> <tr><td>Reading recipes</td><td>from 24.30 a change, an average and a difference from its own history each read over one of the spans of 5, 10, 21, 63, 126 and 252 sessions; ...
+Corrects: the Loop page's row enumerated eleven parts no verdict of their own held, which section 15's parts check refuses, and section 17's row read "or 252 sessions", which the restated figures' check reads as the setup's session cap of 63.
+
 ### 2026-11-27 - docs/RUNBOOK.md - the long test's like setups matched over the long ledger, at a correction to 24.19
 Decision: The long test orders a rule by the expected value over the long ledger, a score fitted for each long fold
 Was:
