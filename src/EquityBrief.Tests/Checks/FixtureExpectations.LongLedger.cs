@@ -237,8 +237,8 @@ public partial class FixtureExpectations
     ];
 
     // The long ledger writes only its own tables, a session once written frozen until the restart writes it again, and no row of `setup` moves; no card, hook or
-    // night reads them, the History page's read and the measures alone, from 23.9 the sector splits' and from 23.8 the buy and sell points' among them; and no source a rule's version or the readings'
-    // version pins is one 23.6 writes.
+    // night reads them, the History page's read and the measures alone, from 23.9 the sector splits' and from 23.8 the buy and sell points' among them, and from the
+    // 24.19 correction of 2026-11-27 the monthly long test's pool of like setups; and no source a rule's version or the readings' version pins is one 23.6 writes.
     [Fact]
     public void NoRowOfSetupMovesNoNightOrCardReadsTheLongLedgerAndNoSourceARulesVersionPinsIsOne23Point6Writes()
     {
@@ -267,7 +267,7 @@ public partial class FixtureExpectations
             .ToArray();
 
         Assert.Equal(
-            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.SessionReadings.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/IdeaTestRun.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs", "src/EquityBrief.Worker/Loop/RangeWidthTest.cs", "src/EquityBrief.Worker/Loop/Researcher.cs"],
+            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.SessionReadings.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/IdeaTestRun.cs", "src/EquityBrief.Worker/Loop/LikePool.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs", "src/EquityBrief.Worker/Loop/RangeWidthTest.cs", "src/EquityBrief.Worker/Loop/Researcher.cs"],
             readers);
 
         var pinned = CandidateEvaluators.All

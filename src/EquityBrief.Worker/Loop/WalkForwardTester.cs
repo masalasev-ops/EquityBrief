@@ -50,6 +50,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.LongSetup, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Insert),
             new StoreTouch(Store.LoopProposal, Touch.Insert),
             new StoreTouch(Store.LoopTest, Touch.Insert),
@@ -88,6 +89,17 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     public static IReadOnlyList<string> Indices { get; } = ["GSPC", "MID", "SML"];
 
     public const string LargeIndex = "GSPC";
+
+    // From the 24.19 correction of 2026-11-27 the swing families on an index a registered rule of orders by the expected
+    // value of the setups like each listing, which a long run's pool is read for.
+    public static IReadOnlyList<string> ExpectedFamilies(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
+    [
+        .. LikeFamilies.Where(family => Core.Candidates.CandidateFamily.In(standing, Core.Loop.LoopDecisions.RegisterFamilyOf(index, family))
+            .Any(row => Core.Loop.RuleHooks.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)).ReadsExpected)),
+    ];
+
+    // The families the pool of settled setups holds, as the standing pool reads them.
+    static readonly string[] LikeFamilies = [Core.Families.SetupFamilies.Pullback, Core.Families.BreakoutRule.Name, Core.Families.DriftRule.Name, Core.Families.DipRule.Name];
 
     // Whether a family on an index holds a registered variant, which the long test walks before a family holding none.
     static bool HoldsVariant(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index, string family) =>
@@ -814,8 +826,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         // From 23.7 the long test walks the families its record reaches alone: the dip's and the sweeps' own reads of the
-        // standing pull's market series, and the like setups and the ranking off the standing ledger are read on the standing
-        // years alone, each of those rules kept with the reason. On the operator's order of 2026-11-27 the books are laid over
+        // standing pull's market series, and the ranking off the standing ledger is read on the standing years alone, each of
+        // those rules kept with the reason; from the 24.19 correction of 2026-11-27 the like setups are matched over the long
+        // ledger and the standing one. On the operator's order of 2026-11-27 the books are laid over
         // the long history, Quality at a fair price's and the Fundamentals family's facts read from the long facts beside the
         // standing ones, as the books' own long test lays them.
         // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
@@ -912,7 +925,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(StoreConnection.For(databaseFile)))
         {
             await connection.OpenAsync(cancellation);
-            like = await LikePool.ReadAsync(connection, index, cancellation);
+
+            // From the 24.19 correction of 2026-11-27 a long run's pool over the long ledger and the standing one, a score
+            // fitted for each long fold, for the families a rule on the index orders by the expected value alone.
+            // see: The long test orders a rule by the expected value over the long ledger, a score fitted for each long fold
+            like = standingOnly
+                ? await LikePool.ReadLongAsync(connection, index, ExpectedFamilies(standingRules, index), read.Folds, through, cancellation)
+                : await LikePool.ReadAsync(connection, index, cancellation);
 
             foreach (var family in RankingWalk.Families)
             {
@@ -920,7 +939,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             }
         }
 
-        output.WriteLine(FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among, and {ranked.Values.Sum(walk => walk.Count)} setup(s) in the test years to rank"));
+        output.WriteLine(standingOnly
+            ? FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the families ordered by the expected value, from the long ledger and the standing one, to match the setups like each listing among, with {like.Scores} fold score(s) fitted over the long folds")
+            : FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among, and {ranked.Values.Sum(walk => walk.Count)} setup(s) in the test years to rank"));
 
         var ruleInputs = new RuleTestInputs(
             read,
@@ -940,7 +961,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             dipRead,
             improvingLay,
             own,
-            Like: standingOnly ? null : like,
+            Like: like,
             Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family),
             Revenues: index is EquityBrief.Worker.Indices.IndexFamilies.LargeIndex or Core.Providers.FundHoldings.MidCapIndex
                 ? await PlanPointTest.QuarterRevenuesAsync(databaseFile, [.. read.Series.Select(one => one.Name.Ticker)], cancellation)
