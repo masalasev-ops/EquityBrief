@@ -4166,6 +4166,26 @@ internal static class Scope
             Verdict.Pass,
             "each operation worked by hand at a constructed session and the panel's whole working agreeing with each figure alone, a span off the list and a third operation refused, a run's figures written only where its 20 sessions read nothing later, and each figure read off the document against its constant",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Partner desk")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the every-session table and the long bars it reads and the partner's two tables and the run log it writes, each reconciled against the row; over a constructed store of twelve S&P 600 members and one S&P 400 member the rows are the S&P 600's alone, a member each 21 sessions by 2018 with each month's return by hand, nothing fitted without the word, and with it trees learned on 2005 to 2014 alone and checked on 2015 to 2018 with rsi mattering most",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Partner desk")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Partner runs")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a fit's rows learned and checked and its trees whole written over a constructed store",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Partner tables")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and every cell naming a catalogue reading alone over a constructed store, rsi ranked first",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The trained partner")] = new Scoped(
+            Verdict.Pass,
+            "the split, the check's spread at +0.2, the importances at 0.4 and nothing, a reading's fifths and the grid worked by hand over a constructed tree and table, a month across either boundary and a row of 2019 in neither, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Survivor desk")] = new Scoped(
             Verdict.Pass,
             "the class declares the survivors' three tables, the setups, setup nights, bars and indicators it reads and the run log it writes, each reconciled against the row, and over a constructed store a queued survivor is walked to the newest night, its pick stored once and its state written once for its reason",

@@ -196,6 +196,9 @@ public partial class FixtureExpectations
             // Section 17's row of the reading recipes' spans, depth and check.
             .. RecipeClaims,
 
+            // Section 17's row of the trained partner's years and sizes.
+            .. PartnerClaims,
+
             // Section 18's row of a month in which no idea passes.
             .. NeverStuckClaims,
 

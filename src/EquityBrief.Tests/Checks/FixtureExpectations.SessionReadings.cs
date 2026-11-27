@@ -289,8 +289,8 @@ public partial class FixtureExpectations
 
     // No night, page, rule or check but the setup ledger's own reads the table: the shipped source naming it is the setup
     // ledger's, the migration's and from the 24.29 correction of 2026-11-24 the widths test's, run by hand, and from 24.30 the
-    // recipe desk's, run on the operator's word, alone; no shipped component but the setup ledger writes it, the widths test and
-    // the recipe desk reading it alone, and only the read surface reads its years; and no source
+    // recipe desk's and from 24.31 the partner desk's, each run on the operator's word, alone; no shipped component but the setup
+    // ledger writes it, the widths test and the two desks reading it alone, and only the read surface reads its years; and no source
     // the build lives in is one a rule's version pins.
     [Fact]
     public void NoNightPageOrRuleReadsEveryMembersReadingsOnEverySessionAndNoRulesVersionMoves()
@@ -302,13 +302,14 @@ public partial class FixtureExpectations
             .Select(Path.GetFileName)
             .Order(StringComparer.Ordinal);
 
-        Assert.Equal(["RangeWidthTest.cs", "RecipeDesk.cs", "SchemaMigrations.cs", "SetupLedger.cs"], naming);
+        Assert.Equal(["PartnerDesk.cs", "RangeWidthTest.cs", "RecipeDesk.cs", "SchemaMigrations.cs", "SetupLedger.cs"], naming);
 
         var components = Harness.ShippedComponents.All();
 
-        Assert.Equal(["RecipeDesk", "SetupLedger"], components.Where(component => component.Access.Stores.Any(touch => touch.Store == Core.Components.Store.SessionReading)).Select(component => component.Name));
+        Assert.Equal(["PartnerDesk", "RecipeDesk", "SetupLedger"], components.Where(component => component.Access.Stores.Any(touch => touch.Store == Core.Components.Store.SessionReading)).Select(component => component.Name));
         Assert.Equal(Core.Components.Touch.Read, Worker.Loop.RangeWidthTest.Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReading).Touch);
         Assert.Equal(Core.Components.Touch.Read, Worker.Loop.RecipeDesk.Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReading).Touch);
+        Assert.Equal(Core.Components.Touch.Read, Worker.Loop.PartnerDesk.Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReading).Touch);
         Assert.Equal(["ReadApi", "SetupLedger"], components.Where(component => component.Access.Stores.Any(touch => touch.Store == Core.Components.Store.SessionReadingYear)).Select(component => component.Name).Order(StringComparer.Ordinal));
         Assert.Equal(Core.Components.Touch.Read, components.Single(component => component.Name == "ReadApi").Access.Stores.Single(touch => touch.Store == Core.Components.Store.SessionReadingYear).Touch);
 

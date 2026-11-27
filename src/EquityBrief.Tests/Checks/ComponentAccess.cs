@@ -337,6 +337,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Recipe desk"),
     ];
 
+    // 24.31's desk that fits the trained partner and writes its tables.
+    internal static string[] PartnerDeskRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Partner desk"),
+        CheckReach.Key(Scope.MatrixTable, "Partner desk"),
+    ];
+
     // The desk that admits and walks the survivors.
     internal static string[] SurvivorRows =>
     [
@@ -481,6 +488,7 @@ public partial class ComponentAccess
             .. PullbackSearchRows,
             .. IdeaBoxRows,
             .. RecipeDeskRows,
+            .. PartnerDeskRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

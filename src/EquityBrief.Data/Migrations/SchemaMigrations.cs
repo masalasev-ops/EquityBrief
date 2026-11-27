@@ -795,6 +795,7 @@ public static class SchemaMigrations
         new Migration(172, "write the operator's rulings of 2026-11-23 on eight marks", RuleEightMarks),
         new Migration(173, "create waiting_variant and waiting_variant_trade", CreateWaitingVariants),
         new Migration(174, "create recipe, recipe_run, recipe_reading and data_request", CreateRecipes),
+        new Migration(175, "create partner_run and partner_cell", CreatePartner),
     ];
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
@@ -1136,6 +1137,45 @@ public static class SchemaMigrations
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone: a trade is written once it has ended.'); END;
         CREATE TRIGGER waiting_variant_trade_takes_inserts_alone_on_removal BEFORE DELETE ON waiting_variant_trade
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone.'); END;
+    ";
+
+    // The trained partner: each run of it on an index, its rows, its check and its trees whole; and each cell of the tables
+    // read off it, which readings mattered most and each reading's and the best two's fifths with their cases. Each takes
+    // inserts alone.
+    // see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019
+    const string CreatePartner = @"
+        CREATE TABLE partner_run (
+            run_id        TEXT PRIMARY KEY,
+            index_code    TEXT NOT NULL,
+            trained_rows  INTEGER NOT NULL,
+            checked_rows  INTEGER NOT NULL,
+            spread        REAL,
+            model_hash    TEXT,
+            model         TEXT,
+            ran_at        TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE partner_cell (
+            id            INTEGER PRIMARY KEY,
+            run_id        TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            kind          TEXT NOT NULL CHECK (kind IN ('importance', 'table', 'grid')),
+            reading       TEXT NOT NULL,
+            fifth         INTEGER,
+            second        TEXT,
+            second_fifth  INTEGER,
+            cases         INTEGER,
+            figure        REAL
+        ) STRICT;
+
+        CREATE TRIGGER partner_run_takes_inserts_alone_on_change BEFORE UPDATE ON partner_run
+        BEGIN SELECT RAISE(ABORT, 'partner_run takes inserts alone.'); END;
+        CREATE TRIGGER partner_run_takes_inserts_alone_on_removal BEFORE DELETE ON partner_run
+        BEGIN SELECT RAISE(ABORT, 'partner_run takes inserts alone.'); END;
+        CREATE TRIGGER partner_cell_takes_inserts_alone_on_change BEFORE UPDATE ON partner_cell
+        BEGIN SELECT RAISE(ABORT, 'partner_cell takes inserts alone.'); END;
+        CREATE TRIGGER partner_cell_takes_inserts_alone_on_removal BEFORE DELETE ON partner_cell
+        BEGIN SELECT RAISE(ABORT, 'partner_cell takes inserts alone.'); END;
     ";
 
     // The reading recipes: each recipe entered, its canonical line once; each run of one on an index, with what it wrote;
