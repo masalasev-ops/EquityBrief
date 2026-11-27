@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/ARCHITECTURE.html - the January pin move's settings and the scored years, at a correction to 24.19
+Decision: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+Was:
+> section 15's sweep answers: "... meets the floors of at least 300 trades and an edge above nothing in 6 of the 8 years after costs, and none passed otherwise, ..."
+> section 17's table: no row for the time limit and the cap a night, the reward check on the traded plan, the buy range on a rule's plan or the scored years
+Now:
+> "... meets the floors of at least 300 trades and an edge above nothing in 6 of the 8 years after costs, from the January pin move in three quarters of the scored years, rounded up, once a ninth is complete (see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth), and none passed otherwise, ..."
+> four rows: the time limit and the cap a night; the reward check on the traded plan; the buy range on a rule's plan; and the scored years, each with its figures, its reason and its check
+Why: the operator's answers of 2026-11-22 as Appendix AD of the plan's file, of 2026-11-23 as its Appendix AE, of 2026-11-25 on the reward check, and of 2026-11-26 on the floors, the reward check and the buy range, kept word for word in `prompts/2026-11-26-24.19-pin-move-answers-floors-reward-range.md`, built in the January pin move (see: Each price family's time limit and cap a night are registered settings, today's where a rule states none) (see: The pin move's ranged and reward variants register in the background at the provisional widths and with the setup's own floor off).
+
 ### 2026-11-26 - docs/BUILD_PLAN.md - the past-case line on the picker's sheet, the order after the January pin move, the dip's one name and no dates, at the 24.0 planning amendment
 Decision: The picker's round-two sheet carries one past-case line a stock, worked by code under its version's own plan
 Was:
