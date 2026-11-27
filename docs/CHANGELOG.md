@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/RUNBOOK.md - the long test lays the books over the long history, at a correction to 24.19
+Decision: The monthly run's long test lays the books over the long history with the long facts, as the books' own long test lays them
+Was:
+> the families its walk reads off the standing history alone, the books and the like setups and the ranking, are written with the reason that they are read on the standing years alone
+Now:
+> the families its walk reads off the standing history alone, the like setups and the ranking, are written with the reason that they are read on the standing years alone; from the 24.19 correction of 2026-11-27 the books are laid over the long history with each filer's long facts beside its standing ones, as `loop-test --books` lays them
+Why: the operator's order of 2026-11-27, item 1, kept word for word in `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`: 36 of the 39 rules the long tests named not testable were the books.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the background variants registered where a family has room and walked where it holds nine, at a correction to 24.19
 Decision: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
 Was:

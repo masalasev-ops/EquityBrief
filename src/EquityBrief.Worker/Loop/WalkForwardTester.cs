@@ -789,21 +789,27 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation, print);
         }
 
-        // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the
-        // dip's and the sweeps' own reads of the standing pull's market series, and the like setups and the ranking off the
-        // standing ledger are read on the standing years alone, each of those rules kept with the reason.
+        // From 23.7 the long test walks the families its record reaches alone: the dip's and the sweeps' own reads of the
+        // standing pull's market series, and the like setups and the ranking off the standing ledger are read on the standing
+        // years alone, each of those rules kept with the reason. On the operator's order of 2026-11-27 the books are laid over
+        // the long history, Quality at a fair price's and the Fundamentals family's facts read from the long facts beside the
+        // standing ones, as the books' own long test lays them.
         // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        // see: The monthly run's long test lays the books over the long history with the long facts, as the books' own long test lays them
         var standingOnly = longHistory is not null;
-        var qualityLay = !standingOnly && ReadsQuality(standingRules, index)
-            ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
+        Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Ledger.FiledFactRow>>>>? factsOf = longHistory is null
+            ? null
+            : ciks => longHistory.FiledFactsAsync(ciks, through, cancellation);
+        var qualityLay = ReadsQuality(standingRules, index)
+            ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation, factsOf)
             : null;
 
         // From 22.15 the Fundamentals family's history as its own test lays it out, each filer's releases with their
         // readings beside its filings, only where a rule of the family stands on the index.
         // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-        var releases = !standingOnly && ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
+        var releases = ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
         var improvingLay = releases is not null
-            ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation)
+            ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation, factsOf)
             : null;
         var releaseCutoff = releases?.Cutoff;
 
