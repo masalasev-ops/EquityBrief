@@ -184,6 +184,9 @@ public partial class FixtureExpectations
             // Section 17's row of the pullbacks' search's grid.
             .. PullbackSearchClaims,
 
+            // Section 17's four rows of the January pin move.
+            .. PinMoveClaims,
+
             // Section 17's row of the long history's renames and spans.
             .. LongSpansClaims,
 

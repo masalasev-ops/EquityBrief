@@ -128,7 +128,7 @@ public partial class ArchitectureConformance
         ("24.16", 0),
         ("24.17", 0),
         ("24.18", 0),
-        ("24.19", 1),
+        ("24.19", 5),
         ("24.21", 0),
         ("24.20", 0),
         ("24.22", 1),
@@ -196,6 +196,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1759), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1763), (before, low, high, actual));
     }
 }

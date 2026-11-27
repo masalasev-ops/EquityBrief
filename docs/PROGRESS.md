@@ -23362,3 +23362,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.19 - correction: the January pin move, the shared code, the families' time limit and cap, the reward check, the buy range, the growing window and the span-aware marks   2026-11-26
+
+Ruled:      the operator's answers of 2026-11-22 to 2026-11-25 kept as Appendices AB, AC, AD and AE of the plan's file and in
+            `prompts/2026-11-25-24.29-answer-reward-check-variant.md`, and of 2026-11-26 on the floors, the reward check and
+            the buy range, word for word in `prompts/2026-11-26-24.19-pin-move-answers-floors-reward-range.md`.
+Built:      the seven readings and the short interest's two settlements in the shared code, the night's own path read for a
+            stock left out of them; each price family's time limit and cap a night as two settings of a rule, its family's
+            own where none is stated, read by the S&P 500's recorder and its replay, the S&P 400's and 600's rules, the S&P
+            500 pullback's variants, the dip and the monthly test's walks, a walk whose own exit reads outcomes worked at its
+            family's limit saying so for a rule stating another, and a survivor naming either registering them in place of
+            queueing; the reward check on the traded plan as a setting of a pullback rule's plan selling the whole at one
+            price, off where none is stated, the next pick taken in a failing one's place; the buy range as two settings of a
+            plan buying at the next open, the order waiting its two sessions and filling as the range fills; the scored
+            years growing from 2027, a year scored once complete, the year in progress tallied beside them and counted in
+            nothing, and every count of the eight years read as its share of the scored years; the sweeps' history reading
+            a history-ends mark as ending only the member span it falls in; the registrar letting the S&P 500 pullback's
+            variants state the new settings and refusing the reward check on the dip; and every live rule's evaluator
+            raised once to its pin. The long ledger's members read from the long spans were on main already.
+Found:      no live rule buys at the next open by its plan: the price families' live plans buy at a distance under the
+            close, at a zone or at the 20-day average, and the books at their reshuffle, so the ranged variants at the
+            provisional widths have no live rule to register beside. Of the three live pullback rules the S&P 500 swing
+            filter's plan sells the whole at one price; the S&P 400's and 600's both sell half at 1.5 times the risk first,
+            so the reward check leaves them unchecked.
+Tests:      9 new: the settings read and refused; the cap a night on four lists; an index rule's time limit stated once and
+            a walk that cannot hold it; a survivor's variant; the traded reward; the plan's buy range; the scored years; the
+            sweeps' span-aware read; the night's short interest. 4 widened: the survivors' two, the swing filter's hooks,
+            and the pinned sources.
+Pins:       every live rule's pin moved, 21 rules on 11 evaluators, each version raised once to its pin; the rules' plan
+            sources gain `BuyRanges.cs`, its words moved into the rules' wording.
+Mutated:    the rule, stated before the run: each new setting taken back to today's at the one place that reads it. m1 the
+            recorder's cap a night back to five: red; m2 the reward check passing every order: red; m3 the plan's walk
+            ignoring the range: green at first, the walk reading the range twice, once in a branch the fill after it made
+            redundant, so the branch was removed and the mutation made again at the one read: red; m4 the share back to the
+            fixed count: red; m5 the sweeps' history cutting the whole series at the mark: red; m6 the short interest read
+            from any settlement: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1763, 4 added: section 17's time limit and cap a night, the reward check on the traded plan, the buy range on a
+            rule's plan and the scored years.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4080 of 4080 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1763
+            claims, 1763 passing, none out of scope and none unexamined, 1778 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the replay over two copies of the store with every live trade the same or each change listed, a third where one
+            fails, and each rule's and variant's monthly test figure and sweep results before and after, to the operator
+            before the merge; then the background registrations once it lands, the reward check at 2 times the risk on the
+            S&P 500 swing filter with its own setup floor off.
