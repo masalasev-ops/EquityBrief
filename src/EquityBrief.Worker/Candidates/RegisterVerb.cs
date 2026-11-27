@@ -114,6 +114,12 @@ public static class RegisterVerb
     // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
     public const string Withdraw = "--withdraw";
 
+    // On the operator's answers of 2026-11-27 the flag that registers a background variant of a live rule, its own settings
+    // with the moves given, beside it where its family has room and retiring nothing, or entered to wait for a slot where the
+    // family holds nine and the variant moves the floor alone.
+    // see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+    public const string Background = "--background";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -133,6 +139,7 @@ public static class RegisterVerb
         new(Standing, [Standing, "--index"], [], []),
         new(Planned, [Planned, "--combination", "--evidence"], [], [VariantOnly]),
         new(Withdraw, [Withdraw, "--evidence"], [], []),
+        new(Background, [Background, "--moves", "--evidence"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -208,6 +215,22 @@ public static class RegisterVerb
         if (form.Flag == Withdraw)
         {
             return await Said(await registrar.WithdrawAsync(Given(Withdraw), Given("--evidence"), runId), output, error);
+        }
+
+        if (form.Flag == Background)
+        {
+            IReadOnlyDictionary<string, double> moves;
+
+            try
+            {
+                moves = VerbArguments.Parameters(Given("--moves"));
+            }
+            catch (FormatException unreadable)
+            {
+                return await RefusedAsync(registrar, runId, unreadable.Message, error);
+            }
+
+            return await Said(await registrar.RegisterBackgroundAsync(Given(Background), moves, Given("--evidence"), runId), output, error);
         }
 
         // A family rule registered again is replayed first, so its record carries on where every trade is reproduced.

@@ -1015,7 +1015,14 @@ public static class Nightly
             new("survivors", async () =>
                 await new EquityBrief.Worker.Loop.SurvivorDesk(clock, store.DatabaseFile, store.DataRoot).NightAsync(runId, night.Token),
                 [EquityBrief.Worker.Loop.SurvivorDesk.Stage]),
-            // Section 14's last step, after the survivors' row. The night starts the AI stock picker: one process of its own, which
+            // Section 14's step after the survivors' row. Each background variant waiting for a slot registered where its family
+            // has one, the first entered first, and every other one walked from its live rule's orders the families' steps
+            // wrote earlier in the night; a night with none waiting writes the step's row saying so.
+            // see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+            new("waiting-variants", async () =>
+                await new EquityBrief.Worker.Loop.WaitingVariants(clock, store.DatabaseFile).NightAsync(runId, night.Token),
+                [EquityBrief.Worker.Loop.WaitingVariants.Stage]),
+            // Section 14's last step, after the waiting variants' row. The night starts the AI stock picker: one process of its own, which
             // waits until the night has finished, writes the night's facts and picks under the local model's lock, its
             // calls on its own row and never the night's. A night run again for an earlier session starts none, since a
             // night the judge missed is never filled in later.

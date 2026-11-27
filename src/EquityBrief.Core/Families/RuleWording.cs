@@ -1364,6 +1364,31 @@ public static class RuleWording
             string.Create(CultureInfo.InvariantCulture, $"not bought on an open more than {floor:0.##} typical {(floor == 1 ? "day" : "days")} under its price");
     }
 
+    // WaitingVariants.cs and the registrar's background form.
+    public static class WaitingVariants
+    {
+        public static string SetupFloorAt(double floor) =>
+            string.Create(CultureInfo.InvariantCulture, $"its setup's own reward floor at its loosest, {floor:0.##}");
+
+        public const string Heading = "Background variants waiting for a slot";
+
+        public const string None = "No background variant is waiting for a slot.";
+
+        public const string Lead = "Each is walked every night from its live rule's own orders, bought where the live rule bought unless it opened more than the floor under its price, and registers in the first slot that frees in its family. Nothing is retired to make room.";
+
+        public const string Unlike = "A stock the live rule held is not listed again while held, so where the floor kept this variant out of a stock the live rule bought, a later night's listing of that stock is not walked here.";
+
+        public static string Line(int ended, int underFloor, int filled, double? result, int liveFilled, double? liveResult) =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"{ended} of its live rule's orders ended, {underFloor} not bought on an open under its floor; {(result is { } own ? $"{own:0.00} risks a trade over the {filled} it bought" : "none it bought has ended")}, the live rule {(liveResult is { } live ? $"{live:0.00} over the {liveFilled} it bought of the same orders" : "none ended of the same orders")}");
+
+        public static string WalkedFrom(DateOnly from) =>
+            string.Create(CultureInfo.InvariantCulture, $"walked from the orders after {from:d MMM yyyy}");
+
+        public const string Registered = "registered in a slot that freed, its record before then kept here";
+    }
+
     // TreeScore.cs
     public static class TreeScore
     {

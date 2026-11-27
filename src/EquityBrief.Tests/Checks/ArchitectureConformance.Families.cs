@@ -457,9 +457,10 @@ public partial class ArchitectureConformance
         // marks ruled and the History page's row of the marks to rule, and 1751 with the pullbacks' search's catalogue and
         // matrix rows, section 17's grid and the Loop page's card, and 1752 with the correction's second part's section 17 row, and 1753 with the store of the sessions held none
         // of the renames and spans, and 1754 with the picker's page one night at a time, and 1759 with 24.46's five rows of
-        // Tonight redesigned, and 1763 with the January pin move's four section 17 rows.
+        // Tonight redesigned, and 1763 with the January pin move's four section 17 rows, and 1769 with its background
+        // variants' six rows.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1763),
+            (789, 853, 6, 4, 855, 876, 1769),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

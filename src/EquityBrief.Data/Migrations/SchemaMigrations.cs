@@ -793,6 +793,7 @@ public static class SchemaMigrations
         new Migration(170, "add setup.other_pass and long_setup.other_pass", AddOtherPass),
         new Migration(171, "remove the long_held_none rows of LPI, PVAC, WTW_old and SIX", RemoveHeldNoneLinkedByHand),
         new Migration(172, "write the operator's rulings of 2026-11-23 on eight marks", RuleEightMarks),
+        new Migration(173, "create waiting_variant and waiting_variant_trade", CreateWaitingVariants),
     ];
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
@@ -1093,6 +1094,47 @@ public static class SchemaMigrations
         BEGIN
             SELECT RAISE(ABORT, 'notebook takes inserts alone: a row it holds is never written over.');
         END;
+    ";
+
+    // The background variants a full family has no room for: each with the live rule it moves from, the moves and the session
+    // it is walked from; and each of the live rule's orders since, walked again under the variant's floor once it has ended.
+    // Both take inserts alone, so a waiting variant's record stands as it was walked when a slot frees and it registers.
+    // see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+    const string CreateWaitingVariants = @"
+        CREATE TABLE waiting_variant (
+            id           INTEGER PRIMARY KEY,
+            candidate    TEXT NOT NULL UNIQUE,
+            live         TEXT NOT NULL,
+            evaluator    TEXT NOT NULL,
+            moves        TEXT NOT NULL,
+            walked_from  TEXT NOT NULL,
+            entered_at   TEXT NOT NULL,
+            evidence     TEXT NOT NULL,
+            run_id       TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE waiting_variant_trade (
+            waiting_id    INTEGER NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            ended_on      TEXT NOT NULL,
+            filled_on     TEXT,
+            fill          TEXT,
+            result        REAL,
+            live_result   REAL,
+            under_floor   INTEGER NOT NULL CHECK (under_floor IN (0, 1)),
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (waiting_id, session_date, ticker)
+        ) STRICT;
+
+        CREATE TRIGGER waiting_variant_takes_inserts_alone_on_change BEFORE UPDATE ON waiting_variant
+        BEGIN SELECT RAISE(ABORT, 'waiting_variant takes inserts alone.'); END;
+        CREATE TRIGGER waiting_variant_takes_inserts_alone_on_removal BEFORE DELETE ON waiting_variant
+        BEGIN SELECT RAISE(ABORT, 'waiting_variant takes inserts alone.'); END;
+        CREATE TRIGGER waiting_variant_trade_takes_inserts_alone_on_change BEFORE UPDATE ON waiting_variant_trade
+        BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone: a trade is written once it has ended.'); END;
+        CREATE TRIGGER waiting_variant_trade_takes_inserts_alone_on_removal BEFORE DELETE ON waiting_variant_trade
+        BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone.'); END;
     ";
 
     // The survivors: each idea the one tester passed, with the line and the early years' cut points it is walked by; each

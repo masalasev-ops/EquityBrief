@@ -4619,7 +4619,7 @@ app.MapGet("/screens/run/{night?}", async (
         var indexUnlisted = await read.UnlistedNamesAsync(reading.Code, dated);
 
         return Results.Content(
-            marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.SplitSteps(await read.SplitStepsOnAsync(dated)) + MarkRenderer.UnlistedNames(indexUnlisted.Unlisted, indexUnlisted.ReadOn) + page.IndexRunRegion(
+            marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.SplitSteps(await read.SplitStepsOnAsync(dated)) + MarkRenderer.UnlistedNames(indexUnlisted.Unlisted, indexUnlisted.ReadOn) + MarkRenderer.WaitingVariants(await read.WaitingVariantsAsync()) + page.IndexRunRegion(
                 marks,
                 dated,
                 reading,
@@ -4715,7 +4715,7 @@ app.MapGet("/screens/run/{night?}", async (
     var unlisted = await read.UnlistedNamesAsync(reading.Code, dated);
 
     return Results.Content(
-        marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.SplitSteps(await read.SplitStepsOnAsync(dated)) + MarkRenderer.UnlistedNames(unlisted.Unlisted, unlisted.ReadOn) + page.RunRegion(
+        marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.SplitSteps(await read.SplitStepsOnAsync(dated)) + MarkRenderer.UnlistedNames(unlisted.Unlisted, unlisted.ReadOn) + MarkRenderer.WaitingVariants(await read.WaitingVariantsAsync()) + page.RunRegion(
             marks,
             dated,
             stages,

@@ -140,6 +140,10 @@ public enum Store
     SurvivorState,
     SurvivorPick,
 
+    // The background variants a full family has no room for, and each live order walked again under a waiting one's floor.
+    WaitingVariant,
+    WaitingVariantTrade,
+
     // The researcher's asks of the local model, each setup's failure lists, and the ideas it answered with what became of each.
     ResearchAsk,
     ResearchFailure,

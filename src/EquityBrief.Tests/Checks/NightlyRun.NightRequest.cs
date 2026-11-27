@@ -151,8 +151,8 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Cards.DecisionCards.BookStage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage, EquityBrief.Worker.Loop.SurvivorDesk.Stage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
-            stages.Select(row => row.Stage).TakeLast(12));
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Cards.DecisionCards.BookStage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage, EquityBrief.Worker.Loop.SurvivorDesk.Stage, EquityBrief.Worker.Loop.WaitingVariants.Stage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
+            stages.Select(row => row.Stage).TakeLast(13));
         Assert.True(
             stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Quarters.QuarterFetcher.Stage) is var asked && asked >= 0
                 && asked < stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Nights.NightClose.Stage));

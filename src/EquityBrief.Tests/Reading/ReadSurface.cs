@@ -273,6 +273,7 @@ public partial class ReadSurface
 
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
+            .. WaitingVariantRunRows,
 
             // 23.2, the verdict across the three indexes on the Loop page and paper trading's scorecard.
             .. PooledPageRows,

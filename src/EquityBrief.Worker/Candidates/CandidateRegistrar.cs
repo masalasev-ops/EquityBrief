@@ -38,6 +38,8 @@ public sealed class CandidateRegistrar : IComponent
             new StoreTouch(Store.CandidateRegister, Touch.Read | Touch.Insert),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
+            new StoreTouch(Store.WaitingVariant, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -968,6 +970,209 @@ public sealed class CandidateRegistrar : IComponent
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, null, detail);
+    }
+
+    public const string Entered = "entered";
+
+    // The moves a background variant may name: the floor under an order at a level with the ceiling off, the reward check on
+    // the traded plan, and the setup's own reward floor of the S&P 500's swing filter or an S&P 400's or 600's pullback.
+    public static IReadOnlyList<string> BackgroundMoves { get; } =
+    [
+        PlanHook.RangeFloorParameter, PlanHook.RangeCeilingParameter, RuleHooks.RewardTradedParameter,
+        IndexPullbackCandidate.RewardToRiskParameter, SwingFilterRewardFloor,
+    ];
+
+    public const string SwingFilterRewardFloor = "rewardToRiskFloor";
+
+    // The words a background variant's moves are named by, in the order the moves list them, none where a move names none.
+    public static string BackgroundWords(IReadOnlyDictionary<string, double> moves)
+    {
+        var words = new List<string>();
+
+        if (moves.TryGetValue(PlanHook.RangeFloorParameter, out var floor))
+        {
+            words.Add(Core.Families.RuleWording.BuyRanges.UnderItsPrice(floor));
+        }
+
+        if (moves.TryGetValue(RuleHooks.RewardTradedParameter, out var times))
+        {
+            words.Add(Core.Families.RuleWording.RuleHooks.RewardTraded(times));
+        }
+
+        foreach (var own in new[] { IndexPullbackCandidate.RewardToRiskParameter, SwingFilterRewardFloor })
+        {
+            if (moves.TryGetValue(own, out var least))
+            {
+                words.Add(Core.Families.RuleWording.WaitingVariants.SetupFloorAt(least));
+            }
+        }
+
+        return string.Join(", ", words);
+    }
+
+    const string EnterWaiting = @"
+        INSERT INTO waiting_variant (candidate, live, evaluator, moves, walked_from, entered_at, evidence, run_id)
+        VALUES ($candidate, $live, $evaluator, $moves, $walked_from, $entered_at, $evidence, $run_id);";
+
+    const string WaitingNames = "SELECT candidate FROM waiting_variant;";
+
+    const string NewestBar = "SELECT MAX(session_date) FROM bar;";
+
+    // On the operator's answers of 2026-11-27, items 1 and 2, a background variant of a live rule: its own parameters with the
+    // moves given, registered beside it where its family has room, retiring nothing; where the family holds nine, a variant
+    // moving the floor alone is entered to wait for a slot, walked each night from the live rule's own orders after the newest
+    // session stored, and any other refused. With `enter` false nothing is entered, which is how a waiting variant registers
+    // once a slot frees.
+    // see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+    public async Task<RegistrationOutcome> RegisterBackgroundAsync(string live, IReadOnlyDictionary<string, double> moves, string evidence, string runId, bool enter = true, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, startedAt);
+
+        if (!FamilyRecords.IsLive(live) || standing.LastOrDefault(row => row.Candidate == live) is not { } row)
+        {
+            return await RefuseAsync($"'{live}' is no live rule standing registered, so no background variant was registered and nothing was written.");
+        }
+
+        if (moves.Count == 0 || moves.Keys.Any(key => !BackgroundMoves.Contains(key)))
+        {
+            return await RefuseAsync($"a background variant moves {string.Join(", ", BackgroundMoves)} alone, so nothing was written.");
+        }
+
+        if (CandidateEvaluators.Find(row.Evaluator) is not { } carried)
+        {
+            return await RefuseAsync($"'{live}' runs on '{row.Evaluator}', which no evaluator reads, so nothing was written.");
+        }
+
+        var own = CandidateEvaluator.Read(row.Parameters);
+        var moved = new Dictionary<string, double>(own, StringComparer.Ordinal);
+
+        foreach (var (name, value) in moves)
+        {
+            moved[name] = value;
+        }
+
+        if (moved.Count == own.Count && moved.All(pair => own.TryGetValue(pair.Key, out var stood) && stood == pair.Value))
+        {
+            return await RefuseAsync($"the moves leave '{live}' at its own settings, so nothing was written.");
+        }
+
+        var variant = VariantOf(live, BackgroundWords(moves));
+
+        if (standing.Any(one => one.Candidate == variant))
+        {
+            return await RefuseAsync($"'{variant}' stands already, so nothing was written.");
+        }
+
+        var family = CandidateFamily.SetupFamilyOf(row.Evaluator);
+
+        if (CandidateFamily.Maximum - CandidateFamily.In(standing, family).Count > 0)
+        {
+            if (Refusal([.. rows], variant, row.Evaluator, moved, startedAt) is { } refusal)
+            {
+                return await RefuseAsync($"'{variant}' was refused, so nothing was written: {refusal}");
+            }
+
+            await AppendAsync(connection, rows, variant, row.Rule, row.Test, row.Evaluator, CandidateEvaluator.Write(moved), carried.Version, Registered, null, startedAt, evidence, cancellation);
+
+            var detail = $"'{variant}' registered as a background variant beside '{live}', on the evidence: {evidence}";
+
+            await RecordAsync(connection, runId, startedAt, Registered, 1, detail, cancellation);
+            await transaction.CommitAsync(cancellation);
+
+            return new RegistrationOutcome(Registered, null, detail);
+        }
+
+        if (!enter)
+        {
+            await transaction.RollbackAsync(cancellation);
+
+            return new RegistrationOutcome(Refused, null, FormattableString.Invariant($"'{variant}' waits on: the {family} family keeps {CandidateFamily.Maximum}"));
+        }
+
+        if (!Loop.WaitingVariants.FloorAlone(moves) || Loop.WaitingVariants.OrdersOf(carried) is null)
+        {
+            return await RefuseAsync(FormattableString.Invariant($"the {family} family keeps {CandidateFamily.Maximum} and '{variant}' moves more than the floor under an order at a level, which no walk of its live rule's own orders reads, so nothing was written."));
+        }
+
+        // Its full check runs when a slot frees and it registers; entered, its plan is read now so a floor no plan reads waits for
+        // nothing.
+        try
+        {
+            if (PlanHook.Of(moved) is not { LevelFloor: not null })
+            {
+                return await RefuseAsync($"'{live}' states no plan buying at a level, which the floor sits under, so nothing was written.");
+            }
+        }
+        catch (ArgumentException unread)
+        {
+            return await RefuseAsync($"'{variant}' was refused, so nothing was written: {unread.Message}");
+        }
+
+        await using (var names = connection.CreateCommand())
+        {
+            names.CommandText = WaitingNames;
+
+            await using var reader = await names.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (reader.GetString(0) == variant)
+                {
+                    return await RefuseAsync($"'{variant}' waits for a slot already, so nothing was written.");
+                }
+            }
+        }
+
+        string from;
+
+        await using (var newest = connection.CreateCommand())
+        {
+            newest.CommandText = NewestBar;
+
+            if (await newest.ExecuteScalarAsync(cancellation) is not string stored)
+            {
+                return await RefuseAsync("the store holds no bar, so no session stands to walk the live rule's orders after, and nothing was written.");
+            }
+
+            from = stored;
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = EnterWaiting;
+            command.Parameters.AddWithValue("$candidate", variant);
+            command.Parameters.AddWithValue("$live", live);
+            command.Parameters.AddWithValue("$evaluator", row.Evaluator);
+            command.Parameters.AddWithValue("$moves", System.Text.Json.JsonSerializer.Serialize(moves.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToDictionary(pair => pair.Key, pair => pair.Value)));
+            command.Parameters.AddWithValue("$walked_from", from);
+            command.Parameters.AddWithValue("$entered_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$evidence", evidence);
+            command.Parameters.AddWithValue("$run_id", runId);
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var entered = FormattableString.Invariant($"'{variant}' entered to wait for a slot, the {family} family keeping {CandidateFamily.Maximum}, walked each night from the orders of '{live}' after {from}, on the evidence: {evidence}");
+
+        await RecordAsync(connection, runId, startedAt, Entered, 1, entered, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Entered, null, entered);
     }
 
     // A dip rule's parameters with its sell dial under its name where a registration names it exit, the form from

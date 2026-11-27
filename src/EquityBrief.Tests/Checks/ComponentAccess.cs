@@ -323,6 +323,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Notebook fill"),
     ];
 
+    // The 24.19 correction's step that registers or walks the background variants waiting for a slot.
+    internal static string[] WaitingVariantRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Waiting variants"),
+        CheckReach.Key(Scope.MatrixTable, "Waiting variants"),
+    ];
+
     // The desk that admits and walks the survivors.
     internal static string[] SurvivorRows =>
     [
@@ -461,6 +468,7 @@ public partial class ComponentAccess
             .. SwapRows,
             .. NotebookRows,
             .. SurvivorRows,
+            .. WaitingVariantRows,
             .. ResearcherRows,
             .. RangeWidthRows,
             .. PullbackSearchRows,

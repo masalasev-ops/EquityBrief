@@ -1973,6 +1973,15 @@ dotnet run --project src/EquityBrief.Worker -- register --withdraw "<the live ru
 
 It is refused for a name that is no live rule standing and for a family keeping no rule in the background, writing nothing. The earlier rule's record restarts at the registration.
 
+**A background variant of a live rule** is registered by one command, on the operator's answers of 2026-11-27: the live rule's own settings with the moves given, beside it where its family holds fewer than nine and retiring nothing. The moves it takes are the floor under an order at a level (`plan_range_floor`, with `plan_range_ceiling=0`), the reward check on the traded plan (`reward_traded`) and the setup's own reward floor (`rewardToRisk` on an S&P 400's or 600's pullback, `rewardToRiskFloor` on the S&P 500's swing filter). Where the family holds nine, a variant moving the floor alone is entered to wait for a slot instead, and the night's waiting variants step walks it from its live rule's own orders placed after the newest session the bar store held, and registers it the first night a slot frees, the first entered first (see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees):
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --background "<the live rule's name>" --moves "plan_range_floor=2,plan_range_ceiling=0" --evidence "the ruling it is registered on"
+dotnet run --project src/EquityBrief.Worker -- register --background "<the S&P 600 pullback's live rule>" --moves "reward_traded=1.5,rewardToRisk=0.5" --evidence "the ruling it is registered on"
+```
+
+It is refused for a name that is no live rule standing, a move outside those, moves leaving the rule at its own settings, a variant standing or waiting already, and any move but the floor alone into a full family, writing nothing; the registration's own checks run as any registration's. The variants of 2026-11-27 are registered and entered by the remedy `tools/remedies/2026-11-27-24.19-the-background-variants.txt`, run from `main` after the merge while no writer runs. The Run page lists every variant entered to wait, with its record so far beside its live rule's over the same orders.
+
 **The Fundamentals family's live rule without its flag** is registered on one index by one command, from 21.17 on the operator's ruling of 2026-10-31: the live rule and the version standing at its setting without the flag are retired and registered again as each other at one instant, the unflagged setting the live rule and the flagged one a version, the family keeping its nine rules (see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version).
 
 ```

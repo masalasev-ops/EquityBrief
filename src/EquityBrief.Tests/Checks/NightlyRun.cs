@@ -101,6 +101,9 @@ public partial class NightlyRun
             // The queued survivors walked after the store copy's row.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.SurvivorStep),
 
+            // The background variants waiting for a slot, registered or walked after the survivors' row.
+            CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.WaitingVariantStep),
+
             // 24.4, the AI stock picker, the night's last step.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.JudgeStep),
 
@@ -1423,11 +1426,12 @@ public partial class NightlyRun
         // the quarters fetch's row sits in the swing filter's step, after the S&P 500's heavyweights' book and before the S&P
         // 400's and 600's families; and from the review of PR 699 the books' cards' row follows the Fundamentals family's.
         Assert.Equal(EquityBrief.Worker.Judge.JudgePicker.NightStage, stages[^1]);
-        Assert.Equal(EquityBrief.Worker.Loop.SurvivorDesk.Stage, stages[^2]);
-        Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^3]);
-        Assert.Equal(NewsLabeller.NightStage, stages[^4]);
-        Assert.Equal("report", stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Loop.WaitingVariants.Stage, stages[^2]);
+        Assert.Equal(EquityBrief.Worker.Loop.SurvivorDesk.Stage, stages[^3]);
+        Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^4]);
+        Assert.Equal(NewsLabeller.NightStage, stages[^5]);
+        Assert.Equal("report", stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^7]);
         Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^7]);
         Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^8]);
         Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^9]);

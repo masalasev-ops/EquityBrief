@@ -1511,8 +1511,8 @@ public partial class ArchitectureConformance
         // an earlier judge version's picks in an account of their own. 325 at 24.17: the case for promotion's three regions. 326
         // with the History page's every member on every session. 330 at 24.24: the picker's page within one index, the night's
         // marks, a fixed 5 and a pick past the cash. 334 with the picker's page from its mockup: its three accounts, tonight's
-        // picks one at a time, where each fact stands and its own rules. 335 with the Loop page's notebook. 336 with its survivors. 337 with the week's research. 338 with the picker's earlier version. 339 with the buy ranges. 340 with the idea box. 341 with never stuck. 342 with the History page's marks the evidence leaves to the operator. 343 with the Loop page's pullbacks' search. 344 with the picker's page one night at a time. 349 with Tonight redesigned's five.
-        Assert.Equal(349,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // picks one at a time, where each fact stands and its own rules. 335 with the Loop page's notebook. 336 with its survivors. 337 with the week's research. 338 with the picker's earlier version. 339 with the buy ranges. 340 with the idea box. 341 with never stuck. 342 with the History page's marks the evidence leaves to the operator. 343 with the Loop page's pullbacks' search. 344 with the picker's page one night at a time. 349 with Tonight redesigned's five. 350 with the Run page's background variants waiting for a slot.
+        Assert.Equal(350,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1706,7 +1706,8 @@ public partial class ArchitectureConformance
         // History page's every member on every session. 732 at 24.24: the picker's page within one index, the night's marks,
         // a fixed 5 and a pick past the cash. 736 with the picker's page from its mockup: its three accounts, tonight's picks one
         // at a time, where each fact stands and its own rules. 737 with the Loop page's notebook. 738 with its survivors. 739 with the week's research. 740 with the picker's earlier version. 741 with the buy ranges. 742 with the idea box. 743 with never stuck. 744 with the History page's marks the evidence leaves to the operator. 745 with the Loop page's pullbacks' search. 746 with the picker's page one night at a time. 751 with Tonight redesigned's five.
-        Assert.Equal(751, inDocument.Length);
+        // 752 with the Run page's background variants waiting for a slot.
+        Assert.Equal(752, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
