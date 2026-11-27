@@ -136,8 +136,29 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "pullback-search" => await PullbackSearchVerb(args),
     "recipe" => await RecipeVerb(args),
     "partner" => await PartnerVerb(args),
+    "review" => await ReviewVerb(args),
     _ => NoVerb(),
 };
+
+// The reviewer on '--index <code>' for '--night <yyyy-MM-dd>': its picks and members printed, and what history expected of
+// each written only with '--word'.
+// see: The reviewer matches each pick among the past cases like it that closed before its night, and a seeded draw of the night's members the same way
+static async Task<int> ReviewVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index
+        || !DateOnly.TryParseExact(VerbArguments.Value(args, "--night") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var night))
+    {
+        Console.Error.WriteLine("review: name an index with '--index' and a night with '--night yyyy-MM-dd', and '--word' to write");
+
+        return 2;
+    }
+
+    return await new EquityBrief.Worker.Loop.ReviewerDesk(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(index, night, args.Contains("--word", StringComparer.Ordinal));
+}
 
 // The trained partner on '--index <code>': its rows on each side of 2015 printed, and its trees fitted and its tables written
 // only with '--word'.
@@ -1530,7 +1551,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 102 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 103 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1831,6 +1852,7 @@ static int NoVerb()
         "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
         "'recipe --add <line> --words <words>' enters a reading recipe, refusing a line outside the recipes' grammar and listing for the operator what it lacks, and 'recipe --run --index <code>' prints each recipe not yet run on the index and with '--word' works it over the every-session table, refusing one whose figures read a later session, " +
         "'partner --index <code>' prints the trained partner's rows on the index, a member each month of sessions of 2005 to 2014 to learn on and of 2015 to 2018 to check on, and with '--word' fits its trees and writes its tables, " +
+        "'review --index <code> --night <yyyy-MM-dd>' prints the night's picks on the index and the members its random draw would take, and with '--word' writes what history expected of each, the past cases like it that closed before the night, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

@@ -796,6 +796,7 @@ public static class SchemaMigrations
         new Migration(173, "create waiting_variant and waiting_variant_trade", CreateWaitingVariants),
         new Migration(174, "create recipe, recipe_run, recipe_reading and data_request", CreateRecipes),
         new Migration(175, "create partner_run and partner_cell", CreatePartner),
+        new Migration(176, "create review", CreateReview),
     ];
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
@@ -1137,6 +1138,30 @@ public static class SchemaMigrations
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone: a trade is written once it has ended.'); END;
         CREATE TRIGGER waiting_variant_trade_takes_inserts_alone_on_removal BEFORE DELETE ON waiting_variant_trade
         BEGIN SELECT RAISE(ABORT, 'waiting_variant_trade takes inserts alone.'); END;
+    ";
+
+    // The reviewer: what history expected of each pick a family listed on a night and of each member its random draw took
+    // under the same family's plan, written once and taking inserts alone.
+    // see: The reviewer matches each pick among the past cases like it that closed before its night, and a seeded draw of the night's members the same way
+    const string CreateReview = @"
+        CREATE TABLE review (
+            night       TEXT NOT NULL,
+            index_code  TEXT NOT NULL,
+            family      TEXT NOT NULL,
+            kind        TEXT NOT NULL CHECK (kind IN ('pick', 'random')),
+            ticker      TEXT NOT NULL,
+            cases       INTEGER,
+            reached     INTEGER,
+            mean        REAL,
+            matched_on  TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (night, index_code, family, kind, ticker)
+        ) STRICT;
+
+        CREATE TRIGGER review_takes_inserts_alone_on_change BEFORE UPDATE ON review
+        BEGIN SELECT RAISE(ABORT, 'review takes inserts alone.'); END;
+        CREATE TRIGGER review_takes_inserts_alone_on_removal BEFORE DELETE ON review
+        BEGIN SELECT RAISE(ABORT, 'review takes inserts alone.'); END;
     ";
 
     // The trained partner: each run of it on an index, its rows, its check and its trees whole; and each cell of the tables

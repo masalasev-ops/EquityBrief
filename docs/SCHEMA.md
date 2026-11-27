@@ -126,6 +126,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `data_request` | RecipeDesk | none | none |
 | `partner_run` | PartnerDesk | none | none |
 | `partner_cell` | PartnerDesk | none | none |
+| `review` | ReviewerDesk | none | none |
 | `research_ask` | Researcher | none | none |
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
@@ -3002,6 +3003,26 @@ Grain: one row per cell of a table a fit of the trained partner wrote, from 24.3
 Primary key: `id`.
 
 **Inserted by the partner desk alone, and never updated or deleted** (see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019). It names readings and fifths alone: no stock, ticker or date, and no row of 2019 or after reaches a figure.
+
+### review
+Grain: one row per night, index, family and pick it listed or member the night's random draw took for it, from 24.36.
+
+| Column | Type | Notes |
+|---|---|---|
+| `night` | TEXT | the night the pick was listed on |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the family that listed the pick, or whose plan the drawn member is matched under |
+| `kind` | TEXT | `pick` or `random`, constrained in the table |
+| `ticker` | TEXT | the pick or the drawn member |
+| `cases` | INTEGER | the cases like it matched that closed before the night, null where fewer than the fewest did or the night holds none of its readings |
+| `reached` | INTEGER | of them, those that reached the take-profit before the stop, null where `cases` is |
+| `mean` | REAL | their mean result per $1 risked after costs, null where `cases` is |
+| `matched_on` | TEXT | the readings matched on, comma-separated, empty where the family stores no learned score on the index |
+| `run_id` | TEXT | the review that wrote it |
+
+Primary key: `night`, `index_code`, `family`, `kind`, `ticker`.
+
+**Inserted by the reviewer desk alone, a night on an index once, and never updated or deleted** (see: The reviewer matches each pick among the past cases like it that closed before its night, and a seeded draw of the night's members the same way). Each pick is matched among the family's settled setups on the index from `long_setup` to 2018 and `setup` from 2019 whose `ended_on` falls before the night. Read by no rule.
 
 ### research_ask
 Grain: one row per ask of the researcher's week, from 24.28.
