@@ -14,6 +14,13 @@ public static class PublishedSite
     // which the worker reads as a refusal of the upload.
     public const int Leaked = 2;
 
+    // From the operator's correction of 2026-11-26 what the verb ends with where a page of the copy stands apart from the app's,
+    // each fault on a line opening as the line below does, which the worker reads as a refusal of the upload.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+    public const int Unlike = 3;
+
+    public const string UnlikeLine = Verb + ": unlike the app: ";
+
     public const string Folder = "site";
 
     public const string ReportFile = "site-report.txt";

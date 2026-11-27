@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Cloudflare;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.Cloudflare;
 
@@ -177,6 +178,12 @@ public static partial class SiteCopy
             return "/screens/tonight" + query;
         }
 
+        // One of tonight's plans at its own address, read as the live shell reads it: tonight's page with the plan named.
+        if (path.StartsWith(MarkRenderer.PlanRoute, StringComparison.Ordinal) && path.Length > MarkRenderer.PlanRoute.Length && !path[MarkRenderer.PlanRoute.Length..].Contains('/', StringComparison.Ordinal))
+        {
+            return "/screens/tonight?" + (query.Length > 1 ? query[1..] + "&" : string.Empty) + "plan=" + Uri.EscapeDataString(Unescaped(path[MarkRenderer.PlanRoute.Length..]));
+        }
+
         foreach (var screen in StockScreens)
         {
             if (path.StartsWith(screen, StringComparison.Ordinal) && path.Length > screen.Length)
@@ -212,9 +219,10 @@ public static partial class SiteCopy
 
     // Every link in a fragment resolved against the routes the copy holds. A held route's link names it as the copy keys it;
     // a stock's chart not held opens its stock page where that is held, as every row of the reports index does; a link to
-    // the same screen under a view not held is left as its words; a link to a place on the page or to another site stands;
-    // and any other link, to a screen or an address of the surface the copy does not hold, is drawn as its words alone,
-    // plain text with no note.
+    // a place on the page or to another site stands; and any other link, to a screen, a view or an address of the
+    // surface the copy does not hold, keeps its element, its words and every class it had with its link alone taken away and
+    // the class not-held added, so the page lays out as the app lays it out.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
     public static string Relink(string fragment, string page, IReadOnlySet<string> held, bool stockPagesFirst = false) =>
         Anchor().Replace(fragment, anchor =>
         {
@@ -230,25 +238,37 @@ public static partial class SiteCopy
 
             if (link.StartsWith("#/", StringComparison.Ordinal))
             {
-                var route = Canonical(link);
-
-                if (Resolved(route, page, held, stockPagesFirst) is { } resolved)
+                if (Resolved(Canonical(link), page, held, stockPagesFirst) is { } resolved)
                 {
-                    return "<a" + Regex.Replace(attributes, @"(^|\s)href=""[^""]*""", "$1href=\"" + WebUtility.HtmlEncode(resolved) + "\"", RegexOptions.IgnoreCase) + ">" + words + "</a>";
+                    return "<a" + HrefAttribute().Replace(attributes, "$1href=\"" + WebUtility.HtmlEncode(resolved) + "\"") + ">" + words + "</a>";
                 }
 
-                return PathOf(route) == PathOf(page)
-                    ? "<span class=\"unlinked\">" + words + "</span>"
-                    : NotHeldLink(words);
+                return NotHeldLink(attributes, words);
             }
 
             return link.StartsWith('#') || link.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || link.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                 ? anchor.Value
-                : NotHeldLink(words);
+                : NotHeldLink(attributes, words);
         });
 
-    static string NotHeldLink(string words) =>
-        "<span class=\"not-held\">" + words + "</span>";
+    // The class a link the copy does not hold carries beside its own.
+    public const string NotHeldClass = "not-held";
+
+    static string NotHeldLink(string attributes, string words)
+    {
+        var unlinked = HrefAttribute().Replace(attributes, string.Empty);
+        var marked = ClassAttribute().IsMatch(unlinked)
+            ? ClassAttribute().Replace(unlinked, match => match.Groups["lead"].Value + "class=\"" + match.Groups["value"].Value + (match.Groups["value"].Value.Length == 0 ? string.Empty : " ") + NotHeldClass + "\"", 1)
+            : " class=\"" + NotHeldClass + "\"" + unlinked;
+
+        return "<a" + marked + ">" + words + "</a>";
+    }
+
+    [GeneratedRegex(@"(^|\s)href=""[^""]*""", RegexOptions.IgnoreCase)]
+    private static partial Regex HrefAttribute();
+
+    [GeneratedRegex(@"(?<lead>^|\s)class=""(?<value>[^""]*)""", RegexOptions.IgnoreCase)]
+    private static partial Regex ClassAttribute();
 
     static string? Resolved(string route, string page, IReadOnlySet<string> held, bool stockPagesFirst)
     {
@@ -285,9 +305,6 @@ public static partial class SiteCopy
         text = Removed(text, "li", start => AttributeOf(start, "data-line") == "size");
         text = Removed(text, "div", start => HasClass(start, "rs-controls") || HasClass(start, "firm-actions"));
         text = Removed(text, "section", start => AttributeOf(start, "data-graph") == "ratings");
-
-        // The market strip a screen draws for itself, since the copy draws its own atop every page, the closes alone.
-        text = Removed(text, "section", start => AttributeOf(start, "data-card") == EquityBrief.Web.Marks.MarkRenderer.StripRegion);
         text = NightDue().Replace(text, string.Empty);
 
         return SurfaceAttribute().Replace(text, string.Empty);
@@ -434,7 +451,8 @@ public static partial class SiteCopy
     public const string CopyCss =
         ".copy-banner{margin:0;padding:8px 16px;background:var(--warn-fill);color:var(--ink);border-bottom:1px solid var(--hair-2);font-size:14px;text-align:center}"
         + ".copy-tag{margin-left:.5em;padding:1px 8px;border-radius:999px;background:var(--warn-fill);color:var(--ink);font-size:12px;font-weight:600;vertical-align:middle}"
-        + ".not-held,.unlinked{color:inherit}"
+        + "a[class=\"not-held\"]{color:inherit;text-decoration:none}"
+        + "a.not-held{cursor:default}"
         + ".copy-asof{font-size:13px;color:var(--soft);font-style:italic}"
         + "p.copy-asof{margin:4px 0 8px}"
         + ".copy-versions{margin:14px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);font-size:14px}"
@@ -460,8 +478,10 @@ public static partial class SiteCopy
     // the copy holds for it in its own list and puts that file's markup on the screen. It fetches nothing but those files,
     // sends nothing and asks no other address, and what it does beyond that is drawn in the browser alone: the palette, the
     // menu, a fold or a pick's card opened, a place on the page scrolled to, a tile bringing its card into view, the chart's
-    // levels and its candle under the pointer.
-    public static string Shell(DateOnly night, IReadOnlyDictionary<string, string> files, string strip = "")
+    // levels and its candle under the pointer, and the app's own scripts for Home's and Tonight's waiting cards and Tonight's
+    // plans. It draws nothing above the screen but the bar and the banner, so each page stands as the app draws it.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+    public static string Shell(DateOnly night, IReadOnlyDictionary<string, string> files)
     {
         var bar = new StringBuilder("<nav class=\"m-nav\" aria-label=\"Screens\">");
 
@@ -498,7 +518,6 @@ public static partial class SiteCopy
             <body>
             <header class="mast" id="mast"><div class="wrap"><a class="m-brand" href="#/">{{{Brand}}}</a><div class="m-panel" id="menu">{{{bar}}}<button type="button" class="theme" id="theme">Dark palette</button></div><div class="m-index" id="index-slot"></div><button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu</button></div></header>
             {{{Banner(night)}}}
-            <div class="wrap copy-strip" id="strip">{{{strip}}}</div>
             <div class="wrap page-head" id="identity"></div>
             <main class="wrap" id="screen"></main>
             <script>
@@ -546,8 +565,12 @@ public static partial class SiteCopy
               document.title = (named ? named + ' · ' : '') + '{{{PublishedSite.Name}}}';
               scrollTo(0, 0);
               {{{EquityBrief.Web.Marks.MarkRenderer.PaperChartToNewest}}}
+              if (route.startsWith('{{{MarkRenderer.PlanRoute}}}') && document.getElementById('plans')) { document.getElementById('plans').scrollIntoView({ block: 'start' }); }
+              carousels();
               paintTheme();
             }
+            {{{SinglePageApp.WaitingScript}}}
+            {{{SinglePageApp.PlansScript}}}
             addEventListener('hashchange', show);
             // The index a screen reads, chosen in its own menu, opens that index's file of the same screen.
             document.addEventListener('change', (event) => {

@@ -23299,3 +23299,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.46 - correction: the read-only copy drawn as the app draws it, a link it does not hold keeping its element   2026-11-26
+
+Ruled:      the operator's correction of 2026-11-26, kept word for word in
+            `prompts/2026-11-26-24.46-read-only-copy-as-the-app.md`.
+Found:      the copy held none of tonight's plans at the addresses 24.46 gave them, nor Paper trading's "Last 5 trading
+            days" tab, so 22 of Home's "See the plan" links on the S&P 500 and every row of Tonight's plans were drawn as
+            bare spans, running the rows together and dropping the tab's tile out of its row; its shell set a markets card
+            atop every page; and from 24.29's correction the waiting cards drew the placing night's checks into the copy,
+            which its method check refused on every index's Home.
+Built:      every plan Home or Tonight links held at its own address on each index, and the "Last 5 trading days" tab with
+            its pages; a link not held keeping its element, its classes and its attributes, its link taken away and
+            not-held added; no markets card above any page, Tonight keeping its own strip with no quote asked; the app's
+            scripts for the waiting cards and the plans shared by both shells; the waiting cards' checks row empty in the
+            copy; and before the upload, every link and section of every page read against the page as drawn, and Home and
+            Tonight laid out in a headless browser beside the same pages in the app's shell at 1440 and a true 390, each
+            fault refusing the upload by its page.
+Measured:   the copy written over the live store, read-only, into a folder on C:: 1034 screens for the night of 25 Nov, 37
+            plans (24, 8 and 5), the tab on each index, the only links left not-held the Run page and the watch list, no
+            leak, and Home and Tonight on all three indices standing as the app's at both widths, ending 0. Shots of Home,
+            Tonight and RCL's plan, copy beside app, at 1440 and 390.
+Tests:      6 new: a link's faults; a section's; a page's layout faults; the windows and the fields read; the shell's
+            shared scripts and the plain waiting card; an upload refused for a page apart from the app's. 6 widened.
+Pins:       none moved. The copy, the shells and the waiting cards are no source a rule pins.
+Mutated:    the rule, stated before the run: each property of the check loosened or taken out at its one site. m1 a link's
+            lost class not named: red; m2 one extra section allowed: red; m3 the page's blocks not compared: red; m4 the
+            sections' order not compared: red; m5 a section's height not compared: red; m6 a plan row's layout not compared:
+            red; m7 a page 100 pixels wider than its window allowed: red. Filtered to their tests and reverted before
+            anything was committed.
+Claims:     1759, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4071 of 4071 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1759
+            claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none.

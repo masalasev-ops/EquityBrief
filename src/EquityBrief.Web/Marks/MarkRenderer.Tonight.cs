@@ -237,7 +237,7 @@ public sealed partial class MarkRenderer
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         if ((view.Groups ?? line.Groups) is { } waiting && (waiting.StillWaitingOrders.Count > 0 || waiting.LeftOrders.Count > 0))
         {
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders)}</div>");
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders, plain: Copying)}</div>");
         }
 
         body.Append(OneStepLine(line));

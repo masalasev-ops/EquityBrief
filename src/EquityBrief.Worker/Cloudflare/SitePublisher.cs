@@ -111,7 +111,12 @@ public sealed class SitePublisher(
         // From 22.17 a copy the read surface found the method in is read as every copy is, and its upload refused.
         var leaked = exit == PublishedSite.Leaked;
 
-        if ((exit != 0 && !leaked) || !Directory.Exists(folder))
+        // From the operator's correction of 2026-11-26 a copy standing apart from the app is read as every copy is, and its
+        // upload refused with each fault the read surface named.
+        // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+        var unlike = lines.Where(line => line.StartsWith(PublishedSite.UnlikeLine, StringComparison.Ordinal)).Select(line => line[PublishedSite.UnlikeLine.Length..]).ToArray();
+
+        if ((exit != 0 && !leaked && exit != PublishedSite.Unlike) || !Directory.Exists(folder))
         {
             Say("refused: the read surface did not write the copy, so nothing was uploaded.");
             Write(report);
@@ -121,7 +126,7 @@ public sealed class SitePublisher(
         }
 
         var read = SiteChecks.Read(folder, SiteChecks.Needles(secretsFiles, roots, dataRoot));
-        var check = leaked ? read with { Refusals = [.. read.Refusals, SiteChecks.LeakedTheMethod] } : read;
+        var check = read with { Refusals = [.. read.Refusals, .. leaked ? [SiteChecks.LeakedTheMethod] : Array.Empty<string>(), .. unlike.Select(fault => SiteChecks.UnlikeTheApp + fault)] };
 
         foreach (var line in check.Lines)
         {

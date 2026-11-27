@@ -1826,7 +1826,7 @@ async Task<IResult> TonightScreenAsync(
     // From 21.13 the market strip atop the page on every index: the night's closes, and on the newest night while the
     // regular session is open Yahoo's quotes, asked at most once every five minutes.
     // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
-    var (quoted, quotedAt) = await read.NewestNightAsync() == dated ? await stripQuotes.AskAsync(clock.UtcNow, clock.SessionZone) : (null, null);
+    var (quoted, quotedAt) = !copying && await read.NewestNightAsync() == dated ? await stripQuotes.AskAsync(clock.UtcNow, clock.SessionZone) : (null, null);
     var strip = await MarketStripScreen.DrawAsync(read, marks, reading, dated, quoted, quotedAt, clock.SessionZone);
 
     // The live alarm's flag on each family of the index chosen, as its newest period stands, drawn on the newest night.
@@ -4861,7 +4861,19 @@ if (copyServer is not null && copying)
 
     var copied = await SiteCopyCommand.WriteAsync(copyServer.AskAsync, app.Services.GetRequiredService<ReadApi>(), Path.GetFullPath(args[1]), line => Console.WriteLine($"{PublishedSite.Verb}: {line}"));
 
+    // From the operator's correction of 2026-11-26 Home and Tonight laid out in a browser beside the app's on every index,
+    // each fault the ending the worker refuses the upload on.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+    IReadOnlyList<string> unlike = copied.Files.Count == 0
+        ? []
+        : [.. copied.Faults ?? [], .. await CopyLayout.FaultsAsync(copyServer.AskAsync, copied.AppPages ?? new Dictionary<string, string>(), Path.GetFullPath(args[1]), line => Console.WriteLine($"{PublishedSite.Verb}: {line}"))];
+
     await app.StopAsync();
+
+    foreach (var fault in unlike)
+    {
+        Console.WriteLine(PublishedSite.UnlikeLine + fault);
+    }
 
     foreach (var refusal in copied.Refused)
     {
@@ -4881,7 +4893,7 @@ if (copyServer is not null && copying)
     }
 
     Console.WriteLine(PublishedSite.NightLine(copied.Night, copied.Files.Count));
-    Environment.ExitCode = copied.Files.Count == 0 ? 1 : copied.Leaks is { Count: > 0 } ? PublishedSite.Leaked : 0;
+    Environment.ExitCode = copied.Files.Count == 0 ? 1 : copied.Leaks is { Count: > 0 } ? PublishedSite.Leaked : unlike.Count > 0 ? PublishedSite.Unlike : 0;
 
     return;
 }

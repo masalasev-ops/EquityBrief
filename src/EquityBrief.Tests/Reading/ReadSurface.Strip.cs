@@ -114,12 +114,18 @@ public partial class ReadSurface
         Assert.Equal(2, quotes.Requests);
     }
 
+    // From the operator's correction of 2026-11-26 the copy draws the markets where the app does, in Tonight's own strip, and
+    // its shell draws none atop the pages.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
     [Fact]
-    public void TheCopyDrawsTheStripAtopEveryPageAndTakesEachScreensOwnOut()
+    public void TheCopyKeepsTonightsOwnStripAndDrawsNoneAtopThePages()
     {
         var strip = EquityBrief.Web.App.Cards.Computed("Markets", "<p class=\"card-summary\" data-summary>The S&amp;P 500 rose 1.0% on the day.</p>", title: "The markets", region: MarkRenderer.StripRegion);
+        var shell = SiteCopy.Shell(new DateOnly(2026, 10, 2), new Dictionary<string, string>());
 
-        Assert.DoesNotContain("market-strip", SiteCopy.Clean("<div>" + strip + "<p>after</p></div>"), StringComparison.Ordinal);
-        Assert.Contains("<div class=\"wrap copy-strip\" id=\"strip\">" + strip + "</div>", SiteCopy.Shell(new DateOnly(2026, 10, 2), new Dictionary<string, string>(), strip), StringComparison.Ordinal);
+        Assert.Contains(strip, SiteCopy.Clean("<div>" + strip + "<p>after</p></div>"), StringComparison.Ordinal);
+        Assert.DoesNotContain("data-card=\"" + MarkRenderer.StripRegion + "\"", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("copy-strip", shell, StringComparison.Ordinal);
+        Assert.Matches("</div></header>\\s*<p class=\"copy-banner\"[^<]*</p>\\s*<div class=\"wrap page-head\" id=\"identity\"></div>\\s*<main class=\"wrap\" id=\"screen\"></main>", shell);
     }
 }

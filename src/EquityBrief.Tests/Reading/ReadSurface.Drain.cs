@@ -152,13 +152,16 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public void TheShippedSourceStartsAProcessInTwoPlacesTheLauncherAPressAsksAndThePublishVerb()
+    public void TheShippedSourceStartsAProcessInThreePlacesTheLauncherAPressAsksThePublishVerbAndTheCopysLayoutCheck()
     {
         // No shipped file started a process from 9.2 until 11.1 made a press start the worker's
         // drain. The launcher the press asks starts the worker at one call, and from the 18.4 correction of 2026-10-28 the
         // worker's publish verb starts the read surface built beside it with the copy's verb at one call and waits for it,
-        // since the worker cannot reference the surface that draws the screens; a third place starting a process, for a pass
-        // or anything else, fails here. It reads the source because what it asserts is where a thing is not.
+        // since the worker cannot reference the surface that draws the screens; and from the correction of 2026-11-26 the
+        // copy's verb starts a browser the machine has at one call to lay Home and Tonight out beside the app's; a fourth
+        // place starting a process, for a pass or anything else, fails here. It reads the source because what it asserts is
+        // where a thing is not.
+        // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
         var started = Directory
             .EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(file => !file.Contains(Path.Combine("src", "EquityBrief.Tests"), StringComparison.Ordinal))
@@ -167,11 +170,12 @@ public partial class ReadSurface
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal([LauncherSource, PublisherSource], started);
+        Assert.Equal([LayoutSource, LauncherSource, PublisherSource], started);
 
         var launcher = File.ReadAllText(Path.Combine(Repository.Root, LauncherSource));
 
         Assert.Single(Regex.Matches(launcher, @"Process\.Start\("));
+        Assert.Single(Regex.Matches(File.ReadAllText(Path.Combine(Repository.Root, LayoutSource)), @"Process\.Start\("));
         Assert.Single(Regex.Matches(File.ReadAllText(Path.Combine(Repository.Root, PublisherSource)), @"\.Start\(\)"));
 
         // And the page's own script sends the header the route requires.
@@ -182,6 +186,8 @@ public partial class ReadSurface
     }
 
     const string LauncherSource = "src/EquityBrief.Core/Research/DrainLauncher.cs";
+
+    const string LayoutSource = "src/EquityBrief.Api/Cloudflare/CopyLayout.cs";
 
     const string PublisherSource = "src/EquityBrief.Worker/Cloudflare/SitePublisher.cs";
 

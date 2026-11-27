@@ -546,7 +546,7 @@ public sealed partial class SinglePageApp
         // see: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
         var (waitingAgain, heldAgain) = MetAgainOf(view);
 
-        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, null, marks.Copying ? null : waitingAgain, IdeaTag));
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, null, marks.Copying ? null : waitingAgain, IdeaTag, plain: marks.Copying));
 
         // From the operator's correction of 2026-11-25 the last five trading days' moves in one line, their list on Paper trading.
         // see: Home counts the last five trading days' buys and sales and orders left unbought in one line, and Paper trading lists them in a tab

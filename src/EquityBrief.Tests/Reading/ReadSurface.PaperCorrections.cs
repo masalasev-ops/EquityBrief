@@ -677,7 +677,7 @@ public partial class ReadSurface
 
         var copied = EquityBrief.Web.Cloudflare.SiteCopy.Shell(new DateOnly(2026, 11, 6), new Dictionary<string, string>());
 
-        Assert.Matches(new Regex(@"async function show\(\) \{.*?scrollTo\(0, 0\);\s*" + Regex.Escape(MarkRenderer.PaperChartToNewest) + @"\s*paintTheme\(\);\s*\}", RegexOptions.Singleline), copied);
+        Assert.Matches(new Regex(@"async function show\(\) \{.*?scrollTo\(0, 0\);\s*" + Regex.Escape(MarkRenderer.PaperChartToNewest) + @"\s*(?:if \(route\.startsWith[^\n]*\s*)?carousels\(\);\s*paintTheme\(\);\s*\}", RegexOptions.Singleline), copied);
         Assert.Single(Regex.Matches(copied, Regex.Escape(MarkRenderer.PaperChartToNewest)));
     }
 }

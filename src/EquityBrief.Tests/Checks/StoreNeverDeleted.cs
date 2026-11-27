@@ -90,7 +90,9 @@ public class StoreNeverDeleted
         // its handle closes. The read-only copy's own rewrite: SitePublisher removes the data root's
         // folder for the copy whole and SiteCopyCommand writes each of its files into it again, and SitePublisher writes the
         // copy's report beside that folder, and from the 23.10 correction of 2026-11-17 SiteUpload writes the record of its
-        // newest upload beside it too; none of them is the store or under it.
+        // newest upload beside it too; none of them is the store or under it. From the correction of 2026-11-26 CopyLayout
+        // removes the profile of the browser it lays the copy out in, a folder of its own it made under the machine's temporary
+        // folder.
         // From 23.1 HistoryEndFilings writes a filer's filing index, its older pages and its documents as the archive sent
         // them into a folder the operator names, none of them the store. From 23.3 LongScheduleFilings, LongDayFiles and
         // LongMembers write the trust's filings, the provider's day files, symbol lists and answers, the filers' indexes,
@@ -113,6 +115,7 @@ public class StoreNeverDeleted
                 "ComparisonCommand.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "ContextIdeasRunner.cs: File.WriteAllText(figures)",
                 "ContextIdeasRunner.cs: File.WriteAllText(report)",
+                "CopyLayout.cs: Directory.Delete(profile)",
                 "DrainLauncher.cs: Directory.Delete(other)",
                 "DrainLauncher.cs: Directory.Delete(partial)",
                 "DrainLauncher.cs: Directory.Move(partial)",
