@@ -3044,9 +3044,9 @@ public sealed partial class SetupLedger : IComponent
         await ScalarAsync(connection, LongSpansOnIndex, [("$index", index)], cancellation) is not null;
 
     // From the 24.19 correction of 2026-11-25 how many of the newest settlements FINRA published before a session a build reads
-    // a stock's report from.
+    // a stock's report from, the shared code's own from the pin move before the run of 2027-02-06.
     // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
-    public const int ShortInterestSettlementsRead = 2;
+    public const int ShortInterestSettlementsRead = LedgerContext.ShortInterestSettlementsRead;
 
     const string ShortInterestPublished = "SELECT DISTINCT published_on FROM short_interest ORDER BY published_on;";
 
@@ -3066,27 +3066,9 @@ public sealed partial class SetupLedger : IComponent
         return days;
     }
 
-    // Whether a report published on a day is of the newest settlements read before a session.
-    public static bool ShortInterestCurrent(IReadOnlyList<DateOnly> settlements, DateOnly reported, DateOnly session)
-    {
-        var (low, high) = (0, settlements.Count);
-
-        while (low < high)
-        {
-            var middle = (low + high) / 2;
-
-            if (settlements[middle] < session)
-            {
-                low = middle + 1;
-            }
-            else
-            {
-                high = middle;
-            }
-        }
-
-        return low > 0 && reported >= settlements[Math.Max(0, low - ShortInterestSettlementsRead)];
-    }
+    // Whether a report published on a day is of the newest settlements read before a session, by the shared code's rule.
+    public static bool ShortInterestCurrent(IReadOnlyList<DateOnly> settlements, DateOnly reported, DateOnly session) =>
+        LedgerContext.ShortInterestCurrent(settlements, reported, session);
 
     static readonly int ShortInterestAt = LedgerReadings.IndexOf("short_interest_share");
 

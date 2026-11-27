@@ -35,7 +35,7 @@ public sealed class HeavyweightLay
         this.months = months;
         this.leading = leading;
         this.industryOf = industryOf;
-        names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        names = tape.Names;
     }
 
     // Each month's first session from the first scored, the months a book's edge is read over.

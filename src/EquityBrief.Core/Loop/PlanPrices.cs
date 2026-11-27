@@ -56,6 +56,25 @@ public static class PlanPrices
             return null;
         }
 
+        // On the operator's answers of 2026-11-27, item 2, a plan at a level with a floor names it after everything else.
+        if (words.IndexOf(PlanCombination.AboveItsFloor, StringComparison.Ordinal) is var floored and > 0)
+        {
+            return Named(words[..floored]) is { Range: null } unfloored
+                && unfloored.Entry != PlanPoints.NextOpen && unfloored.Entry != PlanPoints.FirstPullback
+                && BuyRanges.Floors.OfType<double>().FirstOrDefault(floor => EquityBrief.Core.Families.RuleWording.BuyRanges.UnderItsPrice(floor) == words[(floored + PlanCombination.AboveItsFloor.Length)..]) is var stated and > 0
+                    ? unfloored with { LevelFloor = stated }
+                    : null;
+        }
+
+        // From the January pin move a plan buying in a range names its widths after its own words.
+        if (words.IndexOf(PlanCombination.InItsRange, StringComparison.Ordinal) is var ranged and > 0)
+        {
+            return Named(words[..ranged]) is { } unranged
+                && BuyRanges.Widths.FirstOrDefault(widths => widths.Words == words[(ranged + PlanCombination.InItsRange.Length)..]) is { Ceiling: > 0 } stated
+                    ? unranged with { Range = stated }
+                    : null;
+        }
+
         if (PlanPoints.Combinations.FirstOrDefault(one => one.Words == words) is { } listed)
         {
             return listed;

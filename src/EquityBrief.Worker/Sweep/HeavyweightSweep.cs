@@ -102,7 +102,7 @@ public sealed record HeavyweightFigures(
     double? HeldMedian,
     double? HeldMean)
 {
-    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= FamilySweep.YearsBeating;
+    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= SweepFigures.Share(FamilySweep.YearsBeating);
 }
 
 // What the heavyweights' sweep proposes: the setting with the best edge among those meeting the floors with every
@@ -124,6 +124,25 @@ public sealed record HeavyweightComparison(int Sessions, int Sectors, int Matche
 public sealed class HeavyweightTape
 {
     public required string[] Tickers { get; init; }
+
+    // Each ticker's series by name, its first where a history-ends mark lays a member as two series, one each side of the
+    // mark; a session's leaders are read through the members it holds, so the second is reached on its own sessions.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    public IReadOnlyDictionary<string, int> Names => names ??= NamesOf(Tickers);
+
+    IReadOnlyDictionary<string, int>? names;
+
+    static Dictionary<string, int> NamesOf(string[] tickers)
+    {
+        var named = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var at = 0; at < tickers.Length; at++)
+        {
+            named.TryAdd(tickers[at], at);
+        }
+
+        return named;
+    }
 
     public required DateOnly[] Calendar { get; init; }
 
@@ -523,8 +542,21 @@ public static class HeavyweightSweep
     }
 
     // A session's reading at a setting as the walk reads it: each sector's leaders and its size cut, by name.
-    public static HeavyweightRebalance Read(HeavyweightSession session, HeavyweightSetting setting, IReadOnlyDictionary<string, int> names) =>
-        new([.. Sectors(session, setting).Select(sector => (sector.Sector, sector.Leaders.Select(leader => names[leader]).ToArray(), sector.Largest.Select(ranked => names[ranked.Ticker]).ToArray()))]);
+    // Each is the series of the member the session holds, since a member a history-ends mark lays as two series holds a
+    // session on one side of the mark alone.
+    public static HeavyweightRebalance Read(HeavyweightSession session, HeavyweightSetting setting, IReadOnlyDictionary<string, int> names)
+    {
+        var held = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var candidate in session.Members)
+        {
+            held.TryAdd(candidate.Member.Ticker, candidate.Name);
+        }
+
+        int NameOf(string ticker) => held.TryGetValue(ticker, out var at) ? at : names[ticker];
+
+        return new([.. Sectors(session, setting).Select(sector => (sector.Sector, sector.Leaders.Select(NameOf).ToArray(), sector.Largest.Select(ranked => NameOf(ranked.Ticker)).ToArray()))]);
+    }
 
     // Every setting walked over the history laid out: each reading's rebalances read once over every session either
     // period reads, then walked at each period and each exit, every member's return over a holding's sessions read
@@ -535,7 +567,7 @@ public static class HeavyweightSweep
         IReadOnlyList<int> months,
         IReadOnlyList<int> weeks)
     {
-        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var names = tape.Names;
         var everyMember = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();
         var byKey = new System.Collections.Concurrent.ConcurrentDictionary<string, HeavyweightFigures>(StringComparer.Ordinal);
         var read = months.Concat(weeks).Distinct().ToArray();
@@ -717,7 +749,7 @@ public static class HeavyweightSweep
     public static HeavyweightFigures Figures(string key, IReadOnlyList<HeavyweightTrade> trades)
     {
         var years = SweepFigures.Years;
-        var done = trades.Where(trade => trade.Edge is not null && trade.Year is >= 0 and < SweepFigures.Years).ToArray();
+        var done = trades.Where(trade => trade.Edge is not null && trade.Year >= 0 && trade.Year < years).ToArray();
         var yearTrades = new int[years];
         var yearEdge = new double?[years];
 
@@ -795,7 +827,7 @@ public static class HeavyweightSweep
     // The patterns of eight years in which an edge with no effect stands above nothing in at least the floor's years,
     // of the 256 the years can fall in.
     public static int LuckPatterns() =>
-        Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern => System.Numerics.BitOperations.PopCount((uint)pattern) >= FamilySweep.YearsBeating);
+        Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern => System.Numerics.BitOperations.PopCount((uint)pattern) >= SweepFigures.Share(FamilySweep.YearsBeating));
 
     // How many settings luck alone would put above nothing in the floor's years, were the settings independent.
     public static double Luck(int settings) => 1.0 * settings * LuckPatterns() / (1 << SweepFigures.Years);

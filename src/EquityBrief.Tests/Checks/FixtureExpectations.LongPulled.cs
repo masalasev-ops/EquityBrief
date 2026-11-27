@@ -117,8 +117,9 @@ public partial class FixtureExpectations
     }
 
     // Settlements published on 10 Jan, 25 Jan, 9 Feb and 24 Feb: on 26 Feb a report of 9 Feb or 24 Feb is read and one of 25 Jan
-    // is not; on 24 Feb itself, the newest two before it are 25 Jan and 9 Feb; before the first nothing is read. The check lists
-    // the short interest expected beside the seven, and the nights read no settlement.
+    // is not; on 24 Feb itself, the newest two before it are 25 Jan and 9 Feb; before the first nothing is read. From the pin move
+    // before the run of 2027-02-06 the shared code reads by the same rule, so the check lists neither the short interest nor the
+    // seven as expected.
     [Fact]
     public void ABuildReadsShortInterestFromTheTwoNewestSettlementsAlone()
     {
@@ -132,8 +133,9 @@ public partial class FixtureExpectations
         Assert.False(SetupLedger.ShortInterestCurrent(settlements, new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 5)));
         Assert.Equal(2, SetupLedger.ShortInterestSettlementsRead);
 
-        Assert.True(TableOwnReadings.Expected("short_interest_share"));
-        Assert.True(TableOwnReadings.Expected("liquidity"));
+        Assert.Equal(SetupLedger.ShortInterestSettlementsRead, LedgerContext.ShortInterestSettlementsRead);
+        Assert.False(TableOwnReadings.Expected("short_interest_share"));
+        Assert.False(TableOwnReadings.Expected("liquidity"));
         Assert.False(TableOwnReadings.Expected("rsi"));
 
         // A build's reading worked to 0.05 is left none where its report of 25 Jan is past the two newest before 26 Feb, kept where

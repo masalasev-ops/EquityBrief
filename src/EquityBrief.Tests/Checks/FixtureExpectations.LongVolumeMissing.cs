@@ -73,7 +73,7 @@ public partial class FixtureExpectations
         {
             var readings = Enumerable.Repeat((double?)1.0, LedgerReadings.All.Count).ToArray();
 
-            TableOwnReadings.Apply(readings, new TradedRanks([series], members), 0, series, bar);
+            TableOwnReadings.Apply(readings, series, bar);
 
             return readings;
         }

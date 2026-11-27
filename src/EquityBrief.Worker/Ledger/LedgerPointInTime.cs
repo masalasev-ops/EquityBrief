@@ -68,10 +68,10 @@ public static class LedgerPointInTime
 
         SetupLedger.CapShortInterest(readings, shortInterest, settlements, ticker, read.Calendar[read.At]);
 
-        // From the 24.19 correction a row of the every-session table is rebuilt as the table reads its seven of its own.
+        // From the 24.19 correction a row of the every-session table is rebuilt as the table reads it its own way.
         if (table)
         {
-            TableOwnReadings.Apply(readings, new TradedRanks(read.Series, read.Members), read.Name, read.Series[read.Name], read.Bar, reportFilings is { } filings ? SetupLedger.ReportDaysOf(filings, read.Series[read.Name]) : null);
+            TableOwnReadings.Apply(readings, read.Series[read.Name], read.Bar, reportFilings is { } filings ? SetupLedger.ReportDaysOf(filings, read.Series[read.Name]) : null);
         }
 
         return readings;
@@ -182,8 +182,6 @@ public static class LedgerPointInTime
             return rows;
         }
 
-        var traded = new TradedRanks(read.Series, read.Members);
-
         foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
         {
             var name = Array.FindIndex(read.Series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
@@ -197,7 +195,7 @@ public static class LedgerPointInTime
             var readings = LedgerSetups.Readings(index, name, read.Series[name], Closes(read.Series[name]), bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series);
 
             SetupLedger.CapShortInterest(readings, shortInterest, settlements, ticker, read.Calendar[read.At]);
-            rows[ticker] = (readings, traded.Alpha3(name, bar), traded.Alpha4(name, bar));
+            rows[ticker] = (readings, readings[LedgerReadings.IndexOf("alpha_three")], readings[LedgerReadings.IndexOf("alpha_four")]);
         }
 
         return rows;

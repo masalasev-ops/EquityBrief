@@ -191,4 +191,42 @@ public partial class FixtureExpectations
         Assert.Equal(2, laidLater[first].Members.Count);
         Assert.Empty(HeavyweightSweep.Read(laidLater[0], IndexHeavyweights.Provisional, names).Buys);
     }
+
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    [Fact]
+    public void AMemberAMarkLaysAsTwoSeriesIsReadOnEachSessionAsThePartHoldingIt()
+    {
+        // A laid as two series under one ticker, its bars to the 100th session and its bars after, and B whole: the tape's
+        // names keep A's first, and the first scored session, which only A's second part holds, reads every member it cuts
+        // and buys as a series holding a close there, A's second part among them and never its first.
+        var calendar = Weekdays(new DateOnly(2018, 1, 1), 400);
+        var first = Array.IndexOf(calendar, new DateOnly(2019, 1, 2));
+
+        SweepName Name(string ticker, Range bars, Func<int, decimal> close) => new(
+            ticker,
+            calendar.Select((day, at) => new SweepBar(day, close(at), close(at), close(at), 1_000, close(at), close(at))).ToArray()[bars],
+            [(null, null)],
+            []);
+
+        var inputs = new SweepHistoryInputs(calendar[^1], calendar, [Name("A", ..100, at => 100m + at), Name("A", 100.., at => 100m + at), Name("B", .., _ => 100m)], 0, 0, 0, 0, "constructed");
+        var history = new HeavyweightHistory(
+            new Dictionary<string, (string? Cik, string? Sector)> { ["A"] = ("0000000001", GicsSectors.Energy), ["B"] = ("0000000002", GicsSectors.Energy) },
+            new Dictionary<string, IReadOnlyList<Core.Families.FiledCount>>
+            {
+                ["A"] = [new(new DateOnly(2017, 12, 31), new DateOnly(2018, 1, 15), 10m, new DateOnly(2019, 6, 28))],
+                ["B"] = [new(new DateOnly(2017, 12, 31), new DateOnly(2018, 1, 15), 10m, new DateOnly(2019, 6, 28))],
+            },
+            new Dictionary<string, IReadOnlyList<Core.Families.FiledSplit>>(),
+            [],
+            []);
+        var (tape, sessions) = HeavyweightSweep.Lay(inputs, history, null, new HashSet<int> { first }, first);
+        var read = HeavyweightSweep.Read(sessions[first], IndexHeavyweights.Provisional, tape.Names);
+        var named = read.Sectors.SelectMany(sector => sector.Cut).Concat(read.Buys).ToArray();
+
+        Assert.Equal(["A", "A", "B"], tape.Tickers);
+        Assert.Equal(0, tape.Names["A"]);
+        Assert.Contains(1, named);
+        Assert.DoesNotContain(0, named);
+        Assert.All(named, name => Assert.False(double.IsNaN(tape.Close[name][first])));
+    }
 }

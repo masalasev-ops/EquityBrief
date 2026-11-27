@@ -167,8 +167,8 @@ public static class IdeaGrammar
     // family runs today.
     public static IReadOnlyList<int> SessionLimits { get; } = [.. new[] { 5, 10, 20, 40, 63 }.Concat(Families.Select(FamilyTimeLimit)).Distinct().Order()];
 
-    // The time limit each family's live rule runs today, which a survivor's variant runs until its family is taught a
-    // limit of its own.
+    // The time limit each family's live rule runs today, which a survivor's variant holds its trades at where its line
+    // states no other.
     public static int FamilyTimeLimit(string family) => family switch
     {
         "pullback" => EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap,

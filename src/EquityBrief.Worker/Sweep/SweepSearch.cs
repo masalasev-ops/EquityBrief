@@ -194,7 +194,7 @@ public static class SweepSearch
     // A setting is kept on a design where it raises the edge in at least 6 of the 8 years, at least 2 of them
     // among 2024 to 2026, with at least 300 scored trades left.
     public static bool Kept(SweepMeasures with, int yearsUp, int recentYearsUp) =>
-        with.Scored >= SweepMeasures.TradeFloor && yearsUp >= YearsUpToKeep && recentYearsUp >= RecentYearsUpToKeep;
+        with.Scored >= SweepMeasures.TradeFloor && yearsUp >= SweepFigures.Share(YearsUpToKeep) && recentYearsUp >= RecentYearsUpToKeep;
 
     public static (int Years, int Recent) YearsUp(SweepMeasures without, SweepMeasures with)
     {

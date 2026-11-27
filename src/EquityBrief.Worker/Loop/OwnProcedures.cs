@@ -73,7 +73,7 @@ public static class OwnProcedures
     // second stage reads it. Over eight years it is the second stage's own rule.
     public static bool KeptOver(SweepMeasures without, SweepMeasures with, bool onTotals, int years)
     {
-        if (with.Scored < Up(SweepMeasures.TradeFloor * years, SweepFigures.Years))
+        if (with.Scored < Up(SweepMeasures.TradeFloor * years, SweepFigures.LeastYears))
         {
             return false;
         }
@@ -94,7 +94,7 @@ public static class OwnProcedures
             }
         }
 
-        return higher >= Up(SweepIdeas.YearsBetter * years, SweepFigures.Years)
+        return higher >= Up(SweepIdeas.YearsBetter * years, SweepFigures.LeastYears)
             && recent >= SweepIdeas.RecentYearsBetter
             && (!onTotals || (with.AverageMultiple is { } result && without.AverageMultiple is { } before && result > before));
     }
@@ -157,7 +157,7 @@ public static class OwnProcedures
             }
 
             // The fold's second stage over its own ten strongest settings, each level alone and the survivors crossed.
-            var ten = own.Strongest(figures, Up(SweepDials.TradesHeld * years, SweepFigures.Years));
+            var ten = own.Strongest(figures, Up(SweepDials.TradesHeld * years, SweepFigures.LeastYears));
             var without = ten.Select(setting => SweepDials.Of(Learned(Walk(setting, [])))).ToArray();
             var crossedLevels = own.Levels
                 .Select(level =>

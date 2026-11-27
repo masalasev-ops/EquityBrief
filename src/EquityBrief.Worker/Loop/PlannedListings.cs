@@ -25,6 +25,16 @@ public sealed class PlannedListings(LoopRead read, PlanCombination plan, string 
     public (double? Result, int Sessions, string End) Of(FamilyListing listing) =>
         walked.GetOrAdd((listing.Name, listing.Bar), _ => Walked(listing));
 
+    // From the January pin move the order's own reward over its own risk, placed as the night places it, which the reward check on
+    // the traded plan reads; none where its sale names no one price it takes the whole at.
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    public double? TradedReward(FamilyListing listing) =>
+        traded.GetOrAdd((listing.Name, listing.Bar), _ =>
+            (PlanTrades.Place(plan, family, read.Series[listing.Name], listing.Bar, listing.Stop, Target(listing), listing.Trails ? listing.Trail : null, listing.Cap)
+                ?? PlanTrades.Unplaced(plan, listing.Stop, listing.Cap)).TradedReward(listing.Entry));
+
+    readonly ConcurrentDictionary<(int Name, int Bar), double?> traded = new();
+
     public (double? Result, int Sessions) Exit(FamilyListing listing)
     {
         var (result, sessions, _) = Of(listing);

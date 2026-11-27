@@ -109,7 +109,11 @@ public sealed record FamilyFigures(
     double? StandardError,
     double? CloseStops = null)
 {
-    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= FamilySweep.YearsBeating;
+    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= SweepFigures.Share(FamilySweep.YearsBeating);
+
+    // From the January pin move the year in progress, read beside the scored years and counted in no figure above.
+    // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+    public YearSoFar SoFar { get; init; } = new(0, 0, null);
 
     public double NightShare => ScoredNights > 0 ? 1.0 * Nights / ScoredNights : 0;
 }
@@ -196,7 +200,7 @@ public static class FamilySweep
         var years = SweepFigures.Years;
         var yearTrades = new int[years];
         var yearEdge = new double?[years];
-        var withResult = trades.Where(trade => trade.Result is not null && trade.Year is >= 0 and < SweepFigures.Years).ToArray();
+        var withResult = trades.Where(trade => trade.Result is not null && trade.Year >= 0 && trade.Year < years).ToArray();
         var edges = withResult.Where(trade => !double.IsNaN(trade.Benchmark)).ToArray();
 
         for (var year = 0; year < years; year++)
@@ -233,7 +237,18 @@ public static class FamilySweep
             recent.Length > 0 ? recent.Average(EdgeOf) : null,
             trimmed.Length > 0 ? trimmed.Average(EdgeOf) : null,
             error,
-            withResult.Length > 0 ? 1.0 * withResult.Count(trade => trade.Listing.CloseStop) / withResult.Length : null);
+            withResult.Length > 0 ? 1.0 * withResult.Count(trade => trade.Listing.CloseStop) / withResult.Length : null)
+        {
+            SoFar = SoFarOf(trades.Where(trade => trade.Year == SweepFigures.InProgress).ToArray()),
+        };
+    }
+
+    // The year in progress's trades: how many, those with a result, and their edge where they hold one.
+    static YearSoFar SoFarOf(IReadOnlyList<FamilyTrade> inProgress)
+    {
+        var edged = inProgress.Where(trade => trade.Result is not null && !double.IsNaN(trade.Benchmark)).ToArray();
+
+        return new YearSoFar(inProgress.Count, inProgress.Count(trade => trade.Result is not null), edged.Length > 0 ? edged.Average(EdgeOf) : null);
     }
 
     static double EdgeOf(FamilyTrade trade) => trade.Result!.Value - trade.Benchmark;

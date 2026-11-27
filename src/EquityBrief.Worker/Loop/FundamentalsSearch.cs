@@ -50,7 +50,7 @@ public static class FundamentalsSearch
             .ToArray();
         var better = years.Count(year => year.Edge > 0);
         var recent = years.TakeLast(SweepIdeas.RecentYears).Count(year => year.Edge > 0);
-        var passed = trades.Count >= FamilySweep.TradeFloor && better >= FamilySweep.YearsBeating && recent >= SweepIdeas.RecentYearsBetter;
+        var passed = trades.Count >= FamilySweep.TradeFloor && better >= SweepFigures.Share(FamilySweep.YearsBeating) && recent >= SweepIdeas.RecentYearsBetter;
 
         return new FundamentalsFigures(setting, trades.Count, trades.Count > 0 ? trades.Average(trade => trade.Edge) : null, years, better, recent, passed);
     }

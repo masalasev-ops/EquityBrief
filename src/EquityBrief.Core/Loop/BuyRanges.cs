@@ -10,9 +10,7 @@ public readonly record struct RangeWidths(double Ceiling, double? Floor)
     // The width as a table row names it, "1 / 2" or "1 / none".
     public string Key => string.Create(CultureInfo.InvariantCulture, $"{Ceiling:0.##} / {(Floor is { } floor ? floor.ToString("0.##", CultureInfo.InvariantCulture) : BuyRanges.NoFloor)}");
 
-    public string Words => string.Create(
-        CultureInfo.InvariantCulture,
-        $"a ceiling {Ceiling:0.##} typical {(Ceiling == 1 ? "day" : "days")} above the last close and {(Floor is { } floor ? string.Create(CultureInfo.InvariantCulture, $"a floor {floor:0.##} typical {(floor == 1 ? "day" : "days")} under it") : "no floor")}");
+    public string Words => Families.RuleWording.BuyRanges.Widths(Ceiling, Floor);
 }
 
 // A buy range in prices: the most it pays, and the open under which it buys nothing, none where it has no floor.
@@ -92,10 +90,10 @@ public static class BuyRanges
     // see: The picker's buy range width is chosen first over the price families' setups under its menu and then over every member on every session
     public const string PickerPlan = "the picker: ";
 
-    public const string PickerRun = "provisional, the picker's menu over every setup the price families flagged";
+    public const string PickerRun = Families.RuleWording.BuyRanges.PickerRun;
 
     // The run over every member on every session, whose width replaces the provisional one.
-    public const string EveryMemberRun = "the picker's menu over every member on every session";
+    public const string EveryMemberRun = Families.RuleWording.BuyRanges.EveryMemberRun;
 
     public static string PickerFamily(string hold, string shape) => PickerPlan + hold + ", " + shape;
 
@@ -188,8 +186,7 @@ public static class BuyRanges
     public static string Between(decimal ceiling, decimal? floor) =>
         floor is { } low ? $"Buys between {Dollars(low)} and {Dollars(ceiling)}" : $"Buys at {Dollars(ceiling)} or less";
 
-    public static string AboveWords(decimal ceiling) =>
-        string.Create(CultureInfo.InvariantCulture, $"Opens above {Dollars(ceiling)}: waits up to {OrderSessions} days for the price to come back to {Dollars(ceiling)}, then not bought.");
+    public static string AboveWords(decimal ceiling) => Families.RuleWording.BuyRanges.Above(Dollars(ceiling), OrderSessions);
 
     public static string? BelowWords(decimal? floor) =>
         floor is { } low ? $"Opens below {Dollars(low)}: not bought." : null;
@@ -205,7 +202,7 @@ public static class BuyRanges
 
     // What a pick not bought says, by the side of its range it opened on.
     public static string NotBoughtWords(string side) =>
-        side == Above ? "not bought: opened above its range" : "not bought: opened below its range";
+        side == Above ? Families.RuleWording.BuyRanges.NotBoughtAbove : Families.RuleWording.BuyRanges.NotBoughtBelow;
 
     static string Dollars(decimal price) => "$" + price.ToString("#,##0.00", CultureInfo.InvariantCulture);
 }

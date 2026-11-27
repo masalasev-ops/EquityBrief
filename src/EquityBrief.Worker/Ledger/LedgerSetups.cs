@@ -1,5 +1,6 @@
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.History;
 using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
@@ -304,12 +305,16 @@ public sealed record LedgerContext(
             : null;
 
     // From 21.4 the shares short FINRA last reported before a session over the newest share count the filings' covers
-    // state before it; none while no store holds the reports, and none where the covers state no count.
+    // state before it; none while no store holds the reports, and none where the covers state no count. From the pin move
+    // before the run of 2027-02-06 only a report of the two newest settlements published before the session is read, the
+    // night's and every build's alike, so a stock left out of the newer settlements reads none rather than an old count.
+    // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
     public double? ShortInterestShare(SweepSeries one, DateOnly session)
     {
         var ticker = one.Name.Ticker;
 
-        if (ShortInterest?.GetValueOrDefault(ticker)?.LastOrDefault(report => report.Reported < session) is not { } report)
+        if (ShortInterest?.GetValueOrDefault(ticker)?.LastOrDefault(report => report.Reported < session) is not { } report
+            || !ShortInterestCurrent(SettlementDays, report.Reported, session))
         {
             return null;
         }
@@ -320,6 +325,37 @@ public sealed record LedgerContext(
         var count = parts.Counts.LastOrDefault(count => count.Day < session);
 
         return count.Day == default || count.Shares <= 0m ? null : Statistic.FromRatio(report.Shares / count.Shares);
+    }
+
+    // How many of the newest settlements FINRA published before a session a stock's report is read from.
+    // see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session
+    public const int ShortInterestSettlementsRead = 2;
+
+    // Every day a settlement the context holds was published on, oldest first, worked once from the reports themselves.
+    IReadOnlyList<DateOnly> SettlementDays => settlementDays ??= [.. (ShortInterest?.Values.SelectMany(reports => reports.Select(report => report.Reported)) ?? []).Distinct().Order()];
+
+    IReadOnlyList<DateOnly>? settlementDays;
+
+    // Whether a report published on a day is of the newest settlements published before a session.
+    public static bool ShortInterestCurrent(IReadOnlyList<DateOnly> settlements, DateOnly reported, DateOnly session)
+    {
+        var (low, high) = (0, settlements.Count);
+
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+
+            if (settlements[middle] < session)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return low > 0 && reported >= settlements[Math.Max(0, low - ShortInterestSettlementsRead)];
     }
 
     // A member's 2-session relative strength index on each of its bars, read once a series through the dip's own function.
@@ -336,17 +372,20 @@ public sealed record LedgerContext(
 
     // From 23.10's second part a member's entry check reading as of a bar, through the entry check's own function, the stored year
     // then being the year the night held and the bars before it the older history, as the check's measurement reads it; read
-    // once a member and bar.
+    // once a member and bar. From the pin move before the run of 2027-02-06 the older history is held to the night's own reach,
+    // the last 2,792 sessions to the bar, so every session reads the length of history the night reads.
+    // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
     public EquityBrief.Core.EntryCheck.EntryReading? EntryOf(SweepSeries one, int bar) =>
         entries.GetValue(one, _ => new()).GetOrAdd(bar, at =>
         {
             var held = entryBars.GetValue(one, series => [.. series.Bars.Select(each => new EquityBrief.Core.EntryCheck.EntryBar(each.Session, each.High, each.Low, each.Close, each.Volume))]);
             var start = one.WindowStart[at];
+            var older = TableReadings.OlderFrom(start, at);
 
             return EquityBrief.Core.EntryCheck.EntryReadings.Of(
                 one.Name.Ticker,
                 new ArraySegment<EquityBrief.Core.EntryCheck.EntryBar>(held, start, at + 1 - start),
-                new ArraySegment<EquityBrief.Core.EntryCheck.EntryBar>(held, 0, start),
+                new ArraySegment<EquityBrief.Core.EntryCheck.EntryBar>(held, older, start - older),
                 double.IsFinite(one.Atr[at]) ? one.Atr[at] : null,
                 double.IsFinite(one.Rsi[at]) ? one.Rsi[at] : null,
                 double.IsFinite(one.Volume50[at]) ? one.Volume50[at] : null);
@@ -1188,7 +1227,6 @@ public static class LedgerSetups
         var ticker = one.Name.Ticker;
         var income = context.Income.GetValueOrDefault(ticker) ?? [];
         var sector = context.Sectors.GetValueOrDefault(ticker);
-        var liquidityWindow = one.Bars[Math.Max(0, bar - LedgerReadings.LiquiditySessions + 1)..(bar + 1)].Select(each => (Statistic.FromPrice(each.Close), each.Volume)).ToArray();
         var newest = one.NewestSurprise[bar];
         var indexSeries = market.Of(LedgerMarket.IndexSeriesOf(indexCode));
         var vix = market.Of(LedgerMarket.Vix);
@@ -1219,7 +1257,10 @@ public static class LedgerSetups
         Set("gap_down", LedgerReadings.Figure(one.GapDown[(bar * highs) + high]));
         Set("rsi_low", LedgerReadings.Figure(one.RsiLow[(bar * highs) + high]));
         Set("tightness", LedgerReadings.Figure(one.Tightness[bar]));
-        Set("liquidity", LedgerReadings.Liquidity(liquidityWindow));
+        // From the pin move before the run of 2027-02-06 the two liquidity readings read the dollars traded at the price the
+        // stock traded at on the day.
+        // see: The every-session table reads four readings at the traded price and three over a fixed length of history, the night's own
+        Set("liquidity", TableReadings.Liquidity(one.Bars, bar));
         Set("earnings_sessions", EarningsSessions(one.Name.Prints, calendar, at));
         Set("surprise_sessions", newest >= 0 ? at - one.SessionAt[one.SurpriseBar[newest]] : null);
         Set("surprise_percent", newest >= 0 ? LedgerReadings.Figure(one.Name.Surprises[newest].Percent) : null);
@@ -1260,7 +1301,7 @@ public static class LedgerSetups
         Set("close_place", FactorReadings.ClosePlace(bars, bar, FactorReadings.PlaceSessions));
         Set("up_volume_share", FactorReadings.UpVolumeShare(bars, bar, FactorReadings.VolumeSessions));
         Set("price_volume_correlation", FactorReadings.PriceVolumeCorrelation(bars, bar, FactorReadings.VolumeSessions));
-        Set("illiquidity", FactorReadings.Illiquidity(bars, bar, FactorReadings.MonthSessions));
+        Set("illiquidity", TableReadings.Illiquidity(bars, bar, FactorReadings.MonthSessions));
         Set("overnight_less_intraday", FactorReadings.OvernightLessIntraday(bars, bar, FactorReadings.MonthSessions));
         Set("sector_month", fund is null ? null : FactorReadings.RelativeReturn(bars, bar, fund, FactorReadings.MonthSessions));
         Set("sector_quarter", fund is null ? null : FactorReadings.RelativeReturn(bars, bar, fund, FactorReadings.QuarterSessions));

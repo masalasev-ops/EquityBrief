@@ -39,6 +39,20 @@ public sealed record PlanOrder(
     // before it, which counts from the session after; none for an order placed with it.
     public DateOnly? TakeProfitAddedOn { get; init; }
 
+    // From the January pin move the range a buy at the next open is placed in, in prices from its night's close: bought at an open
+    // inside it, at its ceiling where the price comes back to it within its window, and not bought under its floor; none for an
+    // order buying at whatever price it opens.
+    // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    // Left out of the stored order where none is set, so an order placed with neither is stored as it was before the move.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public BuyRange? Range { get; init; }
+
+    // On the operator's answers of 2026-11-27, item 2, the open under which an order at a level buys nothing, its typical daily
+    // moves under the level in prices; none for an order that fills at any open under its level.
+    // see: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public double? LevelFloor { get; init; }
+
     static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public string Json() => JsonSerializer.Serialize(this, Options);
@@ -70,6 +84,41 @@ public sealed record PlanOrder(
     public TakeProfitPrice? TakeProfitFrom(double fill, double stop) =>
         TakeProfit is { } multiple ? Loop.TakeProfit.PlacedShaped(Sale, fill, stop, TurnedDown, multiple, Placing, Half) : null;
 
+    // From the January pin move the order's own reward over its own risk, the traded plan's: from the price it buys at, its
+    // level or for an order at the next open or the first pullback the night's close, to the one price its sale takes the whole
+    // at above it, over the distance down to the stop that price places; and on the operator's answers of 2026-11-27, item 3,
+    // for a plan selling half first, to its first take-profit, the lowest of the half's price, its target and its staged levels
+    // above the buy, since a close reaching any of them sells there first. None where its stop is not placed under the buy, or
+    // its sale names no such price, selling on a trail, on the RSI, by staged levels without a half or at its time limit alone.
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    public double? TradedReward(double close)
+    {
+        var buy = Level ?? close;
+
+        if (PlanPoints.StopOf(Stop, buy, RuleStop, ZoneStop, TypicalDay) is not { } stop || !(buy > stop))
+        {
+            return null;
+        }
+
+        var sale = SaleFrom(buy, stop);
+
+        if (sale.Trail is not null || sale.RsiAbove is not null)
+        {
+            return null;
+        }
+
+        if (sale.HalfAt is { } half && half > buy)
+        {
+            var first = sale.Staged.Where(level => level > buy).Append(half).Concat(sale.Target is { } target && target > buy ? [target] : []).Min();
+
+            return Math.Round((first - buy) / (buy - stop), 6, MidpointRounding.AwayFromZero);
+        }
+
+        return sale.Target is { } whole && whole > buy && sale.HalfAt is null && !sale.Staged.Any(level => level > buy && level < whole)
+            ? Math.Round((whole - buy) / (buy - stop), 6, MidpointRounding.AwayFromZero)
+            : null;
+    }
+
     // The order at the scale the stock's closes are stored at now, an adjustment since its night moving every price by the
     // same factor, the night's close over the close it was set at.
     public PlanOrder Scaled(double factor) =>
@@ -85,6 +134,8 @@ public sealed record PlanOrder(
                 Staged = [.. Staged.Select(level => level * factor)],
                 Trail = Trail * factor,
                 TurnedDown = [.. TurnedDown.Select(turned => turned with { Price = turned.Price * factor })],
+                Range = Range is { } range ? new BuyRange(range.Ceiling * factor, range.Floor * factor) : null,
+                LevelFloor = LevelFloor * factor,
             };
 }
 
@@ -125,7 +176,15 @@ public static class PlanHook
     public const int Beyond = 2;
     public const int OnHalf = 3;
 
-    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter, TakeProfitParameter, TakeProfitShapeParameter];
+    // From the January pin move the buy range of a plan buying at the next open: its ceiling's typical daily moves above the last
+    // close and its floor's under it, each one of the widths the range's test walks, nought or none for no floor; no range where
+    // no ceiling is stated.
+    // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    public const string RangeCeilingParameter = "plan_range_ceiling";
+
+    public const string RangeFloorParameter = "plan_range_floor";
+
+    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter, TakeProfitParameter, TakeProfitShapeParameter, RangeCeilingParameter, RangeFloorParameter];
 
     // The entries by number: 0 the next open, 1 to 3 the zones, 4 the 20-session average, 5 a distance under the close in
     // typical days and 6 the first pullback.
@@ -207,6 +266,34 @@ public static class PlanHook
             throw new ArgumentException(FormattableString.Invariant($"The plan's take-profit shape states {shape}, and it states 0 for today's, {AtTheRisk} for the multiple of the risk alone, {Beyond} for the first price it turned down at that far above the buy or {OnHalf} for half, beside a multiple."), nameof(parameters));
         }
 
+        // From the January pin move the buy range, stated only on a buy at the next open, at a ceiling and a floor the range's test
+        // walks.
+        var ceiling = parameters.GetValueOrDefault(RangeCeilingParameter);
+        var floorMoves = parameters.GetValueOrDefault(RangeFloorParameter);
+        RangeWidths? range = null;
+        double? levelFloor = null;
+
+        // On the operator's answers of 2026-11-27, item 2, a floor stated with no ceiling on an order at a level: the open the
+        // order buys nothing under, its typical daily moves under the level, since such an order never buys above its price.
+        if (ceiling == 0 && floorMoves != 0 && entryNumber is not (NextOpen or FirstPullback))
+        {
+            if (!BuyRanges.Floors.Contains(floorMoves))
+            {
+                throw new ArgumentException(FormattableString.Invariant($"The plan's floor under its price states {floorMoves}, and it states {string.Join(", ", BuyRanges.Floors.OfType<double>())} typical days."), nameof(parameters));
+            }
+
+            levelFloor = floorMoves;
+        }
+        else if (ceiling != 0 || floorMoves != 0)
+        {
+            if (entryNumber != NextOpen || !BuyRanges.Ceilings.Contains(ceiling) || (floorMoves != 0 && !BuyRanges.Floors.Contains(floorMoves)))
+            {
+                throw new ArgumentException(FormattableString.Invariant($"The plan's buy range states a ceiling of {ceiling} and a floor of {floorMoves}, and it states a ceiling of {string.Join(", ", BuyRanges.Ceilings)} typical days and a floor of {string.Join(", ", BuyRanges.Floors.OfType<double>())} or nought for none, on a buy at the next open."), nameof(parameters));
+            }
+
+            range = new RangeWidths(ceiling, floorMoves > 0 ? floorMoves : null);
+        }
+
         // The plan stated off, the next open at the rule's own stop and sale, is the rule's own plan, which its own walk trades:
         // a variant keeping today's plan beside a planned live rule states it so.
         var combination = new PlanCombination(entry, window, stop, Sales[saleNumber])
@@ -214,6 +301,8 @@ public static class PlanHook
             TakeProfit = takeProfit > 0 ? takeProfit : null,
             Half = shape == OnHalf,
             Placing = shape switch { AtTheRisk => TakeProfitPlacing.Risk, Beyond => TakeProfitPlacing.Beyond, _ => TakeProfitPlacing.Turned },
+            Range = range,
+            LevelFloor = levelFloor,
         };
 
         return PlanPrices.Traded(combination) ? null : combination;
@@ -252,6 +341,21 @@ public static class PlanHook
             }
         }
 
+        if (combination.Range is { } range)
+        {
+            stated[RangeCeilingParameter] = range.Ceiling;
+
+            if (range.Floor is { } floor)
+            {
+                stated[RangeFloorParameter] = floor;
+            }
+        }
+
+        if (combination.LevelFloor is { } under)
+        {
+            stated[RangeFloorParameter] = under;
+        }
+
         return stated;
     }
 
@@ -280,12 +384,17 @@ public static class PlanHook
         // reads at the fill.
         var lowest = new[] { ruleStop, zoneRead?.Stop ?? ruleStop, (level ?? close) - (PlanPoints.WiderDays.Max() * typicalDay) }.Min();
 
-        return new PlanOrder(combination.Words, combination.Entry, level, combination.Window, combination.Stop, ruleStop, zoneRead?.Stop, typicalDay, sale.Target, [.. sale.Staged.Order()], sale.Trail, sale.RsiAbove, cap)
+        // A buy at the next open in a range waits the sessions its order at the ceiling stands.
+        var range = combination.Range is { } widths && combination.Entry == PlanPoints.NextOpen ? BuyRanges.Of(close, typicalDay, widths) : null;
+
+        return new PlanOrder(combination.Words, combination.Entry, level, range is null ? combination.Window : BuyRanges.OrderSessions, combination.Stop, ruleStop, zoneRead?.Stop, typicalDay, sale.Target, [.. sale.Staged.Order()], sale.Trail, sale.RsiAbove, cap)
         {
             TakeProfit = combination.TakeProfit,
             TurnedDown = combination.TakeProfit is null || combination.Half ? [] : [.. (turnedDown ?? []).Where(turned => turned.Price > lowest)],
             Placing = combination.Placing,
             Half = combination.Half,
+            Range = range,
+            LevelFloor = combination.LevelFloor is { } moves && level is { } price && typicalDay > 0 && price - (moves * typicalDay) > 0 ? price - (moves * typicalDay) : null,
         };
     }
 
@@ -295,9 +404,19 @@ public static class PlanHook
     // never filled, as the test leaves it.
     public static PlanTradeState Walk(PlanOrder order, ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int pick, ReadOnlySpan<double> rsi = default, int takeProfitFrom = 0)
     {
-        var fill = order.Entry == PlanPoints.FirstPullback
+        // From the January pin move an order in a range fills as the range fills, waiting while its sessions have not passed and
+        // never filled where it opened under its floor or stayed above its ceiling.
+        var fill = order.Range is { } bought ? BuyRanges.FillOf(opens, lows, pick, bought).Fill
+            : order.Entry == PlanPoints.FirstPullback
             ? PlanPoints.PullbackFillOf(closes, opens, pick, order.Window)
             : PlanPoints.FillOf(opens, lows, pick, order.Level, order.Window);
+
+        // On the operator's answers of 2026-11-27, item 2, an order at a level with a floor buys nothing where the session it
+        // trades into its level opens under the floor, the only fill that stands under its level.
+        if (order.Range is null && order.LevelFloor is { } under && fill is { } low && low.Price < under)
+        {
+            return new PlanTradeState(false, null, null, null, null);
+        }
 
         if (fill is not { } filled)
         {

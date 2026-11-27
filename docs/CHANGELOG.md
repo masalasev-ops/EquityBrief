@@ -7,6 +7,34 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/ARCHITECTURE.html - the floor under a level order's price and the reward of a plan selling half first, at a correction to 24.19
+Decision: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
+Was:
+> section 17's reward row: "from the January pin move a setting of a pullback rule stating a plan that sells the whole at one price: ... to the one price its sale takes the whole at, over the distance to the stop that price places; ... off where none is stated, refused beside a plan selling half and on the dip, whose sale names no one price ...", its check "the traded reward worked by hand at 3, 1.5 and 2 times the risk over three constructed orders and none for a plan selling half or on its time limit alone, ..."
+> section 17's buy range row: "from the January pin move two settings of a plan buying at the next open, ...; the order waiting the 2 sessions its order at the ceiling stands and filling as the range fills; none stated, the plan buys at whatever price it opens ...", its check ending "... under its floor, staying above it and waiting"
+Now:
+> the reward row reads a plan selling half first at its first take-profit, the lowest of the half's price, its target and its staged levels above the buy, none on a trail, refused on the dip, its check adding five constructed orders selling half first
+> the buy range row adds a floor alone on a plan buying at a level, the same widths under its own price, the session its order trades into its level buying nothing where it opens under the floor, and its check the floor read, written back, refused, placed by hand and its fills worked by hand
+Why: the operator's answers of 2026-11-27, items 2 and 3, kept word for word in `prompts/2026-11-27-24.19-pin-move-answers-replay-floor-half-reward.md`.
+
+### 2026-11-27 - docs/RUNBOOK.md - the replay built from a pull request's head before the merge, at a correction to 24.19
+Decision: The replay may build a pull request's head carrying main's HEAD so its report comes before the merge
+Was:
+> "Run it from main after the merge that moved the pin, when no night, off-peak run, local run, ledger build or monthly run is writing, into a folder outside the data root on the faster disk; the first night is the session after the earliest registration among the standing rules whose version moved:" and the command `tools/replay.ps1 --old <the commit the versions were registered under> --from <yyyy-MM-dd> --into C:\EquityBrief-replay`
+Now:
+> run before the merge with `--new` naming the pull request's head, a commit carrying main's HEAD, or from main after the merge with `--new` left out, `EquityBrief__DataRoot` naming the operator's data root from a worktree; the command with `--new <the pull request's head>`; and a replay before the merge standing only while nothing writes before the merge and `register --moved` in one sitting before a night
+Why: the operator's answers of 2026-11-27, item 1, kept word for word in `prompts/2026-11-27-24.19-pin-move-answers-replay-floor-half-reward.md`.
+
+### 2026-11-26 - docs/ARCHITECTURE.html - the January pin move's settings and the scored years, at a correction to 24.19
+Decision: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+Was:
+> section 15's sweep answers: "... meets the floors of at least 300 trades and an edge above nothing in 6 of the 8 years after costs, and none passed otherwise, ..."
+> section 17's table: no row for the time limit and the cap a night, the reward check on the traded plan, the buy range on a rule's plan or the scored years
+Now:
+> "... meets the floors of at least 300 trades and an edge above nothing in 6 of the 8 years after costs, from the January pin move in three quarters of the scored years, rounded up, once a ninth is complete (see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth), and none passed otherwise, ..."
+> four rows: the time limit and the cap a night; the reward check on the traded plan; the buy range on a rule's plan; and the scored years, each with its figures, its reason and its check; the first row as first written stated its least figures as "a whole number from 1" and named "an S&amp;P 400 or 600 rule", and reads "a whole number from one" and "a mid-cap or small-cap rule", so each figure section 17 states in digits is one a constant holds
+Why: the operator's answers of 2026-11-22 as Appendix AD of the plan's file, of 2026-11-23 as its Appendix AE, of 2026-11-25 on the reward check, and of 2026-11-26 on the floors, the reward check and the buy range, kept word for word in `prompts/2026-11-26-24.19-pin-move-answers-floors-reward-range.md`, built in the January pin move (see: Each price family's time limit and cap a night are registered settings, today's where a rule states none) (see: The pin move's ranged and reward variants register in the background at the provisional widths and with the setup's own floor off).
+
 ### 2026-11-26 - docs/BUILD_PLAN.md - the past-case line on the picker's sheet, the order after the January pin move, the dip's one name and no dates, at the 24.0 planning amendment
 Decision: The picker's round-two sheet carries one past-case line a stock, worked by code under its version's own plan
 Was:

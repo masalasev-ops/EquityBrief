@@ -393,7 +393,14 @@ public sealed class DipFamily : IComponent
                     ? [.. hooks.Order(setups?.Invoke(DipRule.Name) ?? [], setup => setup.Readings).Select(setup => new DipAnswer(setup.Ticker, [], setup.Entry, setup.Stop, setup.Cap, null, null))]
                     : hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker));
 
-                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked, Exit: hooks.Exit, Plan: hooks.Plan);
+                // From the January pin move the time limit a rule states in its dial's place, and the cap a night it states.
+                // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+                if (hooks.TimeLimit is { } limit)
+                {
+                    ranked = [.. ranked.Select(answer => answer.TimeLimit is null ? answer : answer with { TimeLimit = limit })];
+                }
+
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked, Exit: hooks.Exit, Plan: hooks.Plan, Most: hooks.ListedAtMost(SetupFamilies.ListedANight));
             })
             .ToArray();
         var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();
@@ -428,7 +435,7 @@ public sealed class DipFamily : IComponent
         DipIndexOutcome? card = null;
         var written = ended;
 
-        foreach (var (rule, setting, fault, gate, answers, ranked, exit, plan) in read)
+        foreach (var (rule, setting, fault, gate, answers, ranked, exit, plan, most) in read)
         {
             var first = card is null;
 
@@ -456,7 +463,7 @@ public sealed class DipFamily : IComponent
                 open.TryAdd(row.GetString(1), (new HeldTrade(DipRule.Name, Date(row.GetString(2))), row.GetString(0)));
             }
 
-            var picks = Draw(ranked, open, listedTonight);
+            var picks = Draw(ranked, open, listedTonight, most);
             var byTicker = ranked.ToDictionary(answer => answer.Ticker, StringComparer.Ordinal);
             var kept = 0;
 
@@ -787,8 +794,8 @@ public sealed class DipFamily : IComponent
 
     // The dip's list drawn last among the swing families: each member passing in the family's order, a stock with an
     // open trade held back, one another family listed that night held back naming that family, and the first five of the
-    // rest listed.
-    public static IReadOnlyList<DipPick> Draw(IReadOnlyList<DipAnswer> ranked, IReadOnlyDictionary<string, (HeldTrade Trade, string Index)> open, IReadOnlyDictionary<string, string> listedTonight)
+    // rest listed, or as many as the rule's cap a night states.
+    public static IReadOnlyList<DipPick> Draw(IReadOnlyList<DipAnswer> ranked, IReadOnlyDictionary<string, (HeldTrade Trade, string Index)> open, IReadOnlyDictionary<string, string> listedTonight, int most = SetupFamilies.ListedANight)
     {
         var picks = new List<DipPick>();
         var place = 0;
@@ -803,7 +810,7 @@ public sealed class DipFamily : IComponent
             {
                 picks.Add(new DipPick(answer.Ticker, FamilyList.UnderAnother, null, family, null, null));
             }
-            else if (place >= SetupFamilies.ListedANight)
+            else if (place >= most)
             {
                 picks.Add(new DipPick(answer.Ticker, FamilyList.PastFive, null, null, null, null));
             }

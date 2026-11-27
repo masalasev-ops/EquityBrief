@@ -94,7 +94,7 @@ public static class HeavyweightSweepReport
     {
         var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Held at the end</th><th>Edge</th><th>Error</th><th>Result</th><th>Size cut</th><th>Every member</th><th>Index</th><th>Years above</th><th>2024 to 2026</th><th>Without the five largest</th><th>Sessions held, median</th><th>Sessions held, mean</th>");
 
-        for (var year = 0; year < 8; year++)
+        for (var year = 0; year < SweepFigures.Years; year++)
         {
             html.Append(Invariant($"<th>{SweepColumns.FirstScored.Year + year}</th>"));
         }
@@ -105,7 +105,7 @@ public static class HeavyweightSweepReport
         {
             html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Percent(figures.Edge)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.Open:N0}</td><td class=\"num\">{Percent(figures.Edge)}</td><td class=\"num\">{Percent(figures.StandardError)}</td><td class=\"num\">{Percent(figures.Result)}</td><td class=\"num\">{Percent(figures.CutReturn)}</td><td class=\"num\">{Percent(figures.EveryMember)}</td><td class=\"num\">{Percent(figures.Index)}</td><td class=\"num\">{figures.YearsBeating} of 8</td><td class=\"num\">{Percent(figures.RecentEdge)}</td><td class=\"num\">{Percent(figures.EdgeWithoutLargest)}</td><td class=\"num\">{Sessions(figures.HeldMedian)}</td><td class=\"num\">{Sessions(figures.HeldMean)}</td>"));
 
-            for (var year = 0; year < 8; year++)
+            for (var year = 0; year < SweepFigures.Years; year++)
             {
                 html.Append(Invariant($"<td class=\"num\">{Percent(figures.YearEdge[year])} ({figures.YearTrades[year]})</td>"));
             }

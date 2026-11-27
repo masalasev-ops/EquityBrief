@@ -590,7 +590,7 @@ public sealed class LongHistoryReader : IComponent
     }
 
     // The sessions through the session given: the S&P 500's own from the long pull, and the store's bars' after its newest.
-    static async Task<DateOnly[]> CalendarAsync(SqliteConnection connection, string through, CancellationToken cancellation)
+    internal static async Task<DateOnly[]> CalendarAsync(SqliteConnection connection, string through, CancellationToken cancellation)
     {
         var sessions = new SortedSet<DateOnly>();
 
@@ -647,8 +647,10 @@ public sealed class LongHistoryReader : IComponent
     }
 
     // Each odd history-ends mark on a code, settled by its filer's reports and its traded prices around it; a mark that is
-    // not odd is not held here and ends its span.
-    async Task<Dictionary<string, SettledMark>> SettledAsync(SqliteConnection connection, IReadOnlyDictionary<string, List<SessionMark>> marks, IReadOnlyList<DateOnly> calendar, string through, CancellationToken cancellation)
+    // not odd is not held here and ends its span. From the January pin move the sweeps' history reads the same.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    internal static async Task<Dictionary<string, SettledMark>> SettledAsync<TMarks>(SqliteConnection connection, IReadOnlyDictionary<string, TMarks> marks, IReadOnlyList<DateOnly> calendar, string through, CancellationToken cancellation)
+        where TMarks : IReadOnlyList<SessionMark>
     {
         var settled = new Dictionary<string, SettledMark>(StringComparer.Ordinal);
         var ruled = new Dictionary<(string, DateOnly), string>();

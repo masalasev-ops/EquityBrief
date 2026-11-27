@@ -34,13 +34,12 @@ public static class Survivors
     // A setup holds its running revision and at most this many rules in all.
     public static int Room => Candidates.CandidateFamily.Maximum;
 
-    // Why a setup's variants cannot yet run a line, none where they can: a variant buys what the setup's live setting passes,
-    // sells on the setup's own time limit and lists the setup's own number a night in an order, until the one pin move
-    // before the rule freeze ends teaches each price family a time limit and a cap a night of their own.
+    // Why a setup's variants cannot yet run a line, none where they can: a variant buys what the setup's live setting passes
+    // and lists at most a number a night in an order. From the January pin move every price family holds a trade at the time
+    // limit its rule states and lists the cap a night its rule states, so a line naming either registers them as its settings.
+    // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
     public static string? CannotRunYet(IdeaLine line)
     {
-        var limit = IdeaGrammar.FamilyTimeLimit(line.Family);
-
         // From 24.35 a filter's line is the S&P 500 swing filter at other dials, which its variant registers as its settings,
         // and the filter takes every member it fires on; the band strength it states none of.
         if (line.Filter is { } filter)
@@ -48,7 +47,6 @@ public static class Survivors
             return line.Index != "GSPC" ? "its index's rule reads other gates beside the swing filter's dials, which its variants hold at the live rule's"
                 : filter.Band != 0 ? "the swing filter states no band strength, and the line reads one"
                 : double.IsPositiveInfinity(filter.DryUp) ? "the swing filter states a dry-up ceiling, and the line reads none"
-                : line.Sessions != limit ? string.Create(CultureInfo.InvariantCulture, $"its setup sells on its own time limit of {limit} sessions, and the line sells after {line.Sessions}")
                 : line.Cap is not null ? "the swing filter takes every member it fires on, and the line caps a night"
                 : null;
         }
@@ -58,15 +56,18 @@ public static class Survivors
             return "its setup's variants buy only what its live setting passes, and the line reads every setup its loose gates pass";
         }
 
-        if (line.Sessions != limit)
-        {
-            return string.Create(CultureInfo.InvariantCulture, $"its setup sells on its own time limit of {limit} sessions until it is taught a limit of its own, and the line sells after {line.Sessions}");
-        }
-
-        return line.Cap is SetupFamilies.ListedANight && line.OrderBy is not null
+        return line.Cap is not null && line.OrderBy is not null
             ? null
-            : string.Create(CultureInfo.InvariantCulture, $"its setup lists {SetupFamilies.ListedANight} a night in an order until it is taught a cap of its own, and the line {(line.Cap is { } cap ? $"caps {cap} a night" : "buys every setup it keeps")}");
+            : "its setup lists at most a number a night in an order, and the line buys every setup it keeps";
     }
+
+    // The time limit a variant registered at the running revision's settings would hold its trades at: the time limit they
+    // state, the dip's limit dial, an S&P 400 or 600 rule's hold where it states one, or the family's own.
+    public static int RunningTimeLimit(IdeaLine line, IReadOnlyDictionary<string, double> running) =>
+        running.TryGetValue(RuleHooks.TimeLimitParameter, out var stated) ? (int)stated
+        : line.Family == "dip" && running.TryGetValue(Candidates.DipCandidate.LimitParameter, out var dial) ? (int)dial
+        : running.TryGetValue(Candidates.IndexRuleCandidate.HoldParameter, out var hold) && hold > 0 ? (int)hold
+        : IdeaGrammar.FamilyTimeLimit(line.Family);
 
     // The variant's registered settings: the running revision's own, each condition as a level its readings must meet, the
     // line's plan, and its order as a score of its one reading, highest first or lowest first. A band's lower edge is read
@@ -93,6 +94,23 @@ public static class Survivors
         foreach (var (name, value) in PlanHook.ParametersOf(PlanOf(line)))
         {
             settings[name] = value;
+        }
+
+        // From the January pin move the line's time limit where the running revision's settings hold another, stated once in
+        // an S&P 400 or 600 rule's hold's place, and its cap a night where they list another.
+        if (line.Sessions != RunningTimeLimit(line, running))
+        {
+            settings[RuleHooks.TimeLimitParameter] = line.Sessions;
+
+            if (settings.TryGetValue(Candidates.IndexRuleCandidate.HoldParameter, out var hold) && hold > 0)
+            {
+                settings[Candidates.IndexRuleCandidate.HoldParameter] = 0;
+            }
+        }
+
+        if (line.Cap is { } cap && cap != (running.TryGetValue(RuleHooks.PerNightParameter, out var most) ? (int)most : SetupFamilies.ListedANight))
+        {
+            settings[RuleHooks.PerNightParameter] = cap;
         }
 
         // From 24.35 a filter's dials as the swing filter's settings, the market gate off where the breadth is.

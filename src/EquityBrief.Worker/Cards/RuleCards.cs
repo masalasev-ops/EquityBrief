@@ -418,7 +418,7 @@ public sealed class RuleCards : IComponent
                 if (hooks.Plan is not null)
                 {
                     var rows = filter.ToDictionary(member => member.Ticker, member => (Member: member, Verdict: member.Shadow.FirstOrDefault(outcome => outcome.Candidate == row.Candidate)), StringComparer.Ordinal);
-                    var kept = KeepPagePicks(await PagePullbacksAsync(connection, transaction, night, cancellation), rows, held);
+                    var kept = KeepPagePicks(await PagePullbacksAsync(connection, transaction, night, cancellation), rows, held, hooks);
 
                     foreach (var pick in kept)
                     {
@@ -430,15 +430,32 @@ public sealed class RuleCards : IComponent
             }
             else
             {
-                var kept = KeepPullbackPicks(verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)), held);
+                // From the January pin move a variant stating the reward check on the traded plan passes over a pick whose placed
+                // order makes under it, the next in the list's order taken in its place up to its cap a night.
+                // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+                var fired = verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)).ToArray();
+                var most = hooks.ListedAtMost(SetupFamilies.ListedANight);
+                var kept = 0;
 
-                foreach (var pick in kept)
+                foreach (var pick in KeepPullbackPicks(fired, held, hooks.RewardTraded is null ? hooks : hooks with { PerNight = int.MaxValue }))
                 {
-                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick, cancellation, await OrderAsync(connection, transaction, hooks, night, pick, cancellation));
+                    if (kept == most)
+                    {
+                        break;
+                    }
+
+                    var order = await OrderAsync(connection, transaction, hooks, night, pick, cancellation);
+
+                    if (!hooks.TradedPasses(order, Statistic.FromPrice(pick.Entry)))
+                    {
+                        continue;
+                    }
+
+                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick with { Place = ++kept }, cancellation, order);
                 }
 
-                picks += kept.Count;
-                count = kept.Count;
+                picks += kept;
+                count = kept;
             }
 
             rules.Add(new RuleNightRow(index, SetupFamilies.Pullback, row.Candidate, evaluated, count, gates, null, evaluated ? verdicts.Length : null));
@@ -841,11 +858,15 @@ public sealed class RuleCards : IComponent
     public const string Failed = "failed";
 
     // A pullback variant's picks on the night from its own verdicts: the members it fired on in the list's own order,
-    // reward to risk on the plan the variant reads, then strength, then band strength and then the ticker, at most five,
-    // none whose stock it holds a trade on still open and none whose plan places no stop below the buy.
-    public static IReadOnlyList<RulePick> KeepPullbackPicks(IEnumerable<(FilterRow Member, ShadowOutcome Verdict)> fired, IReadOnlySet<string> held)
+    // reward to risk on the plan the variant reads, then strength, then band strength and then the ticker, at most five
+    // or the cap a night it states, none whose stock it holds a trade on still open and none whose plan places no stop
+    // below the buy, each held at most its family's sessions or the time limit it states.
+    // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+    public static IReadOnlyList<RulePick> KeepPullbackPicks(IEnumerable<(FilterRow Member, ShadowOutcome Verdict)> fired, IReadOnlySet<string> held, EquityBrief.Core.Loop.RuleHooks? hooks = null)
     {
         var kept = new List<RulePick>();
+        var most = (hooks ?? EquityBrief.Core.Loop.RuleHooks.Off).ListedAtMost(SetupFamilies.ListedANight);
+        var cap = (hooks ?? EquityBrief.Core.Loop.RuleHooks.Off).HeldAtMost(SetupFamilies.Pullbacks.CapSessions);
 
         foreach (var (member, verdict) in fired
             .Select(pair => (pair.Member, pair.Verdict, Plan: PlanOf(pair.Member, pair.Verdict)))
@@ -856,7 +877,7 @@ public sealed class RuleCards : IComponent
             .ThenBy(pair => pair.Member.Ticker, StringComparer.Ordinal)
             .Select(pair => (pair.Member, pair.Verdict)))
         {
-            if (kept.Count == SetupFamilies.ListedANight)
+            if (kept.Count == most)
             {
                 break;
             }
@@ -868,7 +889,7 @@ public sealed class RuleCards : IComponent
 
             var plan = PlanOf(member, verdict)!.Value;
 
-            kept.Add(new RulePick(member.Ticker, kept.Count + 1, plan.Entry, plan.Stop, plan.Target, plan.RewardToRisk, SetupFamilies.Pullbacks.CapSessions, member.Why));
+            kept.Add(new RulePick(member.Ticker, kept.Count + 1, plan.Entry, plan.Stop, plan.Target, plan.RewardToRisk, cap, member.Why));
         }
 
         return kept;
@@ -1114,9 +1135,10 @@ public sealed class RuleCards : IComponent
     // The page list's pullbacks on the night in their places, as the live swing filter keeps them under its plan: each at the
     // plan its own verdict names, none whose stock the rule holds a trade on still open and none whose plan places no stop
     // below the buy.
-    public static IReadOnlyList<RulePick> KeepPagePicks(IEnumerable<(string Ticker, int Place)> page, IReadOnlyDictionary<string, (FilterRow Member, ShadowOutcome? Verdict)> rows, IReadOnlySet<string> held)
+    public static IReadOnlyList<RulePick> KeepPagePicks(IEnumerable<(string Ticker, int Place)> page, IReadOnlyDictionary<string, (FilterRow Member, ShadowOutcome? Verdict)> rows, IReadOnlySet<string> held, EquityBrief.Core.Loop.RuleHooks? hooks = null)
     {
         var kept = new List<RulePick>();
+        var cap = (hooks ?? EquityBrief.Core.Loop.RuleHooks.Off).HeldAtMost(SetupFamilies.Pullbacks.CapSessions);
 
         foreach (var (ticker, place) in page)
         {
@@ -1125,7 +1147,7 @@ public sealed class RuleCards : IComponent
                 continue;
             }
 
-            kept.Add(new RulePick(ticker, place, plan.Entry, plan.Stop, plan.Target, plan.RewardToRisk, SetupFamilies.Pullbacks.CapSessions, row.Member.Why));
+            kept.Add(new RulePick(ticker, place, plan.Entry, plan.Stop, plan.Target, plan.RewardToRisk, cap, row.Member.Why));
         }
 
         return kept;

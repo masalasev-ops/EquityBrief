@@ -123,7 +123,7 @@ public static class LoopProcedures
     // The floors a fold's search reads: the family's trades and years in proportion to the years it learns on, each
     // rounded up.
     public static (int Trades, int Years) Floors(int learningYears) =>
-        (Up(FamilySweep.TradeFloor * learningYears, SweepFigures.Years), Up(FamilySweep.YearsBeating * learningYears, SweepFigures.Years));
+        (Up(FamilySweep.TradeFloor * learningYears, SweepFigures.LeastYears), Up(FamilySweep.YearsBeating * learningYears, SweepFigures.LeastYears));
 
     static int Up(int numerator, int denominator) => (numerator + denominator - 1) / denominator;
 

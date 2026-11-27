@@ -119,7 +119,7 @@ public sealed record IdeaTest(
     bool EnoughNights,
     bool ResultHigher)
 {
-    public bool YearsPass => YearsBetter >= SweepIdeas.YearsBetter && RecentYearsBetter >= SweepIdeas.RecentYearsBetter;
+    public bool YearsPass => YearsBetter >= SweepFigures.Share(SweepIdeas.YearsBetter) && RecentYearsBetter >= SweepIdeas.RecentYearsBetter;
 
     public bool Passes => YearsPass && RecentNoLower && BetterWithoutLargest && EnoughTrades && EnoughNights && ResultHigher;
 }
@@ -263,16 +263,17 @@ public static class SweepIdeas
     }
 
     // How many of the 256 ways eight years can fall, each better or not as a coin would have it, pass the yearly
-    // test: 6 of the 8 better with 2 of the last 3.
+    // test: 6 of the 8 better with 2 of the last 3, or the same share of the scored years.
     public static int LuckPatterns()
     {
         var passing = 0;
+        var better = SweepFigures.Share(YearsBetter);
 
         for (var pattern = 0; pattern < 1 << SweepFigures.Years; pattern++)
         {
             var recent = BitOperations.PopCount((uint)(pattern >> (SweepFigures.Years - RecentYears)));
 
-            passing += BitOperations.PopCount((uint)pattern) >= YearsBetter && recent >= RecentYearsBetter ? 1 : 0;
+            passing += BitOperations.PopCount((uint)pattern) >= better && recent >= RecentYearsBetter ? 1 : 0;
         }
 
         return passing;
@@ -328,7 +329,7 @@ public static class SweepIdeas
     public static IdeaFigures Figures(string key, IReadOnlyList<IdeaTrade> trades, int scoredNights)
     {
         var years = SweepFigures.Years;
-        var withResult = trades.Where(trade => trade.Result is not null && trade.Listing.Year is >= 0 and < SweepFigures.Years).ToArray();
+        var withResult = trades.Where(trade => trade.Result is not null && trade.Listing.Year >= 0 && trade.Listing.Year < years).ToArray();
         var edges = withResult.Where(trade => !double.IsNaN(trade.Benchmark)).ToArray();
         var yearTrades = new int[years];
         var yearEdge = new double?[years];

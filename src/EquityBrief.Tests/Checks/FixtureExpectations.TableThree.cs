@@ -83,7 +83,7 @@ public partial class FixtureExpectations
         var members = new SweepBenchmark.Members([.. bars.Select(_ => new[] { 0 })], [.. bars.Select((_, at) => new[] { at })]);
         var readings = new double?[LedgerReadings.All.Count];
 
-        TableOwnReadings.Apply(readings, new TradedRanks([series], members), 0, series, 0, [Day("2012-01-10")]);
+        TableOwnReadings.Apply(readings, series, 0, [Day("2012-01-10")]);
 
         Assert.Equal(5.0, readings[LedgerReadings.IndexOf("earnings_sessions")]);
     }

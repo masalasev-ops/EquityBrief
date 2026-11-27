@@ -2,9 +2,13 @@
 # The replay a change that moves a pin runs before `register --moved`, on the operator's rulings of 2026-11-16: the build
 # of the commit the standing versions were registered under and the build of the main checkout's own HEAD, each a clean
 # copy of its commit built once in Release under the replay's folder, run night by night over two copies of the store and
-# their trades compared rule by rule.
+# their trades compared rule by rule; on the operator's answers of 2026-11-27 the new build may instead be a pull request's
+# head carrying main's HEAD, so the replay and its report come before the merge.
+# see: The replay may build a pull request's head carrying main's HEAD so its report comes before the merge
 #
 #   tools/replay --old <commit> --from <yyyy-MM-dd> --into <folder>
+#   tools/replay ... --new <commit>   build that commit in place of main's HEAD, a pull request's head carrying main's HEAD,
+#                                     so the replay is read before the merge whose tree it ran
 #   tools/replay ... --check    print what a run would build and run, and run nothing
 #
 # The folder is outside the data root, on another disk where one is faster. The worker makes both copies from the store at
@@ -26,6 +30,7 @@ case "$data" in
 esac
 
 old=""
+named=""
 from=""
 into=""
 check=0
@@ -33,6 +38,7 @@ check=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --old) old="${2:-}"; shift 2 ;;
+        --new) named="${2:-}"; [ -n "$named" ] || { echo "replay: '--new' takes a commit" >&2; exit 1; }; shift 2 ;;
         --from) from="${2:-}"; shift 2 ;;
         --into) into="${2:-}"; shift 2 ;;
         --check) check=1; shift ;;
@@ -47,13 +53,21 @@ refuse() {
 
 [ -n "$old" ] && [ -n "$from" ] && [ -n "$into" ] || refuse "it takes '--old <commit> --from <yyyy-MM-dd> --into <folder>'"
 
-branch="$(git symbolic-ref --short -q HEAD || true)"
+if [ -n "$named" ]; then
+    new="$(git rev-parse --verify -q "$named^{commit}" || true)"
+    main="$(git rev-parse --verify -q "main^{commit}" || true)"
 
-if [ "$branch" != "main" ]; then
-    refuse "the checkout is on '${branch:-no branch}' and not on main, so the new build is not main's"
+    [ -n "$new" ] || refuse "the new commit is not one this repository holds"
+    [ -n "$main" ] && git merge-base --is-ancestor "$main" "$new" || refuse "the new commit ${new:0:12} does not carry main's ${main:0:12}, so the merge would not be the tree replayed"
+else
+    branch="$(git symbolic-ref --short -q HEAD || true)"
+
+    if [ "$branch" != "main" ]; then
+        refuse "the checkout is on '${branch:-no branch}' and not on main, so the new build is not main's: name a pull request's head with '--new <commit>'"
+    fi
+
+    new="$(git rev-parse HEAD)"
 fi
-
-new="$(git rev-parse HEAD)"
 old="$(git rev-parse --verify -q "$old^{commit}" || true)"
 
 [ -n "$old" ] || refuse "the old commit is not one this repository holds"

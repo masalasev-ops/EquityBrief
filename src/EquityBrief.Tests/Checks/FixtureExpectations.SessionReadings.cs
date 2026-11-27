@@ -112,20 +112,20 @@ public partial class FixtureExpectations
         Assert.Equal(0, await ledger.SessionCheckAsync("GSPC", checking, perYear: 60));
         Assert.Contains("60 sampled session(s) on the S&P 500, 60 a year by seed 19: 59 row(s) rebuilt from the long history cut at their session, 1 of the ledger's setup(s) held to their stock's row, 1 of the nights' own row(s) held to the table, 0 session(s) of the standing ledger's members held to the table's both ways; every reading the same", checking.ToString(), StringComparison.Ordinal);
 
-        // The setup's liquidity set apart from its row's: one of the seven the table works its own way, listed apart and marked
-        // expected, nothing to trace, and the check still fails on it.
-        Assert.Equal(["alpha_three", "alpha_four", "liquidity", "illiquidity", "stretch_share", "highest_since_years", "older_days"], TableOwnReadings.Columns);
+        // The setup's liquidity set apart from its row's: from the pin move before the run of 2027-02-06 the shared code reads the
+        // seven and the short interest as the table does, so none is expected by design and the difference is one to trace.
+        Assert.Empty(TableOwnReadings.Columns);
+        Assert.Empty(TableOwnReadings.UntilThePinMove);
         store.Execute("UPDATE long_setup SET liquidity = 99 WHERE ticker = 'AAA';");
 
         var designed = new StringWriter();
         var apart = new SetupLedger(FixedClock.At(new DateTimeOffset(2026, 11, 21, 15, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile);
 
         Assert.Equal(1, await apart.SessionCheckAsync("GSPC", designed, perYear: 60));
-        Assert.Contains("session-readings-check: to trace, 0 difference(s)", designed.ToString(), StringComparison.Ordinal);
-        Assert.Contains("session-readings-expected: expected, by design, 1 difference(s) on the seven readings the table works its own way and the short interest a night reads with no cap until the pin move: alpha_three 0, alpha_four 0, liquidity 1, illiquidity 0,", designed.ToString(), StringComparison.Ordinal);
-        Assert.Contains(", older_days 0, short_interest_share 0", designed.ToString(), StringComparison.Ordinal);
-        Assert.Contains($"session-readings-expected: pullback AAA {SessionDay(days[30])}: liquidity the ledger's 99, the table's ", designed.ToString(), StringComparison.Ordinal);
-        Assert.Contains("1 difference(s), each named on the command's output: 0 to trace, 0 between the member lists and 1 expected by design", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains("session-readings-check: to trace, 1 difference(s)", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains("session-readings-expected: expected, by design, 0 difference(s); none since the pin move", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains($"session-readings-check: pullback AAA {SessionDay(days[30])}: liquidity the ledger's 99, the table's ", designed.ToString(), StringComparison.Ordinal);
+        Assert.Contains("1 difference(s), each named on the command's output: 1 to trace, 0 between the member lists and 0 expected by design", designed.ToString(), StringComparison.Ordinal);
 
         // AAA's 31st row planted with BBB's readings: its rebuild and the setup each name the close over its average.
         store.Execute($"UPDATE session_reading SET readings = (SELECT readings FROM session_reading WHERE ticker = 'BBB' AND session_date = '{SessionDay(days[30])}') WHERE ticker = 'AAA' AND session_date = '{SessionDay(days[30])}';");

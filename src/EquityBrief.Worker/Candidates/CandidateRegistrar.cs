@@ -1377,12 +1377,19 @@ public sealed class CandidateRegistrar : IComponent
     // with its market gate read, in the order and under the exit an approval stores for the S&P 500's pullback, and a variant
     // keeps its own in the list's own order on closes, so an exit, a condition, a score, the exposure, a ranking or the
     // expected-value order stated on a registration would be read by neither; the per-rule test walks the pullback's graded
-    // exposure and its standing target beside its live rule, unregistered.
+    // exposure and its standing target beside its live rule, unregistered. From the January pin move a variant's night reads as
+    // well its time limit, its cap a night and the reward check on its traded plan.
     // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
     public static string? SwingHooksUnread(EquityBrief.Core.Loop.RuleHooks hooks) =>
-        (hooks with { Plan = null }).IsOff
+        (hooks with { Plan = null, TimeLimit = null, PerNight = null, RewardTraded = null }).IsOff
             ? null
-            : "a swing filter rule states a plan alone, its list's order and exit being the ones an approval stores for the S&P 500's pullback";
+            : "a swing filter rule states a plan, a time limit, a cap a night and the reward check on its traded plan alone, its list's order and exit being the ones an approval stores for the S&P 500's pullback";
+
+    // The hooks a dip rule states that its night does not read: the dip sells on its own exit and names no one price its
+    // whole sells at, so the reward check on the traded plan reads nothing of it.
+    public static string? DipHooksUnread(EquityBrief.Core.Loop.RuleHooks hooks) =>
+        hooks.RewardTraded is null ? null : "the dip's night reads no reward check on the traded plan, its sale naming no one price it takes the whole at";
 
     // Why a registration is refused, or null. Apart from the write so the check
     // reads the same reader the registrar does rather than a copy of it, and so
@@ -1440,6 +1447,11 @@ public sealed class CandidateRegistrar : IComponent
                 if (carried is SwingFilterRule && SwingHooksUnread(hooks) is { } unread)
                 {
                     return $"'{evaluator}' is registered with hooks the swing filter's night does not read: {unread}.";
+                }
+
+                if (carried is DipCandidate && DipHooksUnread(DipCandidate.HooksOf(parameters)) is { } dipUnread)
+                {
+                    return $"'{evaluator}' is registered with hooks the dip's night does not read: {dipUnread}.";
                 }
             }
             catch (ArgumentException refused)

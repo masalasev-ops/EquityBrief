@@ -70,7 +70,7 @@ public static class SweepDials
             }
         }
 
-        return better >= SweepIdeas.YearsBetter
+        return better >= SweepFigures.Share(SweepIdeas.YearsBetter)
             && recent >= SweepIdeas.RecentYearsBetter
             && (!onTotals || (with.AverageMultiple is { } result && without.AverageMultiple is { } before && result > before));
     }
@@ -80,7 +80,7 @@ public static class SweepDials
     // ten were the settings independent, about seven in ten thousand.
     public static double LuckOfOneSetting =>
         1.0 * Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern =>
-            System.Numerics.BitOperations.PopCount((uint)pattern) >= SweepIdeas.YearsBetter
+            System.Numerics.BitOperations.PopCount((uint)pattern) >= SweepFigures.Share(SweepIdeas.YearsBetter)
             && System.Numerics.BitOperations.PopCount((uint)pattern >> (SweepFigures.Years - SweepIdeas.RecentYears)) >= SweepIdeas.RecentYearsBetter) / (1 << SweepFigures.Years);
 
     public static double LuckOfALevel

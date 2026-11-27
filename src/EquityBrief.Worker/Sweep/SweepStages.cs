@@ -296,7 +296,7 @@ public static class SweepStages
 
             openUntil = pick.Session + plan.Ends[exit];
 
-            if (pick.Year is >= 0 and < SweepFigures.Years
+            if (pick.Year >= 0 && pick.Year < SweepFigures.Years
                 && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
                 && !float.IsNaN(plan.Multiple[exit])
                 && plan.IsATradeAt(exit, stopFloor))
