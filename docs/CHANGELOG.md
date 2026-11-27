@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/RUNBOOK.md - the long test's like setups matched over the long ledger, at a correction to 24.19
+Decision: The long test orders a rule by the expected value over the long ledger, a score fitted for each long fold
+Was:
+> the families its walk reads off the standing history alone, the like setups and the ranking, are written with the reason that they are read on the standing years alone;
+Now:
+> the families its walk reads off the standing history alone, the ranking, are written with the reason that they are read on the standing years alone; from the 24.19 correction of 2026-11-27 a rule ordered by the expected value of the setups like each listing is matched over the long ledger's settled setups to 2018 and the standing ledger's from 2019, a ridge score fitted for each long fold on its family's finished setups of all three indices ended before the fold's year, the pool read only for the families a rule on the index orders by it;
+Why: the operator's order of 2026-11-27, item 1, kept word for word in `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`: the two breakouts ordered by the expected value were kept not testable for a pool the code could read and did not.
+
+### 2026-11-27 - docs/ARCHITECTURE.html - the walk-forward tester reading the long setups for its like setups, at a correction to 24.19
+Decision: The long test orders a rule by the expected value over the long ledger, a score fitted for each long fold
+Was:
+> pulled snapshots, pulled holdings, companies, filed facts, setups, provisional settings,
+> each line of a family after it written by name as not reached and taken first the next month (see: ...)</td></tr>
+Now:
+> pulled snapshots, pulled holdings, companies, filed facts, setups, long setups, provisional settings,
+> each line of a family after it written by name as not reached and taken first the next month (see: ...); and from the same day, for each family a rule on the index orders by the expected value of the setups like each listing, those setups read from the long setups to 2018 and the setups from 2019 and matched on a ridge score fitted for each long fold on the family's finished setups of all three indices from both that ended before the fold's year (see: ...)</td></tr>
+Why: the operator's order of 2026-11-27, item 1, kept word for word in `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`, the tester's reads stating the long setups it now reads.
+
 ### 2026-11-27 - docs/RUNBOOK.md - the long test's cap read before each family, at a correction to 24.19
 Decision: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
 Was:

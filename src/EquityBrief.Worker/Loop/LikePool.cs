@@ -37,6 +37,9 @@ public sealed class LikePool(IReadOnlyList<LikePool.Settled> setups, IReadOnlyDi
 
     public int Count => setups.Count;
 
+    // The fold scores it holds, a family's year each.
+    public int Scores => folds.Count;
+
     // From 21.8 the same setups matched on other fold scores, the ones a run fitted before it stores them.
     public LikePool With(IReadOnlyDictionary<(string Family, int Year), RidgeModel> others) => new(setups, others);
 
@@ -81,35 +84,123 @@ public sealed class LikePool(IReadOnlyList<LikePool.Settled> setups, IReadOnlyDi
 
             while (await reader.ReadAsync(cancellation))
             {
-                var family = reader.GetString(0);
-                double? result = reader.IsDBNull(4) ? null : reader.GetDouble(4);
-                double? edge = reader.IsDBNull(10) ? null : reader.GetDouble(10);
-                var form = SetupChance.FormOf(LikeSetups.IsBook(family), !reader.IsDBNull(7));
-                var readings = new double?[LedgerReadings.Count];
-
-                for (var at = 0; at < readings.Length; at++)
-                {
-                    readings[at] = reader.IsDBNull(ReadingsFrom + at) ? null : reader.GetDouble(ReadingsFrom + at);
-                }
-
-                setups.Add(new Settled(
-                    family,
-                    reader.GetString(1),
-                    Day(reader.GetString(2)),
-                    Day(reader.GetString(3)),
-                    readings,
-                    LikeSetups.AfterCost(
-                        form,
-                        result,
-                        reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                        Statistic.FromPrice(Money.FromStorage(reader.GetString(8))),
-                        Statistic.FromPrice(Money.FromStorage(reader.GetString(9))),
-                        reader.IsDBNull(11) ? null : reader.GetDouble(11)),
-                    SetupChance.WonOf(form, reader.IsDBNull(6) ? null : reader.GetString(6), result, edge)));
+                setups.Add(SettledOf(reader));
             }
         }
 
         return new LikePool(setups, folds);
+    }
+
+    static Settled SettledOf(SqliteDataReader reader)
+    {
+        var family = reader.GetString(0);
+        double? result = reader.IsDBNull(4) ? null : reader.GetDouble(4);
+        double? edge = reader.IsDBNull(10) ? null : reader.GetDouble(10);
+        var form = SetupChance.FormOf(LikeSetups.IsBook(family), !reader.IsDBNull(7));
+        var readings = new double?[LedgerReadings.Count];
+
+        for (var at = 0; at < readings.Length; at++)
+        {
+            readings[at] = reader.IsDBNull(ReadingsFrom + at) ? null : reader.GetDouble(ReadingsFrom + at);
+        }
+
+        return new Settled(
+            family,
+            reader.GetString(1),
+            Day(reader.GetString(2)),
+            Day(reader.GetString(3)),
+            readings,
+            LikeSetups.AfterCost(
+                form,
+                result,
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                Statistic.FromPrice(Money.FromStorage(reader.GetString(8))),
+                Statistic.FromPrice(Money.FromStorage(reader.GetString(9))),
+                reader.IsDBNull(11) ? null : reader.GetDouble(11)),
+            SetupChance.WonOf(form, reader.IsDBNull(6) ? null : reader.GetString(6), result, edge));
+    }
+
+    // From the 24.19 correction of 2026-11-27 the family's settled setups on the index the long ledger holds to 2018 and the
+    // standing ledger from 2019, as the idea test reads the two.
+    static string LongSettled(string table, bool standing) =>
+        "SELECT family, ticker, session_date, ended_on, result, cost, \"end\", target, entry, stop, edge, company_value, "
+        + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
+        + $" FROM {table} WHERE index_code = $index AND family = $family AND settled = 1 AND live_pass = 1 AND ended_on IS NOT NULL{(standing ? " AND session_date >= $standing" : string.Empty)}";
+
+    // The family's finished setups of all three indices the learned score learns on, the long ledger's to 2018 and the
+    // standing ledger's from 2019.
+    static string LongFinished(string table, bool standing) =>
+        "SELECT index_code, session_date, ended_on, edge, risk_moves, " + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
+        + $" FROM {table} WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND risk_moves IS NOT NULL AND ended_on IS NOT NULL{(standing ? " AND session_date >= $standing" : string.Empty)}";
+
+    // From the 24.19 correction of 2026-11-27 the pool the per-rule test over the long history matches over, for each family
+    // named, those a rule on the index orders by the expected value: its settled setups on the index from the long ledger to
+    // 2018 and the standing ledger from 2019, and a ridge score fitted for each of the long run's folds, as the tester fits
+    // one, on the family's finished setups of all three indices from both ledgers that ended before the fold's year; a
+    // fold too few setups ended before stands with no score, its listings reading no expected value.
+    // see: The long test orders a rule by the expected value over the long ledger, a score fitted for each long fold
+    public static async Task<LikePool> ReadLongAsync(SqliteConnection connection, string index, IReadOnlyCollection<string> families, IReadOnlyList<LoopFold> folds, DateOnly through, CancellationToken cancellation)
+    {
+        var setups = new List<Settled>();
+        var models = new Dictionary<(string Family, int Year), RidgeModel>();
+        var standingFrom = Core.History.LongLedger.StandingFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var family in families)
+        {
+            foreach (var standing in new[] { false, true })
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = LongSettled(standing ? "setup" : "long_setup", standing);
+                command.Parameters.AddWithValue("$index", index);
+                command.Parameters.AddWithValue("$family", family);
+                command.Parameters.AddWithValue("$standing", standingFrom);
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    setups.Add(SettledOf(reader));
+                }
+            }
+
+            var rows = new ScoreRows(0, through);
+            var readings = new double?[LedgerReadings.Count];
+
+            foreach (var standing in new[] { false, true })
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = LongFinished(standing ? "setup" : "long_setup", standing);
+                command.Parameters.AddWithValue("$family", family);
+                command.Parameters.AddWithValue("$standing", standingFrom);
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    for (var at = 0; at < readings.Length; at++)
+                    {
+                        readings[at] = reader.IsDBNull(5 + at) || !LedgerReadings.LoopReads(at, through) ? null : reader.GetDouble(5 + at);
+                    }
+
+                    rows.Add(reader.GetString(0), Day(reader.GetString(1)), Day(reader.GetString(2)), readings, reader.GetDouble(3), reader.IsDBNull(4) ? 1.0 : reader.GetDouble(4));
+                }
+            }
+
+            foreach (var fold in folds)
+            {
+                if (RidgeScore.Fit(rows, rows.Learning(fold)) is { } model)
+                {
+                    models[(family, fold.Year)] = model;
+                }
+            }
+        }
+
+        setups.Sort((one, other) =>
+            one.Session != other.Session ? one.Session.CompareTo(other.Session)
+            : !string.Equals(one.Family, other.Family, StringComparison.Ordinal) ? string.CompareOrdinal(one.Family, other.Family)
+            : string.CompareOrdinal(one.Ticker, other.Ticker));
+
+        return new LikePool(setups, models);
     }
 
     // The expected value of the setups like each listing of a walk, by its place, none where the pool holds no fold score

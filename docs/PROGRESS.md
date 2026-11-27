@@ -23547,3 +23547,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1769 passing, none out of scope and none unexamined, 1784 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the breakout's expected-value order over the long history, before the monthly run of 5 Dec.
+
+### 24.19 - correction: the long test ordering a rule by the expected value over the long ledger, a score fitted for each long fold   2026-11-27
+
+Ruled:      the operator's orders of 2026-11-27 on the report of 9:17 am, item 1, word for word in
+            `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`, discharging the obligation the entry before it carries.
+Found:      each index's breakout ordered by the expected value of the setups like each listing was kept not testable over the
+            long history, the run matching those setups off the standing ledger alone with the newest tester run's fold scores,
+            which stand for the standing folds alone.
+Built:      the long run reads a pool, for each family a registered rule on the index orders by that value and for no other:
+            the family's live-gated settled setups on the index from the long ledger to 2018 and the standing ledger from 2019,
+            and a ridge score fitted for each long fold on the family's finished setups of all three indices from both ledgers
+            that ended before the fold's year (see: The long test orders a rule by the expected value over the long ledger, a
+            score fitted for each long fold). A fold too few setups ended before holds no score and its listings keep their
+            family's own order. Every other live rule's unregistered walk by the value stays out of the long run. The tester
+            declares the long setups it now reads. No pin moves: the pool and the tester are files no rule pins.
+Tests:      2 new: a constructed S&P 600 breakout ledger read from both ledgers on each side of 2019, its live-gated rows alone,
+            a fold of 2008 too short to score and one of 2015 scored, a listing of 2015 matched among what ended before 2015
+            alone, worked by hand against setups ending at -1,000 risks after it; and the pool read for the S&P 400's breakout
+            frozen with a variant ordered by the value and for no family where none orders by it.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m17 the standing
+            ledger read without its 2019 boundary: red; m18 a fold's score fitted on every setup, ended before it or not: red;
+            m19 the pool read for every swing family whatever its rules order by: red. Filtered to their tests and reverted
+            before anything was committed.
+Claims:     1769, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4092 of 4092 tests ran with none failed, migrations 0 to 173
+            with none pending, schema version 173, against `data-ci` and never `data`; the phase report 68 tables, 1769
+            claims, 1769 passing, none out of scope and none unexamined, 1784 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the time the long run's pool and its fold scores add, unmeasured, which the monthly run's step states on its row
+            on the run log; the S&P 500 swing filter's variant reading the analysts' estimates raised over 30 days, which can
+            never be tested over the history, the store keeping the estimates only from 2026-10-03.
