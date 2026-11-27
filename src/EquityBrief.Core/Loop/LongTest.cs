@@ -64,10 +64,32 @@ public static class LongTest
     public static long FullDraws => 1L << LoopGate.Enumerated;
 
     // The sign vectors an index's judgement reads: every one while the step has used under half its cap, and the fewest
-    // once it has used half, so the indices after it fit what is left.
-    public static long DrawsAt(TimeSpan elapsed) => elapsed < Cap / 2 ? FullDraws : FewestDraws;
+    // once it has used half, so the indices after it fit what is left; a cap handed in stands for the stated one.
+    public static long DrawsAt(TimeSpan elapsed, TimeSpan? cap = null) => elapsed < (cap ?? Cap) / 2 ? FullDraws : FewestDraws;
 
-    // Whether the step starts another index: while its time stands under its cap, the indices after it otherwise waiting
-    // for a second part, the step run again by hand the next day, which goes on from the indices the month's runs hold.
-    public static bool GoesOn(TimeSpan elapsed) => elapsed < Cap;
+    // Whether the step starts another family: while its time stands under its cap. From the 24.19 correction of 2026-11-27
+    // it is read before each family of each index, and each line of a family not reached is written by name with why.
+    // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+    public static bool GoesOn(TimeSpan elapsed, TimeSpan? cap = null) => elapsed < (cap ?? Cap);
+
+    // The indices in the order the long test takes them: the smallest first, so a cut falls on the fewest lines.
+    public static IReadOnlyList<string> Indices { get; } = ["SML", "MID", "GSPC"];
+
+    // The order the long test takes the indices in: each holding a line the month before did not reach first, then the
+    // rest, each in the smallest-first order.
+    public static IReadOnlyList<string> IndexOrder(IReadOnlyCollection<(string Index, string Family)> notReached) =>
+        [.. Indices.OrderBy(index => notReached.Any(one => one.Index == index) ? 0 : 1)];
+
+    // The order the long test walks an index's families in: each the month before did not reach first, then the two books,
+    // Quality at a fair price and the Fundamentals family, then each family holding a registered variant, then the rest,
+    // each group in the page's order; the walks written nowhere ride with their family, and the one walked after every
+    // family, the graded exposure reversed, is walked only while the cap stands.
+    public static IReadOnlyList<string> FamilyOrder(IReadOnlyList<string> families, IReadOnlyCollection<string> notReached, Func<string, bool> holdsVariant) =>
+    [
+        .. families
+            .Select((family, at) => (Family: family, At: at))
+            .OrderBy(one => notReached.Contains(one.Family) ? 0 : one.Family is QualityRule.Name or ImprovingRule.Name ? 1 : holdsVariant(one.Family) ? 2 : 3)
+            .ThenBy(one => one.At)
+            .Select(one => one.Family),
+    ];
 }

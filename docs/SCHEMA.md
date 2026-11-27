@@ -3189,7 +3189,7 @@ Grain: one row per per-rule test run, index, family and rule.
 | `trimmed` | REAL | its total less what it was read against's with the five largest results left out of each side; null where neither side holds one or it is not testable |
 | `counts` | INTEGER | 1 where its units reach the count its family is judged on; null where it is not testable |
 | `passed` | INTEGER | 1 where all four parts held |
-| `why` | TEXT | why the history cannot walk it, naming the reading it lacks; null where it was walked |
+| `why` | TEXT | why the history cannot walk it, naming the reading it lacks, and from the 24.19 correction of 2026-11-27 on a long row the words beginning `not reached` where the long test reached its cap before its family, which the next month's long test walks first; null where it was walked |
 | `cap` | INTEGER | from 23.2, from migration 130, the sessions a block of its waits after its last before it is read; null on a row written before |
 | `span` | INTEGER | from 23.2, the sessions from the test span's first to the history's newest; null on a row written before |
 | `through` | TEXT | from 23.2, the history's newest session, as `yyyy-MM-dd`; null on a row written before |
