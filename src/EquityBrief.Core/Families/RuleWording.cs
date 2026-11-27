@@ -1359,6 +1359,9 @@ public static class RuleWording
 
         public static string Above(string ceiling, int sessions) =>
             string.Create(CultureInfo.InvariantCulture, $"Opens above {ceiling}: waits up to {sessions} days for the price to come back to {ceiling}, then not bought.");
+
+        public static string UnderItsPrice(double floor) =>
+            string.Create(CultureInfo.InvariantCulture, $"not bought on an open more than {floor:0.##} typical {(floor == 1 ? "day" : "days")} under its price");
     }
 
     // TreeScore.cs

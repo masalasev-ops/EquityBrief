@@ -45,6 +45,11 @@ public sealed record PlanOrder(
     // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
     public BuyRange? Range { get; init; }
 
+    // On the operator's answers of 2026-11-27, item 2, the open under which an order at a level buys nothing, its typical daily
+    // moves under the level in prices; none for an order that fills at any open under its level.
+    // see: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
+    public double? LevelFloor { get; init; }
+
     static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public string Json() => JsonSerializer.Serialize(this, Options);
@@ -78,8 +83,10 @@ public sealed record PlanOrder(
 
     // From the January pin move the order's own reward over its own risk, the traded plan's: from the price it buys at, its
     // level or for an order at the next open or the first pullback the night's close, to the one price its sale takes the whole
-    // at above it, over the distance down to the stop that price places; none where its stop is not placed under the buy, or
-    // its sale names no such price, selling part first, by staged levels, on a trail or at its time limit alone.
+    // at above it, over the distance down to the stop that price places; and on the operator's answers of 2026-11-27, item 3,
+    // for a plan selling half first, to its first take-profit, the lowest of the half's price, its target and its staged levels
+    // above the buy, since a close reaching any of them sells there first. None where its stop is not placed under the buy, or
+    // its sale names no such price, selling on a trail, on the RSI, by staged levels without a half or at its time limit alone.
     // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
     public double? TradedReward(double close)
     {
@@ -92,7 +99,19 @@ public sealed record PlanOrder(
 
         var sale = SaleFrom(buy, stop);
 
-        return sale.Target is { } whole && whole > buy && sale.HalfAt is null && sale.Trail is null && sale.RsiAbove is null && !sale.Staged.Any(level => level > buy && level < whole)
+        if (sale.Trail is not null || sale.RsiAbove is not null)
+        {
+            return null;
+        }
+
+        if (sale.HalfAt is { } half && half > buy)
+        {
+            var first = sale.Staged.Where(level => level > buy).Append(half).Concat(sale.Target is { } target && target > buy ? [target] : []).Min();
+
+            return Math.Round((first - buy) / (buy - stop), 6, MidpointRounding.AwayFromZero);
+        }
+
+        return sale.Target is { } whole && whole > buy && sale.HalfAt is null && !sale.Staged.Any(level => level > buy && level < whole)
             ? Math.Round((whole - buy) / (buy - stop), 6, MidpointRounding.AwayFromZero)
             : null;
     }
@@ -113,6 +132,7 @@ public sealed record PlanOrder(
                 Trail = Trail * factor,
                 TurnedDown = [.. TurnedDown.Select(turned => turned with { Price = turned.Price * factor })],
                 Range = Range is { } range ? new BuyRange(range.Ceiling * factor, range.Floor * factor) : null,
+                LevelFloor = LevelFloor * factor,
             };
 }
 
@@ -248,8 +268,20 @@ public static class PlanHook
         var ceiling = parameters.GetValueOrDefault(RangeCeilingParameter);
         var floorMoves = parameters.GetValueOrDefault(RangeFloorParameter);
         RangeWidths? range = null;
+        double? levelFloor = null;
 
-        if (ceiling != 0 || floorMoves != 0)
+        // On the operator's answers of 2026-11-27, item 2, a floor stated with no ceiling on an order at a level: the open the
+        // order buys nothing under, its typical daily moves under the level, since such an order never buys above its price.
+        if (ceiling == 0 && floorMoves != 0 && entryNumber is not (NextOpen or FirstPullback))
+        {
+            if (!BuyRanges.Floors.Contains(floorMoves))
+            {
+                throw new ArgumentException(FormattableString.Invariant($"The plan's floor under its price states {floorMoves}, and it states {string.Join(", ", BuyRanges.Floors.OfType<double>())} typical days."), nameof(parameters));
+            }
+
+            levelFloor = floorMoves;
+        }
+        else if (ceiling != 0 || floorMoves != 0)
         {
             if (entryNumber != NextOpen || !BuyRanges.Ceilings.Contains(ceiling) || (floorMoves != 0 && !BuyRanges.Floors.Contains(floorMoves)))
             {
@@ -267,6 +299,7 @@ public static class PlanHook
             Half = shape == OnHalf,
             Placing = shape switch { AtTheRisk => TakeProfitPlacing.Risk, Beyond => TakeProfitPlacing.Beyond, _ => TakeProfitPlacing.Turned },
             Range = range,
+            LevelFloor = levelFloor,
         };
 
         return PlanPrices.Traded(combination) ? null : combination;
@@ -315,6 +348,11 @@ public static class PlanHook
             }
         }
 
+        if (combination.LevelFloor is { } under)
+        {
+            stated[RangeFloorParameter] = under;
+        }
+
         return stated;
     }
 
@@ -353,6 +391,7 @@ public static class PlanHook
             Placing = combination.Placing,
             Half = combination.Half,
             Range = range,
+            LevelFloor = combination.LevelFloor is { } moves && level is { } price && typicalDay > 0 && price - (moves * typicalDay) > 0 ? price - (moves * typicalDay) : null,
         };
     }
 
@@ -368,6 +407,13 @@ public static class PlanHook
             : order.Entry == PlanPoints.FirstPullback
             ? PlanPoints.PullbackFillOf(closes, opens, pick, order.Window)
             : PlanPoints.FillOf(opens, lows, pick, order.Level, order.Window);
+
+        // On the operator's answers of 2026-11-27, item 2, an order at a level with a floor buys nothing where the session it
+        // trades into its level opens under the floor, the only fill that stands under its level.
+        if (order.Range is null && order.LevelFloor is { } under && fill is { } low && low.Price < under)
+        {
+            return new PlanTradeState(false, null, null, null, null);
+        }
 
         if (fill is not { } filled)
         {

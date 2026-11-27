@@ -23,10 +23,18 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
     // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
     public RangeWidths? Range { get; init; }
 
-    // What a plan's words carry after its own where it buys in a range.
+    // On the operator's answers of 2026-11-27, item 2, the typical daily moves under its level an order at a level buys nothing on
+    // an open under; none for a plan filling at any open under its level.
+    public double? LevelFloor { get; init; }
+
+    // What a plan's words carry after its own where it buys in a range, or at a level above its floor.
     public const string InItsRange = "; bought in its range: ";
 
-    public string Words => WordsBeforeRange + (Range is { } widths ? InItsRange + widths.Words : string.Empty);
+    public const string AboveItsFloor = "; bought above its floor: ";
+
+    public string Words => WordsBeforeRange
+        + (Range is { } widths ? InItsRange + widths.Words : string.Empty)
+        + (LevelFloor is { } floor ? AboveItsFloor + EquityBrief.Core.Families.RuleWording.BuyRanges.UnderItsPrice(floor) : string.Empty);
 
     string WordsBeforeRange => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
@@ -614,5 +622,5 @@ public static class PlanPoints
             .FirstOrDefault();
 
     public static int Changes(PlanCombination combination) =>
-        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1) + (combination.Range is null ? 0 : 1);
+        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1) + (combination.Range is null ? 0 : 1) + (combination.LevelFloor is null ? 0 : 1);
 }

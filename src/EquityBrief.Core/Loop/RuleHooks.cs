@@ -48,9 +48,9 @@ public sealed record RuleHooks(
     double? RewardTraded = null)
 {
     // From the January pin move the reward check on the traded plan: a pick is kept only where the order its plan places makes
-    // at least this many times its own risk, read off the order's own stop and the one price it takes the whole at; stated
-    // only beside a plan selling the whole at one price, and off where none is stated, the family's own check on the setup's
-    // stop and target reading as before.
+    // at least this many times its own risk, read off the order's own stop and the one price it takes the whole at, or on the
+    // operator's answers of 2026-11-27, item 3, the first take-profit of a plan selling half first; stated only beside a plan,
+    // and off where none is stated, the family's own check on the setup's stop and target reading as before.
     // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
     public const string RewardTradedParameter = "reward_traded";
 
@@ -299,10 +299,11 @@ public sealed record RuleHooks(
             throw new ArgumentException("A rule states its sale once: an exit of the menu or a plan's sale.", nameof(parameters));
         }
 
-        // The reward check on the traded plan reads the order a plan places and the one price it takes the whole at.
-        if (rewardTraded is not null && (plan is null || plan.Half))
+        // The reward check on the traded plan reads the order a plan places, and the one price it takes the whole at or the first
+        // take-profit of a plan selling half first.
+        if (rewardTraded is not null && plan is null)
         {
-            throw new ArgumentException("The reward check on the traded plan reads the plan the rule states, selling the whole at one price, and the rule states none or one selling half.", nameof(parameters));
+            throw new ArgumentException("The reward check on the traded plan reads the plan the rule states, and the rule states none.", nameof(parameters));
         }
 
         return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan, timeLimit, perNight, rewardTraded);

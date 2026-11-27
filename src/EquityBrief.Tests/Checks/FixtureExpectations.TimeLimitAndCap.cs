@@ -180,13 +180,24 @@ public partial class FixtureExpectations
         PlanOrder Order(PlanCombination combination) => PlanHook.OrderOf(combination, close, levels, null, 1, 95, ruleSale, 63)!;
 
         // Taking profit on the whole at 3 times the risk: 106, (106 - 100) / 2 = 3. Selling the whole at the first band: 103,
-        // (103 - 100) / 2 = 1.5. Its rule's own sale at 110 from the rule's own stop of 95: (110 - 100) / 5 = 2. Selling half at
-        // a multiple, or on the time limit alone, names no one price for the whole and reads none.
+        // (103 - 100) / 2 = 1.5. Its rule's own sale at 110 from the rule's own stop of 95: (110 - 100) / 5 = 2. The time limit
+        // alone names no price and reads none.
         Assert.Equal(3, Order(twoDays.TakingAtRisk(3)).TradedReward(close));
         Assert.Equal(1.5, Order(twoDays with { Exit = PlanPoints.FirstBand }).TradedReward(close));
         Assert.Equal(2, Order(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale)).TradedReward(close));
-        Assert.Null(Order(twoDays.Halving(2)).TradedReward(close));
         Assert.Null(Order(twoDays).TradedReward(close));
+
+        // Selling half first reads its first take-profit, the lowest price a close sells at above the buy. Half at 2 times the
+        // risk on the time limit alone: 104, (104 - 100) / 2 = 2. Half at 1.5 times, 103, with the first band at 103 too: 1.5.
+        // Half at 2 times beside the rule's own target of 110, from the rule's stop of 95: the half at 100 + 2 x 5 = 110 and the
+        // target at 110, (110 - 100) / 5 = 2. Half at 3 times, 106, with the first band at 103 under it: the band sells the
+        // whole first, (103 - 100) / 2 = 1.5. Half at 3 times from the rule's own stop, 115, the rule's target of 110 under it:
+        // (110 - 100) / 5 = 2.
+        Assert.Equal(2, Order(twoDays.Halving(2)).TradedReward(close));
+        Assert.Equal(1.5, Order((twoDays with { Exit = PlanPoints.FirstBand }).Halving(1.5)).TradedReward(close));
+        Assert.Equal(2, Order(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale).Halving(2)).TradedReward(close));
+        Assert.Equal(1.5, Order((twoDays with { Exit = PlanPoints.FirstBand }).Halving(3)).TradedReward(close));
+        Assert.Equal(2, Order(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale).Halving(3)).TradedReward(close));
 
         // At 2 times its risk the check passes the 3 and the 2 and fails the 1.5 and the plan naming no price; stated off, every
         // order passes, as the family's own check on the setup's stop and target reads.
@@ -201,10 +212,14 @@ public partial class FixtureExpectations
         Assert.True(RuleHooks.Of(plan).TradedPasses(Order(twoDays), close));
         Assert.Equal("the reward check on the traded plan's own stop and take-profit, at 2 times its risk", checking.Words()!.Split("; ")[^1]);
 
-        // Stated only beside a plan selling the whole at one price, and over nought.
+        // Stated only beside a plan, one selling half first among them, and over nought. Every order of a plan selling half at
+        // 1.5 times its risk reads 1.5 at most, so at 2 times the check refuses every one of them.
         Assert.Throws<ArgumentException>(() => RuleHooks.Of(Stated((RuleHooks.RewardTradedParameter, 2))));
-        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(PlanHook.ParametersOf(twoDays.Halving(2)), StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2 }));
         Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(plan, StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 0 }));
+        var halving = RuleHooks.Of(new Dictionary<string, double>(PlanHook.ParametersOf(twoDays.Halving(1.5)), StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2 });
+
+        Assert.False(halving.TradedPasses(Order(twoDays.Halving(1.5)), close));
+        Assert.True(halving.TradedPasses(Order(twoDays.Halving(2)), close));
 
         // The S&P 500 pullback's variants may state it with their time limit and cap; the dip's night reads none of it.
         Assert.Null(EquityBrief.Worker.Candidates.CandidateRegistrar.SwingHooksUnread(RuleHooks.Of(new Dictionary<string, double>(plan, StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2, [RuleHooks.TimeLimitParameter] = 20, [RuleHooks.PerNightParameter] = 3 })));
@@ -257,5 +272,46 @@ public partial class FixtureExpectations
         Assert.True(Walked([100], [100]).Waiting);
 
         static (bool, int?, double?, double?) Of(PlanTradeState state) => (state.Waiting, state.FillBar, state.Fill, state.Stop);
+    }
+
+    // see: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
+    [Fact]
+    public void AnOrderAtALevelWithAFloorBuysNothingOnAnOpenMoreThanItsTypicalDaysUnderItsPrice()
+    {
+        // The provisional floor, two typical days, stated alone on a buy 1 typical day under the close within 5 sessions: a plan of
+        // its own, its words naming the floor and read back, its parameters written back.
+        var level = Stated((PlanHook.EntryParameter, PlanHook.Distance), (PlanHook.DistanceParameter, 1), (PlanHook.WindowParameter, 5), (PlanHook.StopParameter, 2), (PlanHook.RangeFloorParameter, 2));
+        var floored = PlanHook.Of(level)!;
+
+        Assert.Equal(2, floored.LevelFloor);
+        Assert.Null(floored.Range);
+        Assert.EndsWith("; bought above its floor: not bought on an open more than 2 typical days under its price", floored.Words, StringComparison.Ordinal);
+        Assert.Equal(floored, PlanPrices.Named(floored.Words));
+        Assert.Equal(floored, PlanHook.Of(PlanHook.ParametersOf(floored)));
+        Assert.Equal(PlanPoints.Changes(floored with { LevelFloor = null }) + 1, PlanPoints.Changes(floored));
+
+        // Refused off the floors the range's test walks, and on the first pullback, which buys at an open with no price.
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(new Dictionary<string, double>(level, StringComparer.Ordinal) { [PlanHook.RangeFloorParameter] = 3 }));
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(Stated((PlanHook.EntryParameter, PlanHook.FirstPullback), (PlanHook.WindowParameter, PlanPoints.FirstPullbackSessions), (PlanHook.RangeFloorParameter, 2))));
+
+        // Placed on a close of 100 with a typical day of 2: by hand the level 98 and the floor 98 - 2 x 2 = 94.
+        var order = PlanHook.OrderOf(floored, 100, new PlanLevels([], [], []), null, 2, 90, new PlanSale(110, null, []), 63)!;
+
+        Assert.Equal(98, order.Level);
+        Assert.Equal(94, order.LevelFloor);
+        Assert.Null(PlanHook.OrderOf(floored with { LevelFloor = null }, 100, new PlanLevels([], [], []), null, 2, 90, new PlanSale(110, null, []), 63)!.LevelFloor);
+
+        // Walked from the night's bar 0. An open of 95 under the level and above the floor buys there. An open of 93 under the
+        // floor buys nothing, where the same order with no floor buys at 93. An open of 99 with a low of 97 fills at the level,
+        // 98. Opens over the level that never trade down to it within the window: not bought, as before.
+        PlanTradeState Walked(PlanOrder walked, double[] opens, double[] lows) => PlanHook.Walk(walked, opens, lows, opens, 0);
+        var plain = order with { LevelFloor = null };
+
+        Assert.Equal(((int?)1, (double?)95), (Walked(order, [100, 95, 95], [100, 95, 95]).FillBar, Walked(order, [100, 95, 95], [100, 95, 95]).Fill));
+        Assert.True(Walked(order, [100, 93, 93], [100, 92, 92]).Unfilled);
+        Assert.False(Walked(order, [100, 93], [100, 92]).Waiting);
+        Assert.Equal((double?)93, Walked(plain, [100, 93, 93], [100, 92, 92]).Fill);
+        Assert.Equal((double?)98, Walked(order, [100, 99, 99], [100, 97, 97]).Fill);
+        Assert.True(Walked(order, [100, 101, 101, 101, 101, 101, 101], [100, 99, 99, 99, 99, 99, 99]).Unfilled);
     }
 }

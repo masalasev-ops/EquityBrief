@@ -23409,3 +23409,34 @@ Carried:    the replay over two copies of the store with every live trade the sa
             fails, and each rule's and variant's monthly test figure and sweep results before and after, to the operator
             before the merge; then the background registrations once it lands, the reward check at 2 times the risk on the
             S&P 500 swing filter with its own setup floor off.
+
+### 24.19 - correction: the January pin move's floor under a level order's price, the reward of a plan selling half first and the replay before the merge   2026-11-27
+
+Ruled:      the operator's answers of 2026-11-27 on the report of that morning, word for word in
+            `prompts/2026-11-27-24.19-pin-move-answers-replay-floor-half-reward.md`.
+Built:      a floor alone on a plan buying at a level, one of the floors the range's test walks in typical daily moves under
+            its own price, the session its order trades into its level buying nothing where it opens under the floor and
+            the order then ending; the reward check reading a plan selling half first at its first take-profit, the lowest
+            of the half's price, its target and its staged levels above the buy, and no longer refused beside such a plan;
+            and `tools/replay --new <commit>`, building a pull request's head carrying main's HEAD so the replay comes
+            before the merge. Every live rule's evaluator raised again to its pin, the move still one.
+Found:      the 25 Nov count read each card's take-profit column, the price the plan sells the whole at first: on the S&P
+            600 pullback the rule's own target, which on all 8 of its plans stood under the half's price at 1.5 times the
+            risk, so a close reaching it sells everything there, 7 of them under 1 times the risk. A plan selling
+            half at 1.5 times its risk reads 1.5 at most, so the check at 2 times refuses every pick of the S&P 400's and
+            600's pullback plans. Seven of the twelve price families hold nine rules, so the floor variant has room on five.
+Tests:      1 new: the floor read, written back, refused, placed and walked by hand. 1 widened: the traded reward over five
+            plans selling half first.
+Pins:       the same 21 rules on 11 evaluators, each version raised again to its pin.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that reads it. m7 the plan's
+            walk ignoring the floor: red; m8 the reward check reading no plan selling half first: red. Filtered to their
+            tests and reverted before anything was committed.
+Claims:     1763, none added: section 17's reward and buy range rows widened in place.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4081 of 4081 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1763
+            claims, 1763 passing, none out of scope and none unexamined, 1778 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the replays over two copies of the store and each live rule's and variant's monthly test figure and sweep
+            results before and after, to the operator before the merge; then the background registrations once it lands
+            where a family has room.
