@@ -7,6 +7,32 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/ARCHITECTURE.html - the background variants registered where a family has room and walked where it holds nine, at a correction to 24.19
+Decision: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+Was:
+> section 7's candidate registrar row: reads "candidate register, filter versions, reading pins", writes "candidate register", its text ending "... (see: A freeze on the S&amp;P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions)"
+> section 16's candidate registrar row: no cell under Bars and none under Forward returns
+Now:
+> the registrar's row reads the waiting variants and the bar store as well and writes the waiting variants, its text adding `register --background`: a live rule's settings with the floor, the reward check on its traded plan or its setup's own reward floor moved, registered where its family has room, retiring nothing, or entered to wait where it holds nine and the variant moves the floor alone
+> section 16's registrar row reads under Bars and reads and writes under Forward returns; section 7 and section 16 each add the waiting variants step's row, section 14 its step after the survivors', section 15.10 the Run page's row of the variants waiting for a slot, and section 16 the stores of the waiting variants and their trades
+Why: the operator's answers of 2026-11-27, items 1 and 2, kept word for word in `prompts/2026-11-27-24.19-answers-on-the-report-of-8-22am.md`, and the design they approved in `prompts/2026-11-27-24.19-stop-the-reruns.md`, item 3.
+
+### 2026-11-27 - docs/SCHEMA.md - the waiting variants and their trades, at a correction to 24.19
+Decision: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+Was:
+> the ownership table holding no row for `waiting_variant` or `waiting_variant_trade`
+Now:
+> the ownership table names the candidate registrar the inserter of `waiting_variant` and the waiting variants step the inserter of `waiting_variant_trade`, neither updated nor deleted, and a section for each table
+Why: the same; migration 173 creates both.
+
+### 2026-11-27 - docs/RUNBOOK.md - the background variants' form and remedy, at a correction to 24.19
+Decision: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
+Was:
+> no form registering a background variant of a live rule, the paragraph on an approval the operator withdrew followed by the Fundamentals family's live rule without its flag
+Now:
+> a paragraph on `register --background`, its moves, its two examples, what it refuses and the remedy `tools/remedies/2026-11-27-24.19-the-background-variants.txt` that registers and enters the variants of 2026-11-27
+Why: the same.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the floor under a level order's price and the reward of a plan selling half first, at a correction to 24.19
 Decision: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
 Was:

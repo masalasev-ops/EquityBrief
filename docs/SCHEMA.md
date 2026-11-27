@@ -118,6 +118,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `survivor` | SurvivorDesk | none | none |
 | `survivor_state` | SurvivorDesk | none | none |
 | `survivor_pick` | SurvivorDesk | none | none |
+| `waiting_variant` | CandidateRegistrar | none | none |
+| `waiting_variant_trade` | WaitingVariants | none | none |
 | `research_ask` | Researcher | none | none |
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
@@ -2849,6 +2851,45 @@ Grain: one row per survivor, session and stock it was walked to while it queued,
 Primary key: `survivor_id`, `session_date`, `ticker`.
 
 **Inserted by the survivors' desk alone, and never updated or deleted** (see: A survivor that has to queue is walked each night as a record drawn among no buys and carries it when a slot opens). A survivor is written when the tester passes it and admitted at once; a state is written where it differs from the survivor's last, so a survivor queued for one reason night after night holds one row for it; and a queued survivor's picks are stored each night it queues, its record walked from them when the page is read. Read by the read surface for the Improvement loop page alone, and drawn among no buys anywhere.
+
+### waiting_variant
+Grain: one row per background variant entered to wait for a slot in a family holding nine, from the 24.19 correction of 2026-11-27.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the variant's number, the first entered the lowest |
+| `candidate` | TEXT | the name it registers under once a slot frees, the live rule's with its moves in words |
+| `live` | TEXT | the live rule it moves from, as the register holds it |
+| `evaluator` | TEXT | the live rule's evaluator |
+| `moves` | TEXT | JSON: the settings it moves and their values, the floor under an order at a level with the ceiling off |
+| `walked_from` | TEXT | the newest session the bar store held when it was entered; its live rule's orders placed after it are walked |
+| `entered_at` | TEXT | UTC instant it was entered |
+| `evidence` | TEXT | the ruling it was entered on |
+| `run_id` | TEXT | the register command that entered it |
+
+Primary key: `id`. `candidate` is unique.
+
+**Inserted by the candidate registrar alone, and never updated or deleted** (see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees). `register --background` enters a variant moving the floor alone where its family holds nine; one moving anything else into a full family is refused. A variant registered since stands in `candidate_register` under the same name, and its row here stays as the record of its wait.
+
+### waiting_variant_trade
+Grain: one row per waiting variant and order of its live rule placed after its `walked_from`, once the order has ended under the variant's floor.
+
+| Column | Type | Notes |
+|---|---|---|
+| `waiting_id` | INTEGER | the waiting variant |
+| `session_date` | TEXT | the night the live rule placed the order |
+| `ticker` | TEXT | the stock |
+| `ended_on` | TEXT | the session it ended on under the floor, its window's last where it never filled |
+| `filled_on` | TEXT | the session it filled, null where it never filled |
+| `fill` | TEXT | decimal in code: the price it filled at, at its night's scale, null where it never filled |
+| `result` | REAL | what it came to in multiples of the live rule's risk, null where it never filled |
+| `live_result` | REAL | what the live rule's own order came to, null while the live rule's still waits or is held |
+| `under_floor` | INTEGER | 1 where the floor alone kept it from a fill the live rule took, 0 otherwise |
+| `run_id` | TEXT | the night that wrote it |
+
+Primary key: `waiting_id`, `session_date`, `ticker`.
+
+**Inserted by the waiting variants step alone, and never updated or deleted** (see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees). Each night the step reads the live rule's orders from `rule_pick`, `family_trade`, `index_rule_trade` or `dip_trade` by its name, walks each with the floor under its level through the plan walk the families use and writes it once it has ended; an order still waiting or held is written on a later night. Read by the read surface for the Run page alone, and drawn among no buys anywhere.
 
 ### research_ask
 Grain: one row per ask of the researcher's week, from 24.28.

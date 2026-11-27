@@ -23452,3 +23452,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the replays over two copies of the store and each live rule's and variant's monthly test figure and sweep
             results before and after, to the operator before the merge; then the background registrations once it lands
             where a family has room.
+
+### 24.19 - correction: the January pin move's background variants registered where a family has room and walked where it holds nine   2026-11-27
+
+Ruled:      the operator's answers of 2026-11-27 on the report of 8:22 am, word for word in
+            `prompts/2026-11-27-24.19-answers-on-the-report-of-8-22am.md`, and the design they approved in
+            `prompts/2026-11-27-24.19-stop-the-reruns.md`, item 3.
+Built:      `register --background`, a live rule's own settings with the floor, the reward check on its traded plan or its
+            setup's own reward floor moved, registered beside it where its family holds fewer than nine, retiring nothing,
+            or entered to wait where it holds nine and the variant moves the floor alone; the night's waiting variants
+            step after the survivors', which registers a waiting variant the night a slot frees in its family, the first
+            entered first, and walks every other one from its live rule's own orders, each walked again with the floor
+            under its level through the plan walk the families use and written once it has ended beside the live rule's
+            result; the two stores, migration 173; the Run page's list of the variants waiting with each record so far;
+            and the remedy registering the floor variant in the five families with room and the S&P 600 pullback's reward
+            variant at 1.5 times its risk, and entering the floor variant in the seven holding nine. No pin moves: the form,
+            the step and the page are files no rule pins, and the walk they call is unchanged.
+Found:      the registrar's own check refuses any registration into a family holding nine, so a variant entered to wait
+            has its plan read when it is entered and meets the full check when a slot frees and it registers.
+Tests:      4 new: a live order with the floor under its level worked by hand on both sides of the floor; a background
+            variant registered where its family has room and entered where it holds nine, the refusals beside them; a
+            waiting variant walked from its live rule's two orders, nothing written twice and registered the night after a
+            slot frees, its tables refusing an update and a delete; and the Run page's list read back with each record
+            worked by hand. The night's three step-order tests widened by the step.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m10 the
+            floor left off the walked order: red; m11 a full family's variant registered rather than entered: red; m12
+            the step walking a variant already registered: red. Filtered to their tests and reverted before anything was
+            committed.
+Claims:     1769, six added: the step's catalogue and matrix rows, its two stores, section 14's step and the Run page's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4086 of 4086 tests ran with none failed, migrations 0 to 173
+            with none pending, schema version 173, against `data-ci` and never `data`; the phase report 68 tables, 1769
+            claims, 1769 passing, none out of scope and none unexamined, 1784 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the remedy run from `main` after the merge while no writer runs, its outcomes in the report to the operator: five
+            floor variants and the reward variant registered, seven floor variants entered to wait.

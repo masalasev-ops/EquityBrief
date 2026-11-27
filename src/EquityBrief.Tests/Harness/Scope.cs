@@ -2984,9 +2984,13 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed night the night's row after the labeller's says the copy's own run copies the store and no copy stands in the folder, a night run again for an earlier session and a night handed no launcher writing the same row, and the night's source asks for none",
             ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.WaitingVariantStep)] = new Scoped(
+            Verdict.Pass,
+            "over a constructed night the waiting variants' row stands between the survivors' and the picker's with no model call or request on it, saying none waits; and over a constructed store a waiting variant walked from its live rule's orders, by hand on both sides of its floor, and registered the night after a slot frees",
+            ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.SurvivorStep)] = new Scoped(
             Verdict.Pass,
-            "over a constructed night the survivors' row stands between the store copy's and the picker's with no model call or request on it, saying none is queued; and over a constructed store a queued survivor walked to the newest night's setups, its one pick stored with the night's close, nothing stored twice on a second walk and the step's row counting what it did",
+            "over a constructed night the survivors' row stands between the store copy's and the waiting variants' with no model call or request on it, saying none is queued; and over a constructed store a queued survivor walked to the newest night's setups, its one pick stored with the night's close, nothing stored twice on a second walk and the step's row counting what it did",
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
             Verdict.Pass,
@@ -4118,6 +4122,22 @@ internal static class Scope
             Verdict.Pass,
             "a line parsed into its parts and two spellings read as one canonical line by hand, eleven lines outside the grammar each refused naming its part, twenty early setups' cut points worked by hand and unmoved by later setups, and the weekly bar worked by hand at 1 in 1,024 over it and 1 in 2,048 under it",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Waiting variants")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the waiting variants it reads, the trades it writes, the register, the four tables of the live rules' orders, the bars it reads and the run log it writes, each reconciled against the row; over a constructed store a waiting variant walked from its live rule's two orders, the one opening under its floor written as kept out and the other ending as the live rule's, nothing written twice, and registered the night after a slot frees",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Waiting variants")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Waiting variants")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a floor variant entered once into a full family over a constructed register, a second entry refused",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Waiting variant trades")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and an order written once it has ended and never twice over a constructed store",
+            ByMigration),
         [CheckReach.Key(CatalogueTable, "Survivor desk")] = new Scoped(
             Verdict.Pass,
             "the class declares the survivors' three tables, the setups, setup nights, bars and indicators it reads and the run log it writes, each reconciled against the row, and over a constructed store a queued survivor is walked to the newest night, its pick stored once and its state written once for its reason",
@@ -4962,6 +4982,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Names split for the first time")] = new Scoped(
             Verdict.Pass,
             "each name, its drawn words, its stock and its source read back off the list, and none listed where none was",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Background variants waiting for a slot")] = new Scoped(
+            Verdict.Pass,
+            "read back over a constructed store: a waiting variant's orders ended, those its floor kept out, its result over those it bought and the live rule's over the same orders worked by hand, a registered one saying so, one with nothing ended saying so, and nothing drawn where none was entered",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Splits the share check does not read")] = new Scoped(
             Verdict.Pass,
@@ -8238,6 +8262,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Entry check")] = "22.41",
         [CheckReach.Key("15.10 Run", "Names split for the first time")] = "22.42",
         [CheckReach.Key("15.10 Run", "Splits the share check does not read")] = "24.11",
+        [CheckReach.Key("15.10 Run", "Background variants waiting for a slot")] = "24.19",
         [CheckReach.Key("15.9 Name", "No resistance level in the year")] = "22.41",
         [CheckReach.Key("15.9 Name", "A figure from before the newest report")] = "22.41",
         [CheckReach.Key("15.18 The decision card", "The entry check's line")] = "22.41",
@@ -9543,6 +9568,8 @@ internal static class Scope
         ["From 24.4, start the AI stock picker"] = "24.4",
         // 24.27's step, the queued survivors walked after the store's copy.
         ["From 24.27, walk each queued survivor"] = "24.27",
+        // The 24.19 correction's step, the background variants waiting for a slot after the survivors'.
+        ["From the 24.19 correction of 2026-11-27, register each background variant"] = "24.19",
     };
 
     // Figure 12.1's boxes, which are the research flow and land in phase 6.
