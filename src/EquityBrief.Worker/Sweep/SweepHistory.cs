@@ -303,24 +303,35 @@ public sealed class SweepHistory : IComponent
         // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
         var marks = await MarksAsync(connection, cancellation);
 
+        // From the January pin move a history-ends mark ends only the member span it falls in, as the long reader reads it: a
+        // code a later span holds after the mark reads its own bars after it as a series of its own, and a mark inside a span the
+        // stock trades on past is settled by its filer and its prices, or as the operator ruled it.
+        // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+        var settled = marks.Values.Any(own => own.Any(mark => mark.Kind == Core.Chart.SessionMarking.HistoryEnds))
+            ? await History.LongHistoryReader.SettledAsync(connection, marks, await History.LongHistoryReader.CalendarAsync(connection, stamp, cancellation), stamp, cancellation)
+            : [];
+
         foreach (var (ticker, held) in spans.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
             var pulled = await BarsAsync(connection, "pulled_bar", ticker, stamp, cancellation);
             var stored = await BarsAsync(connection, "bar", ticker, stamp, cancellation);
-            var series = UnderMarks(pulled, stored, marks.GetValueOrDefault(ticker));
+            var readThrough = settled.GetValueOrDefault(ticker)?.Outcome == Core.History.LongMarks.ReadThrough;
 
-            fingerprint.Append(ticker).Append(':').Append(series.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
-                .Append(series.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
+            foreach (var (series, partSpans) in SpanAware(pulled, stored, marks.GetValueOrDefault(ticker), held, readThrough))
+            {
+                fingerprint.Append(ticker).Append(':').Append(series.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
+                    .Append(series.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
 
-            names.Add(new SweepName(
-                ticker,
-                series,
-                held,
-                [.. (prints.GetValueOrDefault(ticker) ?? [])],
-                sectors.GetValueOrDefault(ticker),
-                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
-                survivors.Contains(ticker),
-                SplitsStored: splitDays.GetValueOrDefault(ticker)));
+                names.Add(new SweepName(
+                    ticker,
+                    series,
+                    partSpans,
+                    [.. (prints.GetValueOrDefault(ticker) ?? [])],
+                    sectors.GetValueOrDefault(ticker),
+                    [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
+                    survivors.Contains(ticker),
+                    SplitsStored: splitDays.GetValueOrDefault(ticker)));
+            }
 
             if (++read % 100 == 0)
             {
@@ -939,6 +950,21 @@ public sealed class SweepHistory : IComponent
     // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     public static SweepBar[] UnderMarks(IReadOnlyList<SweepBar> pulled, IReadOnlyList<SweepBar> stored, IReadOnlyList<Core.Chart.SessionMark>? marks) =>
         marks is null || marks.Count == 0 ? Merged(pulled, stored) : [.. Core.History.LongLedger.Marked(Merged(pulled, stored), marks)];
+
+    // From the January pin move a stock's series from its pulled and stored bars under its marks as the long reader parts them:
+    // as merged where it holds no mark; otherwise from its start and past each bad print, and where a history-ends mark is not
+    // read through, the bars on and before it with the spans that joined on or before it, then the bars after it with the spans
+    // that joined after it, each a series of its own and a part holding no span left out.
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    public static IReadOnlyList<(SweepBar[] Bars, IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> Spans)> SpanAware(
+        IReadOnlyList<SweepBar> pulled,
+        IReadOnlyList<SweepBar> stored,
+        IReadOnlyList<Core.Chart.SessionMark>? marks,
+        IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> spans,
+        bool readThrough) =>
+        marks is null || marks.Count == 0
+            ? [(Merged(pulled, stored), spans)]
+            : [.. Core.History.LongMarks.Parts(Merged(pulled, stored), marks, spans, readThrough).Select(part => (part.Bars, (IReadOnlyList<(DateOnly? Joined, DateOnly? Left)>)part.Spans))];
 
     // Every stock's marks, none where the store was migrated before the table existed.
     public static async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Chart.SessionMark>>> MarksAsync(SqliteConnection connection, CancellationToken cancellation)

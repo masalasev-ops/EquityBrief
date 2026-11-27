@@ -69,4 +69,39 @@ public partial class FixtureExpectations
 
         Assert.Equal(8, SweepFigures.Years);
     }
+
+    // see: A history-ends mark ends only the member span it falls in, and a mark inside a span the stock trades on past is settled by its filer and its prices
+    [Fact]
+    public void TheSweepsHistoryReadsAHistoryEndsMarkAsEndingOnlyTheMemberSpanItFallsIn()
+    {
+        static SweepBar Bar(int day) => new(new DateOnly(2021, 4, day), 10m + day, 10m + day, 10m + day, 1000, 10m + day);
+
+        static int[] Days(IEnumerable<SweepBar> series) => [.. series.Select(bar => bar.Session.Day)];
+
+        static DateOnly On(int day) => new(2021, 4, day);
+
+        SweepBar[] pulled = [Bar(1), Bar(5), Bar(6)];
+        SweepBar[] stored = [Bar(7), Bar(8), Bar(9)];
+        IReadOnlyList<Core.Chart.SessionMark> ends = [new(On(6), Core.Chart.SessionMarking.HistoryEnds, "Its history ends here.")];
+        (DateOnly?, DateOnly?)[] reused = [(null, On(6)), (On(8), null)];
+
+        // By hand: a mark on the 6th with one company's span to the 6th and another's from the 8th parts the code in two, the
+        // first reading the 1st to the 6th over its span and the second the 7th to the 9th over its own, never the bars before.
+        var parts = SweepHistory.SpanAware(pulled, stored, ends, reused, readThrough: false);
+
+        Assert.Equal(2, parts.Count);
+        Assert.Equal([1, 5, 6], Days(parts[0].Bars));
+        Assert.Equal([((DateOnly?)null, (DateOnly?)On(6))], parts[0].Spans);
+        Assert.Equal([7, 8, 9], Days(parts[1].Bars));
+        Assert.Equal([((DateOnly?)On(8), (DateOnly?)null)], parts[1].Spans);
+
+        // One span before the mark: the bars after it go, as before the move. Read through: one series over both spans. No mark:
+        // the series merged as it stood.
+        var once = Assert.Single(SweepHistory.SpanAware(pulled, stored, ends, [(null, null)], readThrough: false));
+
+        Assert.Equal([1, 5, 6], Days(once.Bars));
+        Assert.Equal(Days(SweepHistory.UnderMarks(pulled, stored, ends)), Days(once.Bars));
+        Assert.Equal([1, 5, 6, 7, 8, 9], Days(Assert.Single(SweepHistory.SpanAware(pulled, stored, ends, reused, readThrough: true)).Bars));
+        Assert.Equal([1, 5, 6, 7, 8, 9], Days(Assert.Single(SweepHistory.SpanAware(pulled, stored, null, reused, readThrough: false)).Bars));
+    }
 }
