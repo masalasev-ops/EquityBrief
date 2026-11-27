@@ -2,6 +2,7 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Loop;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Dips;
 using EquityBrief.Worker.Families;
@@ -19,6 +20,16 @@ namespace EquityBrief.Tests.Checks;
 // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
 public partial class FixtureExpectations
 {
+    // The January pin move's rows of section 17: the time limit and the cap a night, the reward check on the traded plan, the
+    // buy range on a rule's plan and the scored years.
+    internal static readonly string[] PinMoveClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The time limit and the cap a night"),
+        CheckReach.Key(Scope.LimitsTable, "The reward check on the traded plan"),
+        CheckReach.Key(Scope.LimitsTable, "The buy range on a rule's plan"),
+        CheckReach.Key(Scope.LimitsTable, "The scored years"),
+    ];
+
     static Dictionary<string, double> Stated(params (string Name, double Value)[] settings) =>
         settings.ToDictionary(setting => setting.Name, setting => setting.Value, StringComparer.Ordinal);
 

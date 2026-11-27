@@ -3813,6 +3813,23 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // The January pin move's four rows of section 17.
+        [CheckReach.Key(LimitsTable, "The time limit and the cap a night")] = new Scoped(
+            Verdict.Pass,
+            "the settings read and refused at their bounds; five, three and ten a night kept by hand over a constructed night of seven on the S&P 500's recorder, the pullback's variants, the dip and the S&P 400's candidates; a time limit of 20 held by the pullback's picks; a hold and a time limit stated together refused; a walk whose own exit reads outcomes worked at the family's limit refusing another; a survivor's variant registering both",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The reward check on the traded plan")] = new Scoped(
+            Verdict.Pass,
+            "the traded reward worked by hand at 3, 1.5 and 2 times the risk over three constructed orders and none for a plan selling half or on its time limit alone; the check at 2 passing and failing them; its refusals beside no plan, a half plan and on the dip",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The buy range on a rule's plan")] = new Scoped(
+            Verdict.Pass,
+            "the settings read, written back and refused off the walked widths and on a buy at a level; a range of 101 to 96 placed by hand on a close of 100 and a typical day of 2; fills worked by hand inside it, back at its ceiling, under its floor, staying above it and waiting",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The scored years")] = new Scoped(
+            Verdict.Pass,
+            "the years worked by hand on both sides of 2027's last session; the bar at 6 of 8 and 7 of 9; the plateau's and the blocks' shares at eight and nine years; a trade of the year in progress tallied in its own slot and in none of the scored figures",
+            ByExpectations),
         // 21.12's cap and weights of the monthly run's housekeeping asks.
         [CheckReach.Key(LimitsTable, "The monthly run's housekeeping asks")] = new Scoped(
             Verdict.Pass,
