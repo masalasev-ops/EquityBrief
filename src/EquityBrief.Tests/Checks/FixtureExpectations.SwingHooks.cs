@@ -47,7 +47,7 @@ public partial class FixtureExpectations
             var refused = CandidateRegistrar.Refusal([], "the swing filter at " + hook, SwingFilterRule.EvaluatorName, stated, SwingAt);
 
             Assert.NotNull(refused);
-            Assert.Contains("a swing filter rule states a plan alone", refused, StringComparison.Ordinal);
+            Assert.Contains("a swing filter rule states a plan, a time limit, a cap a night and the reward check on its traded plan alone", refused, StringComparison.Ordinal);
         }
     }
 

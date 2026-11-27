@@ -18,7 +18,17 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
     // On the operator's answer of 2026-11-14 on the tables how a full take-profit is placed; today's where none is named.
     public TakeProfitPlacing Placing { get; init; }
 
-    public string Words => (Window > 0
+    // From the January pin move the buy range a buy at the next open is placed in, its widths in typical daily moves from the
+    // last close; none for a plan buying at whatever price it opens.
+    // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    public RangeWidths? Range { get; init; }
+
+    // What a plan's words carry after its own where it buys in a range.
+    public const string InItsRange = "; bought in its range: ";
+
+    public string Words => WordsBeforeRange + (Range is { } widths ? InItsRange + widths.Words : string.Empty);
+
+    string WordsBeforeRange => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
         : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}"))
         + (TakeProfit is { } multiple ? ", " + (Half ? EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(multiple) : Placing switch
@@ -604,5 +614,5 @@ public static class PlanPoints
             .FirstOrDefault();
 
     public static int Changes(PlanCombination combination) =>
-        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1);
+        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1) + (combination.Range is null ? 0 : 1);
 }

@@ -56,6 +56,15 @@ public static class PlanPrices
             return null;
         }
 
+        // From the January pin move a plan buying in a range names its widths after its own words.
+        if (words.IndexOf(PlanCombination.InItsRange, StringComparison.Ordinal) is var ranged and > 0)
+        {
+            return Named(words[..ranged]) is { } unranged
+                && BuyRanges.Widths.FirstOrDefault(widths => widths.Words == words[(ranged + PlanCombination.InItsRange.Length)..]) is { Ceiling: > 0 } stated
+                    ? unranged with { Range = stated }
+                    : null;
+        }
+
         if (PlanPoints.Combinations.FirstOrDefault(one => one.Words == words) is { } listed)
         {
             return listed;

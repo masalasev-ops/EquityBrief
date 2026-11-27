@@ -201,4 +201,50 @@ public partial class FixtureExpectations
         Assert.NotNull(EquityBrief.Worker.Candidates.CandidateRegistrar.DipHooksUnread(checking));
         Assert.Null(EquityBrief.Worker.Candidates.CandidateRegistrar.DipHooksUnread(RuleHooks.Of(plan)));
     }
+
+    // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    [Fact]
+    public void APlanBuyingAtTheNextOpenInARangeIsStatedPlacedAndFilledAsTheRangeFillsIt()
+    {
+        // The provisional widths, half a typical day above and two under, stated alone on the rule's own plan: a plan of its own
+        // and not the rule's, its words naming the range and read back, its parameters written back.
+        var stated = Stated((PlanHook.RangeCeilingParameter, 0.5), (PlanHook.RangeFloorParameter, 2));
+        var ranged = PlanHook.Of(stated)!;
+
+        Assert.Equal(new RangeWidths(0.5, 2), ranged.Range);
+        Assert.Equal((PlanPoints.NextOpen, PlanPoints.RuleStop, PlanPoints.RuleSale), (ranged.Entry, ranged.Stop, ranged.Exit));
+        Assert.EndsWith("; bought in its range: a ceiling 0.5 typical days above the last close and a floor 2 typical days under it", ranged.Words, StringComparison.Ordinal);
+        Assert.Equal(ranged, PlanPrices.Named(ranged.Words));
+        Assert.Equal(ranged, PlanHook.Of(PlanHook.ParametersOf(ranged)));
+        Assert.Null(PlanHook.Of(Stated((PlanHook.RangeCeilingParameter, 0))));
+        Assert.Null(PlanHook.Of(Stated((PlanHook.RangeCeilingParameter, 1)))!.Range!.Value.Floor);
+
+        // Refused off the widths the test walks, and on a buy at a level.
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(Stated((PlanHook.RangeCeilingParameter, 0.7))));
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(Stated((PlanHook.RangeCeilingParameter, 0.5), (PlanHook.RangeFloorParameter, 3))));
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(Stated((PlanHook.RangeFloorParameter, 2))));
+        Assert.Throws<ArgumentException>(() => PlanHook.Of(Stated((PlanHook.EntryParameter, 1), (PlanHook.WindowParameter, 3), (PlanHook.RangeCeilingParameter, 0.5))));
+
+        // Placed on a close of 100 with a typical day of 2: by hand a ceiling of 101 and a floor of 96, waiting the two sessions
+        // its order at the ceiling stands; the same plan with no range buys at whatever price it opens and waits none.
+        var order = PlanHook.OrderOf(ranged with { Stop = PlanPoints.TypicalStop(2) }, 100, new PlanLevels([], [], []), null, 2, 95, new PlanSale(110, null, []), 63)!;
+
+        Assert.Equal(new BuyRange(101, 96), order.Range);
+        Assert.Equal(BuyRanges.OrderSessions, order.Window);
+        Assert.Null(PlanHook.OrderOf(ranged with { Range = null }, 100, new PlanLevels([], [], []), null, 2, 95, new PlanSale(110, null, []), 63)!.Range);
+
+        // Walked from the night's bar 0. An open of 100.5 inside the range buys there, its stop 2 typical days under at 96.5. An
+        // open of 102 over the ceiling and a low of 100.8 that session fills at the ceiling, 101. An open of 95 under the floor
+        // buys nothing and waits for nothing. An open of 103 and 104 with lows of 102 and 103 never comes back: not bought. A
+        // night with no session after it waits.
+        PlanTradeState Walked(double[] opens, double[] lows) => PlanHook.Walk(order, opens, lows, opens, 0);
+
+        Assert.Equal((false, (int?)1, (double?)100.5, (double?)96.5), Of(Walked([100, 100.5, 100.5], [100, 100, 100])));
+        Assert.Equal(((int?)1, (double?)101), (Walked([100, 102, 102], [100, 100.8, 101]).FillBar, Walked([100, 102, 102], [100, 100.8, 101]).Fill));
+        Assert.True(Walked([100, 95, 95], [100, 94, 94]).Unfilled);
+        Assert.True(Walked([100, 103, 104, 105], [100, 102, 103, 104]).Unfilled);
+        Assert.True(Walked([100], [100]).Waiting);
+
+        static (bool, int?, double?, double?) Of(PlanTradeState state) => (state.Waiting, state.FillBar, state.Fill, state.Stop);
+    }
 }
