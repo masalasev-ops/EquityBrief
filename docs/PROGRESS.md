@@ -23335,3 +23335,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.0 planning - amendment: the past-case line on the picker's sheet, the order after the January pin move, the dip's one name and no dates   2026-11-26
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.29, 24.35's built parts, 24.39, 24.40 and 24.46 with its correction to the read-only copy,
+            and the 24.19 correction's code to its 5a part; in progress, this amendment and the January pin move's code, two
+            of its eight items on its branch; next, the January pin move's other six items, then 24.30a, 24.31a and 24.36a.
+Ruled:      the operator's amendments of 2026-11-26 on the report of that afternoon, kept word for word as Appendix AJ of the
+            plan's file and in `prompts/2026-11-26-24.19-pin-move-amendments.md`: the past-case line on the picker's
+            round-two sheet, approved as a new field and making a new picker version on each index on paper from the night
+            24.36b lands; the order after the January pin move, 24.36a after 24.31a and 24.36b after 24.31b; the dip named
+            "Short-term dip" on every page; the guide's Tonight figure redrawn; and no date or estimate in the plan, the
+            checkpoint table or any report, the January pin move keeping its order of work and landing in time for the next
+            monthly run that judges cases.
+Planned:    `BUILD_PLAN.md`'s finishing order, its two pin moves' rows and 24.36; `DECISIONS.md`'s past-case line on the
+            picker's sheet and the dip's one name, the second narrowing the decision on Home's waiting orders. No claim added
+            and no stage renumbered.
+Built:      Home's name for the dip, "Short-term dip" where it read "Quick rebound", on its idea cards and the waiting cards'
+            chips and tags; the guide's Tonight figure redrawn from the redesigned page, its parts list with it.
+Mutated:    the rule, stated before the run: the name put back. m1 Home's name for the dip "Quick rebound" again: the setup
+            chips' test red. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4071 of 4071 tests ran with none failed, migrations 0 to 172
+            with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1759
+            claims, 1759 passing, none out of scope and none unexamined, 1774 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none.

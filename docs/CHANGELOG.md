@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/BUILD_PLAN.md - the past-case line on the picker's sheet, the order after the January pin move, the dip's one name and no dates, at the 24.0 planning amendment
+Decision: The picker's round-two sheet carries one past-case line a stock, worked by code under its version's own plan
+Was:
+> the finishing order's opening: "... kept word for word as Appendices AG, AH and AI of the plan's file, final."
+> the finishing order: "**The order.** After the Waiting to buy redesign: the January pin move's code; then 24.30a and 24.31a; then, the 24.19 correction having closed, 24.30b and 24.31b; then 24.32, 24.33 and 24.34; then 24.36a and 24.36b; then 24.41, 24.42 and 24.43; then 24.37a, 24.38a and 24.38b; then 24.44 with a fresh session's sign-off."
+> the finishing order: "The pin move before the run of 2027-02-06 carries the 24.19 correction's shared code, 24.29's ranged variants, the families' time limit and cap, the reward check on the traded plan and the short-interest cap, and the parts of 24.30, 24.37 and 24.38 that teach the rules where their code is complete by its cut-off. Its code is complete on its branch by Friday 2027-01-08, a deadline and not a wait; it is replayed over two copies of the store on the weekends of 9 to 10 and 16 to 17 January, the weekend of 23 to 24 January kept for a third where one fails; and it is merged by Friday 2027-01-29. Where no replay has passed by Sunday 2027-01-24 the report of that day says what failed, and nothing lands without a passing replay. A change not complete by the cut-off goes into the next pin move." and "On this order 24.30's part goes into the January pin move, and 24.37's and 24.38's into whichever pin move they are ready for."
+> the two pin moves' operating rows: "The pin move before the run of 2027-02-06 carries them where their code is complete by its cut-off of 2027-01-08, otherwise the next; ..."
+> 24.36: "24.36a, its code proven on constructed inputs and the frozen test data, after 24.34; ..." and its done condition with no line on the picker's sheet
+Now:
+> "... and amended on 2026-11-26 on the report of that afternoon, kept word for word as Appendix AJ of the plan's file and in `prompts/2026-11-26-24.19-pin-move-amendments.md`, final. No stage, row or report states a date or an estimate of when anything lands."
+> "**The order.** The January pin move; then 24.30a, 24.31a and 24.36a; then, the 24.19 correction having closed, 24.30b, 24.31b and 24.36b, the picker's new version of 24.36 starting on paper when 24.36b lands; then 24.32, 24.33 and 24.34; then 24.41, 24.42 and 24.43; then 24.37a, 24.38a and 24.38b; then 24.44 with a fresh session's sign-off; and 24.45 after the sign-off."
+> "The January pin move carries ... whose code is complete when its gates run. It keeps its order of work: its six items, the owed test, the versions raised once, the documents, the gates and mutations, the pull request, two replays over two copies of the store with a third where one fails, the report on every live trade, then the merge; and it lands in time for the next monthly run that judges cases. ..." and "On this order 24.30's, 24.37's and 24.38's parts each go into whichever pin move they are ready for."
+> "The January pin move carries them where their code is complete when its gates run, otherwise the next; ..."
+> 24.36: "... after 24.31a on their amendment of 2026-11-26; ..." with the past-case line on the picker's round-two sheet and its done condition; and two bullets, the dip's one name and the guide's Tonight figure
+Why: the operator's amendments of 2026-11-26 on the report of that afternoon, kept word for word as Appendix AJ of the plan's file. The same amendment names the short-term dip "Short-term dip" on every page (see: The short-term dip is named Short-term dip on every page): its old wording on Home's idea cards and the waiting cards' chips and tags was "Quick rebound", as in "4 more on Tonight: NUE (Quick rebound)".
+
 ### 2026-11-26 - docs/ARCHITECTURE.html - the read-only copy drawn as the app draws it, a link it does not hold keeping its element, at a correction to 24.46
 Decision: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
 Was:

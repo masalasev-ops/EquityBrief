@@ -214,21 +214,22 @@ public sealed partial class SinglePageApp
 
     public const string Disclaimer = "Nothing on this site is financial advice. EquityBrief is a personal experiment: it tests fixed rules on paper, with no real money, and a rule's past results, on paper or over history, are no promise about what comes next. Make your own decisions, or ask a licensed adviser, before you invest.";
 
-    // The family's tag and its sentence, in the reader's words.
+    // The family's tag and its sentence, in the reader's words, the dip's the name Tonight gives it.
+    // see: The short-term dip is named Short-term dip on every page
     public static string IdeaTag(string family) => family switch
     {
         SetupFamilies.Pullback => "Bounce in an uptrend",
         BreakoutRule.Name => "New high",
         DriftRule.Name => "Strong earnings",
         ImprovingRule.Name => "Getting stronger as a business",
-        DipRule.Name => "Quick rebound",
+        DipRule.Name => "Short-term dip",
         HeavyweightRule.Name => "Leader of its sector",
         QualityRule.Name => "Strong business at a fair price",
         _ => "Idea",
     };
 
     // Tickers in their order, the stocks of one family together with its tag after them: "CVS and ODFL (Getting stronger as a
-    // business), NUE (Quick rebound)".
+    // business), NUE (Short-term dip)".
     static string Grouped(IEnumerable<(string Family, string Ticker)> named)
     {
         static string Listed(IReadOnlyList<string> names) =>

@@ -39,7 +39,7 @@ public partial class ReadSurface
         var bar = Regex.Match(html, "<div class=\"wo-setup-bar\".*?</div>", RegexOptions.Singleline).Value;
 
         Assert.Equal(
-            [("all", "All", "18"), (DriftRule.Name, "Strong earnings", "8"), (SetupFamilies.Pullback, "Bounce in an uptrend", "8"), (DipRule.Name, "Quick rebound", "2")],
+            [("all", "All", "18"), (DriftRule.Name, "Strong earnings", "8"), (SetupFamilies.Pullback, "Bounce in an uptrend", "8"), (DipRule.Name, "Short-term dip", "2")],
             Regex.Matches(bar, "<label class=\"wo-setup-chip\" for=\"wo-setup-sp400-[^\"]+\" data-setup=\"([^\"]+)\"[^>]*>(?:<span class=\"fam-swatch\"[^>]*></span>)?([^<]+)<span class=\"wo-setup-count\">(\\d+)</span></label>").Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value)));
         Assert.Single(Regex.Matches(bar, " checked>"));
         Assert.Contains("id=\"wo-setup-sp400-all\" value=\"all\" checked>", bar, StringComparison.Ordinal);
