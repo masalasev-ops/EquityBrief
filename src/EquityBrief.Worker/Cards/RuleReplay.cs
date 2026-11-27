@@ -846,7 +846,7 @@ public static class RuleReplay
 
             var plan = pick.Plan;
 
-            if (pick.Year is < 0 or >= SweepFigures.Years
+            if (pick.Year < 0 || pick.Year >= SweepFigures.Years
                 || plan.Code[exit] is not (SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved)
                 || float.IsNaN(plan.Multiple[exit])
                 || !plan.IsATradeAt(exit, floor))

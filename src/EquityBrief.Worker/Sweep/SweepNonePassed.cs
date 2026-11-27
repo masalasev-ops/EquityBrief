@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Worker.Sweep;
 
@@ -10,7 +11,7 @@ public sealed record Strongest(string Key, int Trades, int YearsBeating, double?
 {
     public int TradesShort => Math.Max(0, FamilySweep.TradeFloor - Trades);
 
-    public int YearsShort => Math.Max(0, FamilySweep.YearsBeating - YearsBeating);
+    public int YearsShort => Math.Max(0, SweepFigures.Share(FamilySweep.YearsBeating) - YearsBeating);
 }
 
 // What a sweep's report states where no setting meets its floors: the strongest settings it read, each with the floors
@@ -47,7 +48,7 @@ public static class SweepNonePassed
 
         if (years.Length > 0)
         {
-            lines.Add(Invariant($"{years.Length} of the {strongest.Count} fall short of an edge above nothing in {FamilySweep.YearsBeating} of the 8 years, by {Span(years)} year(s): the years each fell short in are its yearly edges in the table of every setting."));
+            lines.Add(Invariant($"{years.Length} of the {strongest.Count} fall short of an edge above nothing in {SweepFigures.Share(FamilySweep.YearsBeating)} of the {SweepFigures.Years} years, by {Span(years)} year(s): the years each fell short in are its yearly edges in the table of every setting."));
         }
 
         return lines;

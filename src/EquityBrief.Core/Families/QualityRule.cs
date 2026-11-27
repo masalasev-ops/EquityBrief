@@ -127,11 +127,15 @@ public static class QualityRule
     }
 
     // Whether a book's months meet the floors, read in proportion to the years learned on where a fold learns on fewer
-    // than the history's eight, each rounded up.
-    public static bool MeetsFloors(QualityMonths months, int years = SweepFigures.Years) =>
+    // than the history's eight, each rounded up; from the January pin move in the same proportion over the scored years where
+    // more than eight are complete.
+    // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+    public static bool MeetsFloors(QualityMonths months) => MeetsFloors(months, SweepFigures.Years);
+
+    public static bool MeetsFloors(QualityMonths months, int years) =>
         months.Held >= Up(MonthsHeldFloor * years) && months.YearsAbove >= Up(YearsAboveFloor * years);
 
-    static int Up(int numerator) => (numerator + SweepFigures.Years - 1) / SweepFigures.Years;
+    static int Up(int numerator) => (numerator + SweepFigures.LeastYears - 1) / SweepFigures.LeastYears;
 
     public const string NoWord = RuleWording.QualityRule.NoWord;
     public const string UnderTheFloor = RuleWording.QualityRule.UnderTheFloor;

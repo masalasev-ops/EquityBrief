@@ -8,7 +8,55 @@ namespace EquityBrief.Core.Sweep;
 // and whether an open trade of the same stock kept it off the list.
 public static class SweepFigures
 {
-    public const int Years = 8;
+    // From the January pin move the scored years grow: 2019 to 2026, and from each year whose last session has closed one more,
+    // none dropped. A run scores the years its history holds complete, set once its calendar is read; the sessions of the year
+    // in progress are read, tallied in a slot of their own one past the scored years and counted in no figure, floor or verdict.
+    // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+    public const int FirstYear = 2019;
+
+    public const int LeastYears = 8;
+
+    static readonly AsyncLocal<int?> scored = new();
+
+    public static int Years => scored.Value ?? LeastYears;
+
+    // The slot the year in progress is tallied in, one past the scored years.
+    public static int InProgress => Years;
+
+    // Scores the years the history holds complete through its newest session, for the rest of the run that reads it.
+    public static void ScoreThrough(DateOnly newest) => scored.Value = ScoredThrough(newest);
+
+    public static int ScoredThrough(DateOnly newest) => Math.Max(LeastYears, LastComplete(newest) - FirstYear + 1);
+
+    // The last year whose every session has closed by the newest session: its own where no session of its year follows it, a
+    // day past the exchange's table read as a session where it is a weekday.
+    public static int LastComplete(DateOnly newest)
+    {
+        for (var day = newest.AddDays(1); day.Year == newest.Year; day = day.AddDays(1))
+        {
+            bool session;
+
+            try
+            {
+                session = Bars.ExchangeClosures.IsSession(day);
+            }
+            catch (InvalidOperationException)
+            {
+                session = day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday;
+            }
+
+            if (session)
+            {
+                return newest.Year - 1;
+            }
+        }
+
+        return newest.Year;
+    }
+
+    // A floor stated as a count of the eight years 2019 to 2026, read as the same share of the scored years, rounded up: 6 of 8
+    // is three quarters, 7 of 9 once 2027 is complete. A count of the last few years is not a share and is read as stated.
+    public static int Share(int ofEight) => ((ofEight * Years) + LeastYears - 1) / LeastYears;
 
     public const int Listed = 0;
     public const int Entered = 1;
@@ -26,12 +74,22 @@ public static class SweepFigures
     public const int PerYear = 12;
 
     // The blocks of 63 sessions from the first scored session, the last of them partial, and the whole ones a
-    // record is judged over.
-    public const int Blocks = 31;
+    // record is judged over: 31 and 30 over the eight years, four more a scored year after them.
+    public const int LeastBlocks = 31;
 
-    public const int WholeBlocks = 30;
+    public const int BlocksAYear = 4;
 
-    public static int Width => (Years * PerYear) + Blocks;
+    public static int Blocks => LeastBlocks + (BlocksAYear * (Years - LeastYears));
+
+    public static int WholeBlocks => Blocks - 1;
+
+    // A floor of blocks stated over the 30 whole blocks of the eight years, read as the same share of the whole blocks.
+    public static int BlockShare(int ofThirty) => ((ofThirty * WholeBlocks) + (LeastBlocks - 1) - 1) / (LeastBlocks - 1);
+
+    // Where the blocks start, after the scored years and the year in progress.
+    public static int BlockOffset => (Years + 1) * PerYear;
+
+    public static int Width => BlockOffset + Blocks;
 
     // A candidate's figures: listed whatever came of it; entered where it won, lost or ran out of sessions; scored
     // where it won or lost and its paths set a bar, which is every setup the live record reads.
@@ -44,7 +102,7 @@ public static class SweepFigures
     // The same figures added into a running sum rather than written over it.
     public static void Tally(Span<float> figures, int year, int block, byte code, float calibrated, float breakEven, float multiple, float edge)
     {
-        if (year < 0 || year >= Years)
+        if (year < 0 || year > InProgress)
         {
             return;
         }
@@ -68,9 +126,9 @@ public static class SweepFigures
                 figures[at + BreakEvenSum] += breakEven;
             }
 
-            if (block is >= 0 and < Blocks)
+            if (year < InProgress && block >= 0 && block < Blocks)
             {
-                figures[(Years * PerYear) + block] += 1;
+                figures[BlockOffset + block] += 1;
             }
         }
 
@@ -90,7 +148,7 @@ public static class SweepFigures
     // A listing an open trade of the same stock kept off the list, counted in its year and nowhere else.
     public static void TallyBlocked(Span<float> figures, int year)
     {
-        if (year >= 0 && year < Years)
+        if (year >= 0 && year <= InProgress)
         {
             figures[(year * PerYear) + Blocked] += 1;
         }
@@ -128,7 +186,7 @@ public sealed record SweepMeasures(
     public const int BlockFloor = 22;
     public const double ListingShare = 0.6;
 
-    // The scored years the proposal may not trail the live rule in: the last three, 2024 to 2026.
+    // The scored years the proposal may not trail the live rule in: the last three complete, 2024 to 2026 until 2027 is complete.
     public const int RecentYears = 3;
 
     public static SweepMeasures Of(ReadOnlySpan<float> figures, int nightsListing, int nights)
@@ -171,8 +229,17 @@ public sealed record SweepMeasures(
 
         for (var block = 0; block < SweepFigures.WholeBlocks; block++)
         {
-            blocks += figures[(SweepFigures.Years * SweepFigures.PerYear) + block] > 0 ? 1 : 0;
+            blocks += figures[SweepFigures.BlockOffset + block] > 0 ? 1 : 0;
         }
+
+        // The year in progress, read beside the scored years and counted in none of the figures above.
+        var progress = SweepFigures.InProgress * SweepFigures.PerYear;
+        var soFar = figures.Length >= progress + SweepFigures.PerYear
+            ? new YearSoFar(
+                (int)Math.Round(figures[progress + SweepFigures.Listed]),
+                (int)Math.Round(figures[progress + SweepFigures.Scored]),
+                figures[progress + SweepFigures.EdgeCount] > 0 ? figures[progress + SweepFigures.EdgeSum] / figures[progress + SweepFigures.EdgeCount] : null)
+            : new YearSoFar(0, 0, null);
 
         return new SweepMeasures(
             (int)Math.Round(listed),
@@ -193,8 +260,16 @@ public sealed record SweepMeasures(
             blocks,
             nightsListing,
             nights,
-            (int)Math.Round(blocked));
+            (int)Math.Round(blocked))
+        {
+            SoFar = soFar,
+        };
     }
+
+    // From the January pin move the year in progress: its listings, its scored trades and its edge, shown beside the scored
+    // years as this year so far, not scored, and counted in no figure, floor or verdict.
+    // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+    public YearSoFar SoFar { get; init; } = new(0, 0, null);
 
     // The same reading with no arrays behind it, for the settings a search reads by the hundred million.
     public static SweepSummary Summary(ReadOnlySpan<float> figures, int nightsListing, int nights)
@@ -274,7 +349,7 @@ public sealed record SweepMeasures(
 
         for (var block = 0; block < SweepFigures.WholeBlocks; block++)
         {
-            blocks += figures[(SweepFigures.Years * SweepFigures.PerYear) + block] > 0 ? 1 : 0;
+            blocks += figures[SweepFigures.BlockOffset + block] > 0 ? 1 : 0;
         }
 
         return new SweepSummary(
@@ -304,8 +379,8 @@ public sealed record SweepMeasures(
     public int YearsBeatingBreakEven => Enumerable.Range(0, SweepFigures.Years).Count(year => YearShare[year] is { } share && YearBreakEven[year] is { } needed && share > needed);
 
     // Stage 1's test of one coarse setting: at least 300 scored trades, and beating both its break-even and no
-    // skill in at least 6 of the 8 years.
-    public bool Viable => Scored >= TradeFloor && YearsBeatingBoth >= YearsBeating;
+    // skill in at least 6 of the 8 years, or the same share of the scored years.
+    public bool Viable => Scored >= TradeFloor && YearsBeatingBoth >= SweepFigures.Share(YearsBeating);
 
     // Whether the share still clears the break-even over the years left once the year it cleared by most is
     // removed, which is what "not carried by one year" is read as.
@@ -346,10 +421,10 @@ public sealed record SweepMeasures(
 
     // The four floors a starting point is held to, each proposed and the operator's to rule.
     public bool MeetsTheFloors =>
-        YearsBeatingBreakEven >= YearsBeating
+        YearsBeatingBreakEven >= SweepFigures.Share(YearsBeating)
         && BeatsBreakEvenWithoutItsBestYear
         && Scored >= TradeFloor
-        && BlocksWithTrades >= BlockFloor
+        && BlocksWithTrades >= SweepFigures.BlockShare(BlockFloor)
         && ListingShareOfNights >= ListingShare;
 
     // Whether this record's edge trails another's in any of the recent years, the years both hold an edge for;
@@ -366,6 +441,12 @@ public sealed record SweepMeasures(
 
         return false;
     }
+}
+
+// The year in progress as a record reads it beside its scored years: its listings, its scored trades and their edge.
+public sealed record YearSoFar(int Listed, int Scored, double? Edge)
+{
+    public const string Words = "so far, not scored";
 }
 
 // One setting's reading with no arrays behind it: what a search sorts, tests against the floors and measures
@@ -386,13 +467,13 @@ public readonly record struct SweepSummary(
 {
     public bool BeatsBoth => !float.IsNaN(Share) && Share > BreakEven && Share > NoSkill;
 
-    public bool Viable => Scored >= SweepMeasures.TradeFloor && YearsBeatingBoth >= SweepMeasures.YearsBeating;
+    public bool Viable => Scored >= SweepMeasures.TradeFloor && YearsBeatingBoth >= SweepFigures.Share(SweepMeasures.YearsBeating);
 
     public bool MeetsTheFloors =>
-        YearsBeatingBreakEven >= SweepMeasures.YearsBeating
+        YearsBeatingBreakEven >= SweepFigures.Share(SweepMeasures.YearsBeating)
         && WithoutBestYear
         && Scored >= SweepMeasures.TradeFloor
-        && Blocks >= SweepMeasures.BlockFloor
+        && Blocks >= SweepFigures.BlockShare(SweepMeasures.BlockFloor)
         && Listing >= SweepMeasures.ListingShare;
 
     public bool HasEdge => !float.IsNaN(Edge);

@@ -204,7 +204,7 @@ public static class SweepReport
         var html = new StringBuilder();
 
         html.Append("<h3>").Append(Esc(title)).Append(" <span class=\"tag\">history</span></h3>");
-        html.Append(Invariant($"<p>{measures.Scored:N0} trades scored of {measures.Listed:N0} kept, {measures.Blocked:N0} listing(s) kept off by an open trade of the same stock; won {Pct(measures.Share)} against a break-even of {Pct(measures.BreakEven)} and no skill at {Pct(measures.NoSkill)}; an edge of {Mult(measures.Edge)} and a raw average of {Mult(measures.AverageMultiple)} times the risk; beating its break-even in {measures.YearsBeatingBreakEven} of 8 years and both in {measures.YearsBeatingBoth}; trades in {measures.BlocksWithTrades} of 30 blocks; a stock listed on {Share(measures.ListingShareOfNights, 0)} of nights.</p>"));
+        html.Append(Invariant($"<p>{measures.Scored:N0} trades scored of {measures.Listed:N0} kept, {measures.Blocked:N0} listing(s) kept off by an open trade of the same stock; won {Pct(measures.Share)} against a break-even of {Pct(measures.BreakEven)} and no skill at {Pct(measures.NoSkill)}; an edge of {Mult(measures.Edge)} and a raw average of {Mult(measures.AverageMultiple)} times the risk; beating its break-even in {measures.YearsBeatingBreakEven} of {SweepFigures.Years} years and both in {measures.YearsBeatingBoth}; trades in {measures.BlocksWithTrades} of {SweepFigures.WholeBlocks} blocks; a stock listed on {Share(measures.ListingShareOfNights, 0)} of nights.</p>"));
 
         if (trimmed is not null)
         {
@@ -216,6 +216,13 @@ public static class SweepReport
         for (var year = 0; year < SweepFigures.Years; year++)
         {
             html.Append(Invariant($"<tr><td>{SweepColumns.FirstScored.Year + year}</td><td class=\"num\">{measures.YearScored[year]:N0}</td><td class=\"num\">{BlockedIn(measures, year)}</td><td class=\"num\">{Pct(measures.YearShare[year])}</td><td class=\"num\">{Pct(measures.YearBreakEven[year])}</td><td class=\"num\">{Pct(measures.YearNoSkill[year])}</td><td class=\"num\">{Mult(measures.YearEdge[year])}</td><td class=\"num\">{Mult(measures.YearAverageMultiple[year])}</td></tr>"));
+        }
+
+        // From the January pin move the year in progress beside the scored years, counted in none of them.
+        // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+        if (measures.SoFar.Listed > 0)
+        {
+            html.Append(Invariant($"<tr class=\"so-far\"><td>{SweepColumns.FirstScored.Year + SweepFigures.InProgress} {YearSoFar.Words}</td><td class=\"num\">{measures.SoFar.Scored:N0}</td><td></td><td></td><td></td><td></td><td class=\"num\">{Mult(measures.SoFar.Edge)}</td><td></td></tr>"));
         }
 
         return html.Append("</table>").ToString();

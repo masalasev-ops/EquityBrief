@@ -897,7 +897,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         page.Append("</tbody></table></div>");
         page.Append("<h3>Each year after costs</h3><div class=\"table\"><table><thead><tr><th>Read</th>");
 
-        for (var year = 0; year < 8; year++)
+        for (var year = 0; year < SweepFigures.Years; year++)
         {
             page.Append(FormattableString.Invariant($"<th>{SweepColumns.FirstScored.Year + year}</th>"));
         }
@@ -908,7 +908,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         {
             page.Append($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td>");
 
-            for (var year = 0; year < 8; year++)
+            for (var year = 0; year < SweepFigures.Years; year++)
             {
                 page.Append(FormattableString.Invariant($"<td class=\"num\">{FamilySweepReport.Number(year < after[at].YearEdge.Length ? after[at].YearEdge[year] : null)} ({(year < after[at].YearScored.Length ? after[at].YearScored[year] : 0):N0})</td>"));
             }
@@ -1011,7 +1011,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
 
-    internal static bool MeetsTheFloors(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
+    internal static bool MeetsTheFloors(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= SweepFigures.Share(FamilySweep.YearsBeating);
 
     // A run's report and its figures, written into the run folder it claimed, with the answer a search states beside them,
     // none for the pullback's base, which reads one setting and searches none; the report's path.

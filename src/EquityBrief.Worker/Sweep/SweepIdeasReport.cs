@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Worker.Sweep;
 
@@ -120,7 +121,7 @@ public static class SweepIdeasReport
         var measure = test.OnTotals ? "total" : "edge";
         var parts = new List<string>
         {
-            Invariant($"its {measure} better in {test.YearsBetter} of the 8 years, needing {SweepIdeas.YearsBetter}, and in {test.RecentYearsBetter} of the last {SweepIdeas.RecentYears}, needing {SweepIdeas.RecentYearsBetter}"),
+            Invariant($"its {measure} better in {test.YearsBetter} of the {SweepFigures.Years} years, needing {SweepFigures.Share(SweepIdeas.YearsBetter)}, and in {test.RecentYearsBetter} of the last {SweepIdeas.RecentYears}, needing {SweepIdeas.RecentYearsBetter}"),
             Invariant($"the last three years together {(test.RecentNoLower ? "no lower" : "lower")}"),
             Invariant($"without the five largest results {(test.BetterWithoutLargest ? "still higher" : "not higher")}"),
             Invariant($"{(test.EnoughTrades ? "at least" : "fewer than")} {SweepIdeas.TradeFloor:N0} trades"),
@@ -197,7 +198,7 @@ public static class SweepIdeasReport
     {
         var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Rule</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Stops under a typical move</th><th>Total</th><th>2024 to 2026 edge</th><th>2024 to 2026 total</th><th>2026 edge</th><th>Without the five largest, edge</th><th>Without the five largest, total</th>");
 
-        for (var year = 0; year < 8; year++)
+        for (var year = 0; year < SweepFigures.Years; year++)
         {
             html.Append(Invariant($"<th>{SweepColumns.FirstScored.Year + year}</th>"));
         }
@@ -208,7 +209,7 @@ public static class SweepIdeasReport
         {
             html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Number(figures.Edge)}\" data-close-stops=\"{Number(figures.CloseStops)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.NightShare * 100:0}%</td><td class=\"num\">{Number(figures.Edge)}</td><td class=\"num\">{Number(figures.StandardError)}</td><td class=\"num\">{Number(figures.Result)}</td><td class=\"num\">{(figures.CloseStops is { } share ? Invariant($"{share * 100:0}%") : "none")}</td><td class=\"num\">{Number(figures.Total)}</td><td class=\"num\">{Number(figures.RecentEdge)}</td><td class=\"num\">{Number(figures.RecentTotal)}</td><td class=\"num\">{Number(figures.YearEdge[^1])}</td><td class=\"num\">{Number(figures.EdgeWithoutLargest)}</td><td class=\"num\">{Number(figures.TotalWithoutLargest)}</td>"));
 
-            for (var year = 0; year < 8; year++)
+            for (var year = 0; year < SweepFigures.Years; year++)
             {
                 html.Append(Invariant($"<td class=\"num\">{Number(figures.YearEdge[year])}, {Number(figures.YearTotal[year])} ({figures.YearTrades[year]})</td>"));
             }

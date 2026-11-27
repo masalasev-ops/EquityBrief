@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Worker.Sweep;
 
@@ -84,22 +85,37 @@ public static class FamilySweepReport
     // largest results by size, and each year's edge with its trades.
     static string Table(IReadOnlyList<(string Label, FamilyFigures Figures)> rows)
     {
-        var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Years above</th><th>2024 to 2026</th><th>Without the five largest</th><th>Stops under a typical move</th>");
+        // From the January pin move every scored year, and the year in progress beside them where a row holds a trade in it.
+        // see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+        var years = SweepFigures.Years;
+        var last = SweepColumns.FirstScored.Year + years - 1;
+        var soFar = rows.Any(row => row.Figures.SoFar.Scored > 0);
+        var html = new StringBuilder(Invariant($"<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Years above</th><th>{last - FamilySweep.RecentYears + 1} to {last}</th><th>Without the five largest</th><th>Stops under a typical move</th>"));
 
-        for (var year = 0; year < 8; year++)
+        for (var year = 0; year < years; year++)
         {
             html.Append(Invariant($"<th>{SweepColumns.FirstScored.Year + year}</th>"));
+        }
+
+        if (soFar)
+        {
+            html.Append(Invariant($"<th>{last + 1} {YearSoFar.Words}</th>"));
         }
 
         html.Append("</tr></thead><tbody>");
 
         foreach (var (label, figures) in rows)
         {
-            html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Number(figures.Edge)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.NightShare * 100:0}%</td><td class=\"num\">{Number(figures.Edge)}</td><td class=\"num\">{Number(figures.StandardError)}</td><td class=\"num\">{Number(figures.Result)}</td><td class=\"num\">{figures.YearsBeating} of 8</td><td class=\"num\">{Number(figures.RecentEdge)}</td><td class=\"num\">{Number(figures.EdgeWithoutLargest)}</td><td class=\"num\">{(figures.CloseStops is { } share ? Invariant($"{share * 100:0}%") : "none")}</td>"));
+            html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Number(figures.Edge)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.NightShare * 100:0}%</td><td class=\"num\">{Number(figures.Edge)}</td><td class=\"num\">{Number(figures.StandardError)}</td><td class=\"num\">{Number(figures.Result)}</td><td class=\"num\">{figures.YearsBeating} of {years}</td><td class=\"num\">{Number(figures.RecentEdge)}</td><td class=\"num\">{Number(figures.EdgeWithoutLargest)}</td><td class=\"num\">{(figures.CloseStops is { } share ? Invariant($"{share * 100:0}%") : "none")}</td>"));
 
-            for (var year = 0; year < 8; year++)
+            for (var year = 0; year < years; year++)
             {
                 html.Append(Invariant($"<td class=\"num\">{Number(figures.YearEdge[year])} ({figures.YearTrades[year]})</td>"));
+            }
+
+            if (soFar)
+            {
+                html.Append(Invariant($"<td class=\"num so-far\">{Number(figures.SoFar.Edge)} ({figures.SoFar.Scored})</td>"));
             }
 
             html.Append("</tr>");

@@ -102,7 +102,7 @@ public sealed record HeavyweightFigures(
     double? HeldMedian,
     double? HeldMean)
 {
-    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= FamilySweep.YearsBeating;
+    public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= SweepFigures.Share(FamilySweep.YearsBeating);
 }
 
 // What the heavyweights' sweep proposes: the setting with the best edge among those meeting the floors with every
@@ -717,7 +717,7 @@ public static class HeavyweightSweep
     public static HeavyweightFigures Figures(string key, IReadOnlyList<HeavyweightTrade> trades)
     {
         var years = SweepFigures.Years;
-        var done = trades.Where(trade => trade.Edge is not null && trade.Year is >= 0 and < SweepFigures.Years).ToArray();
+        var done = trades.Where(trade => trade.Edge is not null && trade.Year >= 0 && trade.Year < years).ToArray();
         var yearTrades = new int[years];
         var yearEdge = new double?[years];
 
@@ -795,7 +795,7 @@ public static class HeavyweightSweep
     // The patterns of eight years in which an edge with no effect stands above nothing in at least the floor's years,
     // of the 256 the years can fall in.
     public static int LuckPatterns() =>
-        Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern => System.Numerics.BitOperations.PopCount((uint)pattern) >= FamilySweep.YearsBeating);
+        Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern => System.Numerics.BitOperations.PopCount((uint)pattern) >= SweepFigures.Share(FamilySweep.YearsBeating));
 
     // How many settings luck alone would put above nothing in the floor's years, were the settings independent.
     public static double Luck(int settings) => 1.0 * settings * LuckPatterns() / (1 << SweepFigures.Years);

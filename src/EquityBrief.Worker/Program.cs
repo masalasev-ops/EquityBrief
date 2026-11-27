@@ -27,6 +27,11 @@ using Microsoft.Extensions.Configuration;
 // a service that schedules itself.
 // see: Nothing is written against one operating system
 
+// From the January pin move every run scores the years complete by its New York date, the year in progress counted in nothing.
+// see: A year is scored once it is complete, and the bar is three quarters of the scored years from a ninth
+IClock startedOn = SystemClock.ForUnitedStatesSessions();
+EquityBrief.Core.Sweep.SweepFigures.ScoreThrough(startedOn.SessionDateAt(startedOn.UtcNow));
+
 return (args.Length > 0 ? args[0] : string.Empty) switch
 {
     "migrate" => Migrate(),

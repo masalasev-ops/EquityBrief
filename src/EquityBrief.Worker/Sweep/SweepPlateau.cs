@@ -186,7 +186,7 @@ public static class SweepPlateau
             outside,
             fewest,
             onThePlateau,
-            mine <= YearsEitherMayWin && theirs <= YearsEitherMayWin,
+            mine <= SweepFigures.Share(YearsEitherMayWin) && theirs <= SweepFigures.Share(YearsEitherMayWin),
             outside >= OutsideFloor,
             fewest >= TradesAYear);
     }
