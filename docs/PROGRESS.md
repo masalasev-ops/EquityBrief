@@ -23510,8 +23510,8 @@ Mutated:    the rule, stated before the run: the change taken back at the one pl
             lays held to the standing run again, `!standingOnly &&` restored: red. Filtered to its test and reverted before
             anything was committed.
 Claims:     1769, none added.
-Verified:   with the entry after it, over the one tree the pull request merges; its gates were stopped before their end
-            when the operator's orders on the cap came, the suite having run 4087 of 4087 with none failed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green with the entry after it, over the one tree the pull
+            request merges; this entry's own gates were stopped before their end when the operator's orders on the cap came.
 Carried:    the breakout's expected-value order over the long history, before the monthly run of 5 Dec. The S&P 500's long
             test is not timed, on the operator's word: the entry after it orders the step so a cut costs least.
 

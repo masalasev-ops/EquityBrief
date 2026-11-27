@@ -23,7 +23,7 @@ Was:
 > its sign vectors cut to the fewest once the step has used half its cap and the month's long runs read so a second part goes on from them (see: ...)</td></tr>
 Now:
 > capped at three hours, its sign vectors cut to the fewest once it has used half; from the 24.19 correction of 2026-11-27 the indices taken smallest first, ... which the next month's long test takes first, its index and its family before any other
-> and none below 20,000, and from the 24.19 correction of 2026-11-27 no family walked once all 3 hours are used, each line of one not walked written by name as not reached
+> and none below 20,000, and no family walked once all 3 hours are used, each line of one not walked written by name as not reached
 > its sign vectors cut to the fewest once the step has used half its cap and the month's long runs read so a second part goes on from them (see: ...); and from the 24.19 correction of 2026-11-27 its cap read before each family, each line of a family after it written by name as not reached and taken first the next month</td></tr>
 Why: the operator's orders of 2026-11-27, items 1 and 2, kept word for word in `prompts/2026-11-27-24.19-the-long-tests-cap-and-order.md`, and their answer.
 

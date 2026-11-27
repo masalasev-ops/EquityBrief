@@ -106,7 +106,7 @@ public partial class FixtureExpectations
         {
             var tester = new WalkForwardTester(FixedClock.At(at, SessionZones.UnitedStates), store.DatabaseFile, store.Root, TextWriter.Null);
             var (held, words) = await tester.LongMonthAsync(month, cap: TimeSpan.Zero);
-            var order = LongCapRows(store,$"SELECT run_id FROM run_log WHERE stage = '{WalkForwardTester.RulesVerb}' AND run_id LIKE '%{at:yyyyMMddTHHmmssZ}' ORDER BY rowid;")
+            var order = LongCapRows(store, FormattableString.Invariant($"SELECT run_id FROM run_log WHERE stage = '{WalkForwardTester.RulesVerb}' AND run_id LIKE '%{at:yyyyMMddTHHmmssZ}' ORDER BY rowid;"))
                 .Select(row => ((string)row[0]!).Split('-')[3])
                 .ToArray();
 
@@ -114,7 +114,7 @@ public partial class FixtureExpectations
         }
 
         var november = await MonthAsync("2026-11", new DateTimeOffset(2026, 11, 7, 13, 0, 0, TimeSpan.Zero));
-        var rows = LongCapRows(store,"SELECT index_code, family, rule, history, why, units FROM loop_rule WHERE month = '2026-11' ORDER BY rowid;");
+        var rows = LongCapRows(store, "SELECT index_code, family, rule, history, why, units FROM loop_rule WHERE month = '2026-11' ORDER BY rowid;");
 
         Assert.False(november.Held);
         Assert.Equal(["SML", "MID", "GSPC"], november.Order);
@@ -134,12 +134,12 @@ public partial class FixtureExpectations
             Assert.Contains($"{row[2]}", november.Words, StringComparison.Ordinal);
         }
 
-        // A second try of the month holds every index already and still sums no verdict across the three over a month
-        // holding a line not reached.
+        // A second try of the month holds the S&P 400 and 500 already, runs again only the S&P 600, which holds no line and
+        // so no long row, and still sums no verdict across the three over a month holding a line not reached.
         var again = await MonthAsync("2026-11", new DateTimeOffset(2026, 11, 8, 13, 0, 0, TimeSpan.Zero));
 
         Assert.False(again.Held);
-        Assert.Empty(again.Order);
+        Assert.Equal(["SML"], again.Order);
         Assert.Contains("sums no verdict across the three", again.Words, StringComparison.Ordinal);
         Assert.Equal(0L, LongCapRows(store, "SELECT COUNT(*) FROM loop_pooled;")[0][0]);
 
