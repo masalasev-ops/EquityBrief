@@ -70,6 +70,27 @@ public sealed record PlanOrder(
     public TakeProfitPrice? TakeProfitFrom(double fill, double stop) =>
         TakeProfit is { } multiple ? Loop.TakeProfit.PlacedShaped(Sale, fill, stop, TurnedDown, multiple, Placing, Half) : null;
 
+    // From the January pin move the order's own reward over its own risk, the traded plan's: from the price it buys at, its
+    // level or for an order at the next open or the first pullback the night's close, to the one price its sale takes the whole
+    // at above it, over the distance down to the stop that price places; none where its stop is not placed under the buy, or
+    // its sale names no such price, selling part first, by staged levels, on a trail or at its time limit alone.
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    public double? TradedReward(double close)
+    {
+        var buy = Level ?? close;
+
+        if (PlanPoints.StopOf(Stop, buy, RuleStop, ZoneStop, TypicalDay) is not { } stop || !(buy > stop))
+        {
+            return null;
+        }
+
+        var sale = SaleFrom(buy, stop);
+
+        return sale.Target is { } whole && whole > buy && sale.HalfAt is null && sale.Trail is null && sale.RsiAbove is null && !sale.Staged.Any(level => level > buy && level < whole)
+            ? Math.Round((whole - buy) / (buy - stop), 6, MidpointRounding.AwayFromZero)
+            : null;
+    }
+
     // The order at the scale the stock's closes are stored at now, an adjustment since its night moving every price by the
     // same factor, the night's close over the close it was set at.
     public PlanOrder Scaled(double factor) =>

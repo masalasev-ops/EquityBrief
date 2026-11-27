@@ -351,13 +351,31 @@ public sealed class FamilyRecorder : IComponent
                     ticker => own.Where(verdict => verdict.Ticker == ticker).Select(verdict => Plan(verdict.Outcome.Values)).FirstOrDefault() is { Target: not null },
                     cancellation)
                 : null;
-            var listed = hooks.Ranks ? KeepRanked(setups!(family), held, hooks, expected) : Keep(own, held, hooks, readings, expected);
+            // From the January pin move a rule stating the reward check on the traded plan passes over a member whose placed order
+            // makes under it, the next in its order taken in its place up to its cap a night.
+            // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+            var listing = hooks.RewardTraded is null ? hooks : hooks with { PerNight = int.MaxValue };
+            var candidates = hooks.Ranks ? KeepRanked(setups!(family), held, listing, expected) : Keep(own, held, listing, readings, expected);
+            var most = hooks.ListedAtMost(SetupFamilies.ListedANight);
+            var listed = 0;
 
-            foreach (var (ticker, place, plan) in listed)
+            foreach (var (ticker, _, plan) in candidates)
             {
+                if (listed == most)
+                {
+                    break;
+                }
+
                 var order = hooks.Plan is { } combination
                     ? await PlanTrades.OrderAsync(connection, transaction, combination, family, ticker, night, plan.Stop, plan.Target, plan.Target is null ? plan.Entry - plan.Stop : null, cap, cancellation)
                     : null;
+
+                if (!hooks.TradedPasses(order, Statistic.FromPrice(plan.Entry)))
+                {
+                    continue;
+                }
+
+                var place = ++listed;
 
                 await ExecuteAsync(connection, transaction, Insert, cancellation,
                     ("$plan", order is null ? DBNull.Value : order.Json()),
@@ -370,8 +388,8 @@ public sealed class FamilyRecorder : IComponent
                     ("$exit", hooks.Exit == 0 ? DBNull.Value : hooks.Exit));
             }
 
-            kept += listed.Count;
-            said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept {listed.Count}"));
+            kept += listed;
+            said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept {listed}"));
         }
 
         var detail = FormattableString.Invariant($"for {night:yyyy-MM-dd}: {kept} trade(s) kept by {said.Count} registered family rule(s), {ended} ended and {benchmarked} benchmarked")

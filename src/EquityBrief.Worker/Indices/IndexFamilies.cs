@@ -2595,8 +2595,18 @@ public static class IndexRuleTrades
 
             var place = 0;
 
-            foreach (var answer in Candidates(hooks, rule.Family, answers, holding, readings, setups, expected).Take(hooks.ListedAtMost(IndexRules.PerNight)))
+            // From the January pin move the rule's cap a night, and a rule stating the reward check on the traded plan passing over a
+            // candidate whose placed order makes under it, the next taken in its place.
+            // see: Each price family's time limit and cap a night are registered settings, today's where a rule states none
+            var most = hooks.ListedAtMost(IndexRules.PerNight);
+
+            foreach (var answer in Candidates(hooks, rule.Family, answers, holding, readings, setups, expected))
             {
+                if (place == most)
+                {
+                    break;
+                }
+
                 var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, answer.Ticker, StringComparison.Ordinal));
                 var move = inputs.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];
                 var (entry, stop) = (answer.Entry!.Value, answer.Stop!.Value);
@@ -2613,6 +2623,11 @@ public static class IndexRuleTrades
                     ? PlanTrades.Place(combination, rule.Family, inputs.Series[name], IndexNightRead.BarOf(inputs.Series[name], inputs.At), Statistic.FromPrice(stop), answer.Target is { } aim ? Statistic.FromPrice(aim) : null, answer.Trail is { } distance ? Statistic.FromPrice(distance) : null, answer.Cap!.Value, turnedDown)
                         ?? PlanTrades.Unplaced(combination, Statistic.FromPrice(stop), answer.Cap!.Value)
                     : null;
+
+                if (!hooks.TradedPasses(order, Statistic.FromPrice(entry)))
+                {
+                    continue;
+                }
 
                 await ExecuteAsync(connection, transaction, Keep,
                 [

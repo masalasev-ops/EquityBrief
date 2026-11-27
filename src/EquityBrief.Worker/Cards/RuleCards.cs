@@ -430,15 +430,32 @@ public sealed class RuleCards : IComponent
             }
             else
             {
-                var kept = KeepPullbackPicks(verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)), held, hooks);
+                // From the January pin move a variant stating the reward check on the traded plan passes over a pick whose placed
+                // order makes under it, the next in the list's order taken in its place up to its cap a night.
+                // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+                var fired = verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)).ToArray();
+                var most = hooks.ListedAtMost(SetupFamilies.ListedANight);
+                var kept = 0;
 
-                foreach (var pick in kept)
+                foreach (var pick in KeepPullbackPicks(fired, held, hooks.RewardTraded is null ? hooks : hooks with { PerNight = int.MaxValue }))
                 {
-                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick, cancellation, await OrderAsync(connection, transaction, hooks, night, pick, cancellation));
+                    if (kept == most)
+                    {
+                        break;
+                    }
+
+                    var order = await OrderAsync(connection, transaction, hooks, night, pick, cancellation);
+
+                    if (!hooks.TradedPasses(order, Statistic.FromPrice(pick.Entry)))
+                    {
+                        continue;
+                    }
+
+                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick with { Place = ++kept }, cancellation, order);
                 }
 
-                picks += kept.Count;
-                count = kept.Count;
+                picks += kept;
+                count = kept;
             }
 
             rules.Add(new RuleNightRow(index, SetupFamilies.Pullback, row.Candidate, evaluated, count, gates, null, evaluated ? verdicts.Length : null));

@@ -155,4 +155,50 @@ public partial class FixtureExpectations
         Assert.Equal(10, Survivors.RunningTimeLimit(dip, Stated((DipCandidate.LimitParameter, 10))));
         Assert.False(Survivors.Parameters(dip, Stated((DipCandidate.LimitParameter, 10)), cuts).ContainsKey(RuleHooks.TimeLimitParameter));
     }
+
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    [Fact]
+    public void TheRewardCheckOnTheTradedPlanReadsTheOrdersOwnStopAndTheOnePriceItSellsTheWholeAt()
+    {
+        // An order at the next open on a close of 100, its typical day 1, the rule's own stop 95 and target 110, a band above
+        // at 103. By hand, from the close: the stop 2 typical days under, 98, a risk of 2.
+        var close = 100.0;
+        var levels = new PlanLevels([], [], [103.0]);
+        var ruleSale = new PlanSale(110, null, []);
+        var twoDays = new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.TypicalStop(2), PlanPoints.TimeLimit);
+        PlanOrder Order(PlanCombination combination) => PlanHook.OrderOf(combination, close, levels, null, 1, 95, ruleSale, 63)!;
+
+        // Taking profit on the whole at 3 times the risk: 106, (106 - 100) / 2 = 3. Selling the whole at the first band: 103,
+        // (103 - 100) / 2 = 1.5. Its rule's own sale at 110 from the rule's own stop of 95: (110 - 100) / 5 = 2. Selling half at
+        // a multiple, or on the time limit alone, names no one price for the whole and reads none.
+        Assert.Equal(3, Order(twoDays.TakingAtRisk(3)).TradedReward(close));
+        Assert.Equal(1.5, Order(twoDays with { Exit = PlanPoints.FirstBand }).TradedReward(close));
+        Assert.Equal(2, Order(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale)).TradedReward(close));
+        Assert.Null(Order(twoDays.Halving(2)).TradedReward(close));
+        Assert.Null(Order(twoDays).TradedReward(close));
+
+        // At 2 times its risk the check passes the 3 and the 2 and fails the 1.5 and the plan naming no price; stated off, every
+        // order passes, as the family's own check on the setup's stop and target reads.
+        var plan = PlanHook.ParametersOf(twoDays.TakingAtRisk(3));
+        var checking = RuleHooks.Of(new Dictionary<string, double>(plan, StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2 });
+
+        Assert.True(checking.TradedPasses(Order(twoDays.TakingAtRisk(3)), close));
+        Assert.True(checking.TradedPasses(Order(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale)), close));
+        Assert.False(checking.TradedPasses(Order(twoDays with { Exit = PlanPoints.FirstBand }), close));
+        Assert.False(checking.TradedPasses(Order(twoDays), close));
+        Assert.False(checking.TradedPasses(null, close));
+        Assert.True(RuleHooks.Of(plan).TradedPasses(Order(twoDays), close));
+        Assert.Equal("the reward check on the traded plan's own stop and take-profit, at 2 times its risk", checking.Words()!.Split("; ")[^1]);
+
+        // Stated only beside a plan selling the whole at one price, and over nought.
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(Stated((RuleHooks.RewardTradedParameter, 2))));
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(PlanHook.ParametersOf(twoDays.Halving(2)), StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2 }));
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(plan, StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 0 }));
+
+        // The S&P 500 pullback's variants may state it with their time limit and cap; the dip's night reads none of it.
+        Assert.Null(EquityBrief.Worker.Candidates.CandidateRegistrar.SwingHooksUnread(RuleHooks.Of(new Dictionary<string, double>(plan, StringComparer.Ordinal) { [RuleHooks.RewardTradedParameter] = 2, [RuleHooks.TimeLimitParameter] = 20, [RuleHooks.PerNightParameter] = 3 })));
+        Assert.NotNull(EquityBrief.Worker.Candidates.CandidateRegistrar.SwingHooksUnread(RuleHooks.Of(Stated((RuleHooks.ExitParameter, 1)))));
+        Assert.NotNull(EquityBrief.Worker.Candidates.CandidateRegistrar.DipHooksUnread(checking));
+        Assert.Null(EquityBrief.Worker.Candidates.CandidateRegistrar.DipHooksUnread(RuleHooks.Of(plan)));
+    }
 }

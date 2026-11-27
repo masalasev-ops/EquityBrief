@@ -141,6 +141,12 @@ public sealed class RuleWalk(
 
     static int MostOf(IReadOnlyDictionary<string, double> hooks) => RuleHooks.Of(hooks).ListedAtMost(FamilySweep.PerNight);
 
+    // From the January pin move the listings whose placed order passes the reward check on the traded plan the rule states, as
+    // the night keeps them, every listing where it states none.
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    static bool TradedPasses(PlannedListings? planned, FamilyListing listing, IReadOnlyDictionary<string, double> hooks) =>
+        RuleHooks.Of(hooks).RewardTraded is not { } floor || (planned?.TradedReward(listing) is { } made && made >= floor);
+
     // Why a walk cannot hold a rule at the time limit it states: the pullback's and the dip's own exits read outcomes their
     // searches worked at the family's own limits, so a rule stating another is walked only under the plan it states, whose
     // walk places each order at its listing's own cap; none where it can.
@@ -195,11 +201,13 @@ public sealed class RuleWalk(
         var planned = Planned(read, hooks, family);
         var closes = ClosesOf(read.Series);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
-        FamilyListing[] listed = HeldAt(
+        FamilyListing[] listed =
         [
-            .. adapter.Listings(setting).Where(listing => listing.Move > 0
-                && (large || IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? [], checkedFrom: read.ProfitFrom))),
-        ], hooks);
+            .. HeldAt(
+                adapter.Listings(setting).Where(listing => listing.Move > 0
+                    && (large || IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? [], checkedFrom: read.ProfitFrom))),
+                hooks).Where(listing => TradedPasses(planned, listing, hooks)),
+        ];
         var most = MostOf(hooks);
 
         RuleListing Unit(FamilyListing listing)
@@ -280,12 +288,12 @@ public sealed class RuleWalk(
     // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
     public static RuleWalk OwnSwing(LoopRead read, IndexSweepRunner.OwnSwingRead own, int[] setting, IReadOnlyList<DialLevel<FamilyListing>> levels, string words, IReadOnlyDictionary<string, double> hooks, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
     {
-        FamilyListing[] listed = HeldAt([.. own.ListingsUnder(setting, levels)], hooks);
+        var planned = Planned(read, hooks, own.Family);
+        FamilyListing[] listed = [.. HeldAt(own.ListingsUnder(setting, levels), hooks).Where(listing => TradedPasses(planned, listing, hooks))];
         var most = MostOf(hooks);
         var closes = ClosesOf(read.Series);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var exit = RuleHooks.Of(hooks).ExitChoice;
-        var planned = Planned(read, hooks, own.Family);
 
         RuleListing Unit(FamilyListing listing)
         {
@@ -368,6 +376,7 @@ public sealed class RuleWalk(
         RefusedUnlessUnderAPlan(SetupFamilies.Pullback, hooks);
         var cap = RuleHooks.Of(hooks).HeldAtMost(SweepIdeas.Cap);
         var most = MostOf(hooks);
+        var planned = Planned(read, hooks, SetupFamilies.Pullback);
         var listed = new List<FamilyListing>();
         var plans = new List<(SweepPlanOutcomes Plan, int Year)>();
         var seen = new HashSet<(int Name, int Session)>();
@@ -389,7 +398,14 @@ public sealed class RuleWalk(
             var move = read.Series[pick.Name].Atr[bar];
             var stop = entry - (pick.Plan.StopMoves * move);
 
-            listed.Add(new FamilyListing(pick.Name, bar, pick.Session, pick.Plan.RewardToRisk, 0, entry, stop, entry + (pick.Plan.RewardToRisk * (entry - stop)), double.NaN, cap, move));
+            var listing = new FamilyListing(pick.Name, bar, pick.Session, pick.Plan.RewardToRisk, 0, entry, stop, entry + (pick.Plan.RewardToRisk * (entry - stop)), double.NaN, cap, move);
+
+            if (!TradedPasses(planned, listing, hooks))
+            {
+                continue;
+            }
+
+            listed.Add(listing);
             plans.Add((pick.Plan, pick.Year));
         }
 
@@ -441,7 +457,6 @@ public sealed class RuleWalk(
         }
 
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
-        var planned = Planned(read, hooks, SetupFamilies.Pullback);
 
         RuleListing Unit(FamilyListing listing)
         {
@@ -681,6 +696,13 @@ public sealed class RuleWalk(
         // stock, as the family's walk walks a family rule standing at one.
         // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
         var planned = Planned(read, hooks, family);
+
+        // From the January pin move a rule stating the reward check on the traded plan lists only the listings whose placed
+        // order passes it, as the night keeps them.
+        if (RuleHooks.Of(hooks).RewardTraded is not null)
+        {
+            listings = [.. listings.Where(listing => TradedPasses(planned, PlanOf(listing), hooks))];
+        }
 
         // From 19.10 each trade and its benchmark are bought at the next session's open, from 21.14 each trade a close's
         // signal ends is sold at the open after that close, and from 21.17 the benchmark's members are sold the same way.

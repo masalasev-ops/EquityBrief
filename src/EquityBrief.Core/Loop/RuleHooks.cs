@@ -44,8 +44,21 @@ public sealed record RuleHooks(
     IScoreModel? Ranker = null,
     PlanCombination? Plan = null,
     int? TimeLimit = null,
-    int? PerNight = null)
+    int? PerNight = null,
+    double? RewardTraded = null)
 {
+    // From the January pin move the reward check on the traded plan: a pick is kept only where the order its plan places makes
+    // at least this many times its own risk, read off the order's own stop and the one price it takes the whole at; stated
+    // only beside a plan selling the whole at one price, and off where none is stated, the family's own check on the setup's
+    // stop and target reading as before.
+    // see: The reward check on the traded plan rides the first pin move it is ready for and registers in the background once it lands
+    public const string RewardTradedParameter = "reward_traded";
+
+    // Whether a placed order passes the reward check on the traded plan the rule states, every order passing where it states
+    // none.
+    public bool TradedPasses(PlanOrder? order, double close) =>
+        RewardTraded is not { } floor || (order?.TradedReward(close) is { } made && made >= floor);
+
     public const string ExitParameter = "exit";
 
     // The sessions a trade is held at most and the picks listed at most a night, whole numbers from 1, the time limit at
@@ -124,7 +137,7 @@ public sealed record RuleHooks(
 
     public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", "src/EquityBrief.Core/Loop/TakeProfit.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
 
-    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null;
+    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null && RewardTraded is null;
 
     // Whether a member's readings are needed: a condition, a score, the exposure's two switches or a ranking by the
     // learned score.
@@ -138,7 +151,7 @@ public sealed record RuleHooks(
 
     // Whether the hooks stated are the ones a book's rule reads: its conditions and its score, and none of the exit, the
     // exposure, the ranking, the expected-value order, the time limit or the cap a night, which pick a night's trades.
-    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null;
+    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null && RewardTraded is null;
 
     public const string NotABooks = RuleWording.RuleHooks.NotABooks;
 
@@ -154,6 +167,7 @@ public sealed record RuleHooks(
         || name == ExpectedOrderParameter
         || name == TimeLimitParameter
         || name == PerNightParameter
+        || name == RewardTradedParameter
         || PlanHook.Parameters.Contains(name)
         || (name.StartsWith(ScorePrefix, StringComparison.Ordinal) && Column(name[ScorePrefix.Length..]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(AboveSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^AboveSuffix.Length]) >= 0)
@@ -182,10 +196,20 @@ public sealed record RuleHooks(
         var byExpected = false;
         int? timeLimit = null;
         int? perNight = null;
+        double? rewardTraded = null;
 
         foreach (var (name, value) in parameters.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            if (name == TimeLimitParameter)
+            if (name == RewardTradedParameter)
+            {
+                if (!(value > 0) || double.IsInfinity(value))
+                {
+                    throw new ArgumentException(FormattableString.Invariant($"The reward check on the traded plan states {value}, and it states the times its own risk the traded plan must make, over nought; a rule checking the setup's own states none."), nameof(parameters));
+                }
+
+                rewardTraded = value;
+            }
+            else if (name == TimeLimitParameter)
             {
                 if (value != Math.Floor(value) || value < 1 || value > LongestTimeLimit)
                 {
@@ -275,7 +299,13 @@ public sealed record RuleHooks(
             throw new ArgumentException("A rule states its sale once: an exit of the menu or a plan's sale.", nameof(parameters));
         }
 
-        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan, timeLimit, perNight);
+        // The reward check on the traded plan reads the order a plan places and the one price it takes the whole at.
+        if (rewardTraded is not null && (plan is null || plan.Half))
+        {
+            throw new ArgumentException("The reward check on the traded plan reads the plan the rule states, selling the whole at one price, and the rule states none or one selling half.", nameof(parameters));
+        }
+
+        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan, timeLimit, perNight, rewardTraded);
     }
 
     // The hooks with the tree model they name found by the reader given, none where they name none.
@@ -454,6 +484,11 @@ public sealed record RuleHooks(
         if (PerNight is { } most)
         {
             parts.Add(RuleWording.RuleHooks.PerNight(most));
+        }
+
+        if (RewardTraded is { } times)
+        {
+            parts.Add(RuleWording.RuleHooks.RewardTraded(times));
         }
 
         return string.Join("; ", parts);

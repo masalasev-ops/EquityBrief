@@ -1337,6 +1337,9 @@ public static class RuleWording
 
         public static string PerNight(int picks) =>
             FormattableString.Invariant($"at most {picks} a night");
+
+        public static string RewardTraded(double times) =>
+            FormattableString.Invariant($"the reward check on the traded plan's own stop and take-profit, at {times.ToString("0.##", CultureInfo.InvariantCulture)} times its risk");
     }
 
     // TreeScore.cs
