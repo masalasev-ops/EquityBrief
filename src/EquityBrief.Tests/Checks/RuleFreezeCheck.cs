@@ -54,6 +54,13 @@ public sealed class RuleFreezeCheck
             return !arguments.Contains(EquityBrief.Worker.Candidates.RegisterVerb.VariantOnly);
         }
 
+        // A background variant names the live rule it reads its settings from and registers or enters the variant alone,
+        // retiring nothing.
+        if (arguments.Contains(EquityBrief.Worker.Candidates.RegisterVerb.Background))
+        {
+            return false;
+        }
+
         return arguments.Skip(1).Any(EquityBrief.Core.Candidates.FamilyRecords.IsLive)
             || arguments.Skip(1).Any(argument => LiveForms.Contains(argument, StringComparer.Ordinal));
     }
@@ -131,6 +138,7 @@ public sealed class RuleFreezeCheck
             + "register --candidate \"the S&P 400 pullback at a strength of 0.5\" --rule \"the S&P 400 pullback\" --test forward --evaluator pullback-400 --parameters strength=0.5\n"
             + "register --plan \"the live S&P 400 pullback rule at a strength of 0.75\" --combination \"2 typical days under the close within 20 sessions\" --variant-only --evidence \"its plan without its take-profit\"\n"
             + "register --ranked --index SML --by score\nregister --exposed --index MID\nregister --ordered --index SML\nregister --standing --index MID\n"
+            + "register --background \"the live S&P 400 pullback rule at a strength of 0.75\" --moves \"plan_range_floor=2,plan_range_ceiling=0\" --evidence \"a floor variant\"\n"
             + "register --retire \"the S&P 400 pullback at a strength of 0.5\" --evidence \"a version that is not live\"\n"
             + "register --moved --evidence \"a pinned source moved\"\n"
             + "card-plans\n";

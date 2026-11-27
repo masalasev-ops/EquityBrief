@@ -1385,15 +1385,16 @@ public partial class NightlyRun
         // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^10], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[^9], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^8], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[^7], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for six reports taken in turn", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Start no news labeller", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Start no copy of the store", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("From 24.27, walk each queued survivor", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^11], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^10], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^9], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[^8], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^7], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Start no copy of the store", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.27, walk each queued survivor", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("From the 24.19 correction of 2026-11-27, register each background variant", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("From 24.4, start the AI stock picker", steps[^1], StringComparison.Ordinal);
         Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
@@ -1432,12 +1433,12 @@ public partial class NightlyRun
         Assert.Equal(NewsLabeller.NightStage, stages[^5]);
         Assert.Equal("report", stages[^6]);
         Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^7]);
-        Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^7]);
-        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^8]);
-        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^9]);
-        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^10]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^11]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^12]);
+        Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^8]);
+        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^10]);
+        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^11]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^12]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^13]);
         Assert.Equal(
             [EquityBrief.Worker.Families.HeavyweightBook.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Indices.IndexFamilies.Stage],
             stages.Where(stage => stage is EquityBrief.Worker.Families.HeavyweightBook.Stage or EquityBrief.Worker.Quarters.QuarterFetcher.Stage or EquityBrief.Worker.Indices.IndexFamilies.Stage));
@@ -1587,13 +1588,14 @@ public partial class NightlyRun
         var improving = steps.ToList().FindIndex(step => step.StartsWith("From 22.13, read the Fundamentals family", StringComparison.Ordinal)) + 1;
         var treasury = steps.ToList().FindIndex(step => step.StartsWith("Ask the Treasury", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 5, treasury);
+        Assert.Equal(steps.Count - 6, treasury);
         Assert.Equal((close + 1, close + 2, close + 3, close + 4), (filings, quality, improving, treasury));
         Assert.DoesNotContain(steps, step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal));
-        Assert.StartsWith("Ask for six reports taken in turn", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Start no news labeller", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Start no copy of the store", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("From 24.27, walk each queued survivor", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Start no copy of the store", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.27, walk each queued survivor", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("From the 24.19 correction of 2026-11-27, register each background variant", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("From 24.4, start the AI stock picker", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
