@@ -89,6 +89,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
     public const string LargeIndex = "GSPC";
 
+    // Whether a family on an index holds a registered variant, which the long test walks before a family holding none.
+    static bool HoldsVariant(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index, string family) =>
+        Core.Candidates.CandidateFamily.In(standing, Core.Loop.LoopDecisions.RegisterFamilyOf(index, family)).Any(row => !Core.Candidates.FamilyRecords.IsLive(row.Candidate));
+
     // On the operator's ruling of 2026-11-15 on the shapes each live book's record box, written by the books' test.
     // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
     const string InsertBookRecord = @"
@@ -695,7 +699,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
     // nothing.
     // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
-    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0, bool books = false)
+    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0, bool books = false, DateTimeOffset? deadline = null, IReadOnlyCollection<string>? first = null)
     {
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
@@ -730,6 +734,26 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
         var large = index == LargeIndex;
+
+        // From the 24.19 correction of 2026-11-27 a long run on an index its cap has passed before it starts reads no history
+        // and keeps every registered line of the index by name with why.
+        // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+        if (longRun && deadline is { } passed && started >= passed)
+        {
+            var register = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+            RuleTested[] unreached = [.. LongTest.FamilyOrder(RuleTests.FamilyNames, first ?? [], family => HoldsVariant(register, index, family)).SelectMany(family => RuleTests.NotReachedOf(register, index, family))];
+            var unreachedRun = FormattableString.Invariant($"{RulesVerb}-{LongTest.Long}-{index}-{started:yyyyMMddTHHmmssZ}");
+
+            if (!print)
+            {
+                await WriteRulesAsync(unreachedRun, runMonth, index, through, started, 0, unreached, [], 0, cancellation, LongTest.Long);
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{RulesVerb}: the long test reached its cap before the {DecisionCards.NameOf(index)}, its {unreached.Length} line(s) kept by name, not reached"));
+
+            return 0;
+        }
+
         var longHistory = longRun ? new History.LongHistoryReader(databaseFile) : null;
         var inputs = longHistory is not null
             ? await longHistory.ReadAsync(index, through, output.WriteLine, cancellation)
@@ -789,21 +813,27 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation, print);
         }
 
-        // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the
-        // dip's and the sweeps' own reads of the standing pull's market series, and the like setups and the ranking off the
-        // standing ledger are read on the standing years alone, each of those rules kept with the reason.
+        // From 23.7 the long test walks the families its record reaches alone: the dip's and the sweeps' own reads of the
+        // standing pull's market series, and the like setups and the ranking off the standing ledger are read on the standing
+        // years alone, each of those rules kept with the reason. On the operator's order of 2026-11-27 the books are laid over
+        // the long history, Quality at a fair price's and the Fundamentals family's facts read from the long facts beside the
+        // standing ones, as the books' own long test lays them.
         // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        // see: The monthly run's long test lays the books over the long history with the long facts, as the books' own long test lays them
         var standingOnly = longHistory is not null;
-        var qualityLay = !standingOnly && ReadsQuality(standingRules, index)
-            ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
+        Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Ledger.FiledFactRow>>>>? factsOf = longHistory is null
+            ? null
+            : ciks => longHistory.FiledFactsAsync(ciks, through, cancellation);
+        var qualityLay = ReadsQuality(standingRules, index)
+            ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation, factsOf)
             : null;
 
         // From 22.15 the Fundamentals family's history as its own test lays it out, each filer's releases with their
         // readings beside its filings, only where a rule of the family stands on the index.
         // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-        var releases = !standingOnly && ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
+        var releases = ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
         var improvingLay = releases is not null
-            ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation)
+            ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation, factsOf)
             : null;
         var releaseCutoff = releases?.Cutoff;
 
@@ -915,10 +945,30 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             Revenues: index is EquityBrief.Worker.Indices.IndexFamilies.LargeIndex or Core.Providers.FundHoldings.MidCapIndex
                 ? await PlanPointTest.QuarterRevenuesAsync(databaseFile, [.. read.Series.Select(one => one.Name.Ticker)], cancellation)
                 : null);
-        var rules = standingOnly ? [.. RuleTests.Walk(ruleInputs).Select(StandingAlone)] : RuleTests.Walk(ruleInputs);
-        var tested = standingOnly
-            ? RuleTests.JudgeLong(read, rules, await NewestCutoffAsync(cancellation), draws)
-            : RuleTests.Judge(read, rules, await NewestCutoffAsync(cancellation));
+        var newest = await NewestCutoffAsync(cancellation);
+        IReadOnlyList<RuleUnderTest> rules;
+        IReadOnlyList<RuleTested> tested;
+
+        if (standingOnly)
+        {
+            // From the 24.19 correction of 2026-11-27 the long test walks and judges a family at a time, in its order, and
+            // reads its cap before each, a family it does not reach kept line by line with why.
+            // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+            var parts = RuleTests.Parts(ruleInputs);
+
+            (rules, tested) = RuleTests.WalkInOrder(
+                parts,
+                LongTest.FamilyOrder([.. parts.Select(part => part.Family)], first ?? [], family => HoldsVariant(standingRules, index, family)),
+                () => deadline is not { } cap || clock.UtcNow < cap,
+                part => [.. RuleTests.WalkPart(ruleInputs, part).Select(StandingAlone)],
+                walked => RuleTests.JudgeLong(read, walked, newest, draws),
+                family => RuleTests.NotReachedOf(standingRules, index, family));
+        }
+        else
+        {
+            rules = RuleTests.Walk(ruleInputs);
+            tested = RuleTests.Judge(read, rules, newest);
+        }
         var runId = FormattableString.Invariant($"{RulesVerb}-{(standingOnly ? LongTest.Long + "-" : string.Empty)}{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
@@ -991,7 +1041,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a
         // live rule, walked again with the VIX's direction reversed, unregistered and written nowhere, for their word.
         // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
-        var reversed = RuleTests.Reversed(ruleInputs, rules);
+        var reversed = deadline is { } reversedCap && clock.UtcNow >= reversedCap
+            ? new Dictionary<(string Family, string Rule), IReadOnlyList<(int Entry, double? Edge)>>()
+            : RuleTests.Reversed(ruleInputs, rules);
 
         foreach (var one in tested.Where(one => reversed.ContainsKey((one.Rule.Family, one.Rule.Rule))))
         {
@@ -1039,7 +1091,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var rules = tested.Where(one => !Core.Loop.VersionChoices.Is(one.Rule.Rule)).ToArray();
         var choices = tested.Where(one => Core.Loop.VersionChoices.Is(one.Rule.Rule)).ToArray();
 
-        return FormattableString.Invariant($"{rules.Count(one => one.Passed)} of {rules.Length} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {rules.Count(one => one.Why is not null)} not testable, and {choices.Count(one => one.Passed)} of {choices.Length} version choice(s), through {through:yyyy-MM-dd}, over {folds} fold(s)");
+        var unreached = rules.Count(one => one.Why == RuleTests.NotReached);
+
+        return FormattableString.Invariant($"{rules.Count(one => one.Passed)} of {rules.Length} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {rules.Count(one => one.Why is not null && one.Why != RuleTests.NotReached)} not testable{(unreached > 0 ? $", {unreached} not reached by the long test's cap" : string.Empty)}, and {choices.Count(one => one.Passed)} of {choices.Length} version choice(s), through {through:yyyy-MM-dd}, over {folds} fold(s)");
     }
 
     // From 22.11 whether a run lays out Quality at a fair price's history on an index: only where a rule of the family stands
@@ -1178,7 +1232,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 ("$passed", one.Passed ? 1 : 0),
                 ("$why", Or(one.Why)),
                 ("$cap", one.Rule.Cap),
-                ("$span", calendar.Count - 1 - opens),
+                ("$span", calendar.Count == 0 ? DBNull.Value : calendar.Count - 1 - opens),
                 ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 ("$judged_from", Or(one.JudgedFrom)),
                 ("$history", history),

@@ -406,29 +406,109 @@ public static class RuleTests
     // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
     public static IReadOnlyList<RuleUnderTest> Walk(RuleTestInputs inputs, bool choosing = true)
     {
+        var walked = Graded(inputs, [.. Parts(inputs).SelectMany(part => part.Walk())]);
+        var ranked = inputs.Ranked is null ? walked : Ranked(inputs, walked);
+
+        return choosing ? [.. ranked, .. Choosing(inputs.Read, ranked)] : ranked;
+    }
+
+    // From the 24.19 correction of 2026-11-27 one family's rules walked as Walk walks them, ranked and with its version
+    // choices, which the long test judges as each family is walked so its cap is read before each family.
+    // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+    public static IReadOnlyList<RuleUnderTest> WalkPart(RuleTestInputs inputs, Func<IReadOnlyList<RuleUnderTest>> part)
+    {
+        var walked = Graded(inputs, part());
+        var ranked = inputs.Ranked is null ? walked : Ranked(inputs, walked);
+
+        return [.. ranked, .. Choosing(inputs.Read, ranked)];
+    }
+
+    // From the 24.19 correction of 2026-11-27 the long test's families walked and judged one at a time in the order given,
+    // the cap read before each: a family walked while it stands keeps every verdict and case its judgement gave, and each
+    // after it is kept line by line as not reached.
+    // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+    public static (IReadOnlyList<RuleUnderTest> Walked, IReadOnlyList<RuleTested> Tested) WalkInOrder(
+        IReadOnlyList<(string Family, Func<IReadOnlyList<RuleUnderTest>> Walk)> parts,
+        IReadOnlyList<string> order,
+        Func<bool> goesOn,
+        Func<Func<IReadOnlyList<RuleUnderTest>>, IReadOnlyList<RuleUnderTest>> walk,
+        Func<IReadOnlyList<RuleUnderTest>, IReadOnlyList<RuleTested>> judge,
+        Func<string, IReadOnlyList<RuleTested>> notReached)
+    {
+        var walked = new List<RuleUnderTest>();
+        var tested = new List<RuleTested>();
+
+        foreach (var family in order)
+        {
+            if (!goesOn())
+            {
+                tested.AddRange(notReached(family));
+
+                continue;
+            }
+
+            var part = walk(parts.First(one => one.Family == family).Walk);
+
+            walked.AddRange(part);
+            tested.AddRange(judge(part));
+        }
+
+        return (walked, tested);
+    }
+
+    // The families Parts walks, in its order.
+    public static IReadOnlyList<string> FamilyNames { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name, DipRule.Name, ImprovingRule.Name];
+
+    // Each family the per-rule test walks, in the page's order, its walk left until it is called; the pullback's candidates
+    // read once for every walk of them.
+    public static IReadOnlyList<(string Family, Func<IReadOnlyList<RuleUnderTest>> Walk)> Parts(RuleTestInputs inputs)
+    {
         var large = inputs.Read.Index == WalkForwardTester.LargeIndex;
         var read = inputs.Candidates;
 
         IdeaReplay Candidates() => read ??= SweepIdeasRunner.Read(inputs.Read.Inputs, inputs.Market, inputs.Progress).Replay;
 
-        var pullback = large ? null : RuleWalk.Pullback(inputs.Read, inputs.Market, inputs.Progress, inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback), inputs.Readings, inputs.Trees, candidates: Candidates());
+        RuleWalk? pullback = null;
 
-        IReadOnlyList<RuleUnderTest> walked =
+        RuleWalk Pullback() => pullback ??= RuleWalk.Pullback(inputs.Read, inputs.Market, inputs.Progress, inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback), inputs.Readings, inputs.Trees, candidates: Candidates());
+
+        return
         [
-            .. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, pullback!, Candidates),
-            .. Swings(inputs, BreakoutRule.Name),
-            .. Swings(inputs, DriftRule.Name),
-            .. Heavyweights(inputs),
-            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting, stops: (Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => lay.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, QualityRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == inputs.Read.Index) : []),
-            .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []),
-            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting, stops: (Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => improving.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, ImprovingRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == inputs.Read.Index) : []),
+            (SetupFamilies.Pullback, () => [.. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, Pullback(), Candidates)]),
+            (BreakoutRule.Name, () => [.. Swings(inputs, BreakoutRule.Name)]),
+            (DriftRule.Name, () => [.. Swings(inputs, DriftRule.Name)]),
+            (HeavyweightRule.Name, () => [.. Heavyweights(inputs)]),
+            (QualityRule.Name, () => [.. inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting, stops: (Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => lay.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, QualityRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == inputs.Read.Index) : []]),
+            (DipRule.Name, () => [.. inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []]),
+            (ImprovingRule.Name, () => [.. inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting, stops: (Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => improving.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, ImprovingRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == inputs.Read.Index) : []]),
         ];
+    }
 
-        walked = [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
+    static IReadOnlyList<RuleUnderTest> Graded(RuleTestInputs inputs, IReadOnlyList<RuleUnderTest> walked) =>
+        [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
 
-        var ranked = inputs.Ranked is null ? walked : Ranked(inputs, walked);
+    // From the 24.19 correction of 2026-11-27 why a line of the long test holds no verdict: the test reached its cap before
+    // its family, and the next month's long test walks that family first.
+    // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+    public const string NotReached = "not reached: the long test reached its cap before its family, which the next month's long test walks first";
 
-        return choosing ? [.. ranked, .. Choosing(inputs.Read, ranked)] : ranked;
+    // Each registered line of a family on an index the long test did not reach, kept by name with why, a variant read
+    // against its family's live rule and a live rule against its benchmark.
+    public static IReadOnlyList<RuleTested> NotReachedOf(IReadOnlyList<RegisterRow> standing, string index, string family)
+    {
+        RegisterRow[] rows = [.. LiveFirst(CandidateFamily.In(standing, LoopDecisions.RegisterFamilyOf(index, family)))];
+        var live = rows.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
+        var book = family is QualityRule.Name or ImprovingRule.Name or HeavyweightRule.Name;
+
+        return
+        [
+            .. rows.Select(row => new RuleTested(
+                new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, book ? LoopProcedures.Points : LoopProcedures.Risks, book ? BookMonths.LongestMonth : SweepIdeas.Cap, Why: NotReached),
+                StandingOf(row) == Variant ? live?.Candidate ?? NoHead : Benchmark,
+                null,
+                null,
+                NotReached)),
+        ];
     }
 
     // From the long test's correction a book family's rules a long run lays out no book for, Quality at a fair price's and the

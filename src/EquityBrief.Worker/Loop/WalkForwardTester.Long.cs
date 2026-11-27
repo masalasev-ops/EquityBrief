@@ -6,8 +6,9 @@ namespace EquityBrief.Worker.Loop;
 
 // From 23.7 the monthly run's last step: the per-rule test over the long history on each index the month's runs do not hold
 // one for yet, each family judged from its own first test year, then the verdict across the three indices over the same.
-// Its sign vectors are cut to the fewest once it has used half its time, and it starts no index once its time has passed
-// its cap, the indices after waiting for a second part run by hand the next day, which goes on from the indices it holds.
+// Its sign vectors are cut to the fewest once it has used half its time, and from the 24.19 correction of 2026-11-27 it
+// walks no family once its time has passed its cap, each line of one it did not reach written by name and walked first
+// the month after.
 // It runs after the month's report, so a failure here holds nothing the report needs.
 // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
 public sealed partial class WalkForwardTester
@@ -131,31 +132,61 @@ public sealed partial class WalkForwardTester
 
     const string LongRunsOfTheMonth = "SELECT DISTINCT index_code FROM loop_rule WHERE month = $month AND history = 'long';";
 
-    public async Task<(bool Held, string Words)> LongMonthAsync(string month, CancellationToken cancellation = default)
+    // From the 24.19 correction of 2026-11-27 each index's families the newest long test before the month did not reach,
+    // which the month's walks first.
+    const string NotReachedBefore = @"
+        SELECT DISTINCT index_code, family FROM loop_rule
+        WHERE history = 'long' AND why = $why AND month = (SELECT MAX(month) FROM loop_rule WHERE history = 'long' AND month < $month);";
+
+    // Each line the month's long rows hold as not reached, in the order written.
+    const string NotReachedOfTheMonth = "SELECT index_code, family, rule FROM loop_rule WHERE month = $month AND history = 'long' AND why = $why ORDER BY rowid;";
+
+    // The monthly run's last step: from the 24.19 correction of 2026-11-27 its cap, the stated one or one handed in, read
+    // before each family of each index, the indices taken smallest first after any holding a line the month before did not
+    // reach, every verdict judged before the cap written and each line after it written by name with why.
+    // see: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+    public async Task<(bool Held, string Words)> LongMonthAsync(string month, CancellationToken cancellation = default, TimeSpan? cap = null)
     {
+        var limit = cap ?? LongTest.Cap;
         var started = clock.UtcNow;
         var held = new HashSet<string>(StringComparer.Ordinal);
+        var before = new List<(string Index, string Family)>();
 
         await using (var connection = new SqliteConnection(StoreConnection.For(databaseFile)))
         {
             await connection.OpenAsync(cancellation);
 
-            await using var command = connection.CreateCommand();
-            command.CommandText = LongRunsOfTheMonth;
-            command.Parameters.AddWithValue("$month", month);
-
-            await using var reader = await command.ExecuteReaderAsync(cancellation);
-
-            while (await reader.ReadAsync(cancellation))
+            await using (var command = connection.CreateCommand())
             {
-                held.Add(reader.GetString(0));
+                command.CommandText = LongRunsOfTheMonth;
+                command.Parameters.AddWithValue("$month", month);
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    held.Add(reader.GetString(0));
+                }
+            }
+
+            await using (var command = connection.CreateCommand())
+            {
+                command.CommandText = NotReachedBefore;
+                command.Parameters.AddWithValue("$month", month);
+                command.Parameters.AddWithValue("$why", RuleTests.NotReached);
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    before.Add((reader.GetString(0), reader.GetString(1)));
+                }
             }
         }
 
         var said = new List<string>();
-        var left = new List<string>();
 
-        foreach (var index in MonthlyRun.Indices)
+        foreach (var index in LongTest.IndexOrder(before))
         {
             if (held.Contains(index))
             {
@@ -165,18 +196,11 @@ public sealed partial class WalkForwardTester
             }
 
             var elapsed = clock.UtcNow - started;
-
-            if (!LongTest.GoesOn(elapsed))
-            {
-                left.Add(index);
-
-                continue;
-            }
-
-            var draws = LongTest.DrawsAt(elapsed);
+            var draws = LongTest.DrawsAt(elapsed, limit);
             var at = clock.UtcNow;
+            string[] first = [.. before.Where(one => one.Index == index).Select(one => one.Family)];
 
-            if (await RulesAsync(index, month, cancellation, longRun: true, draws: draws) != 0)
+            if (await RulesAsync(index, month, cancellation, longRun: true, draws: draws, deadline: started + limit, first: first) != 0)
             {
                 return (false, $"the long test on the {Cards.DecisionCards.NameOf(index)} did not finish its run");
             }
@@ -185,10 +209,29 @@ public sealed partial class WalkForwardTester
         }
 
         var spent = clock.UtcNow - started;
+        var unreached = new List<string>();
 
-        if (left.Count > 0)
+        await using (var connection = new SqliteConnection(StoreConnection.For(databaseFile)))
         {
-            return (false, FormattableString.Invariant($"the long test reached its cap of {LongTest.Cap.TotalHours:0} hours in {spent.TotalMinutes:0} min with {string.Join(", ", left)} to run: {string.Join("; ", said)}; run 'loop-long --month {month}' by hand the next day to go on"));
+            await connection.OpenAsync(cancellation);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = NotReachedOfTheMonth;
+            command.Parameters.AddWithValue("$month", month);
+            command.Parameters.AddWithValue("$why", RuleTests.NotReached);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                unreached.Add($"the {Cards.DecisionCards.NameOf(reader.GetString(0))}'s {reader.GetString(1)} {reader.GetString(2)}");
+            }
+        }
+
+        // A month holding a line not reached, on its first try or a later one, sums no verdict across the three.
+        if (unreached.Count > 0)
+        {
+            return (false, FormattableString.Invariant($"the long test reached its cap of {limit.TotalMinutes:0} min in {spent.TotalMinutes:0} min with {unreached.Count} line(s) not reached, each written by name and walked first at the next monthly run, and sums no verdict across the three: {string.Join(", ", unreached)}; {string.Join("; ", said)}"));
         }
 
         var (pooled, words) = await new PooledTest(clock, databaseFile, dataRoot, output, pause).RunAsync(month, cancellation: cancellation, history: LongTest.Long);

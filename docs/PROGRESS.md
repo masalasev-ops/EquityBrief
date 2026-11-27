@@ -23488,3 +23488,62 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             floor of 34, 57 checks on the roster run and passed.
 Carried:    the remedy run from `main` after the merge while no writer runs, its outcomes in the report to the operator: five
             floor variants and the reward variant registered, seven floor variants entered to wait.
+
+### 24.19 - correction: the monthly run's long test laying the books over the long history with the long facts   2026-11-27
+
+Ruled:      the operator's orders of 2026-11-27 on the report of 9:17 am, item 1, word for word in
+            `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`, with the reasons taken from the #803 runs' output as
+            `prompts/2026-11-27-24.19-stop-the-reruns.md` orders.
+Found:      the per-rule test over the long history laid no book, so Quality at a fair price's and the Fundamentals
+            family's 18 rules on each of the S&P 500 and 600 were kept as not testable, read on the standing years alone.
+Built:      the per-rule test lays both books wherever a rule of their family stands, the long run among them, each filer's
+            long facts read beside its standing ones as the books' own long test reads them (see: The monthly run's long
+            test lays the books over the long history with the long facts, as the books' own long test lays them). A rule
+            the lay does not reach keeps its reason. No pin moves: the tester is a file no rule pins.
+Measured:   the S&P 600's long test read-only from a Release build of this tree: 73.1 minutes against 64.6 before, 0 of 54
+            rules passed and 1 not testable against 19, the one left the breakout ordered by expected value, which the long
+            run holds no fold score for and a later correction owes.
+Tests:      1 new: the rules test's lays read off the tester's source hand each book the long reader's facts and lay it in
+            the long run as the books' own test does, and a book the run lays none for keeps its reason.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the change taken back at the one place that decides it. m13 the long run's
+            lays held to the standing run again, `!standingOnly &&` restored: red. Filtered to its test and reverted before
+            anything was committed.
+Claims:     1769, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green with the entry after it, over the one tree the pull
+            request merges; this entry's own gates were stopped before their end when the operator's orders on the cap came.
+Carried:    the breakout's expected-value order over the long history, before the monthly run of 5 Dec. The S&P 500's long
+            test is not timed, on the operator's word: the entry after it orders the step so a cut costs least.
+
+### 24.19 - correction: the long test reading its cap before each family, every verdict before it kept and each line after it named and walked first the month after   2026-11-27
+
+Ruled:      the operator's orders of 2026-11-27 on the long test's cap and order, word for word in
+            `prompts/2026-11-27-24.19-the-long-tests-cap-and-order.md`, items 1 and 2, and their answer in
+            `prompts/2026-11-27-24.19-the-long-tests-cap-answer.md`.
+Found:      the step read its cap only between indices, so an index ran to its end past the cap and one not started by it held
+            no long verdict, named only by its code and left to a run by hand; no verdict already judged was lost.
+Built:      the long test walks and judges a family at a time and reads its cap before each, the cut falling between families
+            since a family's variants are corrected together (see: The long test reads its cap before each family and keeps
+            every verdict judged before it, each line it did not reach named and walked first the month after). Every verdict
+            judged before the cap is written with its case; each registered line after it, and every line of an index the cap
+            passes before it starts, is written by name with `not reached`, no history read for that index; the step's words
+            list each. The indices are taken smallest first, S&P 600, 400, 500, and each index's families in the order: those
+            the month before did not reach, the two books, families holding a registered variant, the rest. A month holding a
+            line not reached sums no verdict across the three, on its first try or a later one. The reversed graded exposure,
+            walked after every family, runs only while the cap stands. No pin moves: the tester and the long test's constants
+            are files no rule pins.
+Tests:      3 new: the order worked by hand; a cap of two minutes over four constructed families, each walk taking one, the two
+            walked keeping the verdicts their judgement gave and the two after kept by name as not reached; and the month's
+            step under a cap of nothing over registered lines on the S&P 400 and 500, every line written by name, the words
+            naming each, a second try summing nothing across the three, and the next month taking those two indices first.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m14 the cap
+            never read before a family: red; m15 the next month's index order ignoring the lines not reached: red; m16 the
+            books not walked first: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1769, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4090 of 4090 tests ran with none failed, migrations 0 to 173
+            with none pending, schema version 173, against `data-ci` and never `data`; the phase report 68 tables, 1769
+            claims, 1769 passing, none out of scope and none unexamined, 1784 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    the breakout's expected-value order over the long history, before the monthly run of 5 Dec.

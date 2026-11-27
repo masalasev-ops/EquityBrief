@@ -7,6 +7,42 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/RUNBOOK.md - the long test's cap read before each family, at a correction to 24.19
+Decision: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+Was:
+> `loop-long` is the step by hand: it runs the long test on each index the month holds none for, cutting its sign vectors to the fewest once it has used half its three hours and starting no index once it has used them all, then the verdict across the three over the long rows. Where the monthly run's step stopped at its cap, run `loop-long` for the month the next day and it goes on from the indices the month holds.
+Now:
+> `loop-long` is the step by hand: it runs the long test on each index the month holds none for, cutting its sign vectors to the fewest once it has used half its three hours, then the verdict across the three over the long rows. From the 24.19 correction of 2026-11-27 it takes the indices smallest first, ... writes each line of a family after it by name with the reason `not reached`, its words listing each; the next month's step takes the indices and families holding a line not reached first, so nothing is run by hand for them, and the verdict across the three waits for a month that reaches every line
+Why: the operator's orders of 2026-11-27, items 1 and 2, kept word for word in `prompts/2026-11-27-24.19-the-long-tests-cap-and-order.md`, and their answer.
+
+### 2026-11-27 - docs/ARCHITECTURE.html - the long test's cap read before each family, at a correction to 24.19
+Decision: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+Was:
+> capped at three hours, its sign vectors cut to the fewest once it has used half and no index started once it has used all, `loop-long` going on from the indices the month holds the next day
+> and none below 20,000, and no index started once all 3 hours are used
+> its sign vectors cut to the fewest once the step has used half its cap and the month's long runs read so a second part goes on from them (see: ...)</td></tr>
+Now:
+> capped at three hours, its sign vectors cut to the fewest once it has used half; from the 24.19 correction of 2026-11-27 the indices taken smallest first, ... which the next month's long test takes first, its index and its family before any other
+> and none below 20,000, and no family walked once all 3 hours are used, each line of one not walked written by name as not reached
+> its sign vectors cut to the fewest once the step has used half its cap and the month's long runs read so a second part goes on from them (see: ...); and from the 24.19 correction of 2026-11-27 its cap read before each family, each line of a family after it written by name as not reached and taken first the next month</td></tr>
+Why: the operator's orders of 2026-11-27, items 1 and 2, kept word for word in `prompts/2026-11-27-24.19-the-long-tests-cap-and-order.md`, and their answer.
+
+### 2026-11-27 - docs/SCHEMA.md - loop_rule's why naming a line the long test did not reach, at a correction to 24.19
+Decision: The long test reads its cap before each family and keeps every verdict judged before it, each line it did not reach named and walked first the month after
+Was:
+> | `why` | TEXT | why the history cannot walk it, naming the reading it lacks; null where it was walked |
+Now:
+> | `why` | TEXT | why the history cannot walk it, naming the reading it lacks, and from the 24.19 correction of 2026-11-27 on a long row the words beginning `not reached` where the long test reached its cap before its family, which the next month's long test walks first; null where it was walked |
+Why: a line the cap leaves unwalked is written by name with why, in the table that holds every long verdict.
+
+### 2026-11-27 - docs/RUNBOOK.md - the long test lays the books over the long history, at a correction to 24.19
+Decision: The monthly run's long test lays the books over the long history with the long facts, as the books' own long test lays them
+Was:
+> the families its walk reads off the standing history alone, the books and the like setups and the ranking, are written with the reason that they are read on the standing years alone
+Now:
+> the families its walk reads off the standing history alone, the like setups and the ranking, are written with the reason that they are read on the standing years alone; from the 24.19 correction of 2026-11-27 the books are laid over the long history with each filer's long facts beside its standing ones, as `loop-test --books` lays them
+Why: the operator's order of 2026-11-27, item 1, kept word for word in `prompts/2026-11-27-24.19-on-the-report-of-9-17am.md`: 36 of the 39 rules the long tests named not testable were the books.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the background variants registered where a family has room and walked where it holds nine, at a correction to 24.19
 Decision: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees
 Was:
