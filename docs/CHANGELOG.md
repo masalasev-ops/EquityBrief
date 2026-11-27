@@ -7,6 +7,26 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-26 - docs/ARCHITECTURE.html - the read-only copy drawn as the app draws it, a link it does not hold keeping its element, at a correction to 24.46
+Decision: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+Was:
+> the read-only copy's paragraph: "... with each earlier dated version of a report. Each screen loses every form, press and address of the surface; each link resolves to a file the copy holds or is drawn as its words alone, plain text with no note; every page carries the robots meta refusing search and the copy a robots file refusing every crawler; and the copy's own shell, which names it a read-only copy and carries a banner above every page, fetches only the copy's files."
+> the same paragraph: "... each leak named by its file and its text; and the folder is read for forms, ..."
+> the market strip's row "The market strip on the read-only copy": "from 21.13 atop every page the copy holds beneath its banner: the S&amp;P 500's strip as of the night's close alone; no quote asked; each screen's own strip taken out (see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session)"
+Now:
+> "... with each earlier dated version of a report, and from the correction of 2026-11-26 each of tonight's plans Home or Tonight links at its own address and Paper trading's "Last 5 trading days" tab with its pages. Each screen loses every form, press and address of the surface; each link resolves to a file the copy holds or, from that correction, keeps its element, its words and every class it had, its link alone taken away and the class not-held added; ... the copy's own shell, which names it a read-only copy, carries a banner above every page and nothing else above a screen, runs the app's own scripts for Home's and Tonight's waiting cards and Tonight's plans and fetches only the copy's files (see: ...)."
+> "... each leak named by its file and its text; from the correction of 2026-11-26 every link of every page is read against the page as drawn, kept or not-held with its classes, every page for a section its page in the app does not hold, and Home and Tonight on every index laid out in a browser the machine already has beside the app's own pages, in a desktop's window and a phone's at a true 390, ... each fault named by its page and refusing the upload; and the folder is read for forms, ..."
+> "from the correction of 2026-11-26 on Tonight alone on each index, the strip Tonight draws for itself in the app: the night's closes alone; no quote asked; no other page of the copy draws one (see: ...) (see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element)"
+Why: the operator's correction of 2026-11-26, kept word for word in `prompts/2026-11-26-24.46-read-only-copy-as-the-app.md`: the copy held none of tonight's plans at their own addresses, which 24.46 gave them, nor the "Last 5 trading days" tab; its bare spans for a link it did not hold ran Tonight's plan rows into text and dropped the tab's tile out of its row; and its markets card stood atop every page where the app draws the strip on Tonight alone.
+
+### 2026-11-26 - docs/RUNBOOK.md - the read-only copy drawn as the app draws it, a link it does not hold keeping its element, at a correction to 24.46
+Decision: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+Was:
+> the read-only copy's section: "It holds no Loop page, Ledger, Run page, queue, watch list or account page, every control is taken out, and a link to anything it does not hold is drawn as its words alone, plain text with no note."
+Now:
+> "From the correction of 2026-11-26 it also holds each of tonight's plans Home or Tonight links and Paper trading's "Last 5 trading days" tab. It holds no Loop page, Ledger, Run page, queue, watch list or account page, every control is taken out, and a link to anything it does not hold keeps its words and its look with its link taken away (see: ...). Before the report's check the read surface lays Home and Tonight out in Chrome or Edge, whichever the machine has, beside the app's own pages at 1440 and a true 390, and names each page that stands apart from the app's as a reason the upload is refused."
+Why: as the entry above.
+
 ### 2026-11-26 - docs/ARCHITECTURE.html - Home's waiting orders chosen by setup, each card one height with its checks folded, at a correction to 24.29
 Decision: Home's waiting orders are chosen by setup from a row of chips, each card one height with its checks folded
 Was:

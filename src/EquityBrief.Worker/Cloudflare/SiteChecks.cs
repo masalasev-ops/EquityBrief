@@ -39,6 +39,10 @@ public static partial class SiteChecks
     // From 22.17 the refusal of a copy the read surface found the method in, each file and its text named in its lines.
     public const string LeakedTheMethod = "the read surface found the method in the copy, each file and its text named in its lines above";
 
+    // From the operator's correction of 2026-11-26 the refusal of a copy that stands apart from the app, before each fault.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+    public const string UnlikeTheApp = "the copy stands apart from the app: ";
+
     public static SiteCheck Read(string folder, IReadOnlyList<Needle> needles)
     {
         var lines = new List<string>();

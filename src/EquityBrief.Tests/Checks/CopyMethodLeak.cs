@@ -243,6 +243,43 @@ public class CopyMethodLeak
         Assert.DoesNotContain("  " + SiteChecks.LeakedTheMethod, said);
     }
 
+    // From the operator's correction of 2026-11-26 a copy whose page stands apart from the app's is read as every copy is, and
+    // its upload refused with each fault naming its page.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+    [Fact]
+    public async Task TheUploadIsRefusedWhereAPageOfTheCopyStandsApartFromTheApps()
+    {
+        using var root = new TemporaryDirectory();
+        var data = Path.Combine(root.Path, "data");
+        var (worker, _) = Builds(root.Path);
+        var asked = 0;
+        const string Fault = "Tonight on the S&P 400 at 390: plan row 2 is laid out as inline in the copy and as grid in the app";
+
+        (int, IReadOnlyList<string>) Surface(ProcessStartInfo start, TimeSpan _)
+        {
+            Directory.CreateDirectory(start.ArgumentList[2]);
+            File.WriteAllText(Path.Combine(start.ArgumentList[2], "index.html"), "<p>the copy</p>");
+            File.WriteAllText(Path.Combine(start.ArgumentList[2], PublishedSite.HeadersFile), "/*\n");
+
+            return (PublishedSite.Unlike, [PublishedSite.UnlikeLine + Fault]);
+        }
+
+        ICloudflarePagesFeed Feed(string token, string account)
+        {
+            asked++;
+
+            throw new InvalidOperationException("the upload was asked for");
+        }
+
+        var said = new List<string>();
+
+        Assert.Equal(1, await new SitePublisher(data, worker, [], [], Surface, Feed).RunAsync(upload: true, "token", "account", said.Add));
+        Assert.Equal(0, asked);
+        Assert.Contains("  " + SiteChecks.UnlikeTheApp + Fault, said);
+        Assert.Contains("Nothing was uploaded, since the check refused it.", said);
+        Assert.DoesNotContain("refused: the read surface did not write the copy, so nothing was uploaded.", said);
+    }
+
     // A feed failing each try in turn as listed, the network's failure or Cloudflare's refusal, and going up after the list.
     sealed class TriedFeed(params Exception[] failures) : ICloudflarePagesFeed
     {

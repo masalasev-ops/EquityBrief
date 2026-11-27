@@ -6,13 +6,17 @@ using EquityBrief.Web.Cloudflare;
 namespace EquityBrief.Api.Cloudflare;
 
 // What a copy wrote: the night it is of, each route it holds with its file, each index's reports and their versions, the
-// routes not held and from 22.17 each leak of the method its files carry, by file and text.
+// routes not held and from 22.17 each leak of the method its files carry, by file and text; and from the correction of
+// 2026-11-26 each page's faults against the app's, and Home's and Tonight's screens as the app draws them in the copy's words,
+// by the route the app's shell asks for each.
 public sealed record SiteCopyWritten(
     DateOnly Night,
     IReadOnlyDictionary<string, string> Files,
     IReadOnlyList<(string Index, int Reports, int Versions)> Reports,
     IReadOnlyList<string> Refused,
-    IReadOnlyList<string>? Leaks = null);
+    IReadOnlyList<string>? Leaks = null,
+    IReadOnlyList<string>? Faults = null,
+    IReadOnlyDictionary<string, string>? AppPages = null);
 
 // The read-only copy on Cloudflare Pages, written by the read surface's own verb, every screen drawn plain from 22.17.
 // Each screen the copy holds is asked of the surface as the live shell asks for it, inside this process and over no
@@ -134,6 +138,31 @@ public static class SiteCopyCommand
                 }
             }
 
+            // From the operator's correction of 2026-11-26 every one of tonight's plans Home or Tonight links at its own address,
+            // and Paper trading's "Last 5 trading days" tab with each of its pages, as Home and Tonight link it.
+            // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+            foreach (var screen in new[] { SinglePageApp.HomeRoute, SinglePageApp.TonightRoute })
+            {
+                if (drawn.TryGetValue(OnIndex(screen, index), out var shown))
+                {
+                    foreach (var plan in SiteCopy.LinksIn(shown).Where(link => link.StartsWith(EquityBrief.Web.Marks.MarkRenderer.PlanRoute, StringComparison.Ordinal)))
+                    {
+                        await Ask(plan);
+                    }
+
+                    foreach (var tab in SiteCopy.LinksIn(shown).Where(link => SiteCopy.PathOf(link) == SinglePageApp.PaperRoute).Take(ViewsAScreen))
+                    {
+                        if (await Ask(tab) is { } tabbed)
+                        {
+                            foreach (var page in SiteCopy.LinksIn(tabbed).Where(link => SiteCopy.PathOf(link) == SinglePageApp.PaperRoute && link.Contains(EquityBrief.Web.Marks.PaperLink.TabKey + "=" + EquityBrief.Web.Marks.MarkRenderer.RecentTab, StringComparison.Ordinal)).Take(ViewsAScreen))
+                            {
+                                await Ask(page);
+                            }
+                        }
+                    }
+                }
+            }
+
             var pages = new Queue<string>([OnIndex(SinglePageApp.UniverseRoute, index)]);
             var seen = new HashSet<string>(pages, StringComparer.Ordinal);
 
@@ -210,6 +239,8 @@ public static class SiteCopyCommand
         // Every held screen cleaned, its links resolved against what is held, and written under the folder.
         var held = new HashSet<string>(order, StringComparer.Ordinal);
         var files = new Dictionary<string, string>(StringComparer.Ordinal);
+        var faults = new List<string>();
+        var worded = new Dictionary<string, string>(StringComparer.Ordinal);
 
         Directory.CreateDirectory(folder);
 
@@ -233,19 +264,28 @@ public static class SiteCopyCommand
                 markup = SiteCopy.Versions(path["#/name/".Length..].Split('/')[0], listed, route) + markup;
             }
 
-            markup = SiteCopy.NoIndex + SiteCopy.Worded(SiteCopy.Relink(markup, route, held, stockPagesFirst: path == SinglePageApp.ResearchedRoute));
+            var linked = SiteCopy.NoIndex + SiteCopy.Worded(SiteCopy.Relink(markup, route, held, stockPagesFirst: path == SinglePageApp.ResearchedRoute));
 
             var file = SiteCopy.FileOf(route);
 
+            // From the operator's correction of 2026-11-26 each page read against the app's: every link resolving inside the
+            // copy or kept not-held with its classes, and no section the app's page does not hold.
+            // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
+            faults.AddRange(SiteCopy.LinkFaults(file, markup, linked, held));
+            faults.AddRange(SiteCopy.SectionFaults(file, drawn[route], linked));
+
+            // Home and Tonight as the app draws them in the copy's words, every link as the app links it, which the layout
+            // check lays out in the app's own shell beside the copy's.
+            if ((path == SinglePageApp.HomeRoute || path == SinglePageApp.TonightRoute) && SiteCopy.ServerRoute(route) is { } server)
+            {
+                worded[server] = SiteCopy.NoIndex + SiteCopy.Worded(markup);
+            }
+
             files[route] = file;
-            Write(folder, file, markup);
+            Write(folder, file, linked);
         }
 
-        // From 21.13 the market strip atop every page, the S&P 500's closes on the night alone, since the copy asks no quote.
-        // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
-        var strip = await MarketStripScreen.DrawAsync(read, new EquityBrief.Web.Marks.MarkRenderer(), Universes.Large, night, null, null, TimeZoneInfo.FindSystemTimeZoneById(EquityBrief.Core.Time.SessionZones.UnitedStates));
-
-        Write(folder, SiteCopy.ShellFile, SiteCopy.Shell(night, files, SiteCopy.Relink(strip, "#/", held, stockPagesFirst: false)));
+        Write(folder, SiteCopy.ShellFile, SiteCopy.Shell(night, files));
         Write(folder, SiteCopy.MissingFile, SiteCopy.Missing(night));
         Write(folder, SiteCopy.RobotsFile, SiteCopy.Robots);
         Write(folder, EquityBrief.Core.Cloudflare.PublishedSite.HeadersFile, Headers);
@@ -288,7 +328,7 @@ public static class SiteCopyCommand
             })
             .ToArray();
 
-        return new SiteCopyWritten(night, files, counts, refused, leaks);
+        return new SiteCopyWritten(night, files, counts, refused, leaks, faults, worded);
     }
 
     // How a live rule's registration opens, the register naming every live rule so.

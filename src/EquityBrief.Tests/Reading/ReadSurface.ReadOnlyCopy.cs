@@ -81,6 +81,10 @@ public partial class ReadSurface
         Assert.Equal("/screens/tonight?universe=400", SiteCopy.ServerRoute("#/tonight?universe=400"));
         Assert.Equal("/screens/name/AAPL/2026-10-11", SiteCopy.ServerRoute("#/name/AAPL/2026-10-11"));
         Assert.Equal("/screens/paper?universe=600", SiteCopy.ServerRoute("#/paper?universe=600"));
+        Assert.Equal("/screens/tonight?plan=RCL", SiteCopy.ServerRoute("#/tonight/plan/RCL"));
+        Assert.Equal("/screens/tonight?universe=400&plan=BRK.B", SiteCopy.ServerRoute(SiteCopy.Canonical("#/tonight/plan/BRK.B?universe=400")));
+        Assert.Equal("screens/tonight/plan/RCL~universe-400.html", SiteCopy.FileOf(SiteCopy.Canonical("#/tonight/plan/RCL?universe=400")));
+        Assert.Null(SiteCopy.ServerRoute("#/tonight/plan/RCL/more"));
         Assert.Null(SiteCopy.ServerRoute("#/run/2026-10-27"));
         Assert.Null(SiteCopy.ServerRoute("#/watch"));
         Assert.Null(SiteCopy.ServerRoute("#/queue"));
@@ -139,35 +143,43 @@ public partial class ReadSurface
         Assert.Equal("<span class=\"copy-asof\">As of the close of 27 Oct.</span> <span class=\"m-when\">This stock's last stored price is from 3 Oct, so its prices may be out of date. Levels and the plan come from completed sessions to 2026-10-03</span>", SiteCopy.MarkedAtTheClose(OlderUnmarked, CopyNight));
     }
 
+    // From the operator's correction of 2026-11-26 a link the copy does not hold keeps its element and every class it had, its
+    // link alone taken away and not-held added, so a row of Tonight's plans stays a row.
+    // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
     [Fact]
-    public void EveryLinkResolvesToAFileTheCopyHoldsOrIsDrawnAsItsWordsAlone()
+    public void EveryLinkResolvesToAFileTheCopyHoldsOrKeepsItsElementMarkedNotHeld()
     {
         var held = new HashSet<string>(["#/", "#/researched", "#/researched?sort=stale", "#/chart/HELD", "#/name/HELD", "#/name/PAGE"], StringComparer.Ordinal);
         const string Fragment =
             "<a href=\"#/chart/HELD\">HELD</a>|<a href=\"#/chart/PAGE\">PAGE</a>|<a href=\"#/chart/NONE\">NONE</a>|"
             + "<a class=\"sort\" href=\"#/researched?universe=500&amp;sort=stale\">Staleness</a>|<a class=\"sort\" href=\"#/researched?sort=written&amp;page=2\">Written</a>|"
-            + "<a href=\"#/run/2026-10-27\">What ran tonight</a>|<a href=\"#move-1\">a move</a>|<a href=\"https://www.sec.gov/x.htm\">the release</a>|<a href=\"/proof/report-pages\">proof</a>";
+            + "<a href=\"#/run/2026-10-27\">What ran tonight</a>|<a href=\"#move-1\">a move</a>|<a href=\"https://www.sec.gov/x.htm\">the release</a>|<a href=\"/proof/report-pages\">proof</a>|"
+            + "<a class=\"pl-row on\" href=\"#/tonight/plan/RCL\" data-plan-id=\"plan-rcl\"><span class=\"pl-tk\">RCL</span></a>";
 
         var linked = SiteCopy.Relink(Fragment, "#/researched", held).Split('|');
 
-        // A held chart stays a chart; a stock whose page alone is held opens its page; neither held is its words alone.
+        // A held chart stays a chart; a stock whose page alone is held opens its page; neither held keeps its element.
         Assert.Equal("<a href=\"#/chart/HELD\">HELD</a>", linked[0]);
         Assert.Equal("<a href=\"#/name/PAGE\">PAGE</a>", linked[1]);
-        Assert.Equal("<span class=\"not-held\">NONE</span>", linked[2]);
+        Assert.Equal("<a class=\"not-held\">NONE</a>", linked[2]);
 
-        // A held view of the same screen is keyed as the copy keys it, and one not held is left as its words.
+        // A held view of the same screen is keyed as the copy keys it, and one not held keeps its class.
         Assert.Equal("<a class=\"sort\" href=\"#/researched?sort=stale\">Staleness</a>", linked[3]);
-        Assert.Equal("<span class=\"unlinked\">Written</span>", linked[4]);
+        Assert.Equal("<a class=\"sort not-held\">Written</a>", linked[4]);
 
         // Another screen not held, a place on the page, a source's own site and an address of the surface.
-        Assert.Equal("<span class=\"not-held\">What ran tonight</span>", linked[5]);
+        Assert.Equal("<a class=\"not-held\">What ran tonight</a>", linked[5]);
         Assert.Equal("<a href=\"#move-1\">a move</a>", linked[6]);
         Assert.Equal("<a href=\"https://www.sec.gov/x.htm\">the release</a>", linked[7]);
-        Assert.Equal("<span class=\"not-held\">proof</span>", linked[8]);
+        Assert.Equal("<a class=\"not-held\">proof</a>", linked[8]);
+
+        // A plan's row not held keeps its classes, its other attributes and its markup inside.
+        Assert.Equal("<a class=\"pl-row on not-held\" data-plan-id=\"plan-rcl\"><span class=\"pl-tk\">RCL</span></a>", linked[9]);
+        Assert.Empty(SiteCopy.LinkFaults("page", Fragment.Replace("|", string.Empty, StringComparison.Ordinal), string.Concat(linked), held));
 
         // The reports index opens every stock's page, a held chart among them, and a stock's own page never links itself.
         Assert.Equal("<a href=\"#/name/HELD\">HELD</a>", SiteCopy.Relink("<a href=\"#/chart/HELD\">HELD</a>", "#/researched", held, stockPagesFirst: true));
-        Assert.Equal("<span class=\"not-held\">Its chart</span>", SiteCopy.Relink("<a href=\"#/chart/PAGE\">Its chart</a>", "#/name/PAGE", held));
+        Assert.Equal("<a class=\"not-held\">Its chart</a>", SiteCopy.Relink("<a href=\"#/chart/PAGE\">Its chart</a>", "#/name/PAGE", held));
 
         // No link the copy does not hold carries a note, and the copy's stylesheet styles none.
         Assert.DoesNotContain(SiteCopy.NotHeld, string.Join('|', linked), StringComparison.Ordinal);
@@ -238,8 +250,9 @@ public partial class ReadSurface
 
         var copied = await SiteCopyCommand.WriteAsync(Ask, new ReadApi(store.DatabaseFile, SystemClock.ForUnitedStatesSessions()), folder.Path, said.Add);
 
-        // Nothing refused, and the store's file not touched by a byte.
+        // Nothing refused, no page apart from the app's, and the store's file not touched by a byte.
         Assert.Empty(copied.Refused);
+        Assert.Empty(copied.Faults ?? []);
         Assert.Equal(before, StoreBytesHash(store.DatabaseFile));
 
         // Home, Tonight, Past picks, Paper trading, the reports index and the universe list on each index, and the
@@ -269,6 +282,9 @@ public partial class ReadSurface
             Assert.DoesNotContain("<form", page, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain(SinglePageApp.PassHeader, page, StringComparison.Ordinal);
             Assert.DoesNotMatch("(?:action|data-[A-Za-z-]+)=\"/", page);
+
+            // Every one of tonight's plans a page links is held, so no plan's row stands unlinked.
+            Assert.DoesNotMatch("class=\"pl-row[^\"]*" + SiteCopy.NotHeldClass, page);
 
             // Every link to a screen names a route the copy holds.
             foreach (var link in SiteCopy.LinksIn(page))

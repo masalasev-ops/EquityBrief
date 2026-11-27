@@ -532,7 +532,6 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .st-level{font:600 17px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
 .st-change{font-size:12.5px;font-variant-numeric:tabular-nums}
 .st-words,.st-beneath{font-size:11.5px;color:var(--ink-2);overflow-wrap:anywhere}
-.copy-strip{margin-top:10px}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}

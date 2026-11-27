@@ -73,14 +73,17 @@ public sealed partial class MarkRenderer
     // card, the line saying its order stands and the price tonight's rules would have placed, and tonight's checklist.
     // From the operator's correction of 2026-11-24 the setups are named as the page given words them, Home's own names on Home,
     // each setup's label where none is given.
-    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<LeftOrderView>? left = null, IReadOnlyList<DecisionCardView>? again = null, Func<string, string>? setupName = null)
+    // Drawn plain for the read-only copy, a card's checks row stands empty, since the checks of the night that placed it are
+    // the method.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<LeftOrderView>? left = null, IReadOnlyList<DecisionCardView>? again = null, Func<string, string>? setupName = null, bool plain = false)
     {
         if (orders.Count == 0)
         {
             return LeftNotes(left);
         }
 
-        return Carousel(orders, index, night, again ?? [], setupName ?? SetupLabel) + LeftNotes(left);
+        return Carousel(orders, index, night, again ?? [], setupName ?? SetupLabel, plain) + LeftNotes(left);
     }
 
     static string SetupLabel(string family) => EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
@@ -132,7 +135,7 @@ public sealed partial class MarkRenderer
         return html.Append("</ul></div>").ToString();
     }
 
-    static string Carousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<DecisionCardView> again, Func<string, string> setupName)
+    static string Carousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<DecisionCardView> again, Func<string, string> setupName, bool plain)
     {
         var sorted = NearestFirst(orders);
         var rolling = sorted.Count > WaitingGridAtMost;
@@ -174,7 +177,7 @@ public sealed partial class MarkRenderer
 
         foreach (var order in sorted)
         {
-            body.Append(WaitingCard(order, night, widest, AgainOf(order, again), setupName, universeWord));
+            body.Append(WaitingCard(order, night, widest, AgainOf(order, again), setupName, universeWord, plain));
         }
 
         return body.Append("</div></div>").ToString();
@@ -211,7 +214,7 @@ public sealed partial class MarkRenderer
     // buy price; the rows of its plan, their notes on its plan on Tonight; when and by which setup it was placed and when it is
     // cancelled; the checks of the night that placed it, folded; and the way to its plan. Where its stock met the rules again
     // tonight its mark stands beside its tag, the sentence and tonight's checks standing on its card among tonight's ideas.
-    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again, Func<string, string> setupName, string universeWord)
+    static string WaitingCard(WaitingOrderView order, DateOnly? night, decimal widest, DecisionCardView? again, Func<string, string> setupName, string universeWord, bool plain)
     {
         var card = new StringBuilder();
         var family = Escaped(order.Family);
@@ -253,7 +256,7 @@ public sealed partial class MarkRenderer
         // From the operator's correction of 2026-11-25, item 7, a stock met again keeps only its mark here: the sentence saying its
         // order stands and tonight's checks stand on its card among tonight's ideas.
         // see: A stock its setup's rules met again while its order waits stands among tonight's ideas, its waiting card keeping only its mark
-        card.Append(Invariant, $"<div class=\"wo-why\" data-row=\"checks\">{ChecksFold(order)}</div>");
+        card.Append(Invariant, $"<div class=\"wo-why\" data-row=\"checks\">{(plain ? string.Empty : ChecksFold(order))}</div>");
         // From the operator's order of 2026-11-26 its plan on Tonight at its own address, the one its order's night stored.
         // see: See the plan opens the stock's plan on Tonight at its own address
         card.Append(Invariant, $"<a class=\"home-plan\" data-row=\"see-plan\" href=\"{Escaped(PlanHref(order.Ticker, universeWord))}\">See the plan</a>");
