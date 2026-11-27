@@ -33,7 +33,7 @@ public sealed partial class IndexSweepRunner
 
         Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
 
-        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var names = tape.Names;
         var every = new ConcurrentDictionary<(int From, int To), double?>();
 
         string? SectorOf(int name) => companies.Companies.GetValueOrDefault(series[name].Name.Ticker).Sector;

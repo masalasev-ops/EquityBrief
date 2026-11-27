@@ -23429,15 +23429,23 @@ Found:      the 25 Nov count read each card's take-profit column, the price the 
             273 rule and book tables the same and 31 differing with the same count of rows: every order the new build
             stored named the range and the floor as empty, `"range":null,"levelFloor":null`, beside fields the same, so
             both are now left out of a stored order where empty and an order placed with neither is stored as before.
-Tests:      1 new: the floor read, written back, refused, placed, walked and stored by hand, an order with neither stored
-            naming neither. 1 widened: the traded reward over five plans selling half first.
+            Replayed again twice, 273 of 273 the same each time. The monthly test over the long history stopped on the S&P
+            500 under main's build after 28 minutes: the long reader lays a member a history-ends mark ends and a later span
+            holds again as two series under one ticker, MXIM, and the heavyweights' read named each series by its ticker
+            alone. The sweeps' history lays such a member the same way from this move. The heavyweights' read now names each
+            leader by the series the session holds, and the sweeps' point-in-time sample reads a listed name in the part
+            holding its session; with every ticker one series both read as before.
+Tests:      2 new: the floor read, written back, refused, placed, walked and stored by hand, an order with neither stored
+            naming neither; and a member laid as two series read on a session as the part holding it. 1 widened: the
+            traded reward over five plans selling half first.
 Pins:       the same 21 rules on 11 evaluators, each version raised again to its pin.
 Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that reads it. m7 the plan's
-            walk ignoring the floor: red; m8 the reward check reading no plan selling half first: red. Filtered to their
-            tests and reverted before anything was committed.
+            walk ignoring the floor: red; m8 the reward check reading no plan selling half first: red; m9 the heavyweights'
+            read naming a leader by its ticker alone: red. Filtered to their tests and reverted before anything was
+            committed.
 Claims:     1763, none added: section 17's reward and buy range rows widened in place.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
-            before that run: all six steps, 0 warnings, 0 errors, 4081 of 4081 tests ran with none failed, migrations 0 to 172
+            before that run: all six steps, 0 warnings, 0 errors, 4082 of 4082 tests ran with none failed, migrations 0 to 172
             with none pending, schema version 172, against `data-ci` and never `data`; the phase report 68 tables, 1763
             claims, 1763 passing, none out of scope and none unexamined, 1778 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.

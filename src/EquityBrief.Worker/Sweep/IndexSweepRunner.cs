@@ -1248,7 +1248,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             return trade with { Result = result - (TradeCost.InPercent(value, entry, exit, multiple) / 100.0) };
         }
 
-        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var names = tape.Names;
         // Design (a)'s grid rebalances monthly, each setting walked at each quality and each floor.
         var settings = HeavyweightSweep.Settings.Where(setting => setting.Sector == HeavyweightSectorReturn.Members && setting.Period == HeavyweightPeriod.Month).ToArray();
         var every = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();

@@ -434,7 +434,7 @@ public static class RuleReplay
         var setting = read.Large ? HeavyweightSweep.Frozen : IndexHeavyweights.Provisional;
         var period = HeavyweightSweep.Rebalances(calendar, first, setting.Period);
         var (tape, laid) = HeavyweightSweep.Lay(read.Inputs, read.Companies, fund, period.ToHashSet(), first);
-        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var names = tape.Names;
 
         int BarOf(int name, int session) => Array.BinarySearch(read.Series[name].SessionAt, session);
 

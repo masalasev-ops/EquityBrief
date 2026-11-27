@@ -81,7 +81,7 @@ public sealed class SweepPointInTime : IComponent
         var random = new Random(seed);
         var chosen = new List<(int Name, int Bar)>();
         var taken = new HashSet<(int, int)>();
-        var byTicker = series.Select((one, at) => (one.Name.Ticker, at)).ToDictionary(pair => pair.Ticker, pair => pair.at, StringComparer.Ordinal);
+        var byTicker = series.Select((one, at) => (one.Name.Ticker, at)).GroupBy(pair => pair.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Select(pair => pair.at).ToArray(), StringComparer.Ordinal);
 
         for (var year = 0; year < SweepFigures.Years; year++)
         {
@@ -138,18 +138,27 @@ public sealed class SweepPointInTime : IComponent
             }
         }
 
+        // A member a history-ends mark lays as two series under one ticker is read in the part holding the session.
         foreach (var (ticker, session) in liveListed)
         {
-            if (!byTicker.TryGetValue(ticker, out var name))
+            if (!byTicker.TryGetValue(ticker, out var parts))
             {
                 continue;
             }
 
-            var bar = Array.FindIndex(series[name].Bars, one => one.Session == session);
-
-            if (bar >= 0 && taken.Add((name, bar)))
+            foreach (var name in parts)
             {
-                chosen.Add((name, bar));
+                var bar = Array.FindIndex(series[name].Bars, one => one.Session == session);
+
+                if (bar >= 0)
+                {
+                    if (taken.Add((name, bar)))
+                    {
+                        chosen.Add((name, bar));
+                    }
+
+                    break;
+                }
             }
         }
 
