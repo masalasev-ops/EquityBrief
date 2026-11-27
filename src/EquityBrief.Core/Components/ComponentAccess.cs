@@ -151,6 +151,10 @@ public enum Store
     RecipeReading,
     DataRequest,
 
+    // The trained partner: each run of it on an index and each cell of the tables read off it.
+    PartnerRun,
+    PartnerCell,
+
     // The researcher's asks of the local model, each setup's failure lists, and the ideas it answered with what became of each.
     ResearchAsk,
     ResearchFailure,

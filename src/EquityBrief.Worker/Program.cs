@@ -135,8 +135,28 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "idea-box" => await IdeaBoxVerb(args),
     "pullback-search" => await PullbackSearchVerb(args),
     "recipe" => await RecipeVerb(args),
+    "partner" => await PartnerVerb(args),
     _ => NoVerb(),
 };
+
+// The trained partner on '--index <code>': its rows on each side of 2015 printed, and its trees fitted and its tables written
+// only with '--word'.
+// see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019
+static async Task<int> PartnerVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("partner: name an index with '--index', GSPC, MID or SML, and '--word' to fit");
+
+        return 2;
+    }
+
+    return await new EquityBrief.Worker.Loop.PartnerDesk(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(index, args.Contains(EquityBrief.Worker.Loop.PartnerDesk.WordFlag, StringComparer.Ordinal));
+}
 
 // A reading recipe entered with '--add <line> --words <words>', its source '--source' or the operator's, refused outside the
 // grammar and what it lacks listed for the operator; or with '--run --index <code>' each recipe not yet run on the index
@@ -1510,7 +1530,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 101 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 102 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1810,6 +1830,7 @@ static int NoVerb()
         "'buy-range-widths' walks each setup whose live rule buys at the next open at the open and at each buy range's width over the long history and writes the widths table, or with '--index <code>' one index, and with '--picker' the AI stock picker's menu over every setup the price families flagged, or with '--every-member' over every member on every session the every-session table holds, registering nothing, " +
         "'idea-box --press <id>' reads the idea typed under that press of the Improvement loop page's box into one grammar line through the pinned local model under its lock, writing what it understood, " +
         "'recipe --add <line> --words <words>' enters a reading recipe, refusing a line outside the recipes' grammar and listing for the operator what it lacks, and 'recipe --run --index <code>' prints each recipe not yet run on the index and with '--word' works it over the every-session table, refusing one whose figures read a later session, " +
+        "'partner --index <code>' prints the trained partner's rows on the index, a member each month of sessions of 2005 to 2014 to learn on and of 2015 to 2018 to check on, and with '--word' fits its trees and writes its tables, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

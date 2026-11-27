@@ -23613,3 +23613,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1777 passing, none out of scope and none unexamined, 1792 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.31 - the trained partner, its first part: its rows, its fit on 2005 to 2014 and check on 2015 to 2018, and its tables, proven on constructed inputs   2026-11-27
+
+Ruled:      the operator's amendment of 2026-11-22 and its correction, Appendix Z of the plan's file, and the finishing order,
+            24.31a after 24.30a, on their word of 2026-11-27 to build the rest of the phase.
+Built:      the partner's rows, a member each 21 sessions of an index's own every-session table by 2018 with its return over the
+            21 sessions after off the long history's closes; the split, a row learning where its session falls in 2005 to 2014
+            and its month ended before 2015, checking where it falls in 2015 to 2018 and its month ended in 2018; the learned
+            score's trees fitted on the learning rows alone; the check, the top fifth's month less the bottom fifth's; which
+            readings mattered most, each set alone to its median over the learning rows, the ten largest moves of the score
+            kept; each one's fifths and the best two's grid, every cell with its cases (see: The trained partner learns each
+            index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from
+            2019); the partner desk, `partner --index` printing the rows and with `--word` alone fitting and writing; and its
+            two stores, migration 175. No rule reads the partner and no pin moves.
+Waiting:    24.31b, the fit over each index's every-session table, once the 24.19 correction has closed and on the operator's
+            word.
+Tests:      2 new: the split, the spread at +0.2, the importances at 0.4 and nothing, a reading's fifths and the grid worked by
+            hand over a constructed tree and table, a month across either boundary and a row of 2019 in neither; and over a
+            constructed store of twelve S&P 600 members and one S&P 400 member the rows the S&P 600's alone with a month's
+            return by hand, nothing fitted without the word, and with it the trees learned on 2005 to 2014 alone, rsi mattering
+            most, every cell naming a catalogue reading, the stores refusing an update and a delete, no rule's version reading it.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m24 a month across
+            2015 learned on: red; m25 a reading never set to its median: red; m26 another index's members read: red; m27 the cut
+            points read off every row: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1782, five added: the desk's catalogue and matrix rows, its two stores and section 17's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4099 of 4099 tests ran with none failed, migrations 0 to 175
+            with none pending, schema version 175, against `data-ci` and never `data`; the phase report 68 tables, 1782
+            claims, 1782 passing, none out of scope and none unexamined, 1797 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

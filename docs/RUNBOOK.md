@@ -2407,6 +2407,15 @@ dotnet run --project src/EquityBrief.Worker -- recipe --run --index SML --word
 
 A line outside the grammar is refused with why and writes nothing; a line entered before says so. A field the catalogue does not hold is listed under the Improvement loop page's Data the store lacks and the recipe is not entered; a rank within the industry is entered and waits, each member's industry as it stood being data the store does not hold, listed the same way; neither blocks anything. Without `--word` the run prints each recipe not yet run on the index, the fields it reads and the every-session table's sessions, and works nothing: that is what goes to the operator. With it, each recipe is worked over the table and written only where its figures on 20 sessions spread evenly over the index's span, worked again with every later session removed, are the same; a recipe that differs is refused with nothing of it written. No rule reads a recipe (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue).
 
+**The trained partner, from 24.31.** On one index at a time, while no night is writing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- partner --index SML
+dotnet run --project src/EquityBrief.Worker -- partner --index SML --word
+```
+
+Without `--word` it reads the index's own rows off the every-session table and the long history's closes, a member each 21 sessions from 2005 to 2018, and prints how many learn on 2005 to 2014 and how many check on 2015 to 2018, fitting nothing: that is what goes to the operator with the time it takes. With it, the learned score's trees are fitted on the learning rows alone, checked on the others, and their tables written for the AI stock picker's summaries: which readings mattered most, each one's fifths and the best two's grid, each cell with its cases. Nothing after 2018 is read and no table names a stock or a date; no rule reads the partner (see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019).
+
 **The buy range's widths, from 24.29.**
 
 ```

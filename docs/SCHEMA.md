@@ -124,6 +124,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `recipe_run` | RecipeDesk | none | none |
 | `recipe_reading` | RecipeDesk | none | none |
 | `data_request` | RecipeDesk | none | none |
+| `partner_run` | PartnerDesk | none | none |
+| `partner_cell` | PartnerDesk | none | none |
 | `research_ask` | Researcher | none | none |
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
@@ -2962,6 +2964,44 @@ Grain: one row per piece of data a recipe asked for that the store lacks, from 2
 Primary key: `id`.
 
 **Inserted by the recipe desk alone, each need once, and never updated or deleted** (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue). It blocks nothing: a recipe naming a field the store lacks is not entered, and one ranking within the industry is entered and waits. Read by the read surface for the Improvement loop page.
+
+### partner_run
+Grain: one row per fit of the trained partner on an index, from 24.31.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the fit, naming the verb `partner`, the index and its start |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `trained_rows` | INTEGER | the rows of 2005 to 2014 it learned on |
+| `checked_rows` | INTEGER | the rows of 2015 to 2018 it was checked on |
+| `spread` | REAL | the mean return over the month after of the check rows it scored in its highest fifth less those in its lowest, null where too few hold a score |
+| `model_hash` | TEXT | its trees' hash, null where too few rows learned for the trees to fit |
+| `model` | TEXT | its trees whole in the learned score's canonical form, null where none fitted |
+| `ran_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`.
+
+**Inserted by the partner desk alone, and never updated or deleted** (see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019). Read by no rule.
+
+### partner_cell
+Grain: one row per cell of a table a fit of the trained partner wrote, from 24.31.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the cell's number |
+| `run_id` | TEXT | the fit |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `kind` | TEXT | `importance`, `table` or `grid`, constrained in the table |
+| `reading` | TEXT | a reading's column in the ledger's catalogue, never a stock |
+| `fifth` | INTEGER | on an importance its rank, on a table or grid row the fifth of `reading` |
+| `second` | TEXT | on a grid the second reading's column, null otherwise |
+| `second_fifth` | INTEGER | on a grid the fifth of `second`, null otherwise |
+| `cases` | INTEGER | on an importance the check rows it was read over, otherwise the rows of 2005 to 2018 in the cell |
+| `figure` | REAL | on an importance how far the score moves when the reading alone is set to its median, otherwise the cell's mean return over the month after, null where it holds none |
+
+Primary key: `id`.
+
+**Inserted by the partner desk alone, and never updated or deleted** (see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019). It names readings and fifths alone: no stock, ticker or date, and no row of 2019 or after reaches a figure.
 
 ### research_ask
 Grain: one row per ask of the researcher's week, from 24.28.
