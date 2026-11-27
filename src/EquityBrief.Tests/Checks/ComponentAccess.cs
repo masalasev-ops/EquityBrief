@@ -330,6 +330,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Waiting variants"),
     ];
 
+    // 24.30's desk that enters the reading recipes and works them over the every-session table.
+    internal static string[] RecipeDeskRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Recipe desk"),
+        CheckReach.Key(Scope.MatrixTable, "Recipe desk"),
+    ];
+
     // The desk that admits and walks the survivors.
     internal static string[] SurvivorRows =>
     [
@@ -473,6 +480,7 @@ public partial class ComponentAccess
             .. RangeWidthRows,
             .. PullbackSearchRows,
             .. IdeaBoxRows,
+            .. RecipeDeskRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

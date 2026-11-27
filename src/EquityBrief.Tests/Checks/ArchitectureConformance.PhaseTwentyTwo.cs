@@ -263,6 +263,10 @@ public partial class ArchitectureConformance
         // And Tonight redesigned: section 15.7's rows of the tiles, every plan, a plan, a waiting order's plan and the setups'
         // table.
         .. Reading.ReadSurface.TonightPlanRows,
+
+        // And the reading recipes: the desk's catalogue and matrix rows, its four stores, section 17's row and the Loop page's
+        // card.
+        .. FixtureExpectations.RecipeRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

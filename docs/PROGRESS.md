@@ -23580,3 +23580,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the time the long run's pool and its fold scores add, unmeasured, which the monthly run's step states on its row
             on the run log; the S&P 500 swing filter's variant reading the analysts' estimates raised over 30 days, which can
             never be tested over the history, the store keeping the estimates only from 2026-10-03.
+
+### 24.30 - reading recipes, its first part: the grammar, the working, the check, the desk and the Loop page's card, proven on constructed inputs   2026-11-27
+
+Ruled:      the second brief of phase 24, item 9, and the finishing order of 2026-11-25, 24.30a after the January pin move's
+            code, on the operator's word of 2026-11-27 to build the rest of the phase, kept in
+            `prompts/2026-11-27-24.19-build-the-rest-of-the-phase.md`.
+Built:      a recipe as one line of five operations over the catalogue's fields, at most 2 deep, each span one of 5, 10, 21,
+            63, 126 and 252 sessions, two spellings one canonical line (see: A reading recipe is a closed set of operations
+            over stored fields and is kept apart from the pinned catalogue); a recipe worked over a panel of the members'
+            readings a figure at a time and a whole panel at a time, the two agreeing; the check working a recipe's figures
+            again over the panel cut after evenly spaced sessions; the recipe desk, `recipe --add` entering a line once and
+            listing once each field or piece of data it lacks, blocking nothing, and `recipe --run --index` printing what it
+            would work and, with `--word` alone, working each recipe over the every-session table and writing its figures only
+            where 20 sessions read nothing later; the four stores, migration 174; and the Loop page's card of the recipes and
+            the data the store lacks. No rule reads a recipe and no pin moves: the recipes stand beside the catalogue.
+Waiting:    24.30b, the run over the operator's store, once the 24.19 correction has closed and on their word; and the rules'
+            "also requires" taught to read a recipe with its replay over two copies, in the first pin move it is ready for.
+Tests:      5 new: each operation worked by hand at a constructed session and the whole working agreeing with each figure
+            alone; the grammar's canonical line and its refusals, a field the store lacks named; a figure reading the session
+            after its own failing the check; the desk entering, listing and running over a constructed store, a working that
+            peeks refused with nothing written and a change's 50 figures written by hand, the tables refusing an update and a
+            delete; and the Loop page's card read back over a constructed store.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m20 the check
+            never refusing: red; m21 a span off the list accepted: red; m22 a field the store lacks read as if held: red; m23
+            a need listed a second time: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1777, eight added: the desk's catalogue and matrix rows, its four stores, section 17's row and the Loop page's card.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4097 of 4097 tests ran with none failed, migrations 0 to 174
+            with none pending, schema version 174, against `data-ci` and never `data`; the phase report 68 tables, 1777
+            claims, 1777 passing, none out of scope and none unexamined, 1792 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

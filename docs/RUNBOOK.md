@@ -2397,6 +2397,16 @@ dotnet run --project src/EquityBrief.Worker -- idea-box --press <id>
 
 A press read already is not asked again. An idea not read says why; type it again in other words (see: An idea typed in the box is read into one grammar line by the local model and joins the week's tests only on the operator's confirm).
 
+**The reading recipes, from 24.30.** A recipe is one line over the catalogue's fields: `change(x, n)`, `ratio(x, y)`, `average(x, n)`, `rank(x, index)` or `rank(x, industry)`, and `history(x, n)`, at most two deep, each span one of 5, 10, 21, 63, 126 and 252 sessions. Enter one, and list what a run would work on an index, while no night is writing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- recipe --add "rank(change(rsi, 21), index)" --words "rsi's month change against the index"
+dotnet run --project src/EquityBrief.Worker -- recipe --run --index SML
+dotnet run --project src/EquityBrief.Worker -- recipe --run --index SML --word
+```
+
+A line outside the grammar is refused with why and writes nothing; a line entered before says so. A field the catalogue does not hold is listed under the Improvement loop page's Data the store lacks and the recipe is not entered; a rank within the industry is entered and waits, each member's industry as it stood being data the store does not hold, listed the same way; neither blocks anything. Without `--word` the run prints each recipe not yet run on the index, the fields it reads and the every-session table's sessions, and works nothing: that is what goes to the operator. With it, each recipe is worked over the table and written only where its figures on 20 sessions spread evenly over the index's span, worked again with every later session removed, are the same; a recipe that differs is refused with nothing of it written. No rule reads a recipe (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue).
+
 **The buy range's widths, from 24.29.**
 
 ```

@@ -4400,7 +4400,7 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
 
     // The notebook beneath the page's own regions, its ideas on the index the page reads and the operator's own.
     // see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
-    var notebook = page.NeverStuckRegion(await read.NeverStuckAsync()) + page.ResearchRegion(reading, await read.ResearchAsync(reading.Code)) + page.IdeaBoxRegion(await read.IdeaBoxAsync()) + page.NotebookRegion(reading, await read.NotebookAsync(reading.Code)) + page.BuyRangeRegion(reading, await read.BuyRangesAsync(reading.Code)) + page.PullbackSearchRegion(reading, await read.PullbackSearchAsync(reading.Code));
+    var notebook = page.NeverStuckRegion(await read.NeverStuckAsync()) + page.ResearchRegion(reading, await read.ResearchAsync(reading.Code)) + page.IdeaBoxRegion(await read.IdeaBoxAsync()) + page.NotebookRegion(reading, await read.NotebookAsync(reading.Code)) + page.RecipesRegion(reading, await read.RecipesAsync(reading.Code)) + page.BuyRangeRegion(reading, await read.BuyRangesAsync(reading.Code)) + page.PullbackSearchRegion(reading, await read.PullbackSearchAsync(reading.Code));
 
     // The survivors on the index, a registered one's record carried across its registration: its queued picks and its
     // variant's closed trades over the nights it shares with its running revision, as the case page reads them.

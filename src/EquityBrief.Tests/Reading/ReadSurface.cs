@@ -265,6 +265,9 @@ public partial class ReadSurface
             // The idea box on the Improvement loop page.
             .. IdeaBoxRows,
 
+            // The reading recipes on the Improvement loop page.
+            .. RecipeRows,
+
             // Never stuck on the Improvement loop page.
             .. NeverStuckRows,
 

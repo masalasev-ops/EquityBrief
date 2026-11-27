@@ -120,6 +120,10 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `survivor_pick` | SurvivorDesk | none | none |
 | `waiting_variant` | CandidateRegistrar | none | none |
 | `waiting_variant_trade` | WaitingVariants | none | none |
+| `recipe` | RecipeDesk | none | none |
+| `recipe_run` | RecipeDesk | none | none |
+| `recipe_reading` | RecipeDesk | none | none |
+| `data_request` | RecipeDesk | none | none |
 | `research_ask` | Researcher | none | none |
 | `research_failure` | Researcher | none | none |
 | `research_idea` | Researcher | none | none |
@@ -2890,6 +2894,74 @@ Grain: one row per waiting variant and order of its live rule placed after its `
 Primary key: `waiting_id`, `session_date`, `ticker`.
 
 **Inserted by the waiting variants step alone, and never updated or deleted** (see: A background variant a full family has no room for is walked each night from its live rule's own orders and registers in the first slot that frees). Each night the step reads the live rule's orders from `rule_pick`, `family_trade`, `index_rule_trade` or `dip_trade` by its name, walks each with the floor under its level through the plan walk the families use and writes it once it has ended; an order still waiting or held is written on a later night. Read by the read surface for the Run page alone, and drawn among no buys anywhere.
+
+### recipe
+Grain: one row per reading recipe entered, from 24.30.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the recipe's number |
+| `line` | TEXT | its canonical line, unique |
+| `words` | TEXT | its plain words |
+| `source` | TEXT | who entered it: `the operator`, `the researcher` or `The AI stock picker` |
+| `entered_at` | TEXT | UTC instant it was entered |
+| `run_id` | TEXT | the entry that wrote it |
+
+Primary key: `id`.
+
+**Inserted by the recipe desk alone, a line once, and never updated or deleted** (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue). Read by the recipe desk and by the read surface for the Improvement loop page, and by no rule.
+
+### recipe_run
+Grain: one row per recipe and index a run has worked, from 24.30.
+
+| Column | Type | Notes |
+|---|---|---|
+| `recipe_id` | INTEGER | the recipe |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `figures` | INTEGER | the figures the run wrote |
+| `members` | INTEGER | the members holding one |
+| `first_session` | TEXT | the first session holding one, null where none does |
+| `last_session` | TEXT | the last session holding one, null where none does |
+| `checked` | INTEGER | the sessions the run worked again with every later session removed |
+| `ran_at` | TEXT | UTC instant of the run's last write for the recipe |
+| `run_id` | TEXT | the run |
+
+Primary key: `recipe_id`, `index_code`.
+
+**Inserted by the recipe desk alone as a run's last write for the recipe, and never updated or deleted** (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue). A recipe holding a row on an index is not run there again.
+
+### recipe_reading
+Grain: one row per recipe, index, session and member holding a figure of it, from 24.30.
+
+| Column | Type | Notes |
+|---|---|---|
+| `recipe_id` | INTEGER | the recipe |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the session |
+| `ticker` | TEXT | the member |
+| `value` | REAL | the figure, worked from the session and those before it alone |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `recipe_id`, `index_code`, `session_date`, `ticker`. A table without a row id.
+
+**Inserted by the recipe desk alone, and never updated or deleted** (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue). Worked over `session_reading`'s lists alone, a session and the sessions before it; written only where the figures of the sessions a run checks, spread evenly over the index's span, worked again with every later session removed, are the same. Read by no rule: its figures are a reading on test.
+
+### data_request
+Grain: one row per piece of data a recipe asked for that the store lacks, from 24.30.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the request's number |
+| `need` | TEXT | what it needs, unique: `the field <name>` or `each member's industry as it stood on each session` |
+| `line` | TEXT | the line that asked |
+| `words` | TEXT | that line's plain words |
+| `source` | TEXT | who asked |
+| `entered_at` | TEXT | UTC instant it was listed |
+| `run_id` | TEXT | the entry that listed it |
+
+Primary key: `id`.
+
+**Inserted by the recipe desk alone, each need once, and never updated or deleted** (see: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue). It blocks nothing: a recipe naming a field the store lacks is not entered, and one ranking within the industry is entered and waits. Read by the read surface for the Improvement loop page.
 
 ### research_ask
 Grain: one row per ask of the researcher's week, from 24.28.
