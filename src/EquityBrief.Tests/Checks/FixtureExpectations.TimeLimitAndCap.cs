@@ -301,6 +301,16 @@ public partial class FixtureExpectations
         Assert.Equal(94, order.LevelFloor);
         Assert.Null(PlanHook.OrderOf(floored with { LevelFloor = null }, 100, new PlanLevels([], [], []), null, 2, 90, new PlanSale(110, null, []), 63)!.LevelFloor);
 
+        // Stored with its floor, and an order with neither a floor nor a range stored as it was before the move, naming
+        // neither, so a replay reads its row unchanged; read back the same.
+        var unfloored = order with { LevelFloor = null };
+
+        Assert.Contains("\"levelFloor\":94", order.Json(), StringComparison.Ordinal);
+        Assert.DoesNotContain("\"levelFloor\"", unfloored.Json(), StringComparison.Ordinal);
+        Assert.DoesNotContain("\"range\"", unfloored.Json(), StringComparison.Ordinal);
+        Assert.Equal(94, PlanOrder.FromJson(order.Json())!.LevelFloor);
+        Assert.Null(PlanOrder.FromJson(unfloored.Json())!.LevelFloor);
+
         // Walked from the night's bar 0. An open of 95 under the level and above the floor buys there. An open of 93 under the
         // floor buys nothing, where the same order with no floor buys at 93. An open of 99 with a low of 97 fills at the level,
         // 98. Opens over the level that never trade down to it within the window: not bought, as before.

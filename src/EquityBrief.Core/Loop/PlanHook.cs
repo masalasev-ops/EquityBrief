@@ -43,11 +43,14 @@ public sealed record PlanOrder(
     // inside it, at its ceiling where the price comes back to it within its window, and not bought under its floor; none for an
     // order buying at whatever price it opens.
     // see: Every buy at the next open carries a range from its last close, its widths chosen by test on the early years for each index
+    // Left out of the stored order where none is set, so an order placed with neither is stored as it was before the move.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public BuyRange? Range { get; init; }
 
     // On the operator's answers of 2026-11-27, item 2, the open under which an order at a level buys nothing, its typical daily
     // moves under the level in prices; none for an order that fills at any open under its level.
     // see: An order at a level buys nothing on an open two typical days under its price in a variant of its own, and a plan selling half first is checked at its first take-profit
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public double? LevelFloor { get; init; }
 
     static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };

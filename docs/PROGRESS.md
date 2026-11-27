@@ -23425,8 +23425,12 @@ Found:      the 25 Nov count read each card's take-profit column, the price the 
             risk, so a close reaching it sells everything there, 7 of them under 1 times the risk. A plan selling
             half at 1.5 times its risk reads 1.5 at most, so the check at 2 times refuses every pick of the S&P 400's and
             600's pullback plans. Seven of the twelve price families hold nine rules, so the floor variant has room on five.
-Tests:      1 new: the floor read, written back, refused, placed and walked by hand. 1 widened: the traded reward over five
-            plans selling half first.
+            The first replay over two copies, main's 5322497a against this branch's 2b63bf0e from 2026-11-16, kept 242 of
+            273 rule and book tables the same and 31 differing with the same count of rows: every order the new build
+            stored named the range and the floor as empty, `"range":null,"levelFloor":null`, beside fields the same, so
+            both are now left out of a stored order where empty and an order placed with neither is stored as before.
+Tests:      1 new: the floor read, written back, refused, placed, walked and stored by hand, an order with neither stored
+            naming neither. 1 widened: the traded reward over five plans selling half first.
 Pins:       the same 21 rules on 11 evaluators, each version raised again to its pin.
 Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that reads it. m7 the plan's
             walk ignoring the floor: red; m8 the reward check reading no plan selling half first: red. Filtered to their
