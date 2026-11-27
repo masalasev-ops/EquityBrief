@@ -135,7 +135,7 @@ public sealed record RuleHooks(
         "src/EquityBrief.Worker/Levels/LevelBuilder.cs",
     ];
 
-    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", "src/EquityBrief.Core/Loop/TakeProfit.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
+    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", "src/EquityBrief.Core/Loop/TakeProfit.cs", "src/EquityBrief.Core/Loop/BuyRanges.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
 
     public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null && TimeLimit is null && PerNight is null && RewardTraded is null;
 

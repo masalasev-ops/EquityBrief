@@ -1342,6 +1342,25 @@ public static class RuleWording
             FormattableString.Invariant($"the reward check on the traded plan's own stop and take-profit, at {times.ToString("0.##", CultureInfo.InvariantCulture)} times its risk");
     }
 
+    // BuyRanges.cs, from the January pin move a file the rules' plans read.
+    public static class BuyRanges
+    {
+        public const string PickerRun = "provisional, the picker's menu over every setup the price families flagged";
+
+        public const string EveryMemberRun = "the picker's menu over every member on every session";
+
+        public const string NotBoughtAbove = "not bought: opened above its range";
+
+        public const string NotBoughtBelow = "not bought: opened below its range";
+
+        public static string Widths(double ceiling, double? floor) => string.Create(
+            CultureInfo.InvariantCulture,
+            $"a ceiling {ceiling:0.##} typical {(ceiling == 1 ? "day" : "days")} above the last close and {(floor is { } under ? string.Create(CultureInfo.InvariantCulture, $"a floor {under:0.##} typical {(under == 1 ? "day" : "days")} under it") : "no floor")}");
+
+        public static string Above(string ceiling, int sessions) =>
+            string.Create(CultureInfo.InvariantCulture, $"Opens above {ceiling}: waits up to {sessions} days for the price to come back to {ceiling}, then not bought.");
+    }
+
     // TreeScore.cs
     public static class TreeScore
     {
