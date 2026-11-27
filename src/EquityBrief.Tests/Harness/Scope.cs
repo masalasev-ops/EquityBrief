@@ -4186,6 +4186,22 @@ internal static class Scope
             Verdict.Pass,
             "the split, the check's spread at +0.2, the importances at 0.4 and nothing, a reading's fifths and the grid worked by hand over a constructed tree and table, a month across either boundary and a row of 2019 in neither, and each figure read off the document against its constant",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Reviewer desk")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the three pick tables, the every-session table, both ledgers and the learned scores it reads and the reviews and the run log it writes, each reconciled against the row; over a constructed store the two listed pullbacks and 100 drawn members each written once with the $1 the 40 cases closed before the night made, the five closing on the night never counted, a pick under another family's listing left out, nothing written without the word and a second review of the night writing nothing",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Reviewer desk")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Reviews")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and a night's picks and drawn members written once over a constructed store",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The reviewer")] = new Scoped(
+            Verdict.Pass,
+            "a pick's 40 cases and its line worked by hand, the ten closing on or after the night and its own stock's case never counted, fewer than 30 reading its line, the draw of 100 repeated from its seed, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Survivor desk")] = new Scoped(
             Verdict.Pass,
             "the class declares the survivors' three tables, the setups, setup nights, bars and indicators it reads and the run log it writes, each reconciled against the row, and over a constructed store a queued survivor is walked to the newest night, its pick stored once and its state written once for its reason",

@@ -206,6 +206,9 @@ public class SchemaColumns
     // 24.31's trained partner's fits and the cells of the tables read off them.
     internal static string[] PartnerStoreRows => [.. new[] { "Partner runs", "Partner tables" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // 24.36's reviews of each night's picks and its random draw.
+    internal static string[] ReviewStoreRows => [CheckReach.Key(Scope.StoresTable, "Reviews")];
+
     // The ideas that passed, their standing and the picks of those queued.
     internal static string[] SurvivorStoreRows => [.. new[] { "Survivors", "Survivor states", "Survivor picks" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
@@ -376,6 +379,7 @@ public class SchemaColumns
             .. WaitingVariantStoreRows,
             .. RecipeStoreRows,
             .. PartnerStoreRows,
+            .. ReviewStoreRows,
             .. ResearchStoreRows,
             .. BuyRangeStoreRows,
             .. IdeaBoxStoreRows,

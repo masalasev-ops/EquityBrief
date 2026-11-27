@@ -23645,3 +23645,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1782 passing, none out of scope and none unexamined, 1797 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.36 - the reviewer, its first part: each pick matched among the past cases that closed before its night, and the night's random draw, proven on constructed inputs   2026-11-27
+
+Ruled:      the second brief of phase 24, item 6, and the finishing order, 24.36a after 24.31a, on the operator's word of
+            2026-11-27 to build the rest of the phase.
+Built:      the reviewer by code, no model and no request: a pick matched among its family's settled setups on the index from
+            the long ledger to 2018 and the standing ledger from 2019 that closed before its night, on the readings the
+            family's newest learned score weighs most as the cards match, at most 250, its own stock left out and no figure
+            under 30; its line, "Past cases most like this one: ..." or "Too few past cases like this one to count.", naming
+            no stock or date; the night's draw of 100 members a family by a hash of the index, the night, the family and the
+            stock, matched the same way (see: The reviewer matches each pick among the past cases like it that closed before
+            its night, and a seeded draw of the night's members the same way); the reviewer desk, `review --index --night`
+            printing and with `--word` alone writing each pick and drawn member once over the three pick tables; and its
+            store, migration 176. No rule reads a review and no pin moves.
+Waiting:    24.36b, once the 24.19 correction has closed and on the operator's word: the run over the store; the step's place by
+            its measured time; the card's line read back at 1440 and a true 390; the real result beside the expected one; the
+            survivors', books' and picker's picks; and the picker's sheet line walked under each version's own plan.
+Tests:      2 new: a pick's 40 cases and its line by hand, the cases closing on or after the night and its own stock's never
+            counted, fewer than 30 reading its line, a half losing read at nothing, the draw of 100 repeated from its seed and
+            the random mean; and over a constructed store the two listed pullbacks and 100 drawn members written once with the
+            $1 the closed cases made, the five closing on the night never counted, a pick under another listing left out,
+            nothing without the word, a second review writing nothing, the store refusing an update and a delete.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new behaviour taken back at the one place that decides it. m28 a case closing
+            on the night counted: red; m29 the draw ordered by code alone: red; m30 a reviewed night written again: red; m31
+            every state of pick read: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1786, four added: the desk's catalogue and matrix rows, its store and section 17's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4101 of 4101 tests ran with none failed, migrations 0 to 176
+            with none pending, schema version 176, against `data-ci` and never `data`; the phase report 68 tables, 1786
+            claims, 1786 passing, none out of scope and none unexamined, 1801 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

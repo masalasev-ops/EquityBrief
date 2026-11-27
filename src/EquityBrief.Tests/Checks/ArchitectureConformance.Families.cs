@@ -458,9 +458,10 @@ public partial class ArchitectureConformance
         // matrix rows, section 17's grid and the Loop page's card, and 1752 with the correction's second part's section 17 row, and 1753 with the store of the sessions held none
         // of the renames and spans, and 1754 with the picker's page one night at a time, and 1759 with 24.46's five rows of
         // Tonight redesigned, and 1763 with the January pin move's four section 17 rows, and 1769 with its background
-        // variants' six rows, and 1777 with 24.30's reading recipes' eight, and 1782 with 24.31's trained partner's five.
+        // variants' six rows, and 1777 with 24.30's reading recipes' eight, and 1782 with 24.31's trained partner's five, and
+        // 1786 with 24.36's reviewer's four.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1782),
+            (789, 853, 6, 4, 855, 876, 1786),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

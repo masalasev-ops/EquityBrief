@@ -155,6 +155,9 @@ public enum Store
     PartnerRun,
     PartnerCell,
 
+    // The reviewer: what history expected of each pick of a night and of each member its random draw took.
+    Review,
+
     // The researcher's asks of the local model, each setup's failure lists, and the ideas it answered with what became of each.
     ResearchAsk,
     ResearchFailure,

@@ -2416,6 +2416,15 @@ dotnet run --project src/EquityBrief.Worker -- partner --index SML --word
 
 Without `--word` it reads the index's own rows off the every-session table and the long history's closes, a member each 21 sessions from 2005 to 2018, and prints how many learn on 2005 to 2014 and how many check on 2015 to 2018, fitting nothing: that is what goes to the operator with the time it takes. With it, the learned score's trees are fitted on the learning rows alone, checked on the others, and their tables written for the AI stock picker's summaries: which readings mattered most, each one's fifths and the best two's grid, each cell with its cases. Nothing after 2018 is read and no table names a stock or a date; no rule reads the partner (see: The trained partner learns each index's members over 2005 to 2014 and is checked on 2015 to 2018, and its tables name no stock and read nothing from 2019).
 
+**The reviewer, from 24.36.** For one index and one night, once the night has finished:
+
+```
+dotnet run --project src/EquityBrief.Worker -- review --index SML --night 2026-11-20
+dotnet run --project src/EquityBrief.Worker -- review --index SML --night 2026-11-20 --word
+```
+
+Without `--word` it prints the night's picks by family and the members holding the night's readings, and writes nothing. With it, each pick is matched among its family's settled setups on the index from both ledgers that closed before the night, on the readings the family's newest learned score weighs most, at most 250 and no figure under 30, and 100 of the night's members drawn by a hash of the index, the night, the family and the stock are matched the same way; each is written once, and a night reviewed already writes nothing again. Where the step runs each night, the night's last or the off-peak run's first, is set at 24.36b by its time on the operator's store (see: The reviewer matches each pick among the past cases like it that closed before its night, and a seeded draw of the night's members the same way).
+
 **The buy range's widths, from 24.29.**
 
 ```
