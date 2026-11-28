@@ -202,6 +202,9 @@ public partial class FixtureExpectations
             // Section 17's row of the second sources' fill's sessions, bands and Tiingo's limits.
             .. SecondSourceClaims,
 
+            // Section 17's row of the check's settling's bands.
+            .. CheckSettlingClaims,
+
             // Section 17's row of the reviewer's cases and its random draw.
             .. ReviewerClaims,
 

@@ -11,22 +11,25 @@ namespace EquityBrief.Worker.History;
 
 // The second sources' fill, by hand: every code's member sessions on the three indices that hold no price inside its own
 // prices, as the long history's lists read them, cut into runs back to back on the calendar and asked of Yahoo, then
-// Stooq, then Tiingo, the code holding most such sessions first; a run is kept from the first source whose answer the
+// Tiingo, the code holding most such sessions first; a run is kept from the first source whose answer the
 // judge passes, at the store's scale with the source and the ratio beside it, and a run no source fills is written as
 // such with each source's reason and stays as it was. Tiingo is asked on the operator's key within 50 requests an hour,
 // 1,000 a day and 500 codes a month, counted off the asks the store records; a code past the month's is left for the
 // next month and named. Without `--word` it states what it would ask and asks nothing.
 // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
-public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondSourceFeed feed, bool tiingo, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
+public sealed partial class SecondSourceFill(string databaseFile, IClock clock, ISecondSourceFeed feed, bool tiingo, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
 {
     public const string Stage = "second-source-fill";
 
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.LongFillBar, Touch.Insert),
+            new StoreTouch(Store.LongFillBar, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LongFillHole, Touch.Read | Touch.Insert),
             new StoreTouch(Store.SourceAsk, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.UnreliableMark, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.PriceCheck, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.CheckSettled, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.SecondSourcePrices]);
@@ -39,7 +42,9 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
     // What became of a hole: the source that filled it, none where none did, and why.
     public sealed record Outcome(string Ticker, DateOnly First, DateOnly Last, int Sessions, string? Source, string Why);
 
-    public async Task<IReadOnlyList<Outcome>> RunAsync(bool word, TextWriter output, CancellationToken cancellation = default)
+    // With `again` only the codes named are asked, their holes a run before left open asked once more.
+    // see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
+    public async Task<IReadOnlyList<Outcome>> RunAsync(bool word, TextWriter output, IReadOnlySet<string>? again = null, CancellationToken cancellation = default)
     {
         var runId = FormattableString.Invariant($"second-source-fill-{clock.UtcNow:yyyyMMddTHHmmssZ}-{Guid.NewGuid():N}")[..55];
         var startedAt = Instant(clock.UtcNow);
@@ -68,11 +73,11 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
         var unfilled = await UnfilledAsync(cancellation);
         var codes = new List<(string Ticker, SweepBar[] Series, IReadOnlyList<IReadOnlyList<DateOnly>> Runs)>();
 
-        foreach (var (ticker, days) in missing)
+        foreach (var (ticker, days) in missing.Where(code => again is null || again.Contains(code.Key)))
         {
             var (series, calendar) = await reader.CodeSeriesAsync(ticker, through, cancellation);
             var runs = SecondSources.Runs(SecondSources.Holes(series, [.. days]), calendar)
-                .Where(run => !unfilled.Contains((ticker, run[0], run[^1])))
+                .Where(run => again is not null || !unfilled.Contains((ticker, run[0], run[^1])))
                 .ToArray();
 
             if (runs.Length > 0)
@@ -90,7 +95,7 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
             output.WriteLine(FormattableString.Invariant($"{Stage}: {Named(index)}: {on.Length} code(s) with {on.Sum(code => code.Runs.Count)} hole(s) of {on.Sum(code => code.Runs.Sum(run => run.Count))} member session(s) inside their own prices"));
         }
 
-        output.WriteLine(FormattableString.Invariant($"{Stage}: {codes.Count} code(s) across the three, {codes.Sum(code => code.Runs.Sum(run => run.Count))} session(s); at most {codes.Count} request(s) of Yahoo, {codes.Count} of Stooq and {codes.Count * 2} of Tiingo{(tiingo ? string.Empty : ", which is not asked: no key is set")}, Tiingo within {TiingoAllowance.PerHour} an hour, {TiingoAllowance.PerDay} a day and {TiingoAllowance.CodesPerMonth} codes a month"));
+        output.WriteLine(FormattableString.Invariant($"{Stage}: {codes.Count} code(s) across the three, {codes.Sum(code => code.Runs.Sum(run => run.Count))} session(s); at most {codes.Count} request(s) of Yahoo and {codes.Count * 2} of Tiingo{(tiingo ? string.Empty : ", which is not asked: no key is set")}, Tiingo within {TiingoAllowance.PerHour} an hour, {TiingoAllowance.PerDay} a day and {TiingoAllowance.CodesPerMonth} codes a month"));
 
         foreach (var code in codes)
         {
@@ -393,7 +398,7 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
         await insert.ExecuteNonQueryAsync(cancellation);
     }
 
-    // The holes asked before that no source filled, each asked again only once a later run is given them by hand.
+    // The holes asked before that no source filled, each asked again only where a later run names its code.
     async Task<HashSet<(string, DateOnly, DateOnly)>> UnfilledAsync(CancellationToken cancellation)
     {
         var unfilled = new HashSet<(string, DateOnly, DateOnly)>();
@@ -424,6 +429,24 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
 
     // A ratio written to ten places with its trailing zeros taken off.
     const string RatioForm = "0.##########";
+
+    // The check's settling's writes: each difference, wild close or stretch settled, each correction of a stored price, each
+    // mark and each close held to a source.
+    const string InsertSettled = @"
+        INSERT OR IGNORE INTO check_settled (run_id, index_code, kind, family, ticker, session_date, reading, table_value, other_value, grouped, outcome, source)
+        VALUES ($run_id, $index, $kind, $family, $ticker, $session, $reading, $table, $other, $grouped, $outcome, $source);";
+
+    const string InsertCorrection = @"
+        INSERT OR IGNORE INTO long_fill_bar (ticker, session_date, open, high, low, close, raw_close, volume, source, ratio, volume_proportion, kind, run_id)
+        VALUES ($ticker, $session, $open, $high, $low, $close, $raw, $volume, $source, $ratio, '1', 'correction', $run_id);";
+
+    const string InsertMark = @"
+        INSERT OR IGNORE INTO unreliable_mark (run_id, ticker, first_session, last_session, reading, kind, why, marked_at)
+        VALUES ($run_id, $ticker, $first, $last, $reading, $kind, $why, $at);";
+
+    const string InsertCheck = @"
+        INSERT OR IGNORE INTO price_check (run_id, purpose, index_code, ticker, session_date, stored_close, source, source_close, scaled_close, agrees)
+        VALUES ($run_id, $purpose, $index, $ticker, $session, $stored, $source, $own, $scaled, $agrees);";
 
     static string Named(string index) => index switch
     {

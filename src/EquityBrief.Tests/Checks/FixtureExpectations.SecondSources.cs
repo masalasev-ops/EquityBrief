@@ -10,12 +10,14 @@ using Xunit;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, the 24.19 closing plan of 2026-11-27: a hole inside a code's own prices is asked of Yahoo, then Stooq,
-// then Tiingo, and kept from the first source whose closes hold one ratio to the store's within 0.1% over the twenty sessions
-// the store holds on each side and whose volumes are equal or in one proportion, at the source's prices times that ratio; a
-// hole no source fills stays as it was; every ask is written, Tiingo's within its limits; and the long history's reader reads
-// a kept session only where the code holds no price, each worked by hand over constructed series and a constructed store.
+// fixture-expectations, the 24.19 closing plan of 2026-11-27: a hole inside a code's own prices is asked of Yahoo, then
+// Tiingo, and kept from the first source whose closes hold one ratio to the store's within 0.25% over the twenty sessions
+// the store holds on each side and whose volumes are equal or in one proportion within 0.5%, at the source's prices times
+// that ratio; a hole no source fills stays as it was and is asked again only where a run names its code; every ask is
+// written, Tiingo's within its limits; and the long history's reader reads a kept session only where the code holds no price,
+// each worked by hand over constructed series and a constructed store.
 // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
+// see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
 public partial class FixtureExpectations
 {
     // The store's view of the second sources' fill: the stores it writes and section 17's row of its bands and limits.
@@ -54,21 +56,22 @@ public partial class FixtureExpectations
         Assert.Contains("kept at 2 the store's over 40 session(s)", judgement.Why, StringComparison.Ordinal);
     }
 
-    // Each refusal on both sides of its line: one close around the hole 0.09% off the ratio keeps it and 0.11% refuses it; a
-    // volume off its proportion by 0.2% refuses it; a source missing one of the hole's sessions or one around it refuses it;
-    // and a hole at the store's first session has no side to hold to.
+    // Each refusal on both sides of its line: one close around the hole 0.24% off the ratio keeps it and 0.26% refuses it; a
+    // volume off its proportion by 0.4% keeps it and by 0.6% refuses it; a source missing one of the hole's sessions or one
+    // around it refuses it; and a hole at the store's first session has no side to hold to.
     [Fact]
     public void AHoleIsRefusedWhereTheClosesHoldNoOneRatioTheVolumesNoOneProportionOrTheSourceLacksASession()
     {
         var stored = StoredAround(30, 31);
         DateOnly[] hole = [FillDays[30], FillDays[31]];
 
-        Assert.Equal(2, SecondSources.Judge(stored, hole, HalfScale(at => at == 12 ? StoredClose(at) / 2 * 1.0009m : StoredClose(at) / 2)).Kept.Count);
-        Assert.Contains("past the 0.1% that makes one ratio", SecondSources.Judge(stored, hole, HalfScale(at => at == 12 ? StoredClose(at) / 2 * 1.0011m : StoredClose(at) / 2)).Why, StringComparison.Ordinal);
+        Assert.Equal(2, SecondSources.Judge(stored, hole, HalfScale(at => at == 12 ? StoredClose(at) / 2 * 1.0024m : StoredClose(at) / 2)).Kept.Count);
+        Assert.Contains("past the 0.25% that makes one ratio", SecondSources.Judge(stored, hole, HalfScale(at => at == 12 ? StoredClose(at) / 2 * 1.0026m : StoredClose(at) / 2)).Why, StringComparison.Ordinal);
+        Assert.Equal(2, SecondSources.Judge(stored, hole, [.. HalfScale().Select((bar, at) => at == 40 ? bar with { Volume = 502 } : bar)]).Kept.Count);
 
-        var offVolume = HalfScale().Select((bar, at) => at == 40 ? bar with { Volume = 501 } : bar).ToArray();
+        var offVolume = HalfScale().Select((bar, at) => at == 40 ? bar with { Volume = 503 } : bar).ToArray();
 
-        Assert.Contains("apart in proportion", SecondSources.Judge(stored, hole, offVolume).Why, StringComparison.Ordinal);
+        Assert.Contains("past the 0.5% that makes one", SecondSources.Judge(stored, hole, offVolume).Why, StringComparison.Ordinal);
         Assert.Contains("holds 1 of the hole's 2", SecondSources.Judge(stored, hole, [.. HalfScale().Where(bar => bar.Session != FillDays[31])]).Why, StringComparison.Ordinal);
         Assert.Contains("holds 39 of the store's 40", SecondSources.Judge(stored, hole, [.. HalfScale().Where(bar => bar.Session != FillDays[50])]).Why, StringComparison.Ordinal);
         Assert.Contains("no session on one side", SecondSources.Judge(StoredAround(0), [FillDays[0]], HalfScale()).Why, StringComparison.Ordinal);
@@ -128,6 +131,11 @@ public partial class FixtureExpectations
         Assert.Empty(SecondSources.YahooChart("""{"chart":{"result":null,"error":{"code":"Not Found"}}}"""));
         Assert.Equal([new SourceBar(new DateOnly(2023, 4, 6), 40.1m, 41m, 39.9m, 40.5m, 123456, null)], SecondSources.StooqDaily("Date,Open,High,Low,Close,Volume\n2023-04-06,40.1,41,39.9,40.5,123456\n"));
         Assert.Empty(SecondSources.StooqDaily("No data"));
+        Assert.Null(SecondSources.StooqRefusal("Date,Open,High,Low,Close,Volume\n2023-04-06,40.1,41,39.9,40.5,123456\n"));
+        Assert.Equal("Stooq asked for its API key and sent no daily file", SecondSources.StooqRefusal("<html><body>Get your apikey: open https://stooq.com/q/d/?s=aapl.us&get_apikey</body></html>"));
+        Assert.Equal("Stooq's daily limit is spent and it sent no daily file", SecondSources.StooqRefusal("Exceeded the daily hits limit"));
+        Assert.Equal("Stooq holds no data for the symbol", SecondSources.StooqRefusal("No data"));
+        Assert.Equal("Stooq sent no daily file", SecondSources.StooqRefusal("<html></html>"));
         Assert.Equal(
             [new SourceBar(new DateOnly(2023, 4, 6), 40.1m, 41m, 39.9m, 40.5m, 123456, 38.25m)],
             SecondSources.TiingoPrices("""[{"date":"2023-04-06T00:00:00.000Z","close":40.5,"high":41.0,"low":39.9,"open":40.1,"volume":123456,"adjClose":38.25}]"""));
@@ -157,11 +165,11 @@ public partial class FixtureExpectations
     }
 
     // Over a constructed store: HOL on the S&P 400 misses sessions 30 and 31 inside its own prices. Yahoo holds nothing,
-    // Stooq's closes part from the store's on one session, and Tiingo, its meta covering the hole, holds them at half scale:
-    // the two are kept from Tiingo at twice its prices, every ask is written, the reader now reads HOL's two sessions, the
-    // lists name no session of HOL's without a price, a second run asks nothing, and the tables refuse an update and a
-    // delete. Without a key Tiingo is asked nothing, the hole is written open with each source's reason, and a run after it
-    // asks nothing again for that hole.
+    // Stooq is never asked, and Tiingo, its meta covering the hole, holds them at half scale: the two are kept from Tiingo at
+    // twice its prices, every ask is written, the reader now reads HOL's two sessions, the lists name no session of HOL's
+    // without a price, a second run asks nothing, and the tables refuse an update and a delete. Without a key Tiingo is asked
+    // nothing, the hole is written open with each source's reason, a run after it asks nothing again for that hole, one
+    // naming another code asks nothing, and one naming HOL asks its hole once more.
     [Fact]
     public async Task TheFillAsksEachSourceInTurnKeepsTheFirstThatHoldsTheHoleAndWritesEveryAsk()
     {
@@ -178,8 +186,8 @@ public partial class FixtureExpectations
         var outcome = Assert.Single(outcomes);
 
         Assert.Equal(("HOL", FillDays[30], FillDays[31], 2, (string?)SecondSources.Tiingo), (outcome.Ticker, outcome.First, outcome.Last, outcome.Sessions, outcome.Source));
-        Assert.Equal(["yahoo prices HOL", "stooq prices hol.us", "tiingo meta hol", "tiingo prices hol"], feed.Asked);
-        Assert.Equal(4L, (long)One(store, "SELECT COUNT(*) FROM source_ask;")!);
+        Assert.Equal(["yahoo prices HOL", "tiingo meta hol", "tiingo prices hol"], feed.Asked);
+        Assert.Equal(3L, (long)One(store, "SELECT COUNT(*) FROM source_ask;")!);
         Assert.Equal("13 13.1", (string)One(store, "SELECT group_concat(close, ' ') FROM (SELECT close FROM long_fill_bar ORDER BY session_date);")!);
         Assert.Equal("tiingo 2 1000", (string)One(store, "SELECT source || ' ' || ratio || ' ' || MIN(volume) FROM long_fill_bar;")!);
 
@@ -191,7 +199,7 @@ public partial class FixtureExpectations
 
         Assert.False(missing.ContainsKey("HOL"));
         Assert.Empty(await new SecondSourceFill(store.DatabaseFile, clock, feed, tiingo: true, wait: (_, _) => Task.CompletedTask).RunAsync(true, TextWriter.Null));
-        Assert.Equal(4, feed.Asked.Count);
+        Assert.Equal(3, feed.Asked.Count);
         Assert.Throws<SqliteException>(() => store.Execute("UPDATE long_fill_bar SET close = '1';"));
         Assert.Throws<SqliteException>(() => store.Execute("DELETE FROM source_ask;"));
         Assert.Throws<SqliteException>(() => store.Execute("DELETE FROM long_fill_hole;"));
@@ -203,10 +211,14 @@ public partial class FixtureExpectations
         Assert.Null(open.Source);
         Assert.Contains("yahoo: Yahoo sent no session", open.Why, StringComparison.Ordinal);
         Assert.Contains("tiingo: not asked: no key is set", open.Why, StringComparison.Ordinal);
-        Assert.Equal(["yahoo prices HOL", "stooq prices hol.us"], none.Asked);
+        Assert.Equal(["yahoo prices HOL"], none.Asked);
         Assert.Equal(0L, (long)One(keyless, "SELECT COUNT(*) FROM long_fill_bar;")!);
         Assert.Empty(await new SecondSourceFill(keyless.DatabaseFile, clock, none, tiingo: true).RunAsync(true, TextWriter.Null));
-        Assert.Equal(2, none.Asked.Count);
+        Assert.Single(none.Asked);
+        Assert.Empty(await new SecondSourceFill(keyless.DatabaseFile, clock, none, tiingo: false).RunAsync(true, TextWriter.Null, again: new HashSet<string>(["ALL"])));
+        Assert.Single(none.Asked);
+        Assert.Single(await new SecondSourceFill(keyless.DatabaseFile, clock, none, tiingo: false).RunAsync(true, TextWriter.Null, again: new HashSet<string>(["HOL"])));
+        Assert.Equal(["yahoo prices HOL", "yahoo prices HOL"], none.Asked);
 
         var said = new StringWriter();
 

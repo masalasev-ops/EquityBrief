@@ -19,10 +19,11 @@ public sealed record KeptBar(DateOnly Session, decimal Open, decimal High, decim
 public sealed record FillJudgement(IReadOnlyList<KeptBar> Kept, decimal? Ratio, decimal? VolumeRatio, string Why);
 
 // The holes inside a code's own prices filled from real traded prices a second source holds, never interpolated: Yahoo's
-// daily chart, then Stooq's daily file, then Tiingo's daily prices, a source's sessions kept only where its closes hold one
-// ratio to the store's over the sessions the store holds on each side of the hole and its volumes are equal or in one
-// proportion.
+// daily chart, then Tiingo's daily prices, a source's sessions kept only where its closes hold one ratio to the store's over
+// the sessions the store holds on each side of the hole and its volumes are equal or in one proportion. Stooq is not asked:
+// its key is a captcha's, carried in the web address.
 // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
+// see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
 public static class SecondSources
 {
     public const string Yahoo = "yahoo";
@@ -32,13 +33,16 @@ public static class SecondSources
     public const string Tiingo = "tiingo";
 
     // The order the sources are asked in, the first holding a hole's sessions filling it.
-    public static readonly string[] Order = [Yahoo, Stooq, Tiingo];
+    public static readonly string[] Order = [Yahoo, Tiingo];
 
     // The sessions the store holds on each side of a hole that a source's closes are held to.
     public const int Side = 20;
 
-    // How far apart the ratios of the closes, and the proportions of the volumes, may stand and still be one: 0.1%.
-    public const decimal Band = 0.001m;
+    // How far apart the ratios of the closes may stand and still be one: 0.25%.
+    public const decimal CloseBand = 0.0025m;
+
+    // How far apart the proportions of the volumes may stand and still be one: 0.5%.
+    public const decimal VolumeBand = 0.005m;
 
     // The calendar days asked on each side of a code's holes, wide enough to hold its twenty sessions on each side.
     public const int Margin = 45;
@@ -101,12 +105,14 @@ public static class SecondSources
     }
 
     // Whether a source's answer fills a hole: it must hold every session of the hole and every one of the store's sessions
-    // on each side, up to twenty a side and at least one, its closes over the store's one ratio within 0.1% and its volumes
-    // equal or in one proportion within the same; then each session is kept at the source's prices times that ratio, every
+    // on each side, up to twenty a side and at least one, its closes over the store's one ratio within 0.25% and its volumes
+    // equal or in one proportion within 0.5%; then each session is kept at the source's prices times that ratio, every
     // kept bar one that could have traded. A source's close adjusted for later splits and dividends is the one held to the
     // store's, its other prices brought to that adjustment first; its own close as traded is kept where it holds one ratio
     // to the store's traded closes, and otherwise the store's adjustment on the first session after the hole is taken off.
-    public static FillJudgement Judge(IReadOnlyList<SweepBar> stored, IReadOnlyList<DateOnly> hole, IReadOnlyList<SourceBar> source)
+    // With `partial`, as the check's settling fills a stretch, the sessions of it the source lacks are left out rather than
+    // refusing the rest.
+    public static FillJudgement Judge(IReadOnlyList<SweepBar> stored, IReadOnlyList<DateOnly> hole, IReadOnlyList<SourceBar> source, bool partial = false)
     {
         if (hole.Count == 0)
         {
@@ -125,7 +131,7 @@ public static class SecondSources
         var answered = source.GroupBy(bar => bar.Session).ToDictionary(group => group.Key, group => group.First());
         var held = hole.Count(answered.ContainsKey);
 
-        if (held < hole.Count)
+        if (held < hole.Count && (!partial || held == 0))
         {
             return new FillJudgement([], null, null, FormattableString.Invariant($"holds {held} of the hole's {hole.Count} session(s)"));
         }
@@ -145,9 +151,9 @@ public static class SecondSources
 
         var ratios = window.Select(bar => bar.Close / Adjusted(answered[bar.Session])).ToArray();
 
-        if (!One(ratios))
+        if (!One(ratios, CloseBand))
         {
-            return new FillJudgement([], null, null, FormattableString.Invariant($"its closes stand {Spread(ratios) * 100:0.##}% apart over the store's, past the {Band * 100:0.#}% that makes one ratio"));
+            return new FillJudgement([], null, null, FormattableString.Invariant($"its closes stand {Spread(ratios) * 100:0.##}% apart over the store's, past the {CloseBand * 100:0.##}% that makes one ratio"));
         }
 
         var volumes = new List<decimal>();
@@ -169,19 +175,19 @@ public static class SecondSources
             volumes.Add(Shares(bar.Volume) / theirs);
         }
 
-        if (volumes.Count > 0 && !One(volumes))
+        if (volumes.Count > 0 && !One(volumes, VolumeBand))
         {
-            return new FillJudgement([], null, null, FormattableString.Invariant($"its volumes stand {Spread(volumes) * 100:0.##}% apart in proportion to the store's, past the {Band * 100:0.#}% that makes one"));
+            return new FillJudgement([], null, null, FormattableString.Invariant($"its volumes stand {Spread(volumes) * 100:0.##}% apart in proportion to the store's, past the {VolumeBand * 100:0.##}% that makes one"));
         }
 
         var ratio = decimal.Round(ratios.Average(), 10);
         var volumeRatio = volumes.Count == 0 ? 1m : decimal.Round(volumes.Average(), 10);
         var raws = window.Where(bar => bar.RawClose > 0).Select(bar => bar.RawClose / answered[bar.Session].Close).ToArray();
-        decimal? rawRatio = raws.Length == window.Length && One(raws) ? decimal.Round(raws.Average(), 10) : null;
+        decimal? rawRatio = raws.Length == window.Length && One(raws, CloseBand) ? decimal.Round(raws.Average(), 10) : null;
         var factor = after[0].RawClose > 0 ? after[0].RawClose / after[0].Close : 1m;
         var kept = new List<KeptBar>();
 
-        foreach (var session in hole.Order())
+        foreach (var session in hole.Where(answered.ContainsKey).Order())
         {
             var bar = answered[session];
 
@@ -245,7 +251,7 @@ public static class SecondSources
     // A count of shares as a decimal, which holds every count exactly.
     static decimal Shares(long count) => count;
 
-    static bool One(IReadOnlyList<decimal> values) => Spread(values) <= Band;
+    static bool One(IReadOnlyList<decimal> values, decimal band) => Spread(values) <= band;
 
     static decimal Spread(IReadOnlyList<decimal> values) => values.Min() <= 0 ? decimal.MaxValue : (values.Max() - values.Min()) / values.Min();
 
@@ -339,6 +345,32 @@ public static class SecondSources
         }
 
         return bars;
+    }
+
+    // What a Stooq answer holding no daily file says in its place, so its outcome names the refusal and never reads as a
+    // file holding no session: its key asked for, its day's limit spent, or no data for the symbol.
+    public static string? StooqRefusal(string body)
+    {
+        var text = body.TrimStart();
+
+        if (text.StartsWith("Date,Open,High,Low,Close", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (text.Contains("apikey", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Stooq asked for its API key and sent no daily file";
+        }
+
+        if (text.Contains("Exceeded the daily hits limit", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Stooq's daily limit is spent and it sent no daily file";
+        }
+
+        return text.StartsWith("No data", StringComparison.OrdinalIgnoreCase)
+            ? "Stooq holds no data for the symbol"
+            : "Stooq sent no daily file";
     }
 
     // Tiingo's daily prices as it sends them: a list of sessions, each dated by `date`, its open, high, low, close and volume
