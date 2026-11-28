@@ -24185,7 +24185,7 @@ Mutated:    m67, the property that a sale above its first stop is sold on its tr
 Claims:     1815, one added: the trailing stops' store.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
             before that run: all six steps, 0 warnings, 0 errors, 4147 of 4147 tests ran with none failed, migrations 0 to 180
-            with none pending, schema version 180, against `data-ci` and never `data`; the phase report 69 tables, 1815 claims,
+            with none pending, schema version 180, against `data-ci` and never `data`; the phase report 68 tables, 1815 claims,
             1815 passing, none out of scope and none unexamined, 1830 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
 Carried:    migration 180 applied to the store in the merge step; the first night's order changes after it write the first
