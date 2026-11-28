@@ -32,7 +32,8 @@ public partial class ReadSurface
         // above the prices, and not again beneath them.
         Assert.DoesNotContain(Waits, Read(card), StringComparison.Ordinal);
         Assert.Contains("Not bought unless the price falls to $49.20", Read(card), StringComparison.Ordinal);
-        Assert.Contains("Tonight's close was $51.30", Read(card), StringComparison.Ordinal);
+        // From the operator's answers of 2026-11-28, item 5: the fall over the close, (51.30 - 49.20) / 51.30 = 4.09%, by hand.
+        Assert.Contains("Needs to fall 4.1% from its last close of $51.30 to reach its buy price of $49.20.", Read(card), StringComparison.Ordinal);
         Assert.True(card.IndexOf("data-zone-box", StringComparison.Ordinal) < card.IndexOf("entry-card-line", StringComparison.Ordinal));
 
         // A plan with no target names its time limit in the target's place.
