@@ -85,9 +85,12 @@ public sealed class SecondSourcePriceFeed(HttpClient yahoo, HttpClient stooq, Ht
     {
         var (status, body) = await GetAsync(stooq, $"q/d/l/?s={Uri.EscapeDataString(symbol)}&d1={from.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}&d2={to.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}&i=d", null, Free, "Stooq's daily file", cancellation).ConfigureAwait(false);
 
-        return status == HttpStatusCode.NotFound
-            ? new SourceAnswer([], "Stooq holds no such symbol")
-            : Answer(SecondSources.StooqDaily(body), "Stooq");
+        if (status == HttpStatusCode.NotFound)
+        {
+            return new SourceAnswer([], "Stooq holds no such symbol");
+        }
+
+        return SecondSources.StooqRefusal(body) is { } refused ? new SourceAnswer([], refused) : Answer(SecondSources.StooqDaily(body), "Stooq");
     }
 
     public async Task<(DateOnly First, DateOnly Last)?> TiingoMetaAsync(string symbol, CancellationToken cancellation = default)

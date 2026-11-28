@@ -343,6 +343,32 @@ public static class SecondSources
         return bars;
     }
 
+    // What a Stooq answer holding no daily file says in its place, so its outcome names the refusal and never reads as a
+    // file holding no session: its key asked for, its day's limit spent, or no data for the symbol.
+    public static string? StooqRefusal(string body)
+    {
+        var text = body.TrimStart();
+
+        if (text.StartsWith("Date,Open,High,Low,Close", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (text.Contains("apikey", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Stooq asked for its API key and sent no daily file";
+        }
+
+        if (text.Contains("Exceeded the daily hits limit", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Stooq's daily limit is spent and it sent no daily file";
+        }
+
+        return text.StartsWith("No data", StringComparison.OrdinalIgnoreCase)
+            ? "Stooq holds no data for the symbol"
+            : "Stooq sent no daily file";
+    }
+
     // Tiingo's daily prices as it sends them: a list of sessions, each dated by `date`, its open, high, low, close and volume
     // as traded, and its close adjusted for splits and dividends under `adjClose`; anything else holds none.
     public static IReadOnlyList<SourceBar> TiingoPrices(string json)

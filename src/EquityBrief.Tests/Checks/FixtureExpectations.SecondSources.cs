@@ -128,6 +128,11 @@ public partial class FixtureExpectations
         Assert.Empty(SecondSources.YahooChart("""{"chart":{"result":null,"error":{"code":"Not Found"}}}"""));
         Assert.Equal([new SourceBar(new DateOnly(2023, 4, 6), 40.1m, 41m, 39.9m, 40.5m, 123456, null)], SecondSources.StooqDaily("Date,Open,High,Low,Close,Volume\n2023-04-06,40.1,41,39.9,40.5,123456\n"));
         Assert.Empty(SecondSources.StooqDaily("No data"));
+        Assert.Null(SecondSources.StooqRefusal("Date,Open,High,Low,Close,Volume\n2023-04-06,40.1,41,39.9,40.5,123456\n"));
+        Assert.Equal("Stooq asked for its API key and sent no daily file", SecondSources.StooqRefusal("<html><body>Get your apikey: open https://stooq.com/q/d/?s=aapl.us&get_apikey</body></html>"));
+        Assert.Equal("Stooq's daily limit is spent and it sent no daily file", SecondSources.StooqRefusal("Exceeded the daily hits limit"));
+        Assert.Equal("Stooq holds no data for the symbol", SecondSources.StooqRefusal("No data"));
+        Assert.Equal("Stooq sent no daily file", SecondSources.StooqRefusal("<html></html>"));
         Assert.Equal(
             [new SourceBar(new DateOnly(2023, 4, 6), 40.1m, 41m, 39.9m, 40.5m, 123456, 38.25m)],
             SecondSources.TiingoPrices("""[{"date":"2023-04-06T00:00:00.000Z","close":40.5,"high":41.0,"low":39.9,"open":40.1,"volume":123456,"adjClose":38.25}]"""));
