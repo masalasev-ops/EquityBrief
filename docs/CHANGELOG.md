@@ -7,6 +7,48 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the order changes storing each trailing trade's raised stop, at a correction to 24.47
+Decision: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+Was:
+> <td>bar store, judge picks, judge runs, judge pins, fill checks, phone messages</td><td>order changes, run log</td><td>from 24.47 works each index's paper accounts ... tickers, prices and dates alone; no trade, rule or source a rule pins moves (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message)</td></tr>
+Now:
+> <td>bar store, judge picks, judge runs, judge pins, fill checks, trailing stops, phone messages</td><td>order changes, trailing stops, run log</td><td>from 24.47 works each index's paper accounts ... tickers, prices and dates alone; from the 24.47 correction of 2026-11-28 it writes each open trailing trade's stop as the night raised it, and a sale is said on its trailing stop with the stop stored the night before it fired; no trade, rule or source a rule pins moves (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message) (see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop)</td></tr>
+Why: the operator's answers of 2026-11-28, item 4, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`; the stores table gains the trailing stops' row and SCHEMA.md the table, added lines alone.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - a waiting order's distance in one measure, at a correction to 24.47
+Decision: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
+Was:
+> ... the orders waiting to buy counted with how far the nearest stands above its buy price; ...
+> ... beside them tonight's close with how far above its price it stands and its trading days left; ...
+Now:
+> ... the orders waiting to buy counted with how far the nearest must fall from its last close to reach its buy price, from the 24.47 correction of 2026-11-28 the one measure every page says (see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price); ...
+> ... beside them how far the price must fall from tonight's close to reach its buy price and its trading days left; ...
+Why: the operator's answers of 2026-11-28, item 5, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - every block on its page column or its card's inner edges, at 24.50
+Decision: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390
+Was:
+> ... and the chart and the profile are scaled to it together as below the ceiling. (see: A screen is read at the width of the screen it is read on, and a name's page in a reading column)</p>
+Now:
+> ... and the chart and the profile are scaled to it together as below the ceiling. (see: A screen is read at the width of the screen it is read on, and a name's page in a reading column) From 24.50, on Home, both of Tonight's tabs, both of Paper trading's and a plan, every block at the top of the page sits on the column, ... The suite lays those pages out in a browser at 1440 and a true 390 in both palettes and names each block that does not (see: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390)</p>
+Why: the operator's order of 2026-11-28, items 1, 4 and 5, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - a plan saying each thing once and running its full width, at 24.50
+Decision: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them
+Was:
+> ... and listed nowhere; and a waiting order its stock's rules met again saying so in a line (see: Tonight lists every plan ...
+Now:
+> ... and listed nowhere; a waiting order its stock's rules met again saying so in a line; and from 24.50 its tab row and every tab panel running the plan's full width with their tables, the card's sentence and the traded plan's reward lines not drawn since the parts above the tabs say each of their facts (see: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them) (see: Tonight lists every plan ...
+Why: the operator's order of 2026-11-28, items 2 and 3, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - the first folder tab on the page column, at 24.50
+Decision: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390
+Was:
+> ... and Records' link opening the picks tab (see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time)</td></tr>
+Now:
+> ... and Records' link opening the picks tab; from 24.50 the first tab's left edge on the page column with the title and the notice box (see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time) (see: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390)</td></tr>
+Why: the operator's order of 2026-11-28, item 1, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
 ### 2026-11-28 - docs/RUNBOOK.md - the every-session check listing what the heavyweights' first part read leaves out, at a correction to 24.19
 Decision: The heavyweights' setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists what it leaves out
 Was:

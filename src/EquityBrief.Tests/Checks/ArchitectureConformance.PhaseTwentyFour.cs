@@ -128,8 +128,8 @@ public partial class ArchitectureConformance
     // The reviewer's first part, four of six: the desk's catalogue and matrix rows, its store and section 17's row, its step and
     // the card's row waiting for 24.36b, whose measured time sets where the step runs.
     // The order changes and fill odds, thirteen of thirteen: three components' catalogue and matrix rows, three stores,
-    // section 17's three rows and Paper trading's row; and from its correction of 2026-11-28 two more, the merge guard's
-    // catalogue and matrix rows.
+    // section 17's three rows and Paper trading's row; and from its corrections of 2026-11-28 three more, the merge guard's
+    // catalogue and matrix rows and the trailing stops' store.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -168,7 +168,7 @@ public partial class ArchitectureConformance
         ("24.30", 2),
         ("24.31", 1),
         ("24.36", -2),
-        ("24.47", 2),
+        ("24.47", 3),
         ("24.48", 0),
         ("24.49", 0),
     ];
@@ -224,6 +224,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1814), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1815), (before, low, high, actual));
     }
 }

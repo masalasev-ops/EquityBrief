@@ -24110,3 +24110,83 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 68 tables, 1814 claims, 1814 passing, none out of scope and none unexamined, 1829 placements and verdicts
             reconciled against a floor of 34, 57 checks on the roster run and passed.
 Carried:    the obligation above, due at the first pin move after the run of 2027-02-06.
+
+### 24.50 - Tonight's and Paper trading's alignment, and a plan saying each thing once   2026-11-28
+
+Ordered:    the operator's order of 2026-11-28, kept word for word in `prompts/`. Two decisions: A plan view says each thing once,
+            the card's sentence and the traded plan's reward line left to the parts above that say them; Every block sits on its
+            page column or its card's inner edges as a browser lays the pages out at 1440 and 390.
+Built:      the folder tabs' row keeps no left padding, its first tab on the page column; a plan's card, its tab row and every
+            panel run the plan's full width, its price line too with its marks inside an inset, and Home's market bar its card's.
+            A plan draws none of: the card's sentence, picked by the setup on the night and bought only on a dip (the header's
+            setup and state, the buy condition and the four figures say it); the setup's one line (why it is here); the traded
+            plan's reward line, the sizing tab's risk of $1 and its share to break even (the price line's caption), the last
+            three only where the caption is drawn. A stock's own page keeps its full card. The browser the copy's layout check
+            started moved to a class of its own the suite's check starts as well.
+Measured:   the check passed on Home, both Tonight tabs, both Paper trading tabs and a plan at 1440 and a true 390 in both
+            palettes, 32 to 91 blocks read a page, screenshots of each in the report.
+Tests:      three new: the column rule by hand, the six pages laid out in a browser, and a plan saying each thing once.
+Mutated:    the rule, stated before the runs: each new check's named property broken once in what it reads, the smallest edit
+            that does so. m63, the column rule's left edge loosened to 31 px; the rule test went red. m64, the tab row's left
+            padding restored; the browser check named the tab row on all five pages carrying it, after the check was taught to
+            read a bare row's first item, which m64 first survived. m65, the card's sentence drawn in the plan again; the plan
+            test went red. Each reverted before the run below.
+Claims:     1814, none added: the three rows it edits stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4141 of 4141 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1814 claims,
+            1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    none.
+
+### 24.47 - correction: a waiting order's distance said in one measure, the fall from its last close to its buy price   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28, item 5, kept word for word in `prompts/`: one distance measure on Home,
+            Tonight's plans and the order changes, "Needs to fall x.x% from its last close of $x to reach its buy price of $x."
+            One decision: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy
+            price.
+Found:      one order's distance was said three ways: over its buy price on a plan and its list, over its last close on the
+            waiting cards and a new pick's box, and in typical daily moves in the order changes; ABNB of 27 Nov read 4.4% in one
+            place and 4.3% in another.
+Built:      one function in the core says the fall over the last close in the operator's words, and every place draws it: Home's
+            waiting cards and box, Tonight's plans, their list as "x.x% to fall" and their tile, the order changes and their
+            message, the fill odds line and a stock's own page. Which orders the order changes list as could fill tomorrow is
+            unchanged.
+Tests:      two new: the measure in the operator's words worked by hand, and no shipped source saying it another way.
+Mutated:    m66, the property that the fall is over the last close: the divisor set to the buy price; the measure test went
+            red; reverted before the run below.
+Claims:     1814, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4143 of 4143 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1814 claims,
+            1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    none.
+
+### 24.47 - correction: each trailing trade's raised stop stored nightly, and a sale above its first stop sold on its trailing stop   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28, item 4, kept word for word in `prompts/`: store each night's raised stop, so
+            a sale above the first stop reads sold on its trailing stop, never time limit, in the order changes and the closed
+            lists. One decision: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is
+            sold on its trailing stop.
+Found:      a trailing trade's raised stop was kept nowhere, so a sale was read off its price alone, and one past its time limit
+            above its first stop read "time limit" in the order changes and the closed lists.
+Built:      migration 180, `trail_stop`, taking inserts alone; the order changes write, with the word, each live rule's trailing
+            trade open on the night with its first stop and its stop as the night raised it, by the paper account's one function;
+            the order changes' sale says "on its trailing stop of $y", y the stop stored the night before it fired, and Paper
+            trading's closed trades "closed under its trailing stop of $y", each without the figure where none was stored; a
+            trailing trade sold above its first stop, or under a stored stop above it, never reads its time limit, nor does one
+            whose exit fired and has yet to sell. No trade, rule or source a rule pins moves.
+Tests:      four new: the raised stop and the night before's stop worked by hand, the closed ending, the order changes' sale,
+            and the table taking inserts alone.
+Mutated:    m67, the property that a sale above its first stop is sold on its trailing stop: that test taken out of the rule,
+            leaving the stored stop alone; the order changes' test went red, the closed ending holding by its last branch, which
+            reads any other trailing sale as its trailing stop too; reverted before the run below.
+Claims:     1815, one added: the trailing stops' store.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4147 of 4147 tests ran with none failed, migrations 0 to 180
+            with none pending, schema version 180, against `data-ci` and never `data`; the phase report 68 tables, 1815 claims,
+            1815 passing, none out of scope and none unexamined, 1830 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    migration 180 applied to the store in the merge step; the first night's order changes after it write the first
+            rows, so a sale before then reads without its stop's figure.

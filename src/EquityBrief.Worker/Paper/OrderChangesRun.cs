@@ -33,6 +33,7 @@ public sealed class OrderChangesRun(IClock clock, string databaseFile, string da
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.FillCheck, Touch.Read),
             new StoreTouch(Store.OrderChange, Touch.Insert),
+            new StoreTouch(Store.TrailStop, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.PhoneMessages]);
@@ -47,6 +48,7 @@ public sealed class OrderChangesRun(IClock clock, string databaseFile, string da
         var sessions = await SessionsAsync(night.AddDays(-PickerDays), cancellation);
         var previous = sessions.Where(session => session < night).DefaultIfEmpty(night).Max();
         var indices = new List<IndexOrders>();
+        var raisedTonight = new List<(string Index, TrailStopRow Row)>();
 
         foreach (var index in PaperFiguresRun.Indices)
         {
@@ -59,11 +61,22 @@ public sealed class OrderChangesRun(IClock clock, string databaseFile, string da
                     SetupNames.WhoOf(view.Family, name),
                     sources.TryGetValue(view.Key, out var source) && source.Book,
                     [.. (view.Walk?.Trades ?? []).Where(taken => taken.Skipped is null).Select(taken => taken.Trade)],
-                    source?.Unfilled ?? []))
+                    source?.Unfilled ?? [],
+                    view.Family))
                 .ToArray();
             var closes = worked.Closes.Where(pair => pair.Key.Session == night).ToDictionary(pair => pair.Key.Ticker, pair => pair.Value, StringComparer.Ordinal);
 
-            indices.Add(new IndexOrders(index, name, worked.Read.Planned, accounts, await PickerAsync(index, night, cancellation), closes));
+            // From the operator's answers of 2026-11-28, item 4: each open trailing trade's stop as tonight raised it, written
+            // with the word, and the stops earlier nights stored, which a sale is read against.
+            // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+            var calendar = worked.Closes.Keys.Select(key => key.Session).Distinct().Order().ToArray();
+
+            foreach (var account in accounts.Where(account => !account.Book && account.Family is not null))
+            {
+                raisedTonight.AddRange(TrailStops.Of(account.Family!, account.Taken, night, calendar, worked.Close).Select(row => (index, row)));
+            }
+
+            indices.Add(new IndexOrders(index, name, worked.Read.Planned, accounts, await PickerAsync(index, night, cancellation), closes, await RaisedAsync(index, night, cancellation)));
         }
 
         var summary = OrderChanges.Of(night, previous, indices, await ChecksAsync(night, cancellation));
@@ -88,6 +101,7 @@ public sealed class OrderChangesRun(IClock clock, string databaseFile, string da
         var runId = FormattableString.Invariant($"{Stage}-{night:yyyyMMdd}-{started:yyyyMMddTHHmmssZ}");
 
         await WriteAsync(runId, summary, started, cancellation);
+        await WriteRaisedAsync(runId, night, raisedTonight, started, cancellation);
 
         string sent;
 
@@ -343,6 +357,66 @@ public sealed class OrderChangesRun(IClock clock, string databaseFile, string da
     const string InsertChange = @"
         INSERT INTO order_change (run_id, session_date, list, place, index_code, who, ticker, words, checked, written_at)
         VALUES ($run_id, $session, $list, $place, $index, $who, $ticker, $words, $checked, $at);";
+
+    // The trailing stops the nights before stored on an index, over the half year a trailing trade's time limit reaches.
+    const string StoredRaised = @"
+        SELECT family, ticker, listed_on, session_date, first_stop, stop FROM trail_stop
+        WHERE index_code = $index AND session_date >= $from AND session_date < $night
+        ORDER BY session_date, run_id;";
+
+    const string InsertRaised = @"
+        INSERT INTO trail_stop (run_id, session_date, index_code, family, ticker, listed_on, first_stop, stop, written_at)
+        VALUES ($run_id, $session, $index, $family, $ticker, $listed, $first, $stop, $at);";
+
+    // The stops earlier nights stored for an index's trailing trades.
+    async Task<IReadOnlyList<TrailStopRow>> RaisedAsync(string index, DateOnly night, CancellationToken cancellation)
+    {
+        var rows = new List<TrailStopRow>();
+
+        await using var connection = await OpenAsync(cancellation);
+        await using var select = connection.CreateCommand();
+
+        select.CommandText = StoredRaised;
+        select.Parameters.AddWithValue("$index", index);
+        select.Parameters.AddWithValue("$from", Text(night.AddDays(-PickerDays)));
+        select.Parameters.AddWithValue("$night", Text(night));
+
+        await using var read = await select.ExecuteReaderAsync(cancellation);
+
+        while (await read.ReadAsync(cancellation))
+        {
+            rows.Add(new TrailStopRow(read.GetString(0), read.GetString(1), Day(read.GetString(2)), Day(read.GetString(3)), Money.FromStorage(read.GetString(4)), Money.FromStorage(read.GetString(5))));
+        }
+
+        return rows;
+    }
+
+    // Each open trailing trade's stop as tonight raised it, in one transaction.
+    async Task WriteRaisedAsync(string runId, DateOnly night, IReadOnlyList<(string Index, TrailStopRow Row)> raised, DateTimeOffset at, CancellationToken cancellation)
+    {
+        await using var connection = await OpenAsync(cancellation);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (index, row) in raised)
+        {
+            await using var insert = connection.CreateCommand();
+
+            insert.Transaction = transaction;
+            insert.CommandText = InsertRaised;
+            insert.Parameters.AddWithValue("$run_id", runId);
+            insert.Parameters.AddWithValue("$session", Text(night));
+            insert.Parameters.AddWithValue("$index", index);
+            insert.Parameters.AddWithValue("$family", row.Family);
+            insert.Parameters.AddWithValue("$ticker", row.Ticker);
+            insert.Parameters.AddWithValue("$listed", Text(row.ListedOn));
+            insert.Parameters.AddWithValue("$first", Money.ToStorage(row.FirstStop));
+            insert.Parameters.AddWithValue("$stop", Money.ToStorage(row.Stop));
+            insert.Parameters.AddWithValue("$at", Instant(at));
+            await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+    }
 
     static string Text(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 

@@ -636,7 +636,7 @@ public sealed partial class MarkRenderer
                 html.Append(StockCell(trade.Ticker, trade.Company, null));
                 html.Append(FamilyCell(trade.Family));
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Said))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
             }
 
@@ -658,7 +658,7 @@ public sealed partial class MarkRenderer
                 html.Append(FamilyCell(trade.Family));
                 html.Append(Copying ? "<td>an earlier version</td>" : Formatted($"<td><span title=\"{Escaped(trade.Version ?? string.Empty)}\">an earlier version</span></td>"));
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Said))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
             }
 
@@ -799,7 +799,7 @@ public sealed partial class MarkRenderer
             html.Append(FamilyCell(trade.Family));
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{(closed?.Sale is { } sale ? Figures.Price(sale) : "<span class=\"degraded\">not read</span>")}<span class=\"pb-day\">{(trade.Ended is { } on ? DayOf(on) : string.Empty)}</span></td>");
-            html.Append(Invariant, $"<td>{Escaped(Capitalised(closed?.Ending ?? PaperAccount.NoResult))}<span class=\"pb-day\">{(closed?.Held is { } kept ? Formatted($"held {kept} {(kept == 1 ? "session" : "sessions")}") : string.Empty)}{(trade.Past switch { EquityBrief.Core.Ledger.FillPast.Stop => "; " + PaperAccount.OpenedUnderStop, EquityBrief.Core.Ledger.FillPast.Target => "; " + PaperAccount.OpenedOverTarget, _ => string.Empty })}</span></td>");
+            html.Append(Invariant, $"<td>{Escaped(Capitalised(closed?.Said ?? PaperAccount.NoResult))}<span class=\"pb-day\">{(closed?.Held is { } kept ? Formatted($"held {kept} {(kept == 1 ? "session" : "sessions")}") : string.Empty)}{(trade.Past switch { EquityBrief.Core.Ledger.FillPast.Stop => "; " + PaperAccount.OpenedUnderStop, EquityBrief.Core.Ledger.FillPast.Target => "; " + PaperAccount.OpenedOverTarget, _ => string.Empty })}</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{Result(book, (closed?.Risks, closed?.Fraction))}</td>");
             html.Append(closed?.Edge is { } edge
                 ? Formatted($"<td class=\"r num\">{(book ? SignedTwo(edge * 100) + " points" : SignedTwo(edge) + " risks")}</td>")
@@ -963,7 +963,7 @@ public sealed partial class MarkRenderer
                     html.Append(StockCell(trade.Ticker, trade.Company, null));
                     html.Append(Invariant, $"<td>{Escaped(string.Join(", ", trade.By))}</td>");
                     html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                    html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : "<td><span class=\"pill\">open</span></td>");
+                    html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Said))}</td>") : "<td><span class=\"pill\">open</span></td>");
                     html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Book, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
                 }
 

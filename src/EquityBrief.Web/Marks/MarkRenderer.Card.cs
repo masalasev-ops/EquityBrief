@@ -905,7 +905,7 @@ public sealed partial class MarkRenderer
                         ? PlanTile("target", "No target", "Kept while it leads", "sold at a month's reshuffle once it stops leading")
                         : PlanTile("target", "Target", "None", "no target stored");
 
-    static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick, bool levelsBelow = false)
+    static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick, bool levelsBelow = false, bool rewardLines = true)
     {
         var body = new StringBuilder();
 
@@ -944,16 +944,18 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
-        body.Append(PlanRewardLine(card));
+        body.Append(rewardLines ? PlanRewardLine(card) : string.Empty);
         body.Append(card.Zone is { NoBuy: false } boxed ? Formatted($"<p class=\"wo-box\" data-zone-box>{Escaped(ZoneBox(boxed, card.Night))}</p>") : string.Empty);
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
         body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
 
-        if (card.Zone?.Sale is { } sold)
+        // In a plan the price line's caption says the reward against the risk and the share to break even, so they are not said
+        // again here.
+        if (rewardLines && card.Zone?.Sale is { } sold)
         {
             body.Append(SaleReward(sold));
         }
-        else
+        else if (rewardLines)
         {
             // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
             // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position

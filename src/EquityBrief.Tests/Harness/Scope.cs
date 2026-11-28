@@ -5487,6 +5487,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, an update refused, and a constructed run's cells read back as a waiting card's line",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Trailing stops")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete refused, and a constructed trailing trade's raised stops worked by hand and read back as its sale's in the order changes and the closed list",
+            ByMigration),
         [CheckReach.Key(LimitsTable, "Order changes")] = new Scoped(
             Verdict.Pass,
             "a waiting order within one typical daily move of its price listed as able to fill tomorrow and one past it left out, worked by hand, and each figure read off the document against its constant",

@@ -224,6 +224,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `order_change` | OrderChangesRun | none | none |
 | `fill_check` | FillCheck | none | none |
 | `fill_odds` | FillOddsTest | none | none |
+| `trail_stop` | OrderChangesRun | none | none |
 | `unreliable_mark` | SecondSourceFill | none | none |
 | `price_check` | SecondSourceFill | none | none |
 | `check_settled` | SecondSourceFill | none | none |
@@ -709,6 +710,25 @@ Grain: one row per run of the fill odds test, rule, band of distances and tradin
 Primary key: `run_id`, `index_code`, `family`, `band`, `days_left`.
 
 **Inserted by the fill odds test alone, and never updated or deleted, its triggers refusing both.** The read surface reads the newest run of an index for the waiting cards; no rule reads it.
+
+### trail_stop
+Grain: one row per run of the order changes, index, live rule's family, stock and the night that listed its trade, for each trailing trade open on the night, from migration 180 at the 24.47 correction of 2026-11-28 (see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop).
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the order changes' run |
+| `session_date` | TEXT | the night |
+| `index_code` | TEXT | the index |
+| `family` | TEXT | the live rule's family whose account holds the trade |
+| `ticker` | TEXT | the stock |
+| `listed_on` | TEXT | the night that listed the trade |
+| `first_stop` | TEXT | decimal, the stop its plan placed |
+| `stop` | TEXT | decimal, the stop as the night raised it under the closes since its listing night, never lowered |
+| `written_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`, `index_code`, `family`, `ticker`, `listed_on`. Indexed on `index_code`, `family`, `ticker`, `listed_on`, `session_date`.
+
+**Inserted by the order changes alone with the word, and never updated or deleted, its triggers refusing both.** The order changes read the stops the nights before stored to say a sale's trailing stop, and the read surface reads them for Paper trading's closed trades; no rule reads it.
 
 ### unreliable_mark
 Grain: one row per run of the check's settling, stock, first session, reading and kind, from migration 179.

@@ -213,8 +213,8 @@ public class SchemaColumns
     // difference settled.
     internal static string[] CheckSettlingStoreRows => [.. new[] { "Unreliable marks", "Price checks", "Differences settled" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
-    // 24.47's order changes, the 4:30 pm check's reads and the fill odds.
-    internal static string[] OrderChangesStoreRows => [.. new[] { "Order changes", "Fill checks", "Fill odds" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+    // 24.47's order changes, the 4:30 pm check's reads and the fill odds, and from its correction of 2026-11-28 the trailing stops.
+    internal static string[] OrderChangesStoreRows => [.. new[] { "Order changes", "Fill checks", "Fill odds", "Trailing stops" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
     // 24.36's reviews of each night's picks and its random draw.
     internal static string[] ReviewStoreRows => [CheckReach.Key(Scope.StoresTable, "Reviews")];

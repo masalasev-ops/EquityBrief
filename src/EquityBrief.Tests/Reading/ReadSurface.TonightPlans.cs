@@ -216,7 +216,8 @@ public partial class ReadSurface
 
         Assert.Contains("data-chosen=\"FAR\"", html, StringComparison.Ordinal);
         Assert.Contains("4 plans tonight: 0 new, 3 waiting to buy and 1 already held that met the rules again.", html, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"r-fig\">1.0% to go<br><small>", html, StringComparison.Ordinal);
+        // NEAR buys at 100 against a close of 101: from 2026-11-28 the fall over the close, 1 / 101 = 0.99%, said 1.0% to fall.
+        Assert.Contains("<span class=\"r-fig\">1.0% to fall<br><small>", html, StringComparison.Ordinal);
     }
 
     // Home's See the plan, on a waiting order's card and on a bought stock met again, opens its plan on Tonight at its address.
