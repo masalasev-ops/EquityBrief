@@ -24110,3 +24110,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 68 tables, 1814 claims, 1814 passing, none out of scope and none unexamined, 1829 placements and verdicts
             reconciled against a floor of 34, 57 checks on the roster run and passed.
 Carried:    the obligation above, due at the first pin move after the run of 2027-02-06.
+
+### 24.50 - Tonight's and Paper trading's alignment, and a plan saying each thing once   2026-11-28
+
+Ordered:    the operator's order of 2026-11-28, kept word for word in `prompts/`. Two decisions: A plan view says each thing once,
+            the card's sentence and the traded plan's reward line left to the parts above that say them; Every block sits on its
+            page column or its card's inner edges as a browser lays the pages out at 1440 and 390.
+Built:      the folder tabs' row keeps no left padding, its first tab on the page column; a plan's card, its tab row and every
+            panel run the plan's full width, its price line too with its marks inside an inset, and Home's market bar its card's.
+            A plan draws none of: the card's sentence, picked by the setup on the night and bought only on a dip (the header's
+            setup and state, the buy condition and the four figures say it); the setup's one line (why it is here); the traded
+            plan's reward line, the sizing tab's risk of $1 and its share to break even (the price line's caption), the last
+            three only where the caption is drawn. A stock's own page keeps its full card. The browser the copy's layout check
+            started moved to a class of its own the suite's check starts as well.
+Measured:   the check passed on Home, both Tonight tabs, both Paper trading tabs and a plan at 1440 and a true 390 in both
+            palettes, 32 to 91 blocks read a page, screenshots of each in the report.
+Tests:      three new: the column rule by hand, the six pages laid out in a browser, and a plan saying each thing once.
+Mutated:    the rule, stated before the runs: each new check's named property broken once in what it reads, the smallest edit
+            that does so. m63, the column rule's left edge loosened to 31 px; the rule test went red. m64, the tab row's left
+            padding restored; the browser check named the tab row on all five pages carrying it, after the check was taught to
+            read a bare row's first item, which m64 first survived. m65, the card's sentence drawn in the plan again; the plan
+            test went red. Each reverted before the run below.
+Claims:     1814, none added: the three rows it edits stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4141 of 4141 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1814 claims,
+            1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    none.

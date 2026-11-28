@@ -3014,3 +3014,17 @@ On the operator's order of 2026-11-28, kept word for word in `prompts/2026-11-28
 
 **Done when** a check over the trades tab fails where a list draws more than ten rows unpaged, the reader shown to find a planted list of eleven; the three old addresses open where the order says, asserted off the shell's script; every fact the AI stock picker's page showed has a place, listed item by item in the entry; both AI tabs, and the trades tab with a past night opened, read back at 1440 and a true 390 in both palettes with no sideways scroll, screenshots in the report; and one mutation of each check is shown red, the rule stated before the run.
 
+### 24.50 Tonight's and Paper trading's alignment, and a plan saying each thing once
+On the operator's order of 2026-11-28, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`. The folder tabs' row keeps no left padding of its own, so its first tab starts on the page column with the title, the notice box and the tiles. In a plan, from why it is here down, the tab row and every tab panel, their tables included, run the plan's full width, its price line among them, a running paragraph alone held to a reading width with its left edge on the plan's (see: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390). A plan says each thing once (see: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them). The lines taken out, each with where its fact already shows:
+
+- "Picked by the x on x Nov": the setup is the header's setup in plain words, beside its state "New tonight", whose night is the page's own;
+- "bought only if the price dips to about x within x trading days", or bought at the next open at whatever price it opens: the buy condition's sentence, and the four figures' buy with its days and its date;
+- the setup's one-line description: why it is here, which says what the stock did that the setup buys;
+- "The plan it trades: x up to its take-profit for x down to its stop from its buy, a reward of x times its risk": the price line's caption, which says from the buy the stop's distance down, the take-profit's up and the reward against the risk, with the share of the time it must reach its take-profit first;
+- the sizing tab's "You risk $1 to make x": the same caption's reward against the risk;
+- the sizing tab's "It is worth taking if it reaches its target before its stop more than x% of the time": the same caption's last sentence.
+
+The last three go only where the price line draws its caption. Nothing else is taken out: the tabs keep every part of the card, and a stock's own page keeps its full card with its sentence. The check is the suite's: Home, both of Tonight's tabs, both of Paper trading's and a plan laid out in a browser at 1440 and a true 390 in both palettes over constructed stores, every block at the top of a page on the page column and every block inside a card or a plan on that card's inner edges within a pixel, each that is not named. The browser the read-only copy's layout check starts is started the same way, one class driving it for both.
+
+**Done when** the check passes on all six pages in both windows and both palettes, the blocks it read counted for each, with screenshots of each in the report; a plan is read back drawing neither line taken out and each fact above its tabs, and the card elsewhere keeping its sentence; and one mutation of the check is shown red, the rule stated before the run.
+
