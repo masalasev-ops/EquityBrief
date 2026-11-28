@@ -5389,7 +5389,7 @@ internal static class Scope
         // The 24.19 closing plan's second sources' fill: its component, its three stores and section 17's row.
         [CheckReach.Key(CatalogueTable, "Second source fill")] = new Scoped(
             Verdict.Pass,
-            "the class declares the holes asked and the asks it reads, its stores and the run log it writes and the second source feed, each reconciled against the row; over a constructed store a code missing two sessions inside its own prices is asked of Yahoo, then Stooq, then Tiingo, kept from Tiingo at twice its prices where Stooq's closes part on one session, every ask written, a second run asking nothing, and without a key Tiingo asked nothing and the hole written open with each source's reason and asked no more",
+            "the class declares the holes asked and the asks it reads, its stores and the run log it writes and the second source feed, each reconciled against the row; over a constructed store a code missing two sessions inside its own prices is asked of Yahoo, then Tiingo, Stooq never asked, kept from Tiingo at twice its prices, every ask written, a second run asking nothing, and without a key Tiingo asked nothing and the hole written open with each source's reason, asked no more unless a run names its code",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Second source fill")] = new Scoped(
             Verdict.Pass,

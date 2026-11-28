@@ -23770,3 +23770,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1796 passing, none out of scope and none unexamined, 1811 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.19 - correction: Stooq left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes, and the six close calls asked again by name   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28 on the fill's first run, kept word for word in
+            `prompts/2026-11-27-24.19-the-fill-answers.md`. One new decision, narrowing the fill's.
+Measured:   the fill's first run on the operator's store, on their word of the closing plan: 41 codes held 3,880 member
+            sessions with no price inside their own prices, 1,558 on the S&P 500, 1,610 on the S&P 400 and 714 on the S&P 600,
+            AKRX counted on two. Yahoo filled GLBR's and PRG's one session each and Tiingo SBNY's two; 3,876 of 38 codes stay
+            open, each with every source's reason in `long_fill_hole`. Yahoo held no such symbol for 31 codes, refused 6 and
+            sent prices for 3. Stooq sent 30 answers holding no daily file, which it now sends only on a key, and then refused
+            9 connections; the fill wrote the 30 as "Stooq sent no session" until this branch's first commit named such an
+            answer for what it says. Tiingo held no such symbol for 17 codes and sent prices for 8, SBNY's kept and seven
+            refused by the 0.1% bands: NEBLQ's closes 0.12% apart and MNKKQ's volumes 0.16%, BGG's, JDSU's, LUMN's, PKY's and
+            TNGO's further. BGG, JDSU, MNKKQ, NEBLQ, PKY and TNGO were the six close calls the report put to the operator,
+            LUMN's answer arriving after it.
+Built:      the fill asks Yahoo, then Tiingo, and Stooq not at all; a source's closes are one ratio within 0.25% and its
+            volumes one proportion within 0.5%; and `long-fill --again <codes>` reads the named codes alone and asks each of
+            their open holes once more (see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for
+            volumes and the close calls asked again by name). A session no source fills holds no price, so the every-session
+            table writes no row of it and no reader reads one. No file a rule or the readings' version pins is edited.
+Waiting:    `long-fill --again BGG,JDSU,MNKKQ,NEBLQ,PKY,TNGO --word` after the folded build, and `ledger-build --codes` for
+            any code it fills, in the per-code rewrite.
+Tests:      none new; the judge's bands moved to each side of 0.25% and 0.5%, the asks read without Stooq, a run naming
+            another code asking nothing and one naming the hole's code asking it once more, and Stooq's refusals read by hand.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m40 the volumes held
+            to the old 0.1%: red; m41 `--again` reading every code and asking no open hole twice: red. Filtered to their
+            tests and reverted before anything was committed.
+Claims:     1796, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4118 of 4118 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1796
+            claims, 1796 passing, none out of scope and none unexamined, 1811 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

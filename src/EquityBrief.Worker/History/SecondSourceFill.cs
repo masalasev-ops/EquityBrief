@@ -11,7 +11,7 @@ namespace EquityBrief.Worker.History;
 
 // The second sources' fill, by hand: every code's member sessions on the three indices that hold no price inside its own
 // prices, as the long history's lists read them, cut into runs back to back on the calendar and asked of Yahoo, then
-// Stooq, then Tiingo, the code holding most such sessions first; a run is kept from the first source whose answer the
+// Tiingo, the code holding most such sessions first; a run is kept from the first source whose answer the
 // judge passes, at the store's scale with the source and the ratio beside it, and a run no source fills is written as
 // such with each source's reason and stays as it was. Tiingo is asked on the operator's key within 50 requests an hour,
 // 1,000 a day and 500 codes a month, counted off the asks the store records; a code past the month's is left for the
@@ -42,7 +42,9 @@ public sealed partial class SecondSourceFill(string databaseFile, IClock clock, 
     // What became of a hole: the source that filled it, none where none did, and why.
     public sealed record Outcome(string Ticker, DateOnly First, DateOnly Last, int Sessions, string? Source, string Why);
 
-    public async Task<IReadOnlyList<Outcome>> RunAsync(bool word, TextWriter output, CancellationToken cancellation = default)
+    // With `again` only the codes named are asked, their holes a run before left open asked once more.
+    // see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
+    public async Task<IReadOnlyList<Outcome>> RunAsync(bool word, TextWriter output, IReadOnlySet<string>? again = null, CancellationToken cancellation = default)
     {
         var runId = FormattableString.Invariant($"second-source-fill-{clock.UtcNow:yyyyMMddTHHmmssZ}-{Guid.NewGuid():N}")[..55];
         var startedAt = Instant(clock.UtcNow);
@@ -71,11 +73,11 @@ public sealed partial class SecondSourceFill(string databaseFile, IClock clock, 
         var unfilled = await UnfilledAsync(cancellation);
         var codes = new List<(string Ticker, SweepBar[] Series, IReadOnlyList<IReadOnlyList<DateOnly>> Runs)>();
 
-        foreach (var (ticker, days) in missing)
+        foreach (var (ticker, days) in missing.Where(code => again is null || again.Contains(code.Key)))
         {
             var (series, calendar) = await reader.CodeSeriesAsync(ticker, through, cancellation);
             var runs = SecondSources.Runs(SecondSources.Holes(series, [.. days]), calendar)
-                .Where(run => !unfilled.Contains((ticker, run[0], run[^1])))
+                .Where(run => again is not null || !unfilled.Contains((ticker, run[0], run[^1])))
                 .ToArray();
 
             if (runs.Length > 0)
@@ -93,7 +95,7 @@ public sealed partial class SecondSourceFill(string databaseFile, IClock clock, 
             output.WriteLine(FormattableString.Invariant($"{Stage}: {Named(index)}: {on.Length} code(s) with {on.Sum(code => code.Runs.Count)} hole(s) of {on.Sum(code => code.Runs.Sum(run => run.Count))} member session(s) inside their own prices"));
         }
 
-        output.WriteLine(FormattableString.Invariant($"{Stage}: {codes.Count} code(s) across the three, {codes.Sum(code => code.Runs.Sum(run => run.Count))} session(s); at most {codes.Count} request(s) of Yahoo, {codes.Count} of Stooq and {codes.Count * 2} of Tiingo{(tiingo ? string.Empty : ", which is not asked: no key is set")}, Tiingo within {TiingoAllowance.PerHour} an hour, {TiingoAllowance.PerDay} a day and {TiingoAllowance.CodesPerMonth} codes a month"));
+        output.WriteLine(FormattableString.Invariant($"{Stage}: {codes.Count} code(s) across the three, {codes.Sum(code => code.Runs.Sum(run => run.Count))} session(s); at most {codes.Count} request(s) of Yahoo and {codes.Count * 2} of Tiingo{(tiingo ? string.Empty : ", which is not asked: no key is set")}, Tiingo within {TiingoAllowance.PerHour} an hour, {TiingoAllowance.PerDay} a day and {TiingoAllowance.CodesPerMonth} codes a month"));
 
         foreach (var code in codes)
         {
@@ -396,7 +398,7 @@ public sealed partial class SecondSourceFill(string databaseFile, IClock clock, 
         await insert.ExecuteNonQueryAsync(cancellation);
     }
 
-    // The holes asked before that no source filled, each asked again only once a later run is given them by hand.
+    // The holes asked before that no source filled, each asked again only where a later run names its code.
     async Task<HashSet<(string, DateOnly, DateOnly)>> UnfilledAsync(CancellationToken cancellation)
     {
         var unfilled = new HashSet<(string, DateOnly, DateOnly)>();

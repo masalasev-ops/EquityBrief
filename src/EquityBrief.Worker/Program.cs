@@ -217,7 +217,12 @@ static async Task<int> LongFillVerb(string[] args)
         return 0;
     }
 
-    await fill.RunAsync(word, Console.Out);
+    // see: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
+    var again = VerbArguments.Value(args, "--again") is { } named
+        ? named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(StringComparer.Ordinal)
+        : null;
+
+    await fill.RunAsync(word, Console.Out, again);
 
     return 0;
 }
@@ -1935,7 +1940,7 @@ static int NoVerb()
         "'recipe --add <line> --words <words>' enters a reading recipe, refusing a line outside the recipes' grammar and listing for the operator what it lacks, and 'recipe --run --index <code>' prints each recipe not yet run on the index and with '--word' works it over the every-session table, refusing one whose figures read a later session, " +
         "'partner --index <code>' prints the trained partner's rows on the index, a member each month of sessions of 2005 to 2014 to learn on and of 2015 to 2018 to check on, and with '--word' fits its trees and writes its tables, " +
         "'review --index <code> --night <yyyy-MM-dd>' prints the night's picks on the index and the members its random draw would take, and with '--word' writes what history expected of each, the past cases like it that closed before the night, " +
-        "'long-fill' prints the holes inside each code's own prices on the three indices and what it would ask, and with '--word' asks Yahoo, then Stooq, then Tiingo for them and keeps a source's sessions only where its closes hold one ratio to the store's on each side, " +
+        "'long-fill' prints the holes inside each code's own prices on the three indices and what it would ask, and with '--word' asks Yahoo, then Tiingo for them and keeps a source's sessions only where its closes hold one ratio to the store's on each side, with '--again <codes>' those codes alone, their open holes asked once more, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
