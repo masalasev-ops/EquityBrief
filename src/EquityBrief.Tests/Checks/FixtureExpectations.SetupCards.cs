@@ -135,11 +135,11 @@ public partial class FixtureExpectations
             }
         }
 
-        // Each card's header and Showing list: a ruled family's choices with the setup as it runs first, and an unruled
-        // family's that one alone, each pill reading not yet tested with no freeze registered.
+        // Each setup's row and its panel's Showing list, from 24.48: a ruled family's choices with the setup as it runs first,
+        // and an unruled family's that one alone, each row's pill reading not yet tested with no freeze registered.
         foreach (var family in cards.Where(family => family != Core.Families.HeavyweightRule.Name))
         {
-            var head = Regex.Match(page, $"<section class=\"card setup-card\" id=\"setup-{family}\" data-card=\"family\".*?</header>.*?</div></div>", RegexOptions.Singleline).Value;
+            var head = Regex.Match(page, $"<tr class=\"st-row[^\"]*\" data-setup=\"{family}\".*?</tr>.*?<section class=\"card setup-card\" id=\"setup-{family}\" data-card=\"family\".*?</select>", RegexOptions.Singleline).Value;
 
             Assert.Contains("<span class=\"status-pill provisional\"", head, StringComparison.Ordinal);
             Assert.Contains($"<select id=\"rule-{family}\" class=\"rule-select\" data-rule-choice=\"{family}\"", head, StringComparison.Ordinal);

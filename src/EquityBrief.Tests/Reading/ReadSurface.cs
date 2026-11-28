@@ -277,6 +277,9 @@ public partial class ReadSurface
             // 24.47: Paper trading's order changes at its top.
             .. OrderChangesPageRows,
 
+            // 24.48: a setup's panel beneath its row on Tonight.
+            .. SetupPanelRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
             .. WaitingVariantRunRows,
@@ -5294,8 +5297,13 @@ public partial class ReadSurface
     }
 
     // A running rule's pill on its card: its revision and the day it started running, or the day its rule was registered
-    // where the page reads no revision.
-    internal const string RunningPill = "(?:Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since [0-9]+ [A-Z][a-z]{2} 2026)";
+    // where the page reads no revision; from 24.48 on its row of the setups' table on Tonight, the day it first ran.
+    internal const string RunningPill = "(?:Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since [0-9]+ [A-Z][a-z]{2} 2026|First ran [0-9]+ [A-Z][a-z]{2} 2026)";
+
+    // From 24.48 a setup's standing on its row of the setups' table, which its panel beneath draws no line of.
+    internal const string RowPill = "(?:<a class=\"vtag\"[^>]*>|<span class=\"status-pill live\">)" + RunningPill + "(?:</a>|</span>)";
+
+    internal const string RowProvisional = "<span class=\"status-pill provisional\">Not yet tested</span>";
 
     // Paper trading's tiles, one a rule's running revision, each with its family and standing.
     internal static (string Family, string Standing)[] RevisionTilesOf(string page) =>

@@ -79,7 +79,7 @@ public partial class ReadSurface
         var section = Assert.Single(Blocks(page, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>"));
 
         // Live since the freeze, never not yet tested, and its rows the live rule's.
-        Assert.Matches("<span class=\"status-pill live\" data-live-since=\"2026-09-30\">(Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since 30 Sep 2026)</span>", section);
+        Assert.Matches(RowPill, Regex.Match(page, "<tr class=\"st-row[^\"]*\" data-setup=\"improving\".*?</tr>", RegexOptions.Singleline).Value);
         Assert.DoesNotContain("Not yet tested", section, StringComparison.Ordinal);
         Assert.Contains("data-family=\"improving\" data-index=\"MID\" data-bought=\"1\"", section, StringComparison.Ordinal);
 

@@ -64,7 +64,16 @@ public sealed partial class SinglePageApp
         region.Append(marks.Glance(view, newIdeas, entries, (new PaperLink(universe) { Tab = MarkRenderer.RecentTab }).Href));
         region.Append(MarkRenderer.OpenLine(view));
         region.Append(Invariant($"<section class=\"tn-markets\" id=\"mk\" aria-label=\"The markets\">{extras?.Strip ?? string.Empty}{marks.MarketCheckLine(line)}</section>"));
-        region.Append(marks.EveryPlan(entries, night, universe, extras?.Plan, open, plans));
+        // A book's holding bought on an earlier night keeps its card at its own address, opened from its row on the book's panel.
+        // see: A stock's full card is drawn only in its plan view on Tonight, and every other page shows it as one line that opens the plan
+        // One chosen tonight and listed among the new ideas carries its card on that plan.
+        var booked = (heavyweights?.Holdings ?? []).Where(holding => holding.Card is not null).ToArray();
+
+        entries = [.. entries.Select(entry => entry is { Planless: not null, Card: null, Family: EquityBrief.Core.Families.HeavyweightRule.Name } && booked.FirstOrDefault(holding => holding.Ticker == entry.Ticker) is { } chosen ? entry with { Card = chosen.Card } : entry)];
+
+        PlanEntryView[] addressed = [.. booked.Where(holding => !entries.Any(entry => entry.Ticker == holding.Ticker)).Select(holding => new PlanEntryView(PlanEntryView.Held, EquityBrief.Core.Families.HeavyweightRule.Name, holding.Ticker) { Company = holding.Company, Card = holding.Card, Since = holding.HeldSince, Close = holding.Close, Holding = true })];
+
+        region.Append(marks.EveryPlan(entries, night, universe, extras?.Plan, open, plans, addressed));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
         // stock closest to it; from 22.9 Quality at a fair price's tile after the sector heavyweights', the card's title
@@ -101,28 +110,30 @@ public sealed partial class SinglePageApp
         // From the 22.6 correction of 2026-11-09 each tile ends on its setup's record over the long history on the index.
         shown = [.. shown.Select(tile => tile with { LongRecord = longRecords?.Of(Universes.Of(universe).Code, tile.Family) })];
 
-        // Each setup's card as it was drawn before, whole, opened beneath its row of the setups' table: the swing families' in
-        // the page's order, the Fundamentals family's in the fundamentals-first family's place before the dip's, then the books'.
+        // From the operator's order of 2026-11-28 each setup's panel beneath its row of the setups' table, in place of its card:
+        // the row names the setup, its revision and what it does, so the panel draws no heading of its own.
+        // see: Tonight's setup rows start closed and each opens a panel of its own on a click
         var panels = new Dictionary<string, string>(StringComparer.Ordinal);
+        var word = Universes.Of(universe).Word;
 
         foreach (var card in families)
         {
-            panels[card.Family] = SetupCard(marks, card, night);
+            panels[card.Family] = BookPanel(card.Family, "family", night, marks.SetupPanel(card, word));
         }
 
         if (improving is not null)
         {
-            panels[EquityBrief.Core.Families.ImprovingRule.Name] = ImprovingSection(marks, improving, night);
+            panels[EquityBrief.Core.Families.ImprovingRule.Name] = BookPanel(EquityBrief.Core.Families.ImprovingRule.Name, EquityBrief.Core.Families.ImprovingRule.Name, night, marks.ImprovingCard(improving));
         }
 
         if (heavyweights is not null)
         {
-            panels[EquityBrief.Core.Families.HeavyweightRule.Name] = HeavyweightsCard(marks, heavyweights, night);
+            panels[EquityBrief.Core.Families.HeavyweightRule.Name] = BookPanel(EquityBrief.Core.Families.HeavyweightRule.Name, "heavyweights", night, (heavyweights.RuleChoice is { } rule && !marks.Copying ? MarkRenderer.ShowingOf(EquityBrief.Core.Families.HeavyweightRule.Name, rule) : string.Empty) + marks.HeavyweightCard(heavyweights));
         }
 
         if (quality is not null)
         {
-            panels[EquityBrief.Core.Families.QualityRule.Name] = FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.QualityRule.Name}\" data-card=\"quality\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.QualityCardHead(quality)}</div></div><div class=\"card-b\">{marks.QualityCard(quality)}</div></section>");
+            panels[EquityBrief.Core.Families.QualityRule.Name] = BookPanel(EquityBrief.Core.Families.QualityRule.Name, "quality", night, marks.QualityCard(quality));
         }
 
         region.Append(SetupsTable(marks, shown, liveSince, tonight, line.FirstLive, panels, extras?.Setup, view, line));
@@ -178,6 +189,7 @@ public sealed partial class SinglePageApp
                 Order = order,
                 Since = order.Listed,
                 MetAgain = again.Any(card => card.Ticker == order.Ticker && card.HeldAgain is { Bought: false }),
+                Again = again.FirstOrDefault(card => card.Ticker == order.Ticker && card.HeldAgain is { Bought: false }),
                 Close = order.LastClose,
             })
             .OrderBy(entry => entry.Gap ?? decimal.MaxValue)
@@ -198,13 +210,18 @@ public sealed partial class SinglePageApp
         return entries;
     }
 
+    // A setup's panel beneath its row, a book's its card's body: no head, the row naming the setup, its revision and what it does.
+    static string BookPanel(string family, string kind, DateOnly night, string body) =>
+        FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{family}\" data-card=\"{kind}\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-b\">{body}</div></section>");
+
     // The setups' table: a row a setup, its plain words and its rule's name, its revision, tonight's line, its quiet nights and
     // its record from 2019, one row opened at a time with its card beneath it, the one the link names or the first.
     static string SetupsTable(MarkRenderer marks, IReadOnlyList<SetupTileView> shown, IReadOnlyDictionary<string, DateOnly?> liveSince, IReadOnlyDictionary<string, string> tonight, IReadOnlyDictionary<string, DateOnly?>? firstLive, IReadOnlyDictionary<string, string> panels, string? named, OneMinuteView view, MarketLineView line)
     {
         var html = new StringBuilder();
         var finding = shown.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Family != EquityBrief.Core.Families.QualityRule.Name && tile.Count > 0);
-        var opened = named is not null && panels.ContainsKey(named) ? named : shown.FirstOrDefault(tile => panels.ContainsKey(tile.Family))?.Family;
+        // Every row starts closed; only a link naming a setup, which a click on a book's buy follows, opens its row.
+        var opened = named is not null && panels.ContainsKey(named) ? named : null;
 
         html.Append(Invariant($"<section class=\"card tn-setups\" id=\"setups\" data-card=\"setups\"><div class=\"card-h\"><div><h2>{Escaped(SetupsTitle(shown.Count))} tonight</h2></div></div><div class=\"card-b\">"));
         html.Append(Invariant($"<p class=\"tn-sub card-summary\" data-summary>{Escaped(MarkRenderer.FindingWords(finding, shown.Count))} {Escaped(MarkRenderer.QuietWords(view))} Open a setup for its rule, how the stocks it read were narrowed, its variants and its record.</p>"));
@@ -215,9 +232,11 @@ public sealed partial class SinglePageApp
         {
             var since = liveSince.GetValueOrDefault(tile.Family);
             var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
+            // From 24.48 the row alone names the revision, with the freeze beside it, the panel drawing no line of its own.
+            var frozen = since is { } held ? RuleFreeze.Beside(held) : string.Empty;
             var running = RevisionTags.For(tile.Family, DateOnly.MaxValue) is { Length: > 0 } tag
-                ? tag
-                : Invariant($"<span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(first is { } live ? "First ran " + live.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : "Not yet tested")}</span>");
+                ? tag + (frozen.Length > 0 ? Invariant($"<small class=\"st-frozen\">{Escaped(frozen.TrimStart(';', ' '))}</small>") : string.Empty)
+                : Invariant($"<span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(first is { } live ? "First ran " + live.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) + frozen : "Not yet tested")}</span>");
             var on = tile.Family == opened;
 
             html.Append(Invariant($"<tr class=\"st-row{(on ? " on" : string.Empty)}\" data-setup=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">"));
@@ -227,7 +246,7 @@ public sealed partial class SinglePageApp
 
             if (panels.GetValueOrDefault(tile.Family) is { } panel)
             {
-                html.Append(Invariant($"<tr class=\"st-open\" data-for=\"{Escaped(tile.Family)}\"{(on ? string.Empty : " hidden")}><td colspan=\"6\"><div class=\"st-panel fam-edge\" data-family=\"{Escaped(tile.Family)}\"><p class=\"st-about\">{Escaped(MarkRenderer.WordsOf(tile.Family, tile.Label).About)}</p>{panel}</div></td></tr>"));
+                html.Append(Invariant($"<tr class=\"st-open\" data-for=\"{Escaped(tile.Family)}\"{(on ? string.Empty : " hidden")}><td colspan=\"6\"><div class=\"st-panel fam-edge\" data-family=\"{Escaped(tile.Family)}\">{panel}</div></td></tr>"));
             }
         }
 

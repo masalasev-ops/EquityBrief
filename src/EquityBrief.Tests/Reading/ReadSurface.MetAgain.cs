@@ -93,13 +93,14 @@ public partial class ReadSurface
         Assert.DoesNotContain(HeldAgainView.Label, home, StringComparison.Ordinal);
         Assert.DoesNotContain("M2 met the breakout rules again tonight. Breakout bought", home, StringComparison.Ordinal);
 
-        // Tonight keeps its card under the breakout, labelled and said as an order not filled, never as bought or held.
+        // From 24.48 Tonight keeps it as one line under the breakout's panel, said as an order still waiting, never as bought
+        // or held, opening its plan, which says so in full.
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
-        var group = Assert.Single(Blocks(tonight, "<div class=\"held-card\" data-ticker=\"M2\".*?</p><p class=\"held-line\">.*?</p>"));
+        var group = Assert.Single(Blocks(tonight, "<div class=\"sp-again\" data-held-again=\"1\">.*?</ul></div>"));
 
-        Assert.Contains($"<b>{HeldAgainView.WaitingLabel}</b>", group, StringComparison.Ordinal);
-        Assert.Contains("M2 met the breakout rules again tonight. Breakout placed its order on 30 Sep and it has not been filled, so paper trading places no second one.", group, StringComparison.Ordinal);
-        Assert.Contains($"<h5>{HeldAgainView.NoteGroup} (1)</h5>", tonight, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"sp-h\">{MarkRenderer.MetAgainHeading} (1)</p>", group, StringComparison.Ordinal);
+        Assert.Contains($"href=\"{MarkRenderer.PlanHref("M2", "400")}\"><b class=\"sp-t\">M2</b><span class=\"sp-why\">order of 30 Sep still waits</span></a>", group, StringComparison.Ordinal);
+        Assert.Contains("M2 met the breakout rules again tonight. Breakout placed its order on 30 Sep and it has not been filled, so paper trading places no second one.", tonight, StringComparison.Ordinal);
     }
 
     // More than three orders draw the chips: the chip of the order whose stock met the rules again carries the mark and says so

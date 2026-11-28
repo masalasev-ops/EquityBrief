@@ -90,9 +90,10 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
         Assert.Equal(["M1", "M3", "M2"], NewIdeasOf(page));
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.9975\">$3.00</td>", PickRowOf(page, "M3"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on a rising stop</td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on its exit signal</td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
+        // From 24.48 the ratio stands on the plan beneath its ladder, and a line with no target says how it sells instead.
+        Assert.Contains("<figcaption data-reward-to-risk=\"3.00\">", PickRowOf(page, "M3"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-p\" data-target=\"none\">Target rising stop, no target</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Matches("<span class=\"sp-p\" data-target=\"none\">Target (?!none<)[^<]+</span>", PickRowOf(page, "M2"));
         Assert.DoesNotContain(">no target<", page, StringComparison.Ordinal);
 
         // In the reader's words: no term of section 15.23's list reaches the page.

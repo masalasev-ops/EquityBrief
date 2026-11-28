@@ -59,28 +59,26 @@ public partial class ReadSurface
 
         // The card: the third of the page's families, two picks, on provisional settings.
         Assert.Contains(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
-        Assert.Contains("<header class=\"fam-head\" data-family=\"drift\"><span class=\"fam-tag\" data-family=\"drift\"><span class=\"fam-swatch\" data-family=\"drift\"></span>Earnings drift</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<b>Strong earnings</b><small>Earnings drift</small>", card, StringComparison.Ordinal);
         // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
         // on twice the volume and a target at 2.5 times the risk, from 22.6 in the reader's words behind its fold.
         Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical days' moves on 2 times its usual volume. Bought within 3 trading days while it holds above that day's low. Stop at that day's low, target the nearer of the next price band about two typical days' moves up, or 2.5 times the risk.</p>", card, StringComparison.Ordinal);
 
-        // Its picks drawn as rows of its own, E1 and E2, each ticker opening its chart page, and among the buy points E1
-        // sixth and E2 seventh.
+        // Its picks drawn as lines of its own, E1 and E2, each opening its plan, and among the buy points E1 sixth and E2
+        // seventh.
         Assert.Equal(["E1", "E2"], CardPicksOf(card));
-        Assert.Contains("<a class=\"name-link\" href=\"#/chart/E1\">E1</a>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
+        Assert.Contains($"href=\"{EquityBrief.Web.Marks.MarkRenderer.PlanHref("E1", "500")}\"><b class=\"sp-t\">E1</b>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
         Assert.Equal(5, NewIdeasOf(page).ToList().IndexOf("E1"));
         Assert.Equal(6, NewIdeasOf(page).ToList().IndexOf("E2"));
 
-        // E1's trade and its reward to risk, as its trade gate stored it, on its buy point's row.
+        // E1's trade, as its trade gate stored it, on its line.
         var first = PickRowOf(page, "E1");
 
-        Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"104\">104.00</td><td class=\"r num plan-stop\" data-stop=\"100.5\">100.50</td><td class=\"r num plan-target\" data-target=\"108\">108.00</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"1.1429\">$1.14</td>", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-p\" data-buy=\"104\">Buy $104.00</span><span class=\"sp-p\" data-stop=\"100.5\">Stop $100.50</span><span class=\"sp-p\" data-target=\"108\">Target $108.00</span>", first, StringComparison.Ordinal);
 
         var second = PickRowOf(page, "E2");
 
-        Assert.Contains("data-target=\"109.25\">109.25</td>", second, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.5\">$2.50</td>", second, StringComparison.Ordinal);
+        Assert.Contains("data-target=\"109.25\">Target $109.25</span>", second, StringComparison.Ordinal);
 
         // From 22.6 why each qualified, the drift's template worked by hand off the figures its gates stored: E1 beat by
         // 12.5 per cent on its report of 28 September, its reaction 1.4 typical days' moves on 2.1 times its volume, its
@@ -89,19 +87,18 @@ public partial class ReadSurface
         const string WhyE1 = "Beat its estimate by 12.5% on 28 Sep, jumped 1.4 typical days' moves on 2.10 times its usual volume, and is still above that day's low of 100.50.";
         const string WhyE2 = "Beat its estimate by 5.0% on 2 Oct, jumped 1.0 typical days' moves on 1.50 times its usual volume, and is still above that day's low of 100.50.";
 
-        Assert.Contains($"<td class=\"why\">{WhyE1}</td>", first, StringComparison.Ordinal);
-        Assert.Contains($"<td class=\"why\">{WhyE2}</td>", second, StringComparison.Ordinal);
-        Assert.Contains($"<td class=\"why\">{WhyE1}</td>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"sp-why\">{WhyE1}</span>", first, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"sp-why\">{WhyE2}</span>", second, StringComparison.Ordinal);
 
-        // Read back against the store in both directions: the drift's plans in the list of every plan, and its card's own rows.
-        var points = Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>"));
+        // Read back against the store in both directions: the drift's plans in the list of every plan, and its panel's lines.
+        var points = Assert.Single(Blocks(card, "<ul class=\"sp-rows\" data-rows=\"picks\".*?</ul>"));
 
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND family = 'drift' AND state = 'listed' ORDER BY place;"),
             Regex.Matches(page, "<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"[^\"]+\" data-g=\"new\" data-ticker=\"([^\"]+)\" data-family=\"drift\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
             Strings(store, $"SELECT entry || '|' || stop || '|' || target FROM family_result WHERE session_date = '{TheSwitch}' AND family = 'drift' ORDER BY place;"),
-            Regex.Matches(points, "<tr data-ticker=\"[^\"]+\" data-card-pick=\"true\">.*?data-buy=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-stop\" data-stop=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-target\" data-target=\"([^\"]+)\"", RegexOptions.Singleline)
+            Regex.Matches(points, "<a class=\"sp-line\" data-plan-line data-ticker=\"[^\"]+\".*?data-buy=\"([^\"]+)\">[^<]*</span><span class=\"sp-p\" data-stop=\"([^\"]+)\">[^<]*</span><span class=\"sp-p\" data-target=\"([^\"]+)\"", RegexOptions.Singleline)
                 .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}"));
     }
 }

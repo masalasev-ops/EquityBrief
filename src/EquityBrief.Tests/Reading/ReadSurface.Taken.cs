@@ -577,9 +577,10 @@ public partial class ReadSurface
         return row.Success ? row.Groups[1].Value : plan.Groups[1].Value;
     }
 
-    // From 24.46 a new idea's card off its plan in Tonight's list of every plan, read from the card to the plan's end.
+    // From 24.46 a new idea's card off its plan in Tonight's list of every plan, read from the card to the plan's end; from 24.48
+    // a book's holding's off the plan drawn at its own address.
     internal static Match PlanOf(string page, string index, string family, string ticker) =>
-        Regex.Match(page, $"<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"{Regex.Escape(ticker)}\" data-g=\"new\" data-family=\"{Regex.Escape(family)}\"[^>]*>.*?(<div class=\"decision-card\" data-index=\"{Regex.Escape(index)}\" data-family=\"{Regex.Escape(family)}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)</article>", RegexOptions.Singleline);
+        Regex.Match(page, $"<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"{Regex.Escape(ticker)}\" data-g=\"(?:new|held)\" data-family=\"{Regex.Escape(family)}\"[^>]*>.*?(<div class=\"decision-card\" data-index=\"{Regex.Escape(index)}\" data-family=\"{Regex.Escape(family)}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)</article>", RegexOptions.Singleline);
 
     // The management a card states, step by step.
     static string[] ManagementOf(string card) =>

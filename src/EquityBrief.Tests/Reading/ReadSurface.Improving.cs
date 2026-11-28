@@ -143,14 +143,13 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-setup=\"fundamentals\"", setups, StringComparison.Ordinal);
         Assert.True(setups.IndexOf("data-setup=\"improving\"", StringComparison.Ordinal) > setups.IndexOf("data-setup=\"drift\"", StringComparison.Ordinal));
         Assert.Contains("1 pick tonight. 1 flagged, waiting for the filing.", setups, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"st-about\">{ImprovingRule.Description}</p>", page, StringComparison.Ordinal);
-
-        // Its header as a setup card's, not yet tested, its picks tonight, how soon it reads, the night it was computed for,
-        // and its sentence from tonight's figures.
-        Assert.Contains("Fundamentals</span> <span class=\"status-pill provisional\"", section, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"fam-count\">1 pick tonight</span>", section, StringComparison.Ordinal);
-        Assert.Contains($"{ImprovingRule.Description}<br>{EquityBrief.Web.Marks.MarkRenderer.CheckedNightly}</p>", section, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"stamp computed\">Computed for ", section, StringComparison.Ordinal);
+        // From 24.48 its row names it, not yet tested and read nightly, and its panel draws no head, description or stamp of
+        // its own; then its sentence from tonight's figures.
+        Assert.Contains(RowProvisional, Regex.Match(page, "<tr class=\"st-row[^\"]*\" data-setup=\"improving\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains("data-state=\"read nightly\"", setups, StringComparison.Ordinal);
+        Assert.DoesNotContain("st-about", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("fam-head", section, StringComparison.Ordinal);
+        Assert.DoesNotContain(ImprovingRule.Description, section, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-summary\" data-summary>Tonight 3 companies' businesses improved on a new report. 1 is bought at Monday's open; 1 more is flagged from its results release and waits for its filing.</p>", section, StringComparison.Ordinal);
 
         // The four tiles, each a count and its line. M3, held since its buy, rose 5.0%; the index's three stocks over the

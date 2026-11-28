@@ -75,9 +75,9 @@ public partial class ReadSurface
         // after the 2nd and the 2nd of November.
         Assert.Contains("2 holdings. Next reshuffle in 21 trading days.", page, StringComparison.Ordinal);
 
-        // Its header as a setup card's, not yet tested, and its sentence from tonight's figures.
-        Assert.Contains("Quality at a fair price</span> <span class=\"status-pill provisional\"", section, StringComparison.Ordinal);
-        Assert.Contains("Not yet tested", section, StringComparison.Ordinal);
+        // From 24.48 its row names it, not yet tested, its panel drawing no head; then its sentence from tonight's figures.
+        Assert.Contains(RowProvisional, Regex.Match(page, "<tr class=\"st-row[^\"]*\" data-setup=\"quality\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.DoesNotContain("fam-head", section, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-summary\" data-summary>It holds 2 stocks of 10, each with strong fundamentals and a price at or below its own usual. It reshuffles next in 21 trading days.</p>", section, StringComparison.Ordinal);
 
         // The three tiles. Since the reshuffle the holdings rose by the mean of 12% and -6%, 3.0%, and the index's three

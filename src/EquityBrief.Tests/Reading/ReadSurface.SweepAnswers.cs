@@ -46,7 +46,8 @@ public partial class ReadSurface
         var breakout = FamilyCardOf(page, BreakoutRule.Name);
 
         // The breakout's card alone draws the line, beneath its standing, and still lists M1.
-        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span> <span class=\"fam-count\">1 pick tonight</span>", breakout, StringComparison.Ordinal);
+        Assert.Contains(RowProvisional, breakout, StringComparison.Ordinal);
+        Assert.Contains("data-picks=\"1\"", breakout, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(breakout), StringComparison.Ordinal);
         Assert.Equal(["M1"], CardPicksOf(breakout));
         Assert.Single(Regex.Matches(page, Regex.Escape(SweepLineDrawn)));
@@ -85,7 +86,8 @@ public partial class ReadSurface
 
         var kept = await Card();
 
-        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span> <span class=\"fam-count\">5 picks tonight</span>", kept);
+        Assert.Matches(RowPill, kept);
+        Assert.Contains("data-picks=\"5\"", kept, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(kept), StringComparison.Ordinal);
         Assert.Contains("data-picks=\"5\"", kept, StringComparison.Ordinal);
 
@@ -98,7 +100,7 @@ public partial class ReadSurface
 
         var next = await Card();
 
-        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span>", next);
+        Assert.Matches(RowPill, next);
         Assert.DoesNotContain(SweepLineDrawn, next, StringComparison.Ordinal);
 
         // A sweep after the second freeze found none: the card draws the line again and keeps its five picks.

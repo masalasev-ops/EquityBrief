@@ -103,7 +103,8 @@ public partial class ReadSurface
         var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-01-02\" data-variants=\"3\"", card, StringComparison.Ordinal);
-        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span> <span class=\"fam-count\">0 holdings</span>", card);
+        Assert.Matches(RowPill, card);
+        Assert.Contains("data-holdings=\"0\"", card, StringComparison.Ordinal);
         Assert.Equal(4, Regex.Matches(card, "<option ").Count);
     }
 }

@@ -75,8 +75,10 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         Assert.Contains(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span> <span class=\"fam-count\">2 picks tonight</span>", card, StringComparison.Ordinal);
-        Assert.Contains("<header class=\"fam-head\" data-family=\"breakout\"><span class=\"fam-tag\" data-family=\"breakout\"><span class=\"fam-swatch\" data-family=\"breakout\"></span>Breakouts to a new high</span>", card, StringComparison.Ordinal);
+        // From 24.48 its row names it and its standing, its panel drawing no head of its own.
+        Assert.Contains(RowProvisional, card, StringComparison.Ordinal);
+        Assert.Contains("<b>New high</b><small>Breakout</small>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("fam-head", card, StringComparison.Ordinal);
 
         // Its rule in words, written from the settings it froze at: a 126-session high, 1.5 times the volume, ranges
         // at 0.85 of the 20 sessions before and a stop 1.5 typical moves under, from 22.6 in the reader's words behind
@@ -90,30 +92,28 @@ public partial class ReadSurface
         Assert.Equal(5, NewIdeasOf(page).ToList().IndexOf("K1"));
         Assert.Equal(6, NewIdeasOf(page).ToList().IndexOf("K2"));
 
-        // K1's trade: bought at 50 with the stop at 47, and no target, since the stop trails the price: the target's
-        // cell and the reward to risk say so.
+        // K1's trade: bought at 50 with the stop at 47, and no target, since the stop trails the price: its line says so.
         var first = PickRowOf(page, "K1");
 
-        Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"47\">47.00</td><td class=\"r num plan-target\" data-target=\"none\">rising stop, no target</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on a rising stop</td>", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-p\" data-buy=\"50\">Buy $50.00</span><span class=\"sp-p\" data-stop=\"47\">Stop $47.00</span><span class=\"sp-p\" data-target=\"none\">Target rising stop, no target</span>", first, StringComparison.Ordinal);
 
         // From 22.6 why each qualified, the breakout's template worked by hand off the figures its gates stored: K1 closed
         // at 50 over its 126-day high of 49.5 on 2.1 times its volume, its ranges at 0.8 of the 20 days before; K2, stored
         // before the freeze and naming no window, over the provisional setting's 251-day high.
-        Assert.Contains("<td class=\"why\">Closed at 50.00, above its 126-day high of 49.50, on 2.10 times its usual volume, after a quiet spell: its daily ranges ran at 0.80 of the 20 days before them.</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"why\">Closed at 80.25, above its 251-day high of 80.00, on 1.60 times its usual volume, after a quiet spell: its daily ranges ran at 1.00 of the 20 days before them.</td>", PickRowOf(page, "K2"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-why\">Closed at 50.00, above its 126-day high of 49.50, on 2.10 times its usual volume, after a quiet spell: its daily ranges ran at 0.80 of the 20 days before them.</span>", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-why\">Closed at 80.25, above its 251-day high of 80.00, on 1.60 times its usual volume, after a quiet spell: its daily ranges ran at 1.00 of the 20 days before them.</span>", PickRowOf(page, "K2"), StringComparison.Ordinal);
 
         // F1, which both families passed, is drawn once in tonight's buy points tagged with the pullback, with the
         // breakout's label and the pullback's own trade, and from the 19.3 correction of 2026-10-17 once as a row of the
         // pullback's card and of no other card; the breakout's card names it in a note.
         var shared = PickRowOf(page, "F1");
 
-        Assert.Single(Regex.Matches(page, "<tr data-ticker=\"F1\""));
+        Assert.Single(Regex.Matches(page, "<a class=\"sp-line\" data-plan-line data-ticker=\"F1\""));
         Assert.Contains("F1", CardPicksOf(FamilyCardOf(page, SetupFamilies.Pullback)));
         Assert.Single(Regex.Matches(page, "data-g=\"new\" data-ticker=\"F1\" data-family=\"pullback\""));
         Assert.DoesNotContain("data-ticker=\"F1\" data-family=\"breakout\"", page, StringComparison.Ordinal);
         Assert.Contains("<span class=\"also-family\" data-also=\"Breakout\">also a breakout</span>", shared, StringComparison.Ordinal);
-        Assert.Contains("data-target=\"110\">110.00</td>", shared, StringComparison.Ordinal);
+        Assert.Contains("data-target=\"110\">Target $110.00</span>", shared, StringComparison.Ordinal);
         Assert.DoesNotContain("also-family", PickRowOf(page, "F2"), StringComparison.Ordinal);
         Assert.Equal(
             ["F1 also qualified here tonight and is shown once, under Pullbacks to support, with both labels. One stock is one trade."],

@@ -123,13 +123,13 @@ public partial class ReadSurface
         // Every card provisional, Quality at a fair price's among them from 22.9 and from 22.13 the Fundamentals family's in
         // the fundamentals-first family's place, each rule written from the settings the night stored, the breakout's listing
         // M1.
-        Assert.Equal(6, Regex.Matches(page, "<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span>").Count);
+        Assert.Equal(6, Regex.Matches(page, RowProvisional).Count);
 
         var breakout = FamilyCardOf(page, "breakout");
 
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", breakout, StringComparison.Ordinal);
         Assert.Contains("data-plan=\"M1\" data-g=\"new\" data-family=\"breakout\"", PickRowOf(page, "M1"), StringComparison.Ordinal);
-        Assert.Contains("<span class=\"co\">Mid One</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-co\">Mid One</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
         Assert.Equal(["M1"], CardPicksOf(breakout));
 
         // The pullback passed M3 and holds it back for its trade on the S&P 500's list, naming that list.
@@ -239,14 +239,15 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.9975\">$3.00</td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
+        // From 24.48 the ratio stands on its plan, beneath the ladder of its prices, and its panel's line draws none.
+        Assert.Contains("<figcaption data-reward-to-risk=\"3.00\">", PickRowOf(page, "M2"), StringComparison.Ordinal);
         Assert.Equal(2.9975m, EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 60.76m, 77.03m));
 
         store.Execute($"UPDATE index_family_result SET stop = '64.83' WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND ticker = 'M2' AND family = 'drift';");
 
         var none = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", PickRowOf(none, "M2"), StringComparison.Ordinal);
+        Assert.DoesNotContain("data-reward-to-risk=", PickRowOf(none, "M2"), StringComparison.Ordinal);
         Assert.Null(EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 64.83m, 77.03m));
         Assert.Null(EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 60.76m, 64.83m));
     }

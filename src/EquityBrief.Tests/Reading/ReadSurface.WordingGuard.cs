@@ -55,18 +55,20 @@ public partial class ReadSurface
         Assert.Equal("Monday's", MarkRenderer.OpenDay(new DateOnly(2026, 10, 2)));
         Assert.All(new[] { tonight, home, held }, page => Assert.DoesNotContain("tomorrow's open", page, StringComparison.Ordinal));
 
-        // HELD's card in the group of its own on Tonight, under the pullback, with its label and its line.
-        var group = Assert.Single(Blocks(tonight, "<div class=\"held-again\" data-held-again=\"1\">.*?</div></div></div>"));
+        // From 24.48 HELD as one line under the pullback's panel, held since its fill traded on 2 Oct, up (100.00 - 98.50) /
+        // 98.50 = 1.52% since bought, the line opening its plan, and no note repeating it.
+        var group = Assert.Single(Blocks(tonight, "<div class=\"sp-again\" data-held-again=\"1\">.*?</ul></div>"));
 
-        Assert.Contains($"<h5>{HeldAgainView.Group} (1)</h5>", group, StringComparison.Ordinal);
-        Assert.Contains($"<b>{HeldAgainView.Label}</b>", group, StringComparison.Ordinal);
-        // From the operator's correction of 2026-11-23 the day it bought it is the day its fill traded, 2 Oct.
-        Assert.Contains("HELD met the pullback rules again tonight. Pullback bought it on 2 Oct and that trade is still open, so paper trading will not buy it again until it ends.", group, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"sp-h\">{MarkRenderer.MetAgainHeading} (1)</p>", group, StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"sp-line\" data-plan-line data-ticker=\"HELD\" href=\"{MarkRenderer.PlanHref("HELD", "500")}\"><b class=\"sp-t\">HELD</b><span class=\"sp-why\">already held since 2 Oct</span><span class=\"sp-p\">+1.5% since bought</span></a>", group, StringComparison.Ordinal);
+        Assert.DoesNotContain("HELD qualified again tonight but", tonight, StringComparison.Ordinal);
 
-        // Its open trade beside it: listed 1 Oct, filled 2 Oct at 98.50, its stop and sale its rule's, tonight's close 100.00,
-        // up (100.00 - 98.50) / 98.50 = 1.52%.
-        Assert.Contains("<dl class=\"held-trade\"><dt>Bought by</dt><dd>Pullback, listed 1 Oct 2026</dd><dt>Price paid</dt><dd>98.50 on 2 Oct 2026</dd><dt>Stop</dt><dd>a close below 94.00</dd><dt>Sale</dt><dd>a close at or above 106.00</dd><dt>Last close</dt><dd>100.00</dd><dt>Since bought</dt><dd>+1.5%</dd></dl>", group, StringComparison.Ordinal);
-        Assert.Contains("HELD qualified again tonight but its trade from 2026-10-01 is still open, so it is not bought again; its card is under Met the rules again.", tonight, StringComparison.Ordinal);
+        // Its plan holds its line and its open trade: from the operator's correction of 2026-11-23 the day it bought it is
+        // the day its fill traded, 2 Oct, at 98.50, tonight's close 100.00.
+        var plan = Assert.Single(Blocks(tonight, "<article class=\"pl-plan[^\"]*\" id=\"[^\"]+\" data-plan=\"HELD\" data-g=\"held\".*?</article>"));
+
+        Assert.Contains("HELD met the pullback rules again tonight. Pullback bought it on 2 Oct and that trade is still open, so paper trading will not buy it again until it ends.", plan, StringComparison.Ordinal);
+        Assert.Contains("Bought on 2 Oct at $98.50. Tonight's close was $100.00.", plan, StringComparison.Ordinal);
 
         // HELD reaches no pick count: the seven new picks stand, and HELD is no row of Monday's buys.
         Assert.Contains("7 new picks to buy at Monday's open", tonight, StringComparison.Ordinal);

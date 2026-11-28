@@ -127,10 +127,10 @@ public partial class ReadSurface
 
             // M2's why names the index's live rule, read in the reader's words, its fall and its trend as that rule reads
             // them, and its exit on the RSI where a target would stand.
-            var m2 = Assert.Single(Blocks(dip, "<tr data-ticker=\"M2\" data-card-pick=\"true\">.*?</tr>"));
+            var m2 = CardPickRowOf(dip, "M2");
 
             Assert.Contains("Its 2-day RSI closed at 3.5 after a fall of at least 3 typical days' moves over 3 trading days, above its 200-day average with its 50-day average above that with no report in the drop or before its time limit, every step of the short-term dip passing on the S&P 400's running revision. Bought at the next open, it is sold at the next open after its 2-day RSI closes back above 65 or a close under its stop, or at the close of its 5th trading day where neither came.", m2, StringComparison.Ordinal);
-            Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">its 2-day RSI over 65</td>", m2, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"sp-p\" data-target=\"none\">Target its 2-day RSI over 65</span>", m2, StringComparison.Ordinal);
 
             // The card's choice of rule: the live rule and its three versions, each version named by what it changes in the
             // fold of the versions being tested.

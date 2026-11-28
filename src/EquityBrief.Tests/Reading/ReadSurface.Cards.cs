@@ -233,11 +233,10 @@ public partial class ReadSurface
         Assert.Contains(".list-table tr.card-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
 
-        var marks = new MarkRenderer();
-        var card = new DecisionCardView("GSPC", new DateOnly(2026, 10, 1), "pullback", "F1", "the pullback", 50m, 47.3m, 55.4m, [], null);
+        // From 24.48 a row opens no card beneath it: its line opens the stock's plan on Tonight, on the index its card was stored on.
+        var card = new DecisionCardView("MID", new DateOnly(2026, 10, 1), "pullback", "F1", "the pullback", 50m, 47.3m, 55.4m, [], null);
 
-        Assert.StartsWith("<tr class=\"card-row\" id=\"card-gspc-pullback-f1\" hidden><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\"", marks.CardRow(card, 9), StringComparison.Ordinal);
-        Assert.EndsWith("</div></div></td></tr>", marks.CardRow(card, 9), StringComparison.Ordinal);
+        Assert.Equal($" <a class=\"card-toggle plan-open\" data-plan-line href=\"{MarkRenderer.PlanHref("F1", "400")}\">Open plan</a>", MarkRenderer.PlanLink(card));
     }
 
     [Fact]
@@ -302,31 +301,22 @@ public partial class ReadSurface
             foreach (var card in index)
             {
                 // From 24.46 a buy point's card stands in its plan in Tonight's list of every plan, the list's row naming the
-                // plan before it; a holding's stands in a card row with its control in its row.
+                // plan before it; from 24.48 a book's holding's in the plan drawn at its own address, the line on its book's
+                // row opening it.
                 var fold = PlanOf(page, card.Index, card.Family, card.Ticker);
-                var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{card.Id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
-                string body;
 
-                if (fold.Success)
-                {
-                    var planId = Regex.Match(fold.Value, "^<article class=\"pl-plan[^\"]*\" id=\"([^\"]+)\"").Groups[1].Value;
-                    var control = Regex.Matches(page, $"<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"{Regex.Escape(planId)}\"");
+                Assert.True(fold.Success, $"The {index.Key} page draws no plan holding {card.Ticker}'s card.");
 
-                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s plan.");
-                    Assert.True(control[0].Index < fold.Index, $"{card.Ticker}'s plan stands after the row opening it.");
-                    Assert.False(row.Success, $"The {index.Key} page draws {card.Ticker}'s card twice.");
-                    folded.Add(card.Id);
-                    body = fold.Groups[1].Value;
-                }
-                else
-                {
-                    var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{card.Id}\"");
+                var planId = Regex.Match(fold.Value, "^<article class=\"pl-plan[^\"]*\" id=\"([^\"]+)\"").Groups[1].Value;
+                var listed = Regex.Matches(page, $"<a class=\"pl-row[^\"]*\" href=\"[^\"]+\" data-plan-id=\"{Regex.Escape(planId)}\"");
+                var line = Regex.Matches(page, $"<a class=\"card-toggle plan-open\" data-plan-line href=\"{Regex.Escape(EquityBrief.Web.Marks.MarkRenderer.PlanRoute + card.Ticker)}[\"?]");
 
-                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s card.");
-                    Assert.True(row.Success, $"The {index.Key} page draws no card row for {card.Ticker}.");
-                    Assert.True(control[0].Index < row.Index, $"{card.Ticker}'s card row stands before the control opening it.");
-                    body = row.Groups[1].Value;
-                }
+                Assert.True(listed.Count + line.Count >= 1 && listed.Count <= 1, $"The {index.Key} page draws {listed.Count} rows and {line.Count} lines for {card.Ticker}'s plan.");
+                Assert.True(listed.Count == 0 || listed[0].Index < fold.Index, $"{card.Ticker}'s plan stands after the row opening it.");
+                Assert.Single(Regex.Matches(page, $"<div class=\"decision-card\" data-index=\"{Regex.Escape(card.Index)}\" data-family=\"{Regex.Escape(card.Family)}\" data-ticker=\"{Regex.Escape(card.Ticker)}\""));
+                folded.Add(card.Id);
+
+                var body = fold.Groups[1].Value;
 
                 // The lines the night stored, as 22.6 draws them: the first as a tick a step it passed, the earnings line
                 // among what could go wrong with its own mark, and every other line among the other checks in its order,
@@ -336,10 +326,9 @@ public partial class ReadSurface
                 rows[card.Ticker] = body;
             }
 
-            // Every card no plan holds stands in a card row, and with no plan in the link one plan alone is shown.
-            Assert.Equal(
-                index.Select(card => card.Id).Where(id => !folded.Contains(id)).Order(StringComparer.Ordinal),
-                Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal));
+            // From 24.48 no card stands anywhere but a plan, and with no plan in the link one plan alone is shown.
+            Assert.Equal(index.Count(), folded.Count);
+            Assert.DoesNotContain("<tr class=\"card-row\"", page, StringComparison.Ordinal);
             Assert.True(Regex.Matches(page, "<article class=\"pl-plan[^\"]*\" [^>]*>").Count(match => !match.Value.Contains(" hidden>", StringComparison.Ordinal)) <= 1, "More than one plan is shown.");
         }
 

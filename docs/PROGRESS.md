@@ -23775,3 +23775,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1805 passing, none out of scope and none unexamined, 1820 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.48 - Tonight's setup panels: every setup row closed until clicked, each opening a panel of its own, and a stock's full card drawn only in its plan view   2026-11-28
+
+Ruled:      the operator's order of 2026-11-28, kept word for word as Appendix AL of the phase 24 plan's file and in
+            `prompts/2026-11-28-24.48-tonight-setup-panels.md`, built while the 24.19 correction's folded build runs. Two new
+            decisions.
+Built:      every setup row on Tonight starts closed, only a link naming a setup opening one as the page draws; an opened
+            row holds a panel with no heading, revision line or description, which the row states with the freeze beside its
+            revision: the Showing selector, the funnel sentence, tonight's picks one line each, the stocks its rules met
+            again one line each under "Met the rules again", each line opening its plan, and its folds closed (see:
+            Tonight's setup rows start closed and each opens a panel of its own on a click). Tonight draws no full card
+            outside a plan: a stock met again stands as its line, a sector heavyweight's row opens its plan, a holding
+            bought on an earlier night keeps its card in a plan at its own address listed nowhere, and a waiting order met
+            again says so on its plan; Home, Paper trading, the AI stock picker's pages and Past picks drew none (see: A
+            stock's full card is drawn only in its plan view on Tonight, and every other page shows it as one line that
+            opens the plan). Where each item of the old card went: its heading, pill and count to the row; its description
+            to the row's names; the Showing selector, the funnel sentence, the variant band and the folds to the panel; the
+            pick table to one line a pick, its reward against risk to the plan's ladder; the open-trade notes to the met-again
+            lines, kept where no card was stored; the met-again full cards to their lines and their plans, the held line,
+            the fill, the stop and the sale there; a heavyweight's card row to its plan; the books' heads to the row, the
+            Fundamentals family's stamp of the night to the page's date line. No file a rule or the readings' version pins
+            is edited.
+Waiting:    the operator's word on the stock's own page, which keeps its card, the report's proof reading it for six rules.
+Tests:      3 new: the breakout's panel read off the page; the check walking Tonight, Home, the AI stock picker, Paper
+            trading, Past picks and each stored card's plan over every night of two constructed stores, finding no full card
+            outside a plan and no panel or fold open; and the check naming a planted card, panel and fold. The page tests that
+            read the old card read the row and the panel in its place.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m48 every card read
+            as inside a plan: red; m49 the first row opened as the page draws: red; m50 the note the met-again line says kept:
+            red; m51 a holding bought on an earlier night given no plan at its address: red. Filtered to their tests and
+            reverted before anything was committed.
+Claims:     1806, one added: section 15.7's row of a setup's panel.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4117 of 4117 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1806
+            claims, 1806 passing, none out of scope and none unexamined, 1821 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

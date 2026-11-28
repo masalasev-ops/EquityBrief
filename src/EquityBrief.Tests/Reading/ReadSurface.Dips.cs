@@ -100,14 +100,12 @@ public partial class ReadSurface
         Assert.Equal(
             ["dollar floor 1 times", "close at least $5", "above its 200-day average", "2-day RSI under 10", "no report in 3 trading days or ahead", "stop 4 moves", "sold over its 5-day average", "10 trading days at most", "market setting off"],
             Regex.Matches(Assert.Single(Blocks(dip, "<ul class=\"rule-chips\".*?</ul>")), "<li class=\"rule-chip\">([^<]+)</li>").Select(match => match.Groups[1].Value));
-        Assert.Contains(Blocks(dip, "<span class=\"fam-tag\"[^>]*>"), tag => tag.Contains("data-family=\"dip\"", StringComparison.Ordinal));
-        // Its pick's exit in words where a target would stand, and from the 22.6 correction of 2026-10-26 its risk line
-        // saying it has no target since it sells on its exit signal.
-        var m2 = Assert.Single(Blocks(dip, "<tr data-ticker=\"M2\" data-card-pick=\"true\">.*?</tr>"));
+        Assert.Contains("<i class=\"fam-swatch\" data-family=\"dip\"></i>", dip, StringComparison.Ordinal);
+        // Its pick's exit in words where a target would stand.
+        var m2 = CardPickRowOf(dip, "M2");
 
-        Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">over its 5-day average</td>", m2, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on its exit signal</td>", m2, StringComparison.Ordinal);
-        Assert.Contains(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sp-p\" data-target=\"none\">Target over its 5-day average</span>", m2, StringComparison.Ordinal);
+        Assert.Contains(RowProvisional, dip, StringComparison.Ordinal);
         Assert.Contains("M1 also qualified here tonight and is shown once, under Breakouts to a new high, with both labels. One stock is one trade.", dip, StringComparison.Ordinal);
         Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's picks is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);
 
@@ -117,7 +115,7 @@ public partial class ReadSurface
             ["pullback", "breakout", "drift", "dip"],
             Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Distinct());
         Assert.Contains("data-family=\"dip\" data-place=\"4\" data-of=\"4\"", page, StringComparison.Ordinal);
-        Assert.Contains("<header class=\"fam-head\" data-family=\"dip\">", dip, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"st-row\" data-setup=\"dip\"", dip, StringComparison.Ordinal);
 
         // The tiles: every swing family's by the check, the dip's by its own setting, listing with M3 held back, from 22.9
         // Quality at a fair price's, which reads no market check, and from 22.13 the Fundamentals family's in the

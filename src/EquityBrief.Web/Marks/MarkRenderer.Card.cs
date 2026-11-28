@@ -384,10 +384,10 @@ public sealed partial class MarkRenderer
     public static string CardToggle(DecisionCardView card) =>
         $" <button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{Escaped(card.Id)}\" title=\"open this pick's plan and checks\">Open plan</button>";
 
-    // A pick's card in a row of its own beneath the pick's, hidden until its control opens it, held inside the width of the
-    // box its table scrolls in.
-    public string CardRow(DecisionCardView card, int columns) =>
-        Formatted($"<tr class=\"card-row\" id=\"{Escaped(card.Id)}\" hidden><td colspan=\"{columns}\"><div class=\"row-open\">{DecisionCard(card, linked: true)}</div></td></tr>");
+    // The link on a row that opens its stock's plan on Tonight, where its full card is drawn, on the index the card was stored on.
+    // see: A stock's full card is drawn only in its plan view on Tonight, and every other page shows it as one line that opens the plan
+    public static string PlanLink(DecisionCardView card) =>
+        Formatted($" <a class=\"card-toggle plan-open\" data-plan-line href=\"{Escaped(PlanHref(card.Ticker, (App.Universes.ByCode(card.Index) ?? App.Universes.Of(card.Index)).Word))}\">Open plan</a>");
 
     // A pick's card in the reader's words: a sentence saying which setup picked the stock, when, and at about what price;
     // a ticked sentence for each step it passed, from the steps and values the night stored; the setup's own plan, the
