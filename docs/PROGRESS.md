@@ -24054,3 +24054,87 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 68 tables, 1812 claims, 1812 passing, none out of scope and none unexamined, 1827 placements and verdicts
             reconciled against a floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.48 ruling - a stock's own page counts as its plan view   2026-11-28
+
+Not a checkpoint entry. It lands nothing.
+Ruled:      the operator's answers of 2026-11-28, item 3, kept word for word in `prompts/`: a stock's own page keeps its full
+            card and counts as a plan view. One decision: A stock's own page counts as its plan view, so its full card stands
+            there with its report proof's six rules unchanged.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, in the one run the last entry below states the figures of.
+Carried:    none.
+
+### 24.47 - correction: tools/merge refuses while any writer runs, and the fill check at 21:30 UTC   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28, items 2 and 6, kept word for word in `prompts/`: tools/merge refuses while
+            any writer runs and names it; the fill check is scheduled at 21:30 UTC on trading days; "Fourteen carve-outs"
+            becomes "the carve-outs named below". Two decisions: The merge script refuses while any writer runs and names
+            it, read off the machine's processes and the run log; The fill check is scheduled at 21:30 UTC on trading
+            days, after the close all year.
+Built:      the merge guard, the worker's `writers` verb: every worker process but its own named by the night copy it runs
+            from or its folder, the night's lock named where held, and the run log's three newest rows beside them, read
+            only; tools/merge asks it after the night lock and refuses with 3 naming the writer. The fill check's row and
+            the runbook at 21:30 UTC, and its task registered on the operator's machine at 21:30 UTC on weekdays from the
+            checkout's Release build of main. `CLAUDE.md`'s carve-outs stated with no count.
+Tests:      three new: a worker named by its night copy or its folder, the merge script refusing on the writers verb before
+            it merges, and the carve-outs stated with no count and none placed by number.
+Mutated:    the rule, stated before the runs: each new test's named property broken once in the file it reads, the smallest
+            edit that does so. m60, the property that a worker under a night copy is named by the copy: the copy's test
+            inverted; the naming test went red. m61, the property that no carve-out is counted: a count planted in
+            `CLAUDE.md`'s hard rules; the carve-outs test went red. Each reverted before the run below.
+Claims:     1814, two added: the merge guard's catalogue and matrix rows.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, in the one run the entry
+            below states the figures of.
+Carried:    none.
+
+### 24.19 - correction: the every-session check lists what the heavyweights' first part read leaves out   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28 to the report of 11:55 am, item 1, kept word for word in `prompts/`: the
+            heavyweights' first part read is carried into the first pin move after the 2027-02-06 run, beside 24.30's,
+            24.37's and 24.38's rules parts, with its replay over two copies; until then the 24.19 check lists each session
+            it misses as skipped by the heavyweights' read, never as a difference to mark. One decision: The heavyweights'
+            setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists
+            what it leaves out. One obligation: The heavyweights' setups find a code's history by its session in the first
+            pin move after the 2027-02-06 run.
+Built:      the S&P 500's every-session check works each rebalance's size cut over the long history and lists each member
+            the readings' source leaves out, a code read in parts whose first part holds no bar of the rebalance, on lines
+            of its own with their count; none is a finding, none is marked and none counts toward its verdict.
+Pins:       none moved: the check's source and the parts' are pinned by no rule, and the readings' own source is unchanged.
+Tests:      one new: the members left out found by code and session and the list kept apart from the findings.
+Mutated:    m62, the property that a member is listed only where its first part holds no bar of the rebalance: that
+            condition inverted; the test went red; reverted before the run below.
+Claims:     1814, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the two above, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 4138 of 4138 tests ran with none
+            failed, migrations 0 to 179 with none pending, schema version 179, against `data-ci` and never `data`; the phase
+            report 68 tables, 1814 claims, 1814 passing, none out of scope and none unexamined, 1829 placements and verdicts
+            reconciled against a floor of 34, 57 checks on the roster run and passed.
+Carried:    the obligation above, due at the first pin move after the run of 2027-02-06.
+
+### 24.50 - Tonight's and Paper trading's alignment, and a plan saying each thing once   2026-11-28
+
+Ordered:    the operator's order of 2026-11-28, kept word for word in `prompts/`. Two decisions: A plan view says each thing once,
+            the card's sentence and the traded plan's reward line left to the parts above that say them; Every block sits on its
+            page column or its card's inner edges as a browser lays the pages out at 1440 and 390.
+Built:      the folder tabs' row keeps no left padding, its first tab on the page column; a plan's card, its tab row and every
+            panel run the plan's full width, its price line too with its marks inside an inset, and Home's market bar its card's.
+            A plan draws none of: the card's sentence, picked by the setup on the night and bought only on a dip (the header's
+            setup and state, the buy condition and the four figures say it); the setup's one line (why it is here); the traded
+            plan's reward line, the sizing tab's risk of $1 and its share to break even (the price line's caption), the last
+            three only where the caption is drawn. A stock's own page keeps its full card. The browser the copy's layout check
+            started moved to a class of its own the suite's check starts as well.
+Measured:   the check passed on Home, both Tonight tabs, both Paper trading tabs and a plan at 1440 and a true 390 in both
+            palettes, 32 to 91 blocks read a page, screenshots of each in the report.
+Tests:      three new: the column rule by hand, the six pages laid out in a browser, and a plan saying each thing once.
+Mutated:    the rule, stated before the runs: each new check's named property broken once in what it reads, the smallest edit
+            that does so. m63, the column rule's left edge loosened to 31 px; the rule test went red. m64, the tab row's left
+            padding restored; the browser check named the tab row on all five pages carrying it, after the check was taught to
+            read a bare row's first item, which m64 first survived. m65, the card's sentence drawn in the plan again; the plan
+            test went red. Each reverted before the run below.
+Claims:     1814, none added: the three rows it edits stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4141 of 4141 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1814 claims,
+            1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    none.

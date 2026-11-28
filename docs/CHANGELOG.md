@@ -17,6 +17,73 @@ Now:
 > ... beside them how far the price must fall from tonight's close to reach its buy price and its trading days left; ...
 Why: the operator's answers of 2026-11-28, item 5, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - every block on its page column or its card's inner edges, at 24.50
+Decision: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390
+Was:
+> ... and the chart and the profile are scaled to it together as below the ceiling. (see: A screen is read at the width of the screen it is read on, and a name's page in a reading column)</p>
+Now:
+> ... and the chart and the profile are scaled to it together as below the ceiling. (see: A screen is read at the width of the screen it is read on, and a name's page in a reading column) From 24.50, on Home, both of Tonight's tabs, both of Paper trading's and a plan, every block at the top of the page sits on the column, ... The suite lays those pages out in a browser at 1440 and a true 390 in both palettes and names each block that does not (see: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390)</p>
+Why: the operator's order of 2026-11-28, items 1, 4 and 5, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - a plan saying each thing once and running its full width, at 24.50
+Decision: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them
+Was:
+> ... and listed nowhere; and a waiting order its stock's rules met again saying so in a line (see: Tonight lists every plan ...
+Now:
+> ... and listed nowhere; a waiting order its stock's rules met again saying so in a line; and from 24.50 its tab row and every tab panel running the plan's full width with their tables, the card's sentence and the traded plan's reward lines not drawn since the parts above the tabs say each of their facts (see: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them) (see: Tonight lists every plan ...
+Why: the operator's order of 2026-11-28, items 2 and 3, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - the first folder tab on the page column, at 24.50
+Decision: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390
+Was:
+> ... and Records' link opening the picks tab (see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time)</td></tr>
+Now:
+> ... and Records' link opening the picks tab; from 24.50 the first tab's left edge on the page column with the title and the notice box (see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time) (see: Every block sits on its page column or its card's inner edges as a browser lays the pages out at 1440 and 390)</td></tr>
+Why: the operator's order of 2026-11-28, item 1, kept word for word in `prompts/2026-11-28-24.50-alignment-and-plan-view.md`.
+
+### 2026-11-28 - docs/RUNBOOK.md - the every-session check listing what the heavyweights' first part read leaves out, at a correction to 24.19
+Decision: The heavyweights' setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists what it leaves out
+Was:
+> ... and its run log row counts each part; a difference in any part still fails the check.
+Now:
+> ... and its run log row counts each part; a difference in any part still fails the check. From the operator's answers of 2026-11-28 on the S&P 500 it also lists, on `session-readings-heavyweights` lines of their own with their count, each rebalance's size cut member whose heavyweights' setup the readings' source leaves out, ... each as skipped by the heavyweights' read; none is a difference and none is marked, until the first pin move after the run of 2027-02-06 moves that lookup (see: The heavyweights' setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists what it leaves out).
+Why: the operator's answers of 2026-11-28 to the report of 11:55 am, item 1, kept word for word in `prompts/2026-11-28-24.47-answers-to-the-1155-report.md`; BUILD_PLAN's 24.19 section and its carried obligations gain the paragraph and the row, added lines alone.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - the fill check at 21:30 UTC and the merge guard, at a correction to 24.47
+Decision: The fill check is scheduled at 21:30 UTC on trading days, after the close all year
+Was:
+> <td>a process of its own on each trading day, scheduled at 20:30 UTC and reading at half past four in New York, <code>fill-check --word</code></td>
+Now:
+> <td>a process of its own on each trading day, from the 24.47 correction of 2026-11-28 scheduled at 21:30 UTC, after the close all year, reading once half past four in New York has passed, <code>fill-check --word</code> (see: The fill check is scheduled at 21:30 UTC on trading days, after the close all year)</td>
+Why: the operator's answers of 2026-11-28, item 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`; the merge guard's catalogue and matrix rows added beside the fill odds test's (see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log).
+
+### 2026-11-28 - docs/RUNBOOK.md - the fill check at 21:30 UTC and the merge refused while any writer runs, at a correction to 24.47
+Decision: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log
+Was:
+> ... Register it with the scheduler at 20:30 UTC on weekdays, which is half past four in New York in summer and half past three in winter: it waits by the clock until half past four in New York, so it reads the whole session all year, and on a day the exchange is closed it asks nothing. ...
+> It is refused while the night's lock file stands under the data root, and is run only when no night, off-peak run, local run, ledger build or monthly run is writing, as the merge rule says. ...
+Now:
+> ... Register it with the scheduler at 21:30 UTC on weekdays, which is half past four in New York in winter and half past five in summer, after the close all year: ... (see: The fill check is scheduled at 21:30 UTC on trading days, after the close all year). ...
+> It is refused while the night's lock file stands under the data root, and from the 24.47 correction of 2026-11-28 while any writer runs: before it merges it runs the worker's `writers` verb, ... and refuses the merge where any runs (see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log). `writers` run by hand says the same and writes nothing. ...
+Why: the operator's answers of 2026-11-28, items 2 and 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
+### 2026-11-28 - docs/BUILD_PLAN.md - 24.48's stock page ruled a plan view
+Decision: A stock's own page counts as its plan view, so its full card stands there with its report proof's six rules unchanged
+Was:
+> ... the stock's own page keeps its card until the operator rules on it, the report's proof reading that card. No rule's code version moves. ...
+Now:
+> ... the stock's own page keeps its card, the report's proof reading that card, and on the operator's ruling of 2026-11-28 counts as that stock's plan view (see: A stock's own page counts as its plan view, so its full card stands there with its report proof's six rules unchanged). No rule's code version moves. ...
+Why: the operator's answers of 2026-11-28, item 3, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
+### 2026-11-28 - CLAUDE.md - the nightly run's carve-outs stated with no count, at a correction to 24.47
+Decision: The nightly run is arithmetic only
+Corrects: the count before the carve-outs read fourteen while the list beside it named more, each carve-out added since the count was written leaving it behind.
+Was:
+> ... Fourteen carve-outs are named rather than left to be discovered, and none but the tenth asks for every member every night: ...
+Now:
+> ... The carve-outs named below are stated rather than left to be discovered, and none but the night's ask for every member's estimate trend asks for every member every night: ...
+Why: the operator's answers of 2026-11-28, item 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`: "drop the number and say 'the carve-outs named below', so it never goes stale again"; the tenth named by what it is, for the same reason.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the setup ledger finding a setup's history by its code and its session, and its smoke month, at a correction to 24.19
 Decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
 Corrects: the folded build of 2026-11-28 stopped on the S&P 500's standing ledger in its second quarter of 2019, a setup's code read by its first part, which held no bar on the session.

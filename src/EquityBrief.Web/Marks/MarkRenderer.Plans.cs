@@ -249,7 +249,10 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<p class=\"pp-cond\">{Escaped(Condition(entry, night))}</p>");
         body.Append(entry.Again?.HeldAgain is { } metAgain ? Formatted($"<p class=\"pp-note pp-again\">{Escaped(metAgain.Line(entry.Ticker, entry.Again.Family))}</p>") : string.Empty);
-        body.Append(Ladder(entry));
+        var ladder = Ladder(entry);
+        var captioned = ladder.Contains("<figcaption", StringComparison.Ordinal);
+
+        body.Append(ladder);
         body.Append(FourFigures(entry, night));
         body.Append(WhyHere(entry));
 
@@ -288,17 +291,19 @@ public sealed partial class MarkRenderer
 
         var panels = new (string Key, string Tab, string Html)[]
         {
-            ("size", "Sizing and exits", ThePlan(card, setup, entry.Pick, levels is not null) + (levels ?? string.Empty) + (card.HeldAgain is { } held ? Formatted($"<p class=\"pp-note\">{Escaped(thatNight ? AsThatNight(held.Line(entry.Ticker, card.Family)) : held.Line(entry.Ticker, card.Family))}</p>") : string.Empty)),
+            ("size", "Sizing and exits", ThePlan(card, setup, entry.Pick, levels is not null, rewardLines: !captioned) + (levels ?? string.Empty) + (card.HeldAgain is { } held ? Formatted($"<p class=\"pp-note\">{Escaped(thatNight ? AsThatNight(held.Line(entry.Ticker, card.Family)) : held.Line(entry.Ticker, card.Family))}</p>") : string.Empty)),
             ("checks", "Why it qualified", Formatted($"<p class=\"pp-note\" data-checks-when=\"{(thatNight ? DayOf(card.Night) : "tonight")}\">{Escaped(thatNight ? "The rule's checks on the night of " + card.Night.ToString("d MMM yyyy", Invariant) + ", when its order was placed, each against its floor." :"The rule's checks at tonight's close, each against its floor.")}</p>") + (checks.Length > 0 ? checks : "<p class=\"pp-note\">Its card holds no line of checks.</p>")),
             ("risks", "What could go wrong", Hits(card) is { Length: > 0 } hits ? hits : "<p class=\"pp-note\">Nothing the store holds falls inside this trade's hold.</p>"),
             ("record", "Its setup's record", RuleRecord(card) + SetupRecordBox(card.LongRecord) + ScorePart(card, setup) + (card.Behind is { } behind ? Compares(behind) : string.Empty) + Formatted($"<p class=\"pp-note\">{Escaped(RecordNote)}</p>")),
             ("mine", "Your trade", OperatorRecord(card) + Taken(card) + (card.Fill is { } fill ? Formatted($"<p class=\"card-fill\" data-fill>{Escaped(fill)}</p>") : string.Empty) is { Length: > 0 } mine ? mine : "<p class=\"pp-note\">Bought this stock? Record it on the stock's full page, and each night follows your trade by the setup's own exits.</p>"),
         };
 
-        // The tabs hold the card's own parts, under the card its night stored, its sentence first.
+        // The tabs hold the card's own parts, under the card its night stored. From the operator's order of 2026-11-28 the card's
+        // sentence is not drawn here, the header, the buy condition and why it is here saying each of its facts; nor, where the
+        // price line's caption says them, the traded plan's reward line, its risk of $1 against what it makes and the share it
+        // must reach its take-profit first.
+        // see: A plan view says each thing once, the card's sentence and the traded plan's reward line left to the parts above that say them
         body.Append(Invariant, $"<div class=\"decision-card\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
-        // A plan with no pick row says the card's sentence as why it is here, so the sentence stands once.
-        body.Append(entry.Pick is null ? string.Empty : Formatted($"<p class=\"card-summary pp-said\" data-summary>{Escaped(CardSummary(card, setup))}</p>"));
         body.Append("<nav class=\"pp-tabs\" role=\"tablist\">");
 
         foreach (var (key, tab, _) in panels)
@@ -436,7 +441,7 @@ public sealed partial class MarkRenderer
         {
             var at = high == low ? 50m : 4m + (92m * (price - low) / (high - low));
 
-            html.Append(Invariant, $"<span class=\"lad-m {kind}\" data-{kind}=\"{price.ToString(Invariant)}\" style=\"left:{at.ToString("0.#", Invariant)}%\"><i></i><b>{label}</b><em>${Price(price)}</em></span>");
+            html.Append(Invariant, $"<span class=\"lad-m {kind}\" data-{kind}=\"{price.ToString(Invariant)}\" style=\"left:calc(var(--lad-in) + (100% - 2 * var(--lad-in)) * {(at / 100m).ToString("0.###", Invariant)})\"><i></i><b>{label}</b><em>${Price(price)}</em></span>");
         }
 
         html.Append("</div>");

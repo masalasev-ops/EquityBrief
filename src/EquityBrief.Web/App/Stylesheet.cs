@@ -905,7 +905,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .one-minute{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .minute-line p{margin:0}
 .minute-line .minute-said{font-size:13.5px;color:var(--ink-2)}
-.market-bar{margin:10px 0 0;max-width:560px}
+.market-bar{margin:10px 0 0}
 .market-bar svg{display:block;width:100%;height:10px}
 .market-bar .bar-track{fill:var(--s1)}
 .market-bar .bar-fill.open{fill:var(--up)}
@@ -1291,7 +1291,7 @@ details.all-facts{margin:10px 0 4px} details.all-facts summary{cursor:pointer;fo
 .judge-slide:nth-of-type(1):checked~.judge-slides>.judge-card:nth-child(1),.judge-slide:nth-of-type(2):checked~.judge-slides>.judge-card:nth-child(2),.judge-slide:nth-of-type(3):checked~.judge-slides>.judge-card:nth-child(3),.judge-slide:nth-of-type(4):checked~.judge-slides>.judge-card:nth-child(4),.judge-slide:nth-of-type(5):checked~.judge-slides>.judge-card:nth-child(5){display:flex}
 .judge-slide:nth-of-type(1):checked~.car-head .car-navs>.car-nav:nth-child(1),.judge-slide:nth-of-type(2):checked~.car-head .car-navs>.car-nav:nth-child(2),.judge-slide:nth-of-type(3):checked~.car-head .car-navs>.car-nav:nth-child(3),.judge-slide:nth-of-type(4):checked~.car-head .car-navs>.car-nav:nth-child(4),.judge-slide:nth-of-type(5):checked~.car-head .car-navs>.car-nav:nth-child(5){display:flex}
 .judge-slide:nth-of-type(1):checked~.car-head .car-chips>.car-chip:nth-child(1),.judge-slide:nth-of-type(2):checked~.car-head .car-chips>.car-chip:nth-child(2),.judge-slide:nth-of-type(3):checked~.car-head .car-chips>.car-chip:nth-child(3),.judge-slide:nth-of-type(4):checked~.car-head .car-chips>.car-chip:nth-child(4),.judge-slide:nth-of-type(5):checked~.car-head .car-chips>.car-chip:nth-child(5){background:color-mix(in srgb,var(--research) 14%,transparent);border-color:var(--research)}
-.folder-tabs{display:flex;gap:4px;max-width:var(--column);margin:12px auto 0;padding:0 var(--gutter);border-bottom:1px solid var(--hair-2);box-sizing:border-box}
+.folder-tabs{display:flex;gap:4px;max-width:var(--column);margin:12px auto 0;padding:0 var(--gutter) 0 0;border-bottom:1px solid var(--hair-2);box-sizing:border-box}
 .folder-tabs .ft{flex:0 1 auto;min-width:0;font:600 14px/1.3 var(--sans);padding:8px 14px;border:1px solid var(--hair-2);border-bottom:none;border-top:3px solid var(--hair-2);border-radius:8px 8px 0 0;background:var(--plot);color:var(--soft);text-decoration:none;margin-bottom:-1px}
 .folder-tabs .ft-rules{border-top-color:var(--stat)} .folder-tabs .ft-ai{border-top-color:var(--research)}
 .folder-tabs .ft[aria-current]{background:var(--surface);color:var(--ink)}
@@ -1976,7 +1976,7 @@ p.sub-l{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
 .pp-cond,.pp-none{margin:14px 0 0;padding:10px 14px;border:1px solid var(--warn);background:var(--warn-fill);border-radius:8px;font-size:14.5px}
 .pp-none{border-style:dashed}
 .pp-ladder{margin:16px 0 4px}
-.lad{position:relative;height:86px;margin:0 30px}
+.lad{position:relative;height:86px;margin:0;--lad-in:30px}
 .lad-bar{position:absolute;left:0;right:0;top:26px;height:6px;border-radius:3px;background:var(--plot);border:1px solid var(--hair)}
 .lad-m{position:absolute;top:18px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:12px;white-space:nowrap}
 .lad-m i{order:1;width:3px;height:22px;margin:0 0 3px;background:var(--ink)}
@@ -2003,6 +2003,7 @@ p.sub-l{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
 .pp-tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
 .pp-panel{display:none;padding-top:12px;font-size:14px;min-height:190px;min-width:0;overflow-wrap:anywhere}
 .pp-panel.on{display:block}
+.pl-plan .decision-card{max-width:none}
 .pp-panel .card-plan>h5,.pp-panel .card-plan>.plan-tiles,.pp-panel .card-plan>.wo-box,.pp-panel .card-plan>.zone-wait{display:none}
 .tn-open{margin:0;font-size:13.5px;color:var(--ink-2)}
 .pp-panel .tbl-wrap{max-width:100%}
@@ -2036,7 +2037,7 @@ p.sub-l{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
   .tn-plans.sheet .pl-plan.on{display:block;position:fixed;inset:0;z-index:30;overflow:auto;border-radius:0;padding:14px 16px 24px}
   .tn-plans.sheet .pl-back{display:block;font:600 14px var(--sans);background:none;border:0;color:var(--ink);padding:0 0 10px;cursor:pointer}
   .pp-plan{grid-template-columns:1fr 1fr}
-  .lad{margin:0 26px}
+  .lad{--lad-in:26px}
   .tn-setups>.card-b>.tbl-wrap{overflow:visible}
   .st-tbl{width:100%;min-width:0}
   .st-tbl,.st-tbl>tbody,.st-tbl>tbody>tr,.st-tbl>tbody>tr>td{display:block;height:auto}
