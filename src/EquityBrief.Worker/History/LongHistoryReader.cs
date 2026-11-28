@@ -756,6 +756,74 @@ public sealed class LongHistoryReader : IComponent
         return (await SeriesAsync(connection, ticker, marks.GetValueOrDefault(ticker) ?? [], stamp, cancellation), await CalendarAsync(connection, stamp, cancellation));
     }
 
+    // From the 24.19 closing plan every long span of the three indices, a code's on an index, for the check's settling to read
+    // its codes and draw its stock-sessions from.
+    public async Task<IReadOnlyList<(string Index, string Ticker, DateOnly? Joined, DateOnly? Left)>> SpansAsync(CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var spans = new List<(string, string, DateOnly?, DateOnly?)>();
+
+        await foreach (var row in RowsAsync(connection, "SELECT index_code, ticker, joined, \"left\" FROM long_span ORDER BY index_code, ticker, joined;", [], cancellation))
+        {
+            spans.Add((row.GetString(0), row.GetString(1), row.IsDBNull(2) ? null : Day(row.GetString(2)), row.IsDBNull(3) ? null : Day(row.GetString(3))));
+        }
+
+        return spans;
+    }
+
+    // A code's close on a session as the provider sent it, the store's own bar or else the long pull's, adjusted and as traded;
+    // none where neither holds it.
+    public async Task<(decimal Close, decimal RawClose)?> ProviderCloseAsync(string ticker, DateOnly session, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        foreach (var table in new[] { "SELECT close, raw_close FROM bar WHERE ticker = $ticker AND session_date = $session;", "SELECT close, raw_close FROM long_bar WHERE ticker = $ticker AND session_date = $session;" })
+        {
+            await foreach (var row in RowsAsync(connection, table, [("$ticker", ticker), ("$session", Text(session))], cancellation))
+            {
+                return (Money.FromStorage(row.GetString(0)), row.IsDBNull(1) ? 0m : Money.FromStorage(row.GetString(1)));
+            }
+        }
+
+        return null;
+    }
+
+    // From the 24.19 closing plan each code of the three indices' long spans whose long prices the class reads as another
+    // instrument kept as it is, with the sessions its long prices part from the newest pull's on: the stretches the check's
+    // settling holds to a second source.
+    // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+    public async Task<IReadOnlyList<(string Ticker, IReadOnlyList<DateOnly> Parted)>> PartedAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var marks = await MarksAsync(connection, cancellation);
+        var stamp = Text(through);
+        var tickers = new SortedSet<string>(StringComparer.Ordinal);
+        var parted = new List<(string, IReadOnlyList<DateOnly>)>();
+
+        await foreach (var row in RowsAsync(connection, "SELECT DISTINCT ticker FROM long_span;", [], cancellation))
+        {
+            tickers.Add(row.GetString(0));
+        }
+
+        foreach (var ticker in tickers)
+        {
+            var kept = (marks.GetValueOrDefault(ticker) ?? []).Where(mark => mark.Kind != SessionMarking.HistoryEnds).ToArray();
+            var own = SweepHistory.Merged(
+                LongMarks.Parts(await BarsAsync(connection, "long_bar", ticker, stamp, cancellation), kept, [], true)[0].Bars,
+                LongMarks.Parts(await BarsAsync(connection, "bar", ticker, stamp, cancellation), kept, [], true)[0].Bars);
+            var pulled = LongMarks.Parts(await BarsAsync(connection, "pulled_bar", ticker, stamp, cancellation), kept, [], true)[0].Bars;
+
+            if (LongPulled.Compare(own, pulled).Kind == LongPulledKind.AnotherKept)
+            {
+                parted.Add((ticker, PriceAudit.Parted(own, pulled)));
+            }
+        }
+
+        return parted;
+    }
+
     // A part of a code's history with the prices another code of its company holds on its member sessions it holds none of,
     // joined where the two pass the rename test; the other code's prices read only on the part's side of its mark.
     async Task<LongPart> RenamedAsync(

@@ -23,6 +23,7 @@ public sealed class RecipeDesk(IClock clock, string databaseFile, string dataRoo
         Stores:
         [
             new StoreTouch(Store.SessionReading, Touch.Read),
+            new StoreTouch(Store.UnreliableMark, Touch.Read),
             new StoreTouch(Store.Recipe, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RecipeRun, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RecipeReading, Touch.Insert),
@@ -317,13 +318,17 @@ public sealed class RecipeDesk(IClock clock, string databaseFile, string dataRoo
             command.Parameters.AddWithValue($"$p{column}", FormattableString.Invariant($"$[{places[column]}]"));
         }
 
+        var marked = await Ledger.UnreliableMarkRows.ReadAsync(connection, cancellation);
+
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
             var ticker = reader.GetString(0);
 
-            if (!at.TryGetValue(Day(reader.GetString(1)), out var session))
+            // A stock-session the check marked unreliable or excluded is skipped.
+            // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+            if (!at.TryGetValue(Day(reader.GetString(1)), out var session) || marked.Skips(ticker, Day(reader.GetString(1))))
             {
                 continue;
             }

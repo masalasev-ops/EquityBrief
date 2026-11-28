@@ -460,9 +460,9 @@ public partial class ArchitectureConformance
         // Tonight redesigned, and 1763 with the January pin move's four section 17 rows, and 1769 with its background
         // variants' six rows, and 1777 with 24.30's reading recipes' eight, and 1782 with 24.31's trained partner's five, and
         // 1786 with 24.36's reviewer's four, and 1792 with the 24.19 closing plan's second source fill's six, and 1805 with
-        // 24.47's order changes and fill odds' thirteen.
+        // 24.47's order changes and fill odds' thirteen, and 1809 with the 24.19 check's settling's four.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1805),
+            (789, 853, 6, 4, 855, 876, 1809),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

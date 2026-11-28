@@ -5391,7 +5391,7 @@ internal static class Scope
         // The 24.19 closing plan's second sources' fill: its component, its three stores and section 17's row.
         [CheckReach.Key(CatalogueTable, "Second source fill")] = new Scoped(
             Verdict.Pass,
-            "the class declares the holes asked and the asks it reads, its stores and the run log it writes and the second source feed, each reconciled against the row; over a constructed store a code missing two sessions inside its own prices is asked of Yahoo, then Stooq, then Tiingo, kept from Tiingo at twice its prices where Stooq's closes part on one session, every ask written, a second run asking nothing, and without a key Tiingo asked nothing and the hole written open with each source's reason and asked no more",
+            "the class declares the holes asked and the asks it reads, its stores and the run log it writes and the second source feed, each reconciled against the row; over a constructed store a code missing two sessions inside its own prices is asked of Yahoo, then Tiingo, Stooq never asked, kept from Tiingo at twice its prices, every ask written, a second run asking nothing, and without a key Tiingo asked nothing and the hole written open with each source's reason, asked no more unless a run names its code",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Second source fill")] = new Scoped(
             Verdict.Pass,
@@ -5409,6 +5409,22 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store each of the four requests written as it was made",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Unreliable marks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, a mark covering its stock and sessions until a later row lifts it, and over a constructed store the widths test's every member dropping a marked stock-session and keeping it once lifted",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Price checks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store the close a difference was settled on written with the source's at the store's scale",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Differences settled")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update is refused, and over a constructed store each difference written with its outcome, the corrected one read back for the recheck",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The check's settling")] = new Scoped(
+            Verdict.Pass,
+            "the sort at 1% on both sides, the audit at the median ratio with a close 2% off apart and one 0.5% off agreeing, a wild close taken back in full and not one kept or taken back by less than half, and a stretch filled and excluded, each worked by hand, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Second sources' fill")] = new Scoped(
             Verdict.Pass,
             "the judge worked by hand at twice the source's prices and on both sides of the closes' band, a volume off its proportion, a source short of a session of the hole or around it and a hole with no side refused; Tiingo's hour, day and month by hand at each limit; and each figure read off the document against its constant",

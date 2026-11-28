@@ -365,8 +365,10 @@ public sealed partial class SetupLedger
     // the long ledger's to 2018 and the standing ledger's after, is held to its stock's row on every reading but its family's
     // own; a session the night stored is held to the night's own rows. Every reading that differs is named. It reads the
     // store and writes its run log row alone.
-    public async Task<int> SessionCheckAsync(string index, TextWriter output, int perYear = SessionCheckPerYear, int seed = SessionCheckSeed, CancellationToken cancellation = default, bool overLedgerMembers = false)
+    public async Task<int> SessionCheckAsync(string index, TextWriter output, int perYear = SessionCheckPerYear, int seed = SessionCheckSeed, CancellationToken cancellation = default, bool overLedgerMembers = false, IReadOnlyCollection<(string Ticker, DateOnly Session)>? only = null)
     {
+        lastDifferences.Clear();
+
         var startedAt = clock.UtcNow;
         var runId = FormattableString.Invariant($"{SessionCheckStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
 
@@ -396,13 +398,18 @@ public sealed partial class SetupLedger
         var nights = await SessionsAsync(connection, NightSessionsOf, [("$index", index)], cancellation);
         var reportFilings = await ReportFilingsAsync(connection, cancellation);
 
+        // From the 24.19 closing plan the check is run again over the stock-sessions given alone, every row of each rebuilt and
+        // held to the ledger, where the corrected codes are checked once more.
         var random = new Random(seed);
-        var sample = inputs.Sessions
-            .Where(session => session >= LongLedger.From)
-            .GroupBy(session => session.Year)
-            .OrderBy(year => year.Key)
-            .SelectMany(year => year.Select(session => (Session: session, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Session).Order())
-            .ToArray();
+        var sample = only is not null
+            ? [.. only.Select(pair => pair.Session).Distinct().Order()]
+            : inputs.Sessions
+                .Where(session => session >= LongLedger.From)
+                .GroupBy(session => session.Year)
+                .OrderBy(year => year.Key)
+                .SelectMany(year => year.Select(session => (Session: session, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Session).Order())
+                .ToArray();
+        bool Checked(string ticker, DateOnly session) => only is null || only.Contains((ticker, session));
         var findings = new List<string>();
         var memberFindings = new List<string>();
         var expected = new List<string>();
@@ -430,7 +437,10 @@ public sealed partial class SetupLedger
             {
                 while (await reader.ReadAsync(cancellation))
                 {
-                    rows.Add((reader.GetString(0), ReadingsOf(reader.GetString(1)), reader.GetString(2)));
+                    if (Checked(reader.GetString(0), session))
+                    {
+                        rows.Add((reader.GetString(0), ReadingsOf(reader.GetString(1)), reader.GetString(2)));
+                    }
                 }
             }
 
@@ -452,6 +462,11 @@ public sealed partial class SetupLedger
 
                 while (await reader.ReadAsync(cancellation))
                 {
+                    if (!Checked(reader.GetString(0), session))
+                    {
+                        continue;
+                    }
+
                     nightRows++;
                     nightsTickers.Add(reader.GetString(0));
 
@@ -461,8 +476,11 @@ public sealed partial class SetupLedger
                     }
                     else
                     {
-                        findings.AddRange(LedgerPointInTime.Differences(ReadingsOf(reader.GetString(1)), held).Select(differ =>
+                        var differs = LedgerPointInTime.Differences(ReadingsOf(reader.GetString(1)), held);
+
+                        findings.AddRange(differs.Select(differ =>
                             FormattableString.Invariant($"{reader.GetString(0)} {Stamp(session)}: {differ.Reading} the night's {Shown(differ.Stored)}, the table's {Shown(differ.Rebuilt)}")));
+                        lastDifferences.AddRange(differs.Select(differ => new SessionDifference(index, SessionDifference.Night, null, reader.GetString(0), session, differ.Reading, differ.Rebuilt, differ.Stored, false)));
                     }
                 }
 
@@ -472,29 +490,36 @@ public sealed partial class SetupLedger
             }
 
             // The standing ledger's members on a session after the long years held to the table's, both ways.
-            if (standing.TryGetValue(session, out var ledgerMembers))
+            if (only is null && standing.TryGetValue(session, out var ledgerMembers))
             {
                 memberSessions++;
                 memberFindings.AddRange(MemberSetDifferences(ledgerMembers, byTicker.Keys, session));
             }
 
-            // One row the build worked, rebuilt from the long history cut at its session.
-            var picked = rows[random.Next(rows.Count)];
+            // One row the build worked, rebuilt from the long history cut at its session; every row given where the check is run
+            // over stock-sessions given.
             var cut = LedgerPointInTime.Cut(inputs, session);
-            var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, table: true, reportFilings: reportFilings, settlements: settlements);
 
-            if (readingsThen is null)
+            foreach (var picked in only is null ? [rows[random.Next(rows.Count)]] : rows)
             {
-                findings.Add($"{picked.Ticker} {Stamp(session)}: the cut history holds no bar of it on its session");
-            }
-            else
-            {
-                rebuilt++;
+                var readingsThen = LedgerPointInTime.Rebuilt(index, cut, LedgerPointInTime.Cut(market, session), income, sectors, facts, picked.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs, table: true, reportFilings: reportFilings, settlements: settlements);
 
-                foreach (var differ in LedgerPointInTime.Differences(picked.Readings, readingsThen))
+                if (readingsThen is null)
                 {
-                    (TableOwnReadings.UntilThePinMove.Contains(differ.Reading, StringComparer.Ordinal) ? expected : findings).Add(
-                        FormattableString.Invariant($"{picked.Ticker} {Stamp(session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt at its session {Shown(differ.Rebuilt)}"));
+                    findings.Add($"{picked.Ticker} {Stamp(session)}: the cut history holds no bar of it on its session");
+                }
+                else
+                {
+                    rebuilt++;
+
+                    foreach (var differ in LedgerPointInTime.Differences(picked.Readings, readingsThen))
+                    {
+                        var byDesign = TableOwnReadings.UntilThePinMove.Contains(differ.Reading, StringComparer.Ordinal);
+
+                        (byDesign ? expected : findings).Add(
+                            FormattableString.Invariant($"{picked.Ticker} {Stamp(session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt at its session {Shown(differ.Rebuilt)}"));
+                        lastDifferences.Add(new SessionDifference(index, SessionDifference.Rebuilt, null, picked.Ticker, session, differ.Reading, differ.Stored, differ.Rebuilt, byDesign));
+                    }
                 }
             }
 
@@ -506,6 +531,11 @@ public sealed partial class SetupLedger
             {
                 while (await reader.ReadAsync(cancellation))
                 {
+                    if (!Checked(reader.GetString(1), session))
+                    {
+                        continue;
+                    }
+
                     setups++;
 
                     var family = reader.GetString(0);
@@ -535,8 +565,11 @@ public sealed partial class SetupLedger
 
                     foreach (var differ in SetupDifferences(stored, held, own))
                     {
-                        (TableOwnReadings.Expected(differ.Reading) ? expected : findings).Add(
+                        var byDesign = TableOwnReadings.Expected(differ.Reading);
+
+                        (byDesign ? expected : findings).Add(
                             FormattableString.Invariant($"{family} {ticker} {Stamp(session)}: {differ.Reading} the ledger's {Shown(differ.Stored)}, the table's {Shown(differ.Rebuilt)}"));
+                        lastDifferences.Add(new SessionDifference(index, SessionDifference.Setup, family, ticker, session, differ.Reading, differ.Rebuilt, differ.Stored, byDesign));
                     }
                 }
             }
@@ -629,6 +662,11 @@ public sealed partial class SetupLedger
     // The sessions to a sampled one whose members a rebuild over the ledger's members reads as the ledger's: the longest window
     // a ranked reading places a member over, Alpha#3's ten, with room.
     const int MemberWindow = 12;
+
+    readonly List<SessionDifference> lastDifferences = [];
+
+    // Each reading the last check found different, as the check's settling reads them.
+    public IReadOnlyList<SessionDifference> LastDifferences => lastDifferences;
 
     // The readings ranked or counted across a session's members, and the third and fourth alphas, which a rebuild over the
     // ledger's members holds to the ledger's.

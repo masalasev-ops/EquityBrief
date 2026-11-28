@@ -24,6 +24,7 @@ public sealed class PartnerDesk(IClock clock, string databaseFile, string dataRo
         Stores:
         [
             new StoreTouch(Store.SessionReading, Touch.Read),
+            new StoreTouch(Store.UnreliableMark, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
             new StoreTouch(Store.PartnerRun, Touch.Insert),
             new StoreTouch(Store.PartnerCell, Touch.Insert),
@@ -109,6 +110,7 @@ public sealed class PartnerDesk(IClock clock, string databaseFile, string dataRo
         }
 
         var rows = new List<PartnerRow>();
+        var marked = await Ledger.UnreliableMarkRows.ReadAsync(connection, cancellation);
 
         await using (var command = connection.CreateCommand())
         {
@@ -119,6 +121,13 @@ public sealed class PartnerDesk(IClock clock, string databaseFile, string dataRo
 
             while (await reader.ReadAsync(cancellation))
             {
+                // A stock-session the check marked unreliable or excluded is skipped.
+                // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+                if (marked.Skips(reader.GetString(0), Day(reader.GetString(1))))
+                {
+                    continue;
+                }
+
                 if (!place.TryGetValue(Day(reader.GetString(1)), out var at) || at % Partner.LabelSessions != 0 || at + Partner.LabelSessions >= calendar.Count)
                 {
                     continue;

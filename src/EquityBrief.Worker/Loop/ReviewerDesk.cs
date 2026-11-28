@@ -27,6 +27,7 @@ public sealed class ReviewerDesk(IClock clock, string databaseFile, string dataR
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.SessionReading, Touch.Read),
+            new StoreTouch(Store.UnreliableMark, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.LongSetup, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
@@ -171,6 +172,8 @@ public sealed class ReviewerDesk(IClock clock, string databaseFile, string dataR
                 }
             }
 
+            var marked = await Ledger.UnreliableMarkRows.ReadAsync(connection, cancellation);
+
             await using (var command = connection.CreateCommand())
             {
                 command.CommandText = NightReadings;
@@ -181,7 +184,12 @@ public sealed class ReviewerDesk(IClock clock, string databaseFile, string dataR
 
                 while (await reader.ReadAsync(cancellation))
                 {
-                    readings[reader.GetString(0)] = [.. System.Text.Json.JsonSerializer.Deserialize<double?[]>(reader.GetString(1)) ?? []];
+                    // A stock-session the check marked unreliable or excluded is skipped.
+                    // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+                    if (!marked.Skips(reader.GetString(0), night))
+                    {
+                        readings[reader.GetString(0)] = [.. System.Text.Json.JsonSerializer.Deserialize<double?[]>(reader.GetString(1)) ?? []];
+                    }
                 }
             }
 

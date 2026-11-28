@@ -209,6 +209,10 @@ public class SchemaColumns
     // The 24.19 closing plan's sessions kept from second sources, the holes asked and each request made.
     internal static string[] SecondSourceStoreRows => [.. new[] { "Long filled bars", "Long fill holes", "Source asks" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // The 24.19 closing plan's check settling: the marks every reader of the table skips, each close held to a source and each
+    // difference settled.
+    internal static string[] CheckSettlingStoreRows => [.. new[] { "Unreliable marks", "Price checks", "Differences settled" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // 24.47's order changes, the 4:30 pm check's reads and the fill odds.
     internal static string[] OrderChangesStoreRows => [.. new[] { "Order changes", "Fill checks", "Fill odds" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
@@ -387,6 +391,7 @@ public class SchemaColumns
             .. PartnerStoreRows,
             .. SecondSourceStoreRows,
             .. OrderChangesStoreRows,
+            .. CheckSettlingStoreRows,
             .. ReviewStoreRows,
             .. ResearchStoreRows,
             .. BuyRangeStoreRows,

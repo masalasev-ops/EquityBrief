@@ -7,6 +7,51 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the fill asking Yahoo, then Tiingo, at the bands widened, and a hole asked again where a run names its code, at a correction to 24.19
+Decision: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
+Was:
+> with it asks Yahoo's daily chart, then Stooq's daily file, then Tiingo's meta and daily prices on the operator's key over each code's holes, ... a run none filled not asked again; Tiingo within ... no rule's source moves (see: A hole inside ...); and from the closing plan's item 3,
+> forever, inserted by the second source fill alone and never updated or deleted; read by the fill, which asks no hole again that none filled</td></tr>
+> ... and its closes over the store's stand within 0.1% of one ratio and its volumes within 0.1% of one proportion; and Tiingo is asked within 50 requests an hour, 1,000 a day and 500 codes a month (see: A hole inside ...)</td><td>the operator's closing plan of 2026-11-27: the sessions on each side, the band of the closes and Tiingo's three limits are theirs; the volumes take the closes' band, the operator naming none of their own for them</td>
+Now:
+> with it asks Yahoo's daily chart, then Tiingo's meta and daily prices on the operator's key over each code's holes, ... a run none filled not asked again unless <code>--again</code> names its code; ... (see: A hole inside ...) (see: Stooq is left out of the fill, ...); and from the closing plan's item 3,
+> ... read by the fill, which asks no hole again that none filled unless a run names its code (see: Stooq is left out of the fill, ...)</td></tr>
+> ... within 0.25% of one ratio and its volumes within 0.5% of one proportion; ... (see: A hole inside ...) (see: Stooq is left out of the fill, ...)</td><td>the operator's closing plan of 2026-11-27: the sessions on each side and Tiingo's three limits are theirs; and their answers of 2026-11-28: the band of the closes and the band of the volumes, widened from the plan's as the proof that a source's prices are the same stock's at one scale</td>
+Why: the operator's answers of 2026-11-28, kept word for word in `prompts/2026-11-27-24.19-the-fill-answers.md`: Stooq left out, its key a captcha's carried in the web address; the bands widened; the six close calls refilled.
+
+### 2026-11-28 - docs/RUNBOOK.md - the fill asking Yahoo, then Tiingo, and `--again` naming the codes asked once more, at a correction to 24.19
+Decision: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
+Was:
+> dotnet run --project src/EquityBrief.Worker -- long-fill --word
+> ```
+> ... With it, it asks Yahoo's chart, then Stooq's daily file, then Tiingo's meta and prices over each code's holes ... a run none filled with each source's reason, which no later run asks again.
+Now:
+> dotnet run --project src/EquityBrief.Worker -- long-fill --word
+> dotnet run --project src/EquityBrief.Worker -- long-fill --again BGG,JDSU,MNKKQ,NEBLQ,PKY,TNGO --word
+> ```
+> ... With it, it asks Yahoo's chart, then Tiingo's meta and prices over each code's holes ... which no later run asks again unless `--again` names its code. Stooq is not asked: ... `--again` reads the codes it names alone and asks each of their holes once more, ...
+Why: the operator's answers of 2026-11-28, kept word for word in `prompts/2026-11-27-24.19-the-fill-answers.md`.
+
+### 2026-11-27 - docs/ARCHITECTURE.html - the second source fill settling the check, and every reader of the every-session table skipping a marked stock-session, at a correction to 24.19
+Decision: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+Was:
+> <td>long fill holes, second source feed, source asks</td><td>long filled bars, long fill holes, source asks, run log</td> ... a code past the month's left open and named; no bar, no provider table and no rule's source moves (see: ...)</td></tr>
+> <tr><td>Second source fill</td> ... <td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td> ...
+> the buy range widths test's, recipe desk's, partner desk's and reviewer desk's reads without unreliable marks, each row ending at its own last decision
+Now:
+> <td>long filled bars, long fill holes, second source feed, source asks, unreliable marks, price checks, differences settled</td><td>long filled bars, long fill holes, source asks, unreliable marks, price checks, differences settled, run log</td> ... ; and from the closing plan's item 3, with <code>--settle</code>, ... (see: A difference of 1% or more the check finds ...)</td></tr>
+> <tr><td>Second source fill</td> ... <td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td> ...
+> each of the four reading unreliable marks, and its row ending "; and from the 24.19 closing plan skips each stock-session the check marked unreliable or excluded (see: ...)"
+Why: the operator's closing plan of 2026-11-27, item 3, kept word for word in `prompts/2026-11-27-24.19-the-closing-plan.md`: every reader of the table skips a stock-session marked unreliable.
+
+### 2026-11-27 - docs/SCHEMA.md - long_fill_bar read for a correction in place of the stored price, at a correction to 24.19
+Decision: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+Was:
+> The long history's reader reads a row of a hole only where the code holds no price for its session, the newest run standing where a session is kept twice;
+Now:
+> The long history's reader reads a row of a hole only where the code holds no price for its session, and from the check's settling a row of a correction in place of the stored price, the newest run standing where a session is kept twice;
+Why: the closing plan's item 3c: the side a source parts from is corrected from the source's bars, kept in the same table.
+
 ### 2026-11-28 - docs/BUILD_PLAN.md - 24.47's count of rows and the 4:30 pm check's requests in the phase's estimate
 Decision: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols
 Was:
