@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Checks;
 
 // From the 24.47 correction of 2026-11-28: tools/merge asks the worker's writers verb before it merges, which names every worker
 // process running by the night copy it runs from, or its own folder, and refuses where any runs.
-// see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer
+// see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log
 public class MergeGuardTests
 {
     [Fact]

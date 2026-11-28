@@ -1741,7 +1741,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 }
 
 // From the 24.47 correction of 2026-11-28 the writers running now, which tools/merge asks before it merges.
-// see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer
+// see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log
 static async Task<int> WritersVerb()
 {
     var configuration = Configuration();

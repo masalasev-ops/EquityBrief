@@ -11,7 +11,7 @@ namespace EquityBrief.Worker.Merge;
 // commit it runs from under the data root's nights folder, or by its own folder where it runs from elsewhere; the night's lock
 // held names the night; and with any writer running the run log's newest rows are named beside them, the run and the stage
 // each wrote, so the operator reads which run it is. It writes nothing.
-// see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer
+// see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log
 public sealed class MergeGuard(string dataRoot, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(

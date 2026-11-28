@@ -24068,8 +24068,8 @@ Carried:    none.
 
 Ruled:      the operator's answers of 2026-11-28, items 2 and 6, kept word for word in `prompts/`: tools/merge refuses while
             any writer runs and names it; the fill check is scheduled at 21:30 UTC on trading days; "Fourteen carve-outs"
-            becomes "the carve-outs named below". Two decisions: tools/merge refuses while any writer runs, read off the
-            machine's processes and the run log, and names the writer; The fill check is scheduled at 21:30 UTC on trading
+            becomes "the carve-outs named below". Two decisions: The merge script refuses while any writer runs and names
+            it, read off the machine's processes and the run log; The fill check is scheduled at 21:30 UTC on trading
             days, after the close all year.
 Built:      the merge guard, the worker's `writers` verb: every worker process but its own named by the night copy it runs
             from or its folder, the night's lock named where held, and the run log's three newest rows beside them, read
