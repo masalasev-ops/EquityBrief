@@ -164,6 +164,11 @@ public partial class FixtureExpectations
         // Under 30 says too few, and no cell says the same.
         Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, cell! with { Orders = 29 }));
         Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, null));
+
+        // From the 24.47 correction of 2026-11-28 a plan whose sentence before it says the distance and the days draws the
+        // odds alone, and one that could not place its price the whole line.
+        Assert.Equal(FillOdds.TooFew, EquityBrief.Web.Marks.MarkRenderer.OddsAfterTheDistance(FillOdds.Line(101m, 100m, 3, null), said: true));
+        Assert.Equal(FillOdds.Line(101m, 100m, 3, null), EquityBrief.Web.Marks.MarkRenderer.OddsAfterTheDistance(FillOdds.Line(101m, 100m, 3, null), said: false));
         Assert.Equal("Bought on 25 Nov at $99.50", FillOdds.BoughtLine(ChangeNight, 99.5m));
     }
 

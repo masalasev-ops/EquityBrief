@@ -213,6 +213,11 @@ public sealed partial class MarkRenderer
         return "Bought<br><small>its fill not stored</small>";
     }
 
+    // A waiting order's fill odds on its plan, whose sentence before them already says how far above its price it stands and
+    // the days it has left: the odds alone where it does.
+    public static string OddsAfterTheDistance(string odds, bool said) =>
+        said && odds.IndexOf(". ", StringComparison.Ordinal) is var at and >= 0 ? odds[(at + 2)..] : odds;
+
     // The trading days a waiting order has left after tonight, its last day among them.
     static int? DaysLeft(PlanEntryView entry, DateOnly night) =>
         entry.Order is { } order ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, order.LastDay) : null;
@@ -362,7 +367,7 @@ public sealed partial class MarkRenderer
 
             return (order.Price is { } price
                 ? Formatted($"Bought only if the price falls to ${Price(price)} by {order.LastDay.ToString("d MMM", Invariant)}.{(order.LastClose is { } close ? Formatted($" Tonight's close was ${Price(close)}, {Math.Abs((close - price) / price * 100):0.0}% {(close >= price ? "above" : "below")}.") : string.Empty)}{(left is { } days ? " " + Capitalised(Counted(days, "trading day is left.", "trading days are left.")) : string.Empty)} If it never gets there, nothing is bought.")
-                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + odds : string.Empty);
+                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + OddsAfterTheDistance(odds, order.Price is not null) : string.Empty);
         }
 
         if (entry.Card?.Zone is { NoBuy: false } zone)
