@@ -24162,3 +24162,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.47 - correction: each trailing trade's raised stop stored nightly, and a sale above its first stop sold on its trailing stop   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28, item 4, kept word for word in `prompts/`: store each night's raised stop, so
+            a sale above the first stop reads sold on its trailing stop, never time limit, in the order changes and the closed
+            lists. One decision: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is
+            sold on its trailing stop.
+Found:      a trailing trade's raised stop was kept nowhere, so a sale was read off its price alone, and one past its time limit
+            above its first stop read "time limit" in the order changes and the closed lists.
+Built:      migration 180, `trail_stop`, taking inserts alone; the order changes write, with the word, each live rule's trailing
+            trade open on the night with its first stop and its stop as the night raised it, by the paper account's one function;
+            the order changes' sale says "on its trailing stop of $y", y the stop stored the night before it fired, and Paper
+            trading's closed trades "closed under its trailing stop of $y", each without the figure where none was stored; a
+            trailing trade sold above its first stop, or under a stored stop above it, never reads its time limit, nor does one
+            whose exit fired and has yet to sell. No trade, rule or source a rule pins moves.
+Tests:      four new: the raised stop and the night before's stop worked by hand, the closed ending, the order changes' sale,
+            and the table taking inserts alone.
+Mutated:    m67, the property that a sale above its first stop is sold on its trailing stop: that test taken out of the rule,
+            leaving the stored stop alone; the order changes' test went red, the closed ending holding by its last branch, which
+            reads any other trailing sale as its trailing stop too; reverted before the run below.
+Claims:     1815, one added: the trailing stops' store.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4147 of 4147 tests ran with none failed, migrations 0 to 180
+            with none pending, schema version 180, against `data-ci` and never `data`; the phase report 69 tables, 1815 claims,
+            1815 passing, none out of scope and none unexamined, 1830 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    migration 180 applied to the store in the merge step; the first night's order changes after it write the first
+            rows, so a sale before then reads without its stop's figure.
