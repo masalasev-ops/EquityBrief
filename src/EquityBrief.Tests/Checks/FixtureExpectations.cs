@@ -205,6 +205,9 @@ public partial class FixtureExpectations
             // Section 17's row of the reviewer's cases and its random draw.
             .. ReviewerClaims,
 
+            // 24.47: section 17's rows of the order changes, the fill odds and the 4:30 pm check.
+            .. OrderChangeClaims,
+
             // Section 18's row of a month in which no idea passes.
             .. NeverStuckClaims,
 

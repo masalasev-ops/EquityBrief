@@ -352,8 +352,9 @@ public class EodhdBulkPriceFeedTests
         // provider's day files, symbol lists and prices for the long history, which the long members' commands ask by hand,
         // and thirty-five until 23.5 added a filer's facts at the archive, which the long facts' capture asks by hand, and
         // thirty-six until the 24.19 closing plan added Yahoo's chart, Stooq's daily file and Tiingo's prices, which the second
-        // sources' fill asks by hand.
-        Assert.Equal(37, Checks.NightlyCost.MayHoldAClient.Length);
+        // sources' fill asks by hand, and thirty-seven until 24.47 added the provider's live quote of many listings and ntfy,
+        // which the 4:30 pm check and the order changes reach on their own runs.
+        Assert.Equal(39, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

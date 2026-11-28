@@ -1,5 +1,6 @@
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Loop;
+using EquityBrief.Core.Paper;
 using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
 using static EquityBrief.Core.Paper.PlannedTrades;
@@ -76,10 +77,13 @@ public static class PlanScreen
 
     // The orders from nights before the one drawn still waiting for their price, each with its price and its last session,
     // in the order they were listed, which Home, Tonight and Past picks draw as a group of their own.
+    // From the operator's order of 2026-11-28 an order that filled on the night stays on the list that night, saying it was bought
+    // and at what price, and leaves it the night after.
+    // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
     public static IReadOnlyList<WaitingOrderView> StillWaiting(IReadOnlyList<PlannedTradeRow> planned, DateOnly night) =>
     [
         .. LiveBuying(planned)
-            .Where(row => IsWaiting(row) && !row.Order.PlacesNoPrice() && row.Listed < night)
+            .Where(row => ((IsWaiting(row) && !row.Order.PlacesNoPrice()) || (row.FilledOn == night && row.Fill is not null)) && row.Listed < night)
             .OrderBy(row => row.Listed)
             .ThenBy(row => row.Place)
             .Select(row => new WaitingOrderView(row.Family, row.Ticker, row.Listed, Price(row), LastDay(row.Listed, row.Order.Window))
@@ -87,6 +91,38 @@ public static class PlanScreen
                 // From the operator's answers of 2026-11-16 the stop and the sale its card draws, as a pick's card works them.
                 Stop = CardScreen.PlanOf(row.Order).Stop,
                 Sale = CardScreen.PlanOf(row.Order).Sale,
+                Typical = row.Order.TypicalDay,
+                Bought = row.FilledOn == night && row.Fill is { } paid ? FillOdds.BoughtLine(night, paid) : null,
             }),
     ];
+
+    // A waiting card's fill odds as of a night: its distance above its buy price in the typical daily move its plan was placed
+    // with, the trading days it has left after the night, and the cell of its rule's past orders on the index matching both.
+    public static WaitingOrderView WithOdds(WaitingOrderView order, DateOnly night, IReadOnlyDictionary<string, IReadOnlyList<FillOddsCell>> odds)
+    {
+        if (order.Bought is not null || order.Price is not { } price || order.LastClose is not { } close)
+        {
+            return order;
+        }
+
+        var left = DaysLeft(night, order.LastDay);
+        var cell = order.Typical is { } typical && typical > 0 && odds.TryGetValue(order.Family, out var cells)
+            ? FillOdds.CellOf(cells, OrderChanges.MovesAbove(close, price, typical), left)
+            : null;
+
+        return order with { Odds = FillOdds.Line(close, price, left, cell) };
+    }
+
+    // The trading sessions after a night up to an order's last day.
+    public static int DaysLeft(DateOnly night, DateOnly last)
+    {
+        var left = 0;
+
+        for (var day = night.AddDays(1); day <= last; day = day.AddDays(1))
+        {
+            left += ExchangeClosures.IsSession(day) ? 1 : 0;
+        }
+
+        return left;
+    }
 }

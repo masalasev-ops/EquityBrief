@@ -273,6 +273,10 @@ public partial class ArchitectureConformance
 
         // And the reviewer's first part: the desk's catalogue and matrix rows, its store and section 17's row.
         .. FixtureExpectations.ReviewerRows,
+
+        // And the order changes and fill odds: three components' catalogue and matrix rows, three stores, section 17's three
+        // rows and Paper trading's row.
+        .. FixtureExpectations.OrderChangeRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

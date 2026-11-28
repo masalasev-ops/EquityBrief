@@ -73,6 +73,7 @@ public sealed partial class SinglePageApp
         // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         if (!plain)
         {
+            region.Append(OrderChangesCard(page.OrderChanges, night));
             region.Append(RevisionsLayout(marks, night, page, link, settings, proposedCap, example, line));
             region.Append("</section>");
 
@@ -155,6 +156,49 @@ public sealed partial class SinglePageApp
 
         // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
         return ReaderText.Page(region.ToString());
+    }
+
+    // From the operator's order of 2026-11-28 the night's order changes on the three indices at the top of the page, each list
+    // under its heading and "None tonight" under one holding none, and the 4:30 pm check's differences where it ran; where the
+    // night wrote none, the section says so and draws no list.
+    // see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+    public static string OrderChangesCard(EquityBrief.Core.Paper.OrderSummary? summary, DateOnly? night)
+    {
+        var body = new StringBuilder();
+
+        if (summary is null)
+        {
+            body.Append(Invariant($"<p class=\"oc-none\" data-order-changes=\"none\">No order changes are written for {(night is { } day ? day.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : "this night")} yet. They are written after the AI stock picker's picks, at the end of each night.</p>"));
+        }
+        else
+        {
+            foreach (var (heading, lines) in EquityBrief.Core.Paper.OrderChanges.Sections(summary))
+            {
+                body.Append(Invariant($"<div class=\"oc-list\"><p class=\"oc-h\">{Escaped(heading)}</p><ul>"));
+
+                foreach (var line in lines)
+                {
+                    body.Append(Invariant($"<li{(line == EquityBrief.Core.Paper.OrderChanges.NoneTonight ? " class=\"oc-empty\"" : string.Empty)}>{Escaped(line)}</li>"));
+                }
+
+                body.Append("</ul></div>");
+            }
+        }
+
+        return Invariant($"<section class=\"card oc-card\" id=\"order-changes\" data-card=\"order-changes\" data-changes=\"{summary?.Changes.Count.ToString(CultureInfo.InvariantCulture) ?? "none"}\"><div class=\"card-h\"><div><h2>Order changes</h2></div></div><div class=\"card-b\">{MarkRenderer.CardSummary(OrderChangesSaid(summary))}<p class=\"tn-sub\">What to do with your orders tonight, for every rule, book and the AI stock picker on the three indices, every price read from the paper accounts.</p>{body}</div></section>");
+    }
+
+    // The card's sentence: how many orders to place, fills, sales and orders ended tonight, and how many could fill tomorrow.
+    public static string OrderChangesSaid(EquityBrief.Core.Paper.OrderSummary? summary)
+    {
+        if (summary is null)
+        {
+            return "Tonight's order changes are not written yet.";
+        }
+
+        int Count(string list) => summary.Of(list).Count;
+
+        return Invariant($"Tonight: {Count(EquityBrief.Core.Paper.OrderChanges.NewOrders)} new {(Count(EquityBrief.Core.Paper.OrderChanges.NewOrders) == 1 ? "order" : "orders")} to place, {Count(EquityBrief.Core.Paper.OrderChanges.Filled)} filled, {Count(EquityBrief.Core.Paper.OrderChanges.Sold)} sold, {Count(EquityBrief.Core.Paper.OrderChanges.Ended)} to remove and {Count(EquityBrief.Core.Paper.OrderChanges.CouldFill)} that could fill tomorrow.");
     }
 
     // The trade log's selector on Past picks: the page's own lists first, the live and provisional rules' trades, then

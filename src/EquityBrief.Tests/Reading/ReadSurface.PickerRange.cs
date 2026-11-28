@@ -60,7 +60,17 @@ public partial class ReadSurface
         // the same three, so from the operator's order of 2026-11-24, item 11, it draws them as chips under one line and no
         // card, and item 13's tally reads what its account did, worked by hand: BBB bought inside its range at its open of
         // 100.5, CCC still to open within its order, AAA above its range and not bought.
-        Assert.Equal(3, CountOf(page, "<span>Buys</span><b>between $96.00 and $101.00</b><span class=\"sale-note judge-buy\">Opens above $101.00: waits up to 2 days for the price to come back to $101.00, then not bought. Opens below $96.00: not bought. Last close $100.00.</span>"));
+        // From the operator's order of 2026-11-28, item 6, the three cases in plain words with the last close on the row's first
+        // line, the floor of $96.00 under the stop of $98.00 so an open below it is skipped as too far below the buy.
+        Assert.Equal(3, CountOf(page, "<span>Buys between $96.00 and $101.00</span><b class=\"judge-close\">Last close $100.00</b><span class=\"sale-note judge-buy\"><span class=\"judge-case\">Opens in that range: bought at the open.</span><span class=\"judge-case\">Opens higher than $101.00: waits up to 2 days for the price to dip back to $101.00 and buys there; otherwise skipped.</span><span class=\"judge-case\">Opens lower than $96.00: skipped, since it opened too far below the buy.</span></span>"));
+        Assert.Equal(3, CountOf(page, "<p class=\"facts-h\">The plan</p>"));
+        Assert.DoesNotContain("The plan code set", page, StringComparison.Ordinal);
+
+        // A floor standing at the stop says the idea has failed; no floor says nothing of an open below.
+        Assert.Equal(
+            "Opens lower than $98.00: skipped. That's already below its stop, so the idea has failed.",
+            SinglePageApp.BuyCases(new Core.Loop.BuyRange(101, 98), 98m)[2]);
+        Assert.Equal(2, SinglePageApp.BuyCases(new Core.Loop.BuyRange(101, null), 98m).Count);
 
         var five = System.Text.RegularExpressions.Regex.Match(page, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>", System.Text.RegularExpressions.RegexOptions.Singleline).Value;
 

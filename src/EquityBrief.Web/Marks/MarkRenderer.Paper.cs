@@ -69,6 +69,10 @@ public sealed record PaperPageView(
     IReadOnlyList<PaperComingView>? Coming = null,
     TradeGroupsView? Groups = null)
 {
+    // From 24.47 the night's order changes on the three indices as the night wrote them, none where it wrote none.
+    // see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+    public EquityBrief.Core.Paper.OrderSummary? OrderChanges { get; init; }
+
     // From 23.2 the newest pooled run's verdicts across the three indices, which the scorecard draws beside the index's own.
     public IReadOnlyList<LoopPooledRow> Pooled { get; init; } = [];
 

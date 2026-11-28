@@ -221,6 +221,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_fill_bar` | SecondSourceFill | none | none |
 | `long_fill_hole` | SecondSourceFill | none | none |
 | `source_ask` | SecondSourceFill | none | none |
+| `order_change` | OrderChangesRun | none | none |
+| `fill_check` | FillCheck | none | none |
+| `fill_odds` | FillOddsTest | none | none |
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
@@ -647,6 +650,62 @@ Grain: one row per request the second sources' fill made, from migration 177.
 Primary key: `run_id`, `asked_at`, `source`, `kind`, `ticker`.
 
 **Inserted by the second source fill alone as each request is made, and never updated or deleted, its triggers refusing both.** The fill counts Tiingo's rows against its 50 requests an hour, 1,000 a day and 500 codes a month before each request to it. No key is ever written here.
+
+### order_change
+Grain: one row per run of the order changes, list and place, one line of a night's order changes, from migration 178 at 24.47 (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message).
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `session_date` | TEXT | the night |
+| `list` | TEXT | `new`, `filled`, `sold`, `ended`, `could-fill` or `differs`, constrained in the table |
+| `place` | INTEGER | its place in its list, from 0; -1 on the one row a night with no change writes |
+| `index_code` | TEXT | the index, empty on that row |
+| `who` | TEXT | who placed the order, its setup and index, or the AI stock picker and its index |
+| `ticker` | TEXT | the stock |
+| `words` | TEXT | the line as the section and the message draw it, its prices read from the paper account's rows |
+| `checked` | INTEGER | 1 where the 4:30 pm check ran on the session, 0 otherwise |
+| `written_at` | TEXT | UTC instant it was written |
+
+Primary key: `run_id`, `list`, `place`. Indexed on `session_date`, `written_at`.
+
+**Inserted by the order changes alone, and never updated or deleted, its triggers refusing both.** The read surface reads the newest run of the night Paper trading draws; no rule reads it.
+
+### fill_check
+Grain: one row per run of the 4:30 pm check and waiting order it read, from migration 178 at 24.47 (see: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols).
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `session_date` | TEXT | the trading day it read |
+| `index_code` | TEXT | the index |
+| `who` | TEXT | who placed the order |
+| `ticker` | TEXT | the stock |
+| `listed` | TEXT | the night that placed the order |
+| `price` | TEXT | decimal in code, the order's buy price |
+| `low` | TEXT | decimal in code, the day's low the live quote stated, null where it stated none |
+| `quoted_at` | TEXT | UTC instant the quote was as of, null where it stated none |
+
+Primary key: `run_id`, `index_code`, `who`, `ticker`, `listed`.
+
+**Inserted by the fill check alone, and never updated or deleted, its triggers refusing both.** The order changes read the newest run of the session, an order counted as read filled where its low stands at or under its price; no rule reads it, and no fill is written from it.
+
+### fill_odds
+Grain: one row per run of the fill odds test, rule, band of distances and trading days left, on one index, from migration 178 at 24.47 (see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day).
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | the index |
+| `family` | TEXT | the rule's family |
+| `band` | INTEGER | the band of how far the close stood above the order's level, in half typical daily moves from 0 |
+| `days_left` | INTEGER | the trading days the order had left |
+| `orders` | INTEGER | the nights the past orders waited in the cell |
+| `filled` | INTEGER | those of them that filled before their last day |
+
+Primary key: `run_id`, `index_code`, `family`, `band`, `days_left`.
+
+**Inserted by the fill odds test alone, and never updated or deleted, its triggers refusing both.** The read surface reads the newest run of an index for the waiting cards; no rule reads it.
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.

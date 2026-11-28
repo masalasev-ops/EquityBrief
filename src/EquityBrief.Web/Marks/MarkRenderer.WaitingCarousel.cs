@@ -89,7 +89,7 @@ public sealed partial class MarkRenderer
     static string SetupLabel(string family) => EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
 
     // The rows every waiting card draws, in this order, so the cards stand one height with their rows lined up.
-    public static readonly string[] WaitingCardRows = ["ticker", "company", "setup", "revision", "buy", "bar", "plan", "placed", "checks", "see-plan"];
+    public static readonly string[] WaitingCardRows = ["ticker", "company", "setup", "revision", "buy", "bar", "odds", "plan", "placed", "checks", "see-plan"];
 
     // The card of tonight's whose stock met its setup's rules again while this order waits: the same stock, the setup that
     // placed the order and the night it placed it.
@@ -243,6 +243,7 @@ public sealed partial class MarkRenderer
             card.Append("<div class=\"wo-bar\" data-row=\"bar\"></div>");
         }
 
+        card.Append(OddsRow(order));
         card.Append("<div class=\"home-prices wo-plan\" data-row=\"plan\">");
         card.Append(order.Sale is { } parted ? SalePartsMark(parted) : string.Empty);
 
@@ -277,6 +278,14 @@ public sealed partial class MarkRenderer
 
         return Formatted($"<details class=\"wo-fold\" data-checks=\"{count}\"><summary>{Escaped(summary)}</summary><div class=\"wo-panel\"><button type=\"button\" class=\"wo-close\" aria-label=\"Close the checks\">Close</button>{placed}</div></details>");
     }
+
+    // From the operator's order of 2026-11-28 how often its rule's past orders this far away with as long left filled, or once
+    // it filled on the night the price it was bought at; empty where neither is read, so every card keeps the row.
+    // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+    public static string OddsRow(WaitingOrderView order) =>
+        order.Bought is { } bought
+            ? Formatted($"<p class=\"wo-odds\" data-row=\"odds\" data-bought>{Escaped(bought)}</p>")
+            : Formatted($"<p class=\"wo-odds\" data-row=\"odds\">{Escaped(order.Odds ?? string.Empty)}</p>");
 
     // The highlighted line in the operator's words: "Buys only if it falls to $x. Last close $x, x% above."
     public static string WaitingCondition(WaitingOrderView order)

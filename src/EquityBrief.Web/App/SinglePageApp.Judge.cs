@@ -654,7 +654,7 @@ public sealed partial class SinglePageApp
         return html.ToString();
     }
 
-    // The plan code set: the buy at the next open, the take-profit, the half that trails where it does, the stop and the time
+    // The plan: the buy at the next open, the take-profit, the half that trails where it does, the stop and the time
     // limit as one ladder, the risk against the reward, how the prices are worked and the record it is counted in.
     static string PlanPanel(JudgeCardView pick, JudgeScoreboard score, JudgeVersionView? version)
     {
@@ -667,7 +667,7 @@ public sealed partial class SinglePageApp
         var whole = string.Equals(pick.Shape, JudgeMenu.Whole, StringComparison.Ordinal);
         var html = new StringBuilder();
 
-        html.Append("<p class=\"facts-h\">The plan code set</p><div class=\"judge-ladder\">");
+        html.Append("<p class=\"facts-h\">The plan</p><div class=\"judge-ladder\">");
         html.Append(BuyRow(pick, held));
         html.Append($"<div class=\"lad-row\" data-sale=\"target\"><i class=\"dot tp\"></i><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
 
@@ -706,11 +706,34 @@ public sealed partial class SinglePageApp
             return $"<div class=\"lad-row\" data-sale=\"buy\"><i class=\"dot lc\"></i><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">{Escaped(BeforeRangeLine)} {close}</span></div>";
         }
 
-        var lines = Core.Loop.BuyRanges.PlanLines(range);
-        var buys = lines[0];
-        var verb = buys.IndexOf(' ', StringComparison.Ordinal);
+        var buys = Core.Loop.BuyRanges.PlanLines(range)[0];
+        var cases = string.Concat(BuyCases(range, pick.Stop).Select(line => $"<span class=\"judge-case\">{Escaped(line)}</span>"));
 
-        return $"<div class=\"lad-row\" data-sale=\"buy\" data-range><i class=\"dot lc\"></i><span>{Escaped(buys[..verb])}</span><b>{Escaped(buys[(verb + 1)..])}</b><span class=\"sale-note judge-buy\">{Escaped(string.Join(' ', lines.Skip(1)))} {close}</span></div>";
+        return $"<div class=\"lad-row\" data-sale=\"buy\" data-range><i class=\"dot lc\"></i><span>{Escaped(buys)}</span><b class=\"judge-close\">Last close ${Figures.Price(pick.LastClose)}</b><span class=\"sale-note judge-buy\">{cases}</span></div>";
+    }
+
+    // From the operator's order of 2026-11-28, item 6, the picker's buy in three plain cases: an open in its range buys there,
+    // one above it waits for the price to dip back to the ceiling, and one below it is skipped, said as the idea failing only
+    // where its floor stands at its stop.
+    public static IReadOnlyList<string> BuyCases(Core.Loop.BuyRange range, decimal stop)
+    {
+        var ceiling = Figures.Price(Core.Prices.Statistic.ToPrice(range.Ceiling));
+        var lines = new List<string>
+        {
+            "Opens in that range: bought at the open.",
+            FormattableString.Invariant($"Opens higher than ${ceiling}: waits up to {Core.Loop.BuyRanges.OrderSessions} days for the price to dip back to ${ceiling} and buys there; otherwise skipped."),
+        };
+
+        if (range.Floor is { } low)
+        {
+            var floor = Core.Prices.Statistic.ToPrice(low);
+
+            lines.Add(decimal.Round(floor, 2) == decimal.Round(stop, 2)
+                ? $"Opens lower than ${Figures.Price(floor)}: skipped. That's already below its stop, so the idea has failed."
+                : $"Opens lower than ${Figures.Price(floor)}: skipped, since it opened too far below the buy.");
+        }
+
+        return lines;
     }
 
     // The buy of a pick made on a night before the range began, which its account bought at the open.
