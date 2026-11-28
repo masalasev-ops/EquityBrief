@@ -21,8 +21,9 @@ public static class PageColumn
     // scrolled to its start, where it may run wider than the box and never narrower.
     public sealed record Placed(string Block, string Within, double Left, double Right, double InnerLeft, double InnerRight, bool Reading, bool Scrolls = false);
 
-    // A page as the script reads it: the window's width, the page's own width, and every block it read.
-    public sealed record Laid(double Width, double ScrollWidth, IReadOnlyList<Placed> Blocks);
+    // A page as the script reads it: the window's width, the page's own width, every block it read, and the innermost elements
+    // running past the window's right edge, each named with where it ends.
+    public sealed record Laid(double Width, double ScrollWidth, IReadOnlyList<Placed> Blocks, IReadOnlyList<string>? Past = null);
 
     // Each block of a page off the edges it sits on, naming the block, what it sits in, where it runs and where it should; and a
     // page wider than its window.
@@ -32,7 +33,9 @@ public static class PageColumn
 
         if (laid.ScrollWidth > laid.Width + Pixels)
         {
-            faults.Add(Invariant($"{page}: the page runs {laid.ScrollWidth:0} px wide in a window of {laid.Width:0} px"));
+            var past = laid.Past is { Count: > 0 } named ? ", past it " + string.Join(", ", named) : "";
+
+            faults.Add(Invariant($"{page}: the page runs {laid.ScrollWidth:0} px wide in a window of {laid.Width:0} px{past}"));
         }
 
         if (laid.Blocks.Count == 0)
@@ -96,7 +99,9 @@ public static class PageColumn
           };
           walk(screen, 'the page column', false);
           for (const card of screen.querySelectorAll(cards)) { const style = getComputedStyle(card); if (style.display !== 'none' && style.visibility !== 'hidden' && card.getBoundingClientRect().width > 0) { walk(card, name(card), false); } }
-          return JSON.stringify({ Width: innerWidth, ScrollWidth: document.documentElement.scrollWidth, Blocks: blocks });
+          const beyond = (one) => { const box = one.getBoundingClientRect(); return box.width > 0 && box.right > innerWidth + 1; };
+          const past = [...document.body.querySelectorAll('*')].filter((one) => beyond(one) && ![...one.children].some(beyond)).slice(0, 4).map((one) => name(one) + ' to ' + Math.round(one.getBoundingClientRect().right));
+          return JSON.stringify({ Width: innerWidth, ScrollWidth: document.documentElement.scrollWidth, Blocks: blocks, Past: past });
         })()
         """;
 }
