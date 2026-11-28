@@ -24009,3 +24009,48 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1812 passing, none out of scope and none unexamined, 1827 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.19 - correction: a ledger build finds a setup's history by its code and its session, and runs its smoke month before it writes   2026-11-28
+
+Found:      the folded build of 2026-11-28 stopped at 09:13Z on the S&P 500's standing ledger, its first quarter of 2019 written,
+            on an index past its bounds in the replay. Since the 24.19 correction of 2026-11-25 the standing ledger reads the
+            long history, which reads one code as several parts where its code passed on or joined another; every lookup
+            took a code's first part, and on a session only a later part holds read a bar's place of minus one.
+Ruled:      the operator's answers of 2026-11-28, item 1, kept word for word in `prompts/`: find a setup's history by code,
+            never by ticker; merge with its gates where no rule pins the file; a smoke month before any full rebuild. One
+            decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code
+            before it rebuilds.
+Built:      LedgerParts, the parts of each code and the one holding a session, used by every lookup of the setup ledger: the
+            night's step, the standing, long and monthly builds, the heavyweights' cut, the exits, the next open and the entry
+            check; a setup no part of its code holds stops the build naming the code and the session. Before any build writes,
+            it refuses where two parts of a code share a session and works every session of January 2019 over every code,
+            writing nothing, answering 4 where either fails.
+Pins:       none moved: the setup ledger's source is pinned by no rule, which FixtureExpectations.SessionReadings asserts.
+            The heavyweights' setups are made in the readings' own source, which the readings' version pins, and keep a
+            code's first part there, a session it does not hold skipped; changing it moved that pin, so it was left.
+Tests:      three new: a code in parts found by code and session, parts sharing a session found, and every full build
+            running its smoke month before it writes with no lookup by a code alone left.
+Mutated:    m57, the property that a code in parts is found by its code and its session: the lookup returned the code's
+            first part; the lookup test went red. m58, the property that parts sharing a session are found: a session counted
+            only where three parts share it; the sharing test went red. Each reverted before the run below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, in the one run the entry
+            below states the figures of.
+Carried:    the folded build resumes from the standing ledgers once this merges, the S&P 500's whole again since its first
+            quarter came from the faulty lookup, then the 24.19 runs and fill odds on each index; and the heavyweights'
+            setups' lookup by a code's first part, a pin move of the readings' version, for the operator's word.
+
+### 24.49 - correction: the read-only copy draws no folder tabs   2026-11-28
+
+Found:      reading the read-only copy's cleaner after 24.49 merged: the copy publishes Tonight and Paper trading and holds no
+            page of their AI tabs, so each drew a tab strip with one tab leading nowhere.
+Built:      the copy's cleaner takes the folder tabs out, beside the night picker it already takes out.
+Tests:      one new, the cleaner drawing no tab strip on either page.
+Mutated:    m59, the property that the copy draws no tab strip: the cleaner looked for another class; the test went red;
+            reverted before the run below.
+Claims:     1812, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the one above, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 4134 of 4134 tests ran with none
+            failed, migrations 0 to 179 with none pending, schema version 179, against `data-ci` and never `data`; the phase
+            report 68 tables, 1812 claims, 1812 passing, none out of scope and none unexamined, 1827 placements and verdicts
+            reconciled against a floor of 34, 57 checks on the roster run and passed.
+Carried:    none.

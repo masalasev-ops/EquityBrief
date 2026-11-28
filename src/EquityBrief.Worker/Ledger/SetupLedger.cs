@@ -776,6 +776,10 @@ public sealed partial class SetupLedger : IComponent
                         : family)
                     .ToArray();
 
+                // From the 24.19 correction of 2026-11-28 a setup's series found by its code and the night together.
+                // see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+                var nightParts = LedgerParts.Of([.. inputs.Series.Select(one => one.Name.Ticker)]);
+
                 foreach (var family in families)
                 {
                     var listed = picks.TryGetValue(family.Family, out var held) ? held : [];
@@ -785,7 +789,9 @@ public sealed partial class SetupLedger : IComponent
 
                     foreach (var row in family.Rows)
                     {
-                        var name = NameOf(inputs.Series, row.Ticker);
+                        var name = LedgerParts.PlaceAt(nightParts, place => inputs.Series[place].SessionAt, row.Ticker, inputs.At) is >= 0 and var place
+                            ? place
+                            : throw new InvalidOperationException(FormattableString.Invariant($"The series hold no {row.Ticker} on the night of {night:yyyy-MM-dd}."));
                         var at = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
 
                         // From 21.4 a book family's setup is laid open with its cost a fraction of the buy, its path read by
@@ -1601,9 +1607,66 @@ public sealed partial class SetupLedger : IComponent
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
 
+        if (!SmokeHolds(prepared, output))
+        {
+            return SmokeRefused;
+        }
+
         await WriteAsync(dataRoot, connection, prepared, first, last, sessionsToWrite, prepared.Compute, startedAt, output, pause, cancellation);
 
         return 0;
+    }
+
+    // What a build answers where its smoke run refuses it.
+    public const int SmokeRefused = 4;
+
+    // The month the smoke run works before any build writes: January 2019, the first month of the standing ledger, whose
+    // sessions every code a 24.19 join touched is read over.
+    public static readonly (int Year, int Month) SmokeMonth = (2019, 1);
+
+    // From the 24.19 correction of 2026-11-28, before a build writes anything: no code read as several parts has two of them
+    // holding one session, which the lookup by code and session rests on, and every session of the smoke month the history
+    // holds is worked over every code and written nowhere. Either failing names what failed and the build writes nothing.
+    // see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+    static bool SmokeHolds(PreparedHistory prepared, TextWriter output)
+    {
+        if (prepared.PartsSharingASession() is { Count: > 0 } shared)
+        {
+            output.WriteLine("ledger-build: refused before writing: these codes are read as parts sharing a session, so a setup could read another part's bars: " + string.Join(", ", shared.Select(one => FormattableString.Invariant($"{one.Code} ({one.Shared})"))));
+
+            return false;
+        }
+
+        int[] month = [.. Enumerable.Range(0, prepared.Calendar.Length).Where(at => prepared.Calendar[at].Year == SmokeMonth.Year && prepared.Calendar[at].Month == SmokeMonth.Month)];
+
+        if (month.Length == 0)
+        {
+            output.WriteLine("ledger-build: the history holds no session of January 2019, so no smoke run is worked");
+
+            return true;
+        }
+
+        var timed = Stopwatch.StartNew();
+        var at = month[0];
+
+        try
+        {
+            foreach (var session in month)
+            {
+                at = session;
+                prepared.Compute(session);
+            }
+        }
+        catch (Exception fault) when (fault is InvalidOperationException or IndexOutOfRangeException or ArgumentOutOfRangeException)
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: refused before writing: the smoke run over January 2019 stopped on {Stamp(prepared.Calendar[at])}: {fault.Message}"));
+
+            return false;
+        }
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: the smoke run worked {month.Length} session(s) of January 2019 over every code, {prepared.CodesInParts.Count} code(s) read in parts among them, in {timed.Elapsed.TotalSeconds:0} s, writing nothing"));
+
+        return true;
     }
 
     // The tolerance the monthly rebuild holds each family on each index to: the setups the standing build gives a
@@ -1656,6 +1719,12 @@ public sealed partial class SetupLedger : IComponent
             }
 
             var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true, await StoredSessionsAsync(connection, index, NightSource, cancellation));
+
+            if (!SmokeHolds(prepared, output))
+            {
+                return (false, $"the {DecisionCards.NameOf(index)}'s smoke run refused the rebuild before it wrote; its words are above");
+            }
+
             var computed = Computed(sessions.Count, item => prepared.Compute(sessions[item]));
             var built = sessions.Select((at, item) => (at, item)).ToDictionary(pair => pair.at, pair => computed[pair.item]);
             var benchmarks = built.Values
@@ -1867,10 +1936,34 @@ public sealed partial class SetupLedger : IComponent
         LedgerContext context,
         IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> heavyweights)
     {
-        readonly Dictionary<string, int> nameOf = series
-            .Select((one, name) => (one.Name.Ticker, name))
-            .DistinctBy(pair => pair.Ticker, StringComparer.Ordinal)
-            .ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
+        // Every series a code's history is read as, in the order read: the long history reads one code as several parts where
+        // its code passed to another company or the code joined another, each part holding sessions no other part of the code
+        // holds.
+        readonly Dictionary<string, int[]> parts = LedgerParts.Of([.. series.Select(one => one.Name.Ticker)]);
+
+        // From the 24.19 correction of 2026-11-28 the series of a code holding a session, found by the code and the session
+        // together and never by the code alone, -1 where no part of the code holds it.
+        // see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+        public int PlaceAt(string ticker, int at) => LedgerParts.PlaceAt(parts, place => series[place].SessionAt, ticker, at);
+
+        // A member of a heavyweights' cut as its benchmark reads it: the part of its code holding the session, or where none
+        // does the code's first part, read as holding no bar there; -1 for a code the history does not read.
+        public int PartAt(string ticker, int at) =>
+            PlaceAt(ticker, at) is >= 0 and var place ? place : parts.TryGetValue(ticker, out var places) ? places[0] : -1;
+
+        // The series of a code holding a session, or a stop naming the code and the session where none does, so a setup never
+        // reads a bar of another part of its code.
+        int HeldAt(string ticker, int at) =>
+            PlaceAt(ticker, at) is >= 0 and var place
+                ? place
+                : throw new InvalidOperationException(FormattableString.Invariant($"ledger-build: no history of {ticker} holds the session of {calendar[at]:yyyy-MM-dd}, its code read as {(parts.TryGetValue(ticker, out var held) ? held.Length : 0)} part(s); the build stops rather than read another part's bars"));
+
+        // The codes read as more than one part and how many sessions two of their parts both hold, none where each part
+        // holds its own, which the lookup by code and session rests on.
+        public IReadOnlyList<(string Code, int Shared)> PartsSharingASession() => LedgerParts.SharingASession(parts, place => series[place].SessionAt);
+
+        // The codes read as more than one part.
+        public IReadOnlyList<string> CodesInParts => [.. parts.Where(pair => pair.Value.Length > 1).Select(pair => pair.Key).Order(StringComparer.Ordinal)];
 
         public string Index => index;
 
@@ -1892,7 +1985,6 @@ public sealed partial class SetupLedger : IComponent
 
         public IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> Heavyweights => heavyweights;
 
-        public IReadOnlyDictionary<string, int> Places => nameOf;
 
         // The S&P 400's and 600's frozen live rules the build reads each family's setups under, the words naming them, and
         // the S&P 500's breadth on each session as it stood where a live rule's market check reads it.
@@ -1977,7 +2069,7 @@ public sealed partial class SetupLedger : IComponent
 
                 families.Add((family, [.. family.Rows.Select(row =>
                 {
-                    var name = NameOf(series, row.Ticker);
+                    var name = HeldAt(row.Ticker, at);
                     var bar = IndexNightRead.BarOf(series[name], at);
 
                     return BookSetups.IsBook(family.Family)
@@ -1994,7 +2086,7 @@ public sealed partial class SetupLedger : IComponent
 
                 families.Add((family, [.. family.Rows.Select(row =>
                 {
-                    var name = nameOf[row.Ticker];
+                    var name = HeldAt(row.Ticker, at);
                     var bar = IndexNightRead.BarOf(series[name], at);
                     var notBought = heavyweights
                         .Where(pair => pair.Key > at && !pair.Value.Any(cut => cut.Leaders.Contains(row.Ticker)))
@@ -2004,8 +2096,8 @@ public sealed partial class SetupLedger : IComponent
                     var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
                     var cut = cuts
                         .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
-                        .Where(nameOf.ContainsKey)
-                        .Select(ticker => nameOf[ticker])
+                        .Select(ticker => PartAt(ticker, at))
+                        .Where(member => member >= 0)
                         .ToArray();
 
                     return HeavyweightRead(
@@ -2037,7 +2129,7 @@ public sealed partial class SetupLedger : IComponent
                 return (_ => false, stores ? new HashSet<string>(StringComparer.Ordinal) : null);
             }
 
-            var names = family.Rows.Select(row => nameOf[row.Ticker]).ToHashSet();
+            var names = family.Rows.Select(row => HeldAt(row.Ticker, at)).ToHashSet();
             var tickers = family.Rows.Select(row => row.Ticker).ToArray();
             var bought = new HashSet<string>(StringComparer.Ordinal);
             var others = new HashSet<string>(StringComparer.Ordinal);
@@ -2420,19 +2512,6 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return (closes, opens, stopped, [.. sessions], extended);
-    }
-
-    static int NameOf(IReadOnlyList<SweepSeries> series, string ticker)
-    {
-        for (var name = 0; name < series.Count; name++)
-        {
-            if (string.Equals(series[name].Name.Ticker, ticker, StringComparison.Ordinal))
-            {
-                return name;
-            }
-        }
-
-        throw new InvalidOperationException($"The series hold no {ticker}.");
     }
 
     // The round trip in risks from the member reader's per cent of the close.

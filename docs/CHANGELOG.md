@@ -42,6 +42,15 @@ Now:
 > ... The carve-outs named below are stated rather than left to be discovered, and none but the night's ask for every member's estimate trend asks for every member every night: ...
 Why: the operator's answers of 2026-11-28, item 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`: "drop the number and say 'the carve-outs named below', so it never goes stale again"; the tenth named by what it is, for the same reason.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the setup ledger finding a setup's history by its code and its session, and its smoke month, at a correction to 24.19
+Decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+Corrects: the folded build of 2026-11-28 stopped on the S&P 500's standing ledger in its second quarter of 2019, a setup's code read by its first part, which held no bar on the session.
+Was:
+> ... a night with no cap until the pin move (see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session)</td></tr>
+Now:
+> ... (see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session); and from the 24.19 correction of 2026-11-28 a build and the night find a setup's history by its code and its session together, ... refusing to start where that run stops or two parts of a code hold one session (see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds)</td></tr>
+Why: the operator's answers of 2026-11-28, item 1, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the AI stock picker on Tonight's tab and its trades on Paper trading's, at 24.49
 Decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
 Was:

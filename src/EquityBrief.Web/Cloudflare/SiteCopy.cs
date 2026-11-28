@@ -301,6 +301,9 @@ public static partial class SiteCopy
         text = Removed(text, "select", start => HasAttribute(start, "data-rule-choice") || HasAttribute(start, "data-merge-key") || HasAttribute(start, "data-compare"), Chosen);
         text = Removed(text, "button", start => HasClass(start, "fold-hide"));
         text = Removed(text, "span", start => HasClass(start, "night-picker"));
+
+        // From the 24.49 correction of 2026-11-28 the folder tabs of Tonight and Paper trading, whose AI tabs the copy holds no page of.
+        text = Removed(text, "nav", start => HasClass(start, "folder-tabs"));
         text = Removed(text, "p", start => HasClass(start, "export") || HasClass(start, "research-cost") || (HasClass(start, "card-money") && AttributeOf(start, "data-account") == "unset"));
         text = Removed(text, "li", start => AttributeOf(start, "data-line") == "size");
         text = Removed(text, "div", start => HasClass(start, "rs-controls") || HasClass(start, "firm-actions"));

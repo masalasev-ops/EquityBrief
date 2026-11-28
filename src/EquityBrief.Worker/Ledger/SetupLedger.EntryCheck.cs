@@ -127,7 +127,7 @@ public sealed partial class SetupLedger
 
             var at = Array.BinarySearch(prepared.Calendar, row.Session);
 
-            if (at < 0 || !prepared.Places.TryGetValue(row.Ticker, out var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar) || ReadingOf(name, bar) is not { } reading)
+            if (at < 0 || prepared.PlaceAt(row.Ticker, at) is not (>= 0 and var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar) || ReadingOf(name, bar) is not { } reading)
             {
                 Interlocked.Increment(ref unread);
 
@@ -455,7 +455,7 @@ public sealed partial class SetupLedger
                 .Where(row => row.Picked && row.Session == night)
                 .Select(row => row.Ticker)
                 .Distinct(StringComparer.Ordinal)
-                .Select(ticker => prepared.Places.TryGetValue(ticker, out var name) && IndexNightRead.BarOf(prepared.Series[name], at) is >= 0 and var bar ? readingOf(name, bar) : null)
+                .Select(ticker => prepared.PlaceAt(ticker, at) is >= 0 and var name && IndexNightRead.BarOf(prepared.Series[name], at) is >= 0 and var bar ? readingOf(name, bar) : null)
                 .OfType<EntryReading>()
                 .ToArray();
 
