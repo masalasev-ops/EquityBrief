@@ -90,7 +90,7 @@ public sealed partial class SetupLedger
             var setup = settled[place];
             var at = Array.BinarySearch(prepared.Calendar, setup.Session);
 
-            if (at < 0 || !prepared.Places.TryGetValue(setup.Ticker, out var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar))
+            if (at < 0 || prepared.PlaceAt(setup.Ticker, at) is not (>= 0 and var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar))
             {
                 return;
             }
@@ -107,8 +107,8 @@ public sealed partial class SetupLedger
 
                 var members = prepared.Heavyweights.TryGetValue(at, out var cuts) && cuts.FirstOrDefault(cut => cut.Largest.Contains(setup.Ticker, StringComparer.Ordinal)) is { } sector
                     ? sector.Largest
-                        .Where(prepared.Places.ContainsKey)
-                        .Select(ticker => prepared.Places[ticker])
+                        .Select(ticker => prepared.PartAt(ticker, at))
+                        .Where(member => member >= 0)
                         .Select(member => (prepared.Closes[member], opens[member], IndexNightRead.BarOf(prepared.Series[member], at), prepared.Stopped[member]))
                         .ToArray()
                     : null;

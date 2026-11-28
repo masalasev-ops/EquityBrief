@@ -97,7 +97,7 @@ public sealed partial class SetupLedger
 
             var at = Array.BinarySearch(prepared.Calendar, setup.Session);
 
-            if (at < 0 || !prepared.Places.TryGetValue(setup.Ticker, out var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar))
+            if (at < 0 || prepared.PlaceAt(setup.Ticker, at) is not (>= 0 and var name) || IndexNightRead.BarOf(prepared.Series[name], at) is not (>= 0 and var bar))
             {
                 return;
             }

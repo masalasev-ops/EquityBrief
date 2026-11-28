@@ -141,6 +141,18 @@ public partial class ReadSurface
         Assert.DoesNotContain("<svg", five, StringComparison.Ordinal);
     }
 
+    // From the 24.49 correction of 2026-11-28 the read-only copy, which holds no page of the AI tabs, draws neither tab strip.
+    [Fact]
+    public void TheReadOnlyCopyDrawsNoFolderTabs()
+    {
+        foreach (var paper in new[] { false, true })
+        {
+            var cleaned = EquityBrief.Web.Cloudflare.SiteCopy.Clean(SinglePageApp.FolderTabs(paper, false, Universes.Large) + "<p>the page</p>");
+
+            Assert.Equal("<p>the page</p>", cleaned);
+        }
+    }
+
     [Fact]
     public void TheUnpagedListCheckFindsAListPastTenRows()
     {
