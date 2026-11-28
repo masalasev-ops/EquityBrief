@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/ARCHITECTURE.html - the long history reader reading the sessions a second source filled, at a correction to 24.19
+Decision: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
+Was:
+> ... long facts, filed facts, long filings, long held none</td><td></td><td>from 23.6 returns ...
+> ... and another kept as it is (see: A code whose long prices part from the newest pull's is read at the pull's adjustment where both are one instrument, and from the pull where the long side is another and thin)</td></tr>
+Now:
+> ... long facts, filed facts, long filings, long held none, long filled bars</td><td></td><td>from 23.6 returns ...
+> ... and another kept as it is (see: ...); and from the operator's closing plan of 2026-11-27 each session a second source filled read in last, a hole's only where the code holds no price for it (see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated)</td></tr>
+Why: the operator's closing plan of 2026-11-27, item 1c, kept word for word in `prompts/2026-11-27-24.19-the-closing-plan.md`: the long history reader reads the kept bars for those sessions only.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the reading recipes' Loop page row and section 17 row worded as the checks read them, at 24.30
 Decision: A reading recipe is a closed set of operations over stored fields and is kept apart from the pinned catalogue
 Was:

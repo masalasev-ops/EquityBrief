@@ -51,6 +51,7 @@ public sealed class LongHistoryReader : IComponent
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.LongFiling, Touch.Read),
             new StoreTouch(Store.LongHeldNone, Touch.Read),
+            new StoreTouch(Store.LongFillBar, Touch.Read),
         ],
         Feeds: []);
 
@@ -705,8 +706,10 @@ public sealed class LongHistoryReader : IComponent
 
     // A code's prices, the long pull's and the store's at the store's scale, the sessions before a start left out and a bad
     // print skipped, then read against the newest pull holding the code as the class the two fall in; its history-ends mark is
-    // read by the parts.
+    // read by the parts. From the 24.19 correction the sessions a second source filled are read in last, a hole's only where
+    // the code holds no price for it.
     // see: A code whose long prices part from the newest pull's is read at the pull's adjustment where both are one instrument, and from the pull where the long side is another and thin
+    // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
     static async Task<SweepBar[]> SeriesAsync(SqliteConnection connection, string ticker, IReadOnlyList<SessionMark> marks, string through, CancellationToken cancellation)
     {
         var kept = marks.Where(mark => mark.Kind != SessionMarking.HistoryEnds).ToArray();
@@ -714,7 +717,43 @@ public sealed class LongHistoryReader : IComponent
         var stored = LongMarks.Parts(await BarsAsync(connection, "bar", ticker, through, cancellation), kept, [], true)[0].Bars;
         var pulled = LongMarks.Parts(await BarsAsync(connection, "pulled_bar", ticker, through, cancellation), kept, [], true)[0].Bars;
 
-        return LongPulled.Read(SweepHistory.Merged(longBars, stored), pulled, stored.Length > 0 ? stored[0].Session : null);
+        return SecondSources.Read(LongPulled.Read(SweepHistory.Merged(longBars, stored), pulled, stored.Length > 0 ? stored[0].Session : null), await FilledAsync(connection, ticker, through, cancellation));
+    }
+
+    // The sessions a second source filled for a code through the session given, oldest run first so the newest stands.
+    static async Task<IReadOnlyList<(KeptBar Bar, string Kind)>> FilledAsync(SqliteConnection connection, string ticker, string through, CancellationToken cancellation)
+    {
+        var kept = new List<(KeptBar, string)>();
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT session_date, open, high, low, close, raw_close, volume, kind FROM long_fill_bar WHERE ticker = $ticker AND session_date <= $through ORDER BY run_id, session_date;",
+            [("$ticker", ticker), ("$through", through)],
+            cancellation))
+        {
+            kept.Add((new KeptBar(
+                Day(row.GetString(0)),
+                Money.FromStorage(row.GetString(1)),
+                Money.FromStorage(row.GetString(2)),
+                Money.FromStorage(row.GetString(3)),
+                Money.FromStorage(row.GetString(4)),
+                Money.FromStorage(row.GetString(5)),
+                row.GetInt64(6)), row.GetString(7)));
+        }
+
+        return kept;
+    }
+
+    // A code's own series as the reader reads it, its marks but its history's end applied, and the index's calendar, for the
+    // second sources' fill to hold a source's closes to.
+    public async Task<(SweepBar[] Series, IReadOnlyList<DateOnly> Calendar)> CodeSeriesAsync(string ticker, DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var marks = await MarksAsync(connection, cancellation);
+        var stamp = Text(through);
+
+        return (await SeriesAsync(connection, ticker, marks.GetValueOrDefault(ticker) ?? [], stamp, cancellation), await CalendarAsync(connection, stamp, cancellation));
     }
 
     // A part of a code's history with the prices another code of its company holds on its member sessions it holds none of,

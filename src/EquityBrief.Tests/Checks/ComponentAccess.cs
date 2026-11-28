@@ -344,6 +344,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Partner desk"),
     ];
 
+    // The 24.19 closing plan's fill of the holes inside a code's own prices from second sources.
+    internal static string[] SecondSourceFillRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Second source fill"),
+        CheckReach.Key(Scope.MatrixTable, "Second source fill"),
+    ];
+
     // 24.36's desk that writes what history expected of each pick of a night and of its random draw.
     internal static string[] ReviewerDeskRows =>
     [
@@ -496,6 +503,7 @@ public partial class ComponentAccess
             .. IdeaBoxRows,
             .. RecipeDeskRows,
             .. PartnerDeskRows,
+            .. SecondSourceFillRows,
             .. ReviewerDeskRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.

@@ -136,6 +136,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
         "src/EquityBrief.Core/Providers/FinraShortInterestFeed.cs",
         "src/EquityBrief.Core/Providers/LmStudioReadingFeed.cs",
+        "src/EquityBrief.Core/Providers/SecondSourcePriceFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilerFactsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilerFilingsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
@@ -354,11 +355,12 @@ public partial class NightlyCost
         // read of a history's end asks by hand and no night does, and thirty-five from 23.3, the trust's older filings at the
         // archive and the provider's day files, symbol lists and prices for the long history, which the long members' commands
         // ask by hand and no night does, and thirty-six from 23.5, a filer's facts at the archive, which the long facts' capture
-        // asks by hand and no night does.
+        // asks by hand and no night does, and thirty-seven from the 24.19 closing plan, Yahoo's chart, Stooq's daily file and
+        // Tiingo's prices, which the second sources' fill asks by hand and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 36,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-six feed " +
-            "implementations. A thirty-seventh is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 37,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-seven feed " +
+            "implementations. A thirty-eighth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.

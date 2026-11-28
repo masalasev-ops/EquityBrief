@@ -137,8 +137,30 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "recipe" => await RecipeVerb(args),
     "partner" => await PartnerVerb(args),
     "review" => await ReviewVerb(args),
+    "long-fill" => await LongFillVerb(args),
     _ => NoVerb(),
 };
+
+// The second sources' fill: the holes inside each code's own prices on the three indices printed with what it would ask,
+// and asked of Yahoo, then Stooq, then Tiingo and written only with '--word'. Tiingo is asked only where its key is set, the
+// key read here alone and handed to the feed, which sends it in the request's header and nowhere else.
+// see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
+static async Task<int> LongFillVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var stated = configuration[TiingoCredentials.ApiKeyName];
+    var key = string.IsNullOrWhiteSpace(stated) ? null : new TiingoCredentials(stated);
+
+    Console.WriteLine(key is null
+        ? $"long-fill: no Tiingo key is set at '{TiingoCredentials.ApiKeyName}', so Tiingo is not asked"
+        : $"long-fill: the Tiingo key is set at '{TiingoCredentials.ApiKeyName}'");
+
+    await new EquityBrief.Worker.History.SecondSourceFill(store.DatabaseFile, SystemClock.ForUnitedStatesSessions(), SecondSourcePriceFeed.Live(key), key is not null)
+        .RunAsync(args.Contains("--word", StringComparer.Ordinal), Console.Out);
+
+    return 0;
+}
 
 // The reviewer on '--index <code>' for '--night <yyyy-MM-dd>': its picks and members printed, and what history expected of
 // each written only with '--word'.
@@ -1551,7 +1573,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 103 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 104 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1853,6 +1875,7 @@ static int NoVerb()
         "'recipe --add <line> --words <words>' enters a reading recipe, refusing a line outside the recipes' grammar and listing for the operator what it lacks, and 'recipe --run --index <code>' prints each recipe not yet run on the index and with '--word' works it over the every-session table, refusing one whose figures read a later session, " +
         "'partner --index <code>' prints the trained partner's rows on the index, a member each month of sessions of 2005 to 2014 to learn on and of 2015 to 2018 to check on, and with '--word' fits its trees and writes its tables, " +
         "'review --index <code> --night <yyyy-MM-dd>' prints the night's picks on the index and the members its random draw would take, and with '--word' writes what history expected of each, the past cases like it that closed before the night, " +
+        "'long-fill' prints the holes inside each code's own prices on the three indices and what it would ask, and with '--word' asks Yahoo, then Stooq, then Tiingo for them and keeps a source's sessions only where its closes hold one ratio to the store's on each side, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

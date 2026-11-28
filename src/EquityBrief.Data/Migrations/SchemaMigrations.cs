@@ -797,7 +797,69 @@ public static class SchemaMigrations
         new Migration(174, "create recipe, recipe_run, recipe_reading and data_request", CreateRecipes),
         new Migration(175, "create partner_run and partner_cell", CreatePartner),
         new Migration(176, "create review", CreateReview),
+        new Migration(177, "create long_fill_bar, long_fill_hole and source_ask", CreateSecondSourceFill),
     ];
+
+    // The second sources' fill: each session kept from a second source with the source and the ratio it was scaled by, each
+    // hole asked with what filled it or why none did, and each request to a source, Tiingo's counted against its limits.
+    // Each takes inserts alone, so a hole kept stands as kept and a later fill is a newer row beside it.
+    // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
+    const string CreateSecondSourceFill = @"
+        CREATE TABLE long_fill_bar (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            open          TEXT NOT NULL,
+            high          TEXT NOT NULL,
+            low           TEXT NOT NULL,
+            close         TEXT NOT NULL,
+            raw_close     TEXT NOT NULL,
+            volume        INTEGER NOT NULL,
+            source        TEXT NOT NULL CHECK (source IN ('yahoo', 'stooq', 'tiingo')),
+            ratio         TEXT NOT NULL,
+            volume_proportion  TEXT NOT NULL,
+            kind          TEXT NOT NULL CHECK (kind IN ('hole', 'correction')),
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date, run_id)
+        ) STRICT;
+
+        CREATE TABLE long_fill_hole (
+            run_id         TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            first_session  TEXT NOT NULL,
+            last_session   TEXT NOT NULL,
+            sessions       INTEGER NOT NULL,
+            source         TEXT CHECK (source IS NULL OR source IN ('yahoo', 'stooq', 'tiingo')),
+            why            TEXT NOT NULL,
+            PRIMARY KEY (run_id, ticker, first_session)
+        ) STRICT;
+
+        CREATE TABLE source_ask (
+            run_id        TEXT NOT NULL,
+            asked_at      TEXT NOT NULL,
+            source        TEXT NOT NULL CHECK (source IN ('yahoo', 'stooq', 'tiingo')),
+            kind          TEXT NOT NULL CHECK (kind IN ('prices', 'meta')),
+            ticker        TEXT NOT NULL,
+            symbol        TEXT NOT NULL,
+            from_session  TEXT,
+            to_session    TEXT,
+            sessions      INTEGER NOT NULL,
+            outcome       TEXT NOT NULL,
+            PRIMARY KEY (run_id, asked_at, source, kind, ticker)
+        ) STRICT;
+
+        CREATE TRIGGER long_fill_bar_takes_inserts_alone_on_change BEFORE UPDATE ON long_fill_bar
+        BEGIN SELECT RAISE(ABORT, 'long_fill_bar takes inserts alone.'); END;
+        CREATE TRIGGER long_fill_bar_takes_inserts_alone_on_removal BEFORE DELETE ON long_fill_bar
+        BEGIN SELECT RAISE(ABORT, 'long_fill_bar takes inserts alone.'); END;
+        CREATE TRIGGER long_fill_hole_takes_inserts_alone_on_change BEFORE UPDATE ON long_fill_hole
+        BEGIN SELECT RAISE(ABORT, 'long_fill_hole takes inserts alone.'); END;
+        CREATE TRIGGER long_fill_hole_takes_inserts_alone_on_removal BEFORE DELETE ON long_fill_hole
+        BEGIN SELECT RAISE(ABORT, 'long_fill_hole takes inserts alone.'); END;
+        CREATE TRIGGER source_ask_takes_inserts_alone_on_change BEFORE UPDATE ON source_ask
+        BEGIN SELECT RAISE(ABORT, 'source_ask takes inserts alone.'); END;
+        CREATE TRIGGER source_ask_takes_inserts_alone_on_removal BEFORE DELETE ON source_ask
+        BEGIN SELECT RAISE(ABORT, 'source_ask takes inserts alone.'); END;
+    ";
 
     // The operator's rulings of 2026-11-23, item 10, on eight of the marks the marking page left to them, given by their word
     // rather than its confirm and written as the confirm writes a ruling, each with what its filer and its price said on the

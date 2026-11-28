@@ -23678,3 +23678,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1786 passing, none out of scope and none unexamined, 1801 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.19 - correction: the holes inside a code's own prices filled from second sources, each kept only where it holds one ratio to the store's on each side   2026-11-27
+
+Ruled:      the operator's closing plan of 2026-11-27 and their addition of that evening, kept word for word in
+            `prompts/2026-11-27-24.19-the-closing-plan.md` and `prompts/2026-11-27-24.19-the-closing-plan-addition.md`,
+            replacing every earlier instruction for 24.19. One new decision.
+Built:      its item 1, the fill: `long-fill` reads each code's member sessions on the three indices with no price after its
+            first priced session and before its last, as the long history's lists read them, cut into runs back to back on
+            the calendar, and states them with the requests it would make; with `--word` asks Yahoo's chart, then Stooq's
+            daily file, then Tiingo's meta and prices on the operator's key, the code holding most such sessions first; keeps
+            a run from the first source holding it and the store's 20 sessions on each side whose closes stand within 0.1% of
+            one ratio and whose volumes within 0.1% of one proportion, at the source's prices times that ratio, nothing drawn
+            between two prices (see: A hole inside a code's own prices is filled from a second source's traded prices where
+            they hold one ratio to the store's on each side, never interpolated); writes every request, every hole with what
+            filled it or each source's reason none did, a hole none filled asked no more, and Tiingo within 50 an hour, 1,000
+            a day and 500 codes a month off the asks recorded, its key read by the worker alone and sent in the header alone.
+            The long history's reader reads a kept session of a hole only where the code holds no price. Migration 177, three
+            tables taking inserts alone. No bar, provider table or pinned source moves.
+Relabelled: on item 7 of the plan, six entries filed above as "24.19 - correction" are not the table's repair and read as
+            this names them: "the January pin move, the shared code, the families' time limit and cap, the reward check, the
+            buy range, the growing window and the span-aware marks", "the January pin move's floor under a level order's
+            price, the reward of a plan selling half first and the replay before the merge" and "the January pin move's
+            background variants registered where a family has room and walked where it holds nine" are the January pin
+            move's work; "the monthly run's long test laying the books over the long history with the long facts", "the long
+            test reading its cap before each family, every verdict before it kept and each line after it named and walked
+            first the month after" and "the long test ordering a rule by the expected value over the long ledger, a score
+            fitted for each long fold" are the monthly run's long test's. They stand where they are, unmoved.
+Marks:      on item 5, the eight marks put to the operator on 23 Nov are read as recommended: BLD, DTV_old, RDC and WRK read through,
+            each one company across its mark, and CCE_old, CHMT_old, PKY and TW2 kept, each another company or a break after
+            it, which is as the operator ruled them and as migration 172 already writes them, so nothing changes.
+Waiting:    the fill's run on the store, the folded build, the check with its settling by second sources, the per-code
+            rewrite and its recheck, and the one report, each in the plan's order and the runs after the operator's backup
+            of the store.
+Tests:      7 new: a hole kept at twice the source's prices by hand; each refusal on both sides of its band, a volume off its
+            proportion, a source short of a hole's session or one around it, and a hole with no side; an adjusted close held
+            to the store's and a traded close to the store's traded; Tiingo's hour, day and month by hand; each source's
+            answer as sent and a code's symbol at each; the reader's merge, a hole over a stored price never read; and the
+            fill over a constructed store, Stooq refused on one session's close and Tiingo kept, every ask written, nothing
+            asked twice, and without a key Tiingo asked nothing and the hole written open with each source's reason.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m32 the band never
+            refusing: red; m33 a hole's kept bar read over a stored price: red; m34 the month's 500 codes read as 1,000: red;
+            m35 a hole none filled asked again: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1792, six added: the fill's catalogue and matrix rows, its three stores and section 17's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4108 of 4108 tests ran with none failed, migrations 0 to 177
+            with none pending, schema version 177, against `data-ci` and never `data`; the phase report 68 tables, 1792
+            claims, 1792 passing, none out of scope and none unexamined, 1807 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

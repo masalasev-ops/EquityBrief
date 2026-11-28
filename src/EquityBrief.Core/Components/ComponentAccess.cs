@@ -50,6 +50,10 @@ public enum Store
     LongDividend,
     LongFiling,
     LongHeldNone,
+    // The second sources' fill: each session kept, each hole asked with its outcome, and each request to a source.
+    LongFillBar,
+    LongFillHole,
+    SourceAsk,
     LongFact,
     LongSetup,
     LongReading,
@@ -308,6 +312,9 @@ public enum Feed
     // On the operator's answer of 2026-11-17 the provider's list of the US exchanges' symbols with each company's name, one
     // request at a weight of one, asked by the names refresh alone in the off-peak run once a week.
     SymbolList,
+    // From the 24.19 correction Yahoo's daily chart, Stooq's daily file and Tiingo's daily prices on the operator's key, asked
+    // by the second source fill alone, by hand, for the holes inside a code's own prices.
+    SecondSourcePrices,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);
