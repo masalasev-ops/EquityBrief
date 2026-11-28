@@ -13,7 +13,7 @@ public class MergeGuardTests
     public void AWorkerUnderANightCopyIsNamedByTheCopyAndOneElsewhereByItsFolder()
     {
         var root = Path.Combine(Path.GetTempPath(), "equitybrief-merge-guard", "data");
-        var nights = Path.Combine(root, "nights");
+        var nights = Path.Combine(root, EquityBrief.Core.Configuration.NightBuild.CopiesFolder);
         var fromCopy = Path.Combine(nights, "57488326ab12", "src", "EquityBrief.Worker", "bin", "Release", "net10.0", "EquityBrief.Worker.exe");
         var elsewhere = Path.Combine(Path.GetTempPath(), "equitybrief-merge-guard", "checkout", "EquityBrief.Worker.exe");
 

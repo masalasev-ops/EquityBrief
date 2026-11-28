@@ -60,7 +60,7 @@ public sealed class MergeGuard(string dataRoot, string databaseFile) : IComponen
 
     public async Task<int> RunAsync(TextWriter output, CancellationToken cancellation = default)
     {
-        var nights = Path.Combine(dataRoot, "nights");
+        var nights = Path.Combine(dataRoot, EquityBrief.Core.Configuration.NightBuild.CopiesFolder);
         var writers = new List<string>();
 
         foreach (var process in Process.GetProcessesByName(WorkerProcess))
