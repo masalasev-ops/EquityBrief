@@ -107,15 +107,14 @@ public partial class ReadSurface
         var sessions = EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(DateOnly.Parse(TheSwitch, System.Globalization.CultureInfo.InvariantCulture), new DateOnly(2026, 11, 3));
 
         Assert.True(page.IndexOf("heavyweight-card", StringComparison.Ordinal) > page.LastIndexOf("data-card=\"family\"", StringComparison.Ordinal));
-        Assert.StartsWith($"<section class=\"card setup-card\" id=\"setup-{HeavyweightRule.Name}\" data-card=\"heavyweights\" data-night=\"{TheSwitch}\">", card, StringComparison.Ordinal);
+        Assert.Contains($"<section class=\"card setup-card\" id=\"setup-{HeavyweightRule.Name}\" data-card=\"heavyweights\" data-night=\"{TheSwitch}\"><div class=\"card-b\">", card, StringComparison.Ordinal);
         Assert.Contains(
             "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-03\" data-look-back=\"251\">",
             card,
             StringComparison.Ordinal);
-        Assert.Contains(
-            $"<header class=\"fam-head\" data-family=\"heavyweight\"><span class=\"fam-tag\" data-family=\"heavyweight\"><span class=\"fam-swatch\" data-family=\"heavyweight\"></span>{SetupFamilies.SectorHeavyweights.Heading}</span> <span class=\"status-pill provisional\" title=\"{SetupFamilies.ProvisionalStatus}\">Not yet tested</span> <span class=\"fam-count\">3 holdings</span></header>",
-            card,
-            StringComparison.Ordinal);
+        // From 24.48 its row names it, not yet tested, and its panel draws no head of its own.
+        Assert.Contains(RowProvisional, card, StringComparison.Ordinal);
+        Assert.DoesNotContain("fam-head", card, StringComparison.Ordinal);
 
         // Its summary first, from tonight's holdings and the trading days to the next reshuffle.
         Assert.Contains(

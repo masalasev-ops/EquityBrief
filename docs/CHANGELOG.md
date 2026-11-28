@@ -7,6 +7,31 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the setups' table's rows closed until clicked, each opening a panel of its own
+Decision: Tonight's setup rows start closed and each opens a panel of its own on a click
+Was:
+> ... its record from 2019 against the index's stocks; one row opened at a time beneath its own, the one the link names or the first; the opened row holding the setup's sentence and the card the page drew for it before whole: its rule with its variants' tabs and folds; its funnel; its picks and the stocks one step short; a book's holdings; the Fundamentals family's tabs; the heavyweights' and Quality's rows (see: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design)
+Now:
+> ... its record from 2019 against the index's stocks with the freeze beside its revision; from 24.48 every row closed when the page opens, the first among them; one row opened at a time beneath its own on a click, or the one a book's link names; the opened row holding the setup's panel (see: ...) (see: Tonight's setup rows start closed and each opens a panel of its own on a click)
+Why: the operator's order of 2026-11-28, items 1 and 2, kept word for word as Appendix AL of the phase 24 plan's file.
+
+### 2026-11-28 - docs/ARCHITECTURE.html - a plan names a book's holding drawn at its own address and a waiting order met again
+Decision: A stock's full card is drawn only in its plan view on Tonight, and every other page shows it as one line that opens the plan
+Was:
+> ... each tab the card's own part; and a book's buy saying how it sells and opening its row on its setup's card (see: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design)
+Now:
+> ... each tab the card's own part; a book's buy saying how it sells and opening its row on its setup's card; from 24.48 a book's holding bought on an earlier night drawn at its own address with its card and listed nowhere; and a waiting order its stock's rules met again saying so in a line (see: ...) (see: A stock's full card is drawn only in its plan view on Tonight, and every other page shows it as one line that opens the plan)
+Why: the operator's order of 2026-11-28, item 3, kept word for word as Appendix AL of the phase 24 plan's file: nothing a full card drew elsewhere is lost.
+
+### 2026-11-28 - docs/BUILD_PLAN.md - 24.48's count of rows in the phase's estimate
+Decision: Tonight's setup rows start closed and each opens a panel of its own on a click
+Was:
+> - about 13 at 24.47, the order changes', the fill check's and the fill odds test's catalogue and matrix rows, their three stores, section 17's three rows and Paper trading's row of the order changes.
+Now:
+> - about 13 at 24.47, ... and Paper trading's row of the order changes;
+> - about 1 at 24.48, section 15.7's row of a setup's panel, the setups' table's row and a plan's row standing as clauses.
+Why: the operator's order of 2026-11-28, kept word for word as Appendix AL of the phase 24 plan's file, adding 24.48 to the plan as a stage.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the fill asking Yahoo, then Tiingo, at the bands widened, and a hole asked again where a run names its code, at a correction to 24.19
 Decision: Stooq is left out of the fill, its match widened to 0.25% for closes and 0.5% for volumes and the close calls asked again by name
 Was:

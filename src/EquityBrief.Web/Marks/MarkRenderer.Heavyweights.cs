@@ -225,12 +225,6 @@ public sealed partial class MarkRenderer
                 {
                     place++;
                     body.Append(HeavyweightRow(holding, place, card.LookBack, top));
-
-                    // The card of the night the holding was bought, in place beneath its row.
-                    if (holding.Card is { } decision)
-                    {
-                        body.Append(CardRow(decision, HeavyweightHeadings.Count));
-                    }
                 }
             }
 
@@ -343,7 +337,7 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"data-lead=\"{(holding.Lead is { } stored ? stored.ToString("R", Invariant) : "none")}\" data-close=\"{(holding.Close is { } close ? close.ToString(Invariant) : "none")}\" data-average=\"{(holding.Average200 is { } average ? average.ToString("R", Invariant) : "none")}\" ");
         cells.Append(Invariant, $"data-since-bought=\"{(holding.SinceBought is { } since ? since.ToString("R", Invariant) : "none")}\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\">");
         cells.Append(Invariant, $"<td class=\"place\">{place}</td>");
-        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Card is { } decision ? CardToggle(decision) : string.Empty)}{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Card is { } decision ? PlanLink(decision) : string.Empty)}{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
         cells.Append(holding.Lead is { } lead
             ? Formatted($"<td class=\"r num heavyweight-lead\" title=\"over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at the rebalance of {DayOf(on)}") : string.Empty)}\"><span class=\"hw-bar\"><span class=\"hw-fill {(lead >= 0 ? "gain" : "loss")}\" style=\"width:{(top > 0 ? Math.Abs(lead) / top * 100 : 0).ToString("0.#", Invariant)}%\"></span></span> {SignedTenth(lead * 100)} points</td>")
             : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(ReaderWords.Plain(holding.NoLead ?? "not read"))}</span></td>"));

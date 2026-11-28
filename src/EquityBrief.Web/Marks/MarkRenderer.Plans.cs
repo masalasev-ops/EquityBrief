@@ -34,6 +34,12 @@ public sealed record PlanEntryView(string Group, string Family, string Ticker)
 
     public decimal? Close { get; init; }
 
+    // A book's holding bought on an earlier night, drawn at its own address and never listed or counted among the plans.
+    public bool Holding { get; init; }
+
+    // The card tonight's rules stored for a waiting order's stock they met again, whose line its plan states.
+    public DecisionCardView? Again { get; init; }
+
     // The id the list's row and the plan it opens share, unique on the page.
     public string Id => ("plan-" + Group + "-" + Family + "-" + Ticker).ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 
@@ -75,10 +81,15 @@ public sealed partial class MarkRenderer
 
     // Every plan tonight: the filter with each group's count, the list in its three groups, and beside it the plan chosen,
     // each other plan drawn and hidden until its row is chosen; full screen on a phone where the address names one.
-    public string EveryPlan(IReadOnlyList<PlanEntryView> entries, DateOnly night, string universeWord, string? named, string? fallback = null, IReadOnlyDictionary<string, string>? levels = null)
+    public string EveryPlan(IReadOnlyList<PlanEntryView> entries, DateOnly night, string universeWord, string? named, string? fallback = null, IReadOnlyDictionary<string, string>? levels = null, IReadOnlyList<PlanEntryView>? addressed = null)
     {
         var body = new StringBuilder();
-        var chosen = Chosen(entries, named ?? fallback);
+        addressed ??= [];
+
+        // A plan the address names among the books' holdings, drawn at its address alone, where no listed plan holds the stock.
+        var chosen = (named is not null && !entries.Any(entry => string.Equals(entry.Ticker, named, StringComparison.OrdinalIgnoreCase))
+            ? addressed.FirstOrDefault(entry => string.Equals(entry.Ticker, named, StringComparison.OrdinalIgnoreCase))
+            : null) ?? Chosen(entries, named ?? fallback);
         var counts = PlanGroups.ToDictionary(group => group.Group, group => entries.Count(entry => entry.Group == group.Group), StringComparer.Ordinal);
 
         body.Append(Invariant, $"<section class=\"card tn-plans{(named is not null && chosen is not null ? " sheet" : string.Empty)}\" id=\"plans\" data-card=\"plans\" data-plans=\"{entries.Count}\" data-new=\"{counts[PlanEntryView.New]}\" data-waiting=\"{counts[PlanEntryView.Waiting]}\" data-held=\"{counts[PlanEntryView.Held]}\" data-chosen=\"{Escaped(chosen?.Ticker ?? "none")}\">");
@@ -88,7 +99,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(PlansSaid(counts, reshuffled))}</p>");
         body.Append("<p class=\"tn-sub\">Every stock the rules have a plan for: tonight's new ideas, orders still waiting from earlier nights, and trades already held that met the rules again. Pick one to see its full plan. Home's \"See the plan\" opens the same view.</p>");
 
-        if (entries.Count == 0)
+        if (entries.Count == 0 && chosen is null)
         {
             return body.Append("</div></section>").ToString();
         }
@@ -131,7 +142,7 @@ public sealed partial class MarkRenderer
 
         body.Append("</div>");
 
-        foreach (var entry in entries)
+        foreach (var entry in entries.Concat(addressed.Where(held => !entries.Any(entry => entry.Ticker == held.Ticker))))
         {
             body.Append(PlanArticle(entry, night, entry == chosen, levels?.GetValueOrDefault(entry.Ticker)));
         }
@@ -202,6 +213,11 @@ public sealed partial class MarkRenderer
         return "Bought<br><small>its fill not stored</small>";
     }
 
+    // A waiting order's fill odds on its plan, whose sentence before them already says how far above its price it stands and
+    // the days it has left: the odds alone where it does.
+    public static string OddsAfterTheDistance(string odds, bool said) =>
+        said && odds.IndexOf(". ", StringComparison.Ordinal) is var at and >= 0 ? odds[(at + 2)..] : odds;
+
     // The trading days a waiting order has left after tonight, its last day among them.
     static int? DaysLeft(PlanEntryView entry, DateOnly night) =>
         entry.Order is { } order ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, order.LastDay) : null;
@@ -232,6 +248,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(Invariant, $"<p class=\"pp-cond\">{Escaped(Condition(entry, night))}</p>");
+        body.Append(entry.Again?.HeldAgain is { } metAgain ? Formatted($"<p class=\"pp-note pp-again\">{Escaped(metAgain.Line(entry.Ticker, entry.Again.Family))}</p>") : string.Empty);
         body.Append(Ladder(entry));
         body.Append(FourFigures(entry, night));
         body.Append(WhyHere(entry));
@@ -247,7 +264,10 @@ public sealed partial class MarkRenderer
         {
             body.Append(Invariant, $"<section class=\"pp-book\"><p>{Escaped(book.Sells)}. Its book's holdings and how it is reshuffled are on its setup's row below. <a href=\"{book.Href}\">Open its row</a></p>{SetupRecordBox(book.LongRecord)}</section>");
 
-            return body.Append("</article>").ToString();
+            if (card is null)
+            {
+                return body.Append("</article>").ToString();
+            }
         }
 
         if (card is null)
@@ -314,13 +334,18 @@ public sealed partial class MarkRenderer
             _ => "New tonight",
         };
 
-        return entry.MetAgain || entry.Group == PlanEntryView.Held ? state + " · met the rules again tonight" : state;
+        return entry.MetAgain || entry.Group == PlanEntryView.Held && !entry.Holding ? state + " · met the rules again tonight" : state;
     }
 
     // The buy condition in one sentence: the price a plan waits for and its last day with tonight's close, a buy at the next
     // open at whatever price it opens, a held trade's fill and where tonight's close stands from it.
     static string Condition(PlanEntryView entry, DateOnly night)
     {
+        if (entry.Holding)
+        {
+            return Formatted($"Held since {entry.Since?.ToString("d MMM", Invariant) ?? "an earlier night"}, chosen at a reshuffle.{(entry.Close is { } close ? Formatted($" Tonight's close was ${Price(close)}.") : string.Empty)} It is sold by its book's own exits.");
+        }
+
         if (entry.Group == PlanEntryView.Held && entry.Card?.HeldAgain is { } held)
         {
             return held.Fill is { } fill
@@ -342,7 +367,7 @@ public sealed partial class MarkRenderer
 
             return (order.Price is { } price
                 ? Formatted($"Bought only if the price falls to ${Price(price)} by {order.LastDay.ToString("d MMM", Invariant)}.{(order.LastClose is { } close ? Formatted($" Tonight's close was ${Price(close)}, {Math.Abs((close - price) / price * 100):0.0}% {(close >= price ? "above" : "below")}.") : string.Empty)}{(left is { } days ? " " + Capitalised(Counted(days, "trading day is left.", "trading days are left.")) : string.Empty)} If it never gets there, nothing is bought.")
-                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + odds : string.Empty);
+                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + OddsAfterTheDistance(odds, order.Price is not null) : string.Empty);
         }
 
         if (entry.Card?.Zone is { NoBuy: false } zone)

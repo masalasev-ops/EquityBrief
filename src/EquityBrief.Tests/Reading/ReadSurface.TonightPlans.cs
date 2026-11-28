@@ -82,17 +82,17 @@ public partial class ReadSurface
 
             Assert.DoesNotContain("tn-plans sheet", plain, StringComparison.Ordinal);
 
-            // The setups' table opens its first row with no setup in the link, and the one the link names otherwise, every
-            // other row closed, the opened one holding its setup's card whole.
+            // From 24.48 the setups' table opens no row with no setup in the link, and the one the link names otherwise, every
+            // other row closed, the opened one holding its setup's panel.
             static string[] Opened(string page) =>
                 [.. Regex.Matches(page, "<tr class=\"st-open\" data-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value)];
 
-            Assert.Equal([SetupStates(plain)[0].Split(':')[0]], Opened(plain));
+            Assert.Empty(Opened(plain));
 
             var breakout = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400&setup=breakout"));
 
             Assert.Equal(["breakout"], Opened(breakout));
-            Assert.Matches("<tr class=\"st-open\" data-for=\"breakout\"><td colspan=\"6\"><div class=\"st-panel fam-edge\" data-family=\"breakout\"><p class=\"st-about\">[^<]+</p><section class=\"card setup-card\" id=\"setup-breakout\"", breakout);
+            Assert.Contains("<tr class=\"st-open\" data-for=\"breakout\"><td colspan=\"6\"><div class=\"st-panel fam-edge\" data-family=\"breakout\"><section class=\"card setup-card\" id=\"setup-breakout\" data-card=\"family\"", breakout, StringComparison.Ordinal);
             Assert.Contains("<button type=\"button\" class=\"btn-2\" data-setup-toggle=\"breakout\" aria-expanded=\"true\">Close</button>", breakout, StringComparison.Ordinal);
         }
 

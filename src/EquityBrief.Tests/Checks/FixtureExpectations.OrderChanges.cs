@@ -128,6 +128,14 @@ public partial class FixtureExpectations
 
         Assert.Equal(["CCC, Bounce in an uptrend on the S&P 500: the 4:30 pm check read its low at $99.80, at or under its buy at $100.00, and tonight's bars did not fill it"], checkedNight.Of(OrderChanges.Differs).Select(change => change.Words));
         Assert.Equal(OrderChanges.DiffersHeading, OrderChanges.Sections(checkedNight)[^1].Heading);
+
+        // From the 24.47 correction of 2026-11-28 a fill with no take-profit says how it sells: a breakout's stop raised as the
+        // price climbs, the dip's own exit signal, and a time limit only where neither is set.
+        var filled = new PaperTrade("KKK", ChangeNight, 50m, 47m, null, null, null, 1);
+
+        Assert.Equal("set the stop at $47.00, raised as the price climbs and never lowered, with no take-profit", OrderChanges.Exits(filled with { Trail = 3m }));
+        Assert.Equal("set the stop at $47.00; it sells on its own exit signal, with no take-profit", OrderChanges.Exits(filled with { Exit = 65 }));
+        Assert.Equal("set the stop at $47.00; it sells by its time limit, with no take-profit", OrderChanges.Exits(filled));
     }
 
     // Worked by hand: a past order waiting at 100 placed with a typical move of 2, its night closing at 101, half a move above
@@ -156,6 +164,11 @@ public partial class FixtureExpectations
         // Under 30 says too few, and no cell says the same.
         Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, cell! with { Orders = 29 }));
         Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, null));
+
+        // From the 24.47 correction of 2026-11-28 a plan whose sentence before it says the distance and the days draws the
+        // odds alone, and one that could not place its price the whole line.
+        Assert.Equal(FillOdds.TooFew, EquityBrief.Web.Marks.MarkRenderer.OddsAfterTheDistance(FillOdds.Line(101m, 100m, 3, null), said: true));
+        Assert.Equal(FillOdds.Line(101m, 100m, 3, null), EquityBrief.Web.Marks.MarkRenderer.OddsAfterTheDistance(FillOdds.Line(101m, 100m, 3, null), said: false));
         Assert.Equal("Bought on 25 Nov at $99.50", FillOdds.BoughtLine(ChangeNight, 99.5m));
     }
 

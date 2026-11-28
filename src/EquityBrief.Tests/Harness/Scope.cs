@@ -3285,7 +3285,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The setups' table")] = new Scoped(
             Verdict.Pass,
-            "a row a setup in the one family order read off the rendered page, the one the link names opened with its card whole and every other closed",
+            "a row a setup in the one family order read off the rendered page, from 24.48 every row closed with no setup in the link and the one the link names opened with its panel",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A setup's panel")] = new Scoped(
+            Verdict.Pass,
+            "the breakout's panel read off the rendered page with no head of its own, its pick and the stock met again one line each opening its plan and its folds closed; and every page the order names over every night of the plans' and the families' constructed stores walked for a full card outside a plan or a panel or fold drawn open, a planted page named on each",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
@@ -8507,6 +8511,8 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A plan")] = "24.46",
         [CheckReach.Key("15.7 Tonight", "A waiting order's plan")] = "24.46",
         [CheckReach.Key("15.7 Tonight", "The setups' table")] = "24.46",
+        // 24.48's, Tonight's setup panels.
+        [CheckReach.Key("15.7 Tonight", "A setup's panel")] = "24.48",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

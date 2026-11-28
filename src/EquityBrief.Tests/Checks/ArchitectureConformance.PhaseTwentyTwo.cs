@@ -277,6 +277,9 @@ public partial class ArchitectureConformance
         // And the order changes and fill odds: three components' catalogue and matrix rows, three stores, section 17's three
         // rows and Paper trading's row.
         .. FixtureExpectations.OrderChangeRows,
+
+        // And Tonight's setup panel.
+        .. Reading.ReadSurface.SetupPanelRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

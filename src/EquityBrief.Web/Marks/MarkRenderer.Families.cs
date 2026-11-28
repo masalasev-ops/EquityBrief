@@ -765,8 +765,18 @@ public sealed partial class MarkRenderer
             body.Append(StretchLine(drawn.Stretch, drawn.Evaluated));
         }
 
-        // The folds, closed: the full rule and how its settings were chosen, how the stocks were narrowed, the stocks one
-        // step short, the breakouts close to breaking out, every version side by side and how the setup has done.
+        body.Append(SetupFolds(card, variant));
+        body.Append("</section>");
+
+        return body.ToString();
+    }
+
+    // The folds, closed: the full rule and how its settings were chosen, how the stocks were narrowed, the stocks one step
+    // short, the breakouts close to breaking out, every version side by side and how the setup has done.
+    string SetupFolds(FamilyCardView card, RuleView? variant)
+    {
+        var body = new StringBuilder();
+
         body.Append("<details class=\"fold fam-rule\"><summary>The full rule, and how its settings were chosen</summary><div class=\"fold-b\">");
 
         if (card.RuleChoice is { } rule)
@@ -796,7 +806,6 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(SetupRecord(card));
-        body.Append("</section>");
 
         return body.ToString();
     }
