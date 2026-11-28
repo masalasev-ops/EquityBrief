@@ -79,12 +79,12 @@ public static class FillOdds
 
     public const string Caveat = "Its rule's past orders, not this stock's chance.";
 
-    // A waiting card's line: how far above its buy price the last close stands and the trading days it has left, then how often
-    // past orders this far away with this long left filled, or that too few say.
+    // A waiting card's line: how far the price must fall from the last close to its buy price and the trading days it has left,
+    // in one sentence, then how often past orders this far away with this long left filled, or that too few say.
+    // see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
     public static string Line(decimal close, decimal price, int daysLeft, FillOddsCell? cell)
     {
-        var above = price > 0 ? Prices.Statistic.FromRatio((close / price) - 1m) * 100 : 0;
-        var head = FormattableString.Invariant($"{Math.Abs(above):0.0}% {(above >= 0 ? "above" : "below")} its buy price, {daysLeft} trading day{(daysLeft == 1 ? string.Empty : "s")} left.");
+        var head = FormattableString.Invariant($"{PlanOrderWords.ToFallClause(price, close)}, {daysLeft} trading day{(daysLeft == 1 ? string.Empty : "s")} left.");
 
         return cell is { Orders: >= FewestOrders } held
             ? FormattableString.Invariant($"{head} Past orders this far away with this long left were filled {held.Share * 100:0}% of the time ({held.Orders:#,##0} orders). {Caveat}")

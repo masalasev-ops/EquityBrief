@@ -199,13 +199,13 @@ public static class OrderChanges
 
             var moves = MovesAbove(close, price, typical);
 
+            // From the operator's answers of 2026-11-28, item 5, the distance said in the one measure every page says it in; the
+            // orders chosen are still those within a typical daily move, nearest first.
+            // see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
             if (moves is >= 0 and <= CouldFillWithin)
             {
-                var plural = Math.Round(moves, 1) == 1 ? string.Empty : "s";
-                var distance = moves.ToString("0.0", CultureInfo.InvariantCulture);
-
                 near.Add((moves, new OrderChange(CouldFill, index.Index, WhoOf(row), row.Ticker,
-                    $"{row.Ticker}, {WhoOf(row)}: buy at ${Price(price)}, last close ${Price(close)}, {distance} typical daily move{plural} above")));
+                    $"{row.Ticker}, {WhoOf(row)}: {PlanOrderWords.ToFall(price, close)}")));
             }
         }
 

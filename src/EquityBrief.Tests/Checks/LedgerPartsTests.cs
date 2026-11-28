@@ -42,6 +42,36 @@ public class LedgerPartsTests
         Assert.Equal([("XXX", 5)], LedgerParts.SharingASession(LedgerParts.Of(Codes), place => overlapping[place]));
     }
 
+    // From the operator's answers of 2026-11-28 to the report of 11:55 am, item 1: the readings' own source takes a code's first
+    // part for the heavyweights' setups until the pin move after the run of 2027-02-06, and the 24.19 check lists each setup that
+    // leaves out apart, never as a difference to mark.
+    // owes: The heavyweights' setups find a code's history by its session in the first pin move after the 2027-02-06 run
+    [Fact]
+    public void TheCheckListsTheHeavyweightsSetupsTheFirstPartReadLeavesOutAndMarksNone()
+    {
+        var parts = LedgerParts.Of(Codes);
+        int[] SessionsOf(int place) => Sessions[place];
+
+        // On session 25 only XXX's second part holds a bar, so its first part read leaves it out; on 5 its first part holds it,
+        // and on 15 no part does, so the setup is left out by no read of the code. YYY is one part.
+        Assert.Equal(["XXX"], LedgerParts.SkippedByTheHeavyweightsRead(parts, SessionsOf, ["YYY", "XXX", "XXX"], 25));
+        Assert.Empty(LedgerParts.SkippedByTheHeavyweightsRead(parts, SessionsOf, ["XXX", "YYY"], 5));
+        Assert.Empty(LedgerParts.SkippedByTheHeavyweightsRead(parts, SessionsOf, ["XXX", "YYY"], 15));
+        Assert.Empty(LedgerParts.SkippedByTheHeavyweightsRead(parts, SessionsOf, ["YYY", "ZZZ"], 25));
+
+        var folder = Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger");
+        var check = File.ReadAllText(Path.Combine(folder, "SetupLedger.SessionReadings.cs"));
+
+        // The list stands on lines of its own, and no finding or difference to mark is written from it.
+        Assert.Contains("session-readings-heavyweights: {ticker} {Stamp(session)}: {SkippedByTheHeavyweightsRead}", check, StringComparison.Ordinal);
+        Assert.Equal("skipped by the heavyweights' read", SetupLedger.SkippedByTheHeavyweightsRead);
+        Assert.DoesNotContain("findings.Add($\"{ticker} {Stamp(session)}: {SkippedByTheHeavyweightsRead}", check, StringComparison.Ordinal);
+        Assert.Contains("var differences = findings.Count + memberFindings.Count + expected.Count;", check, StringComparison.Ordinal);
+
+        // The readings' own source still takes a code's first part, which is what the list is for until the pin move.
+        Assert.Contains("names.TryAdd(series[name].Name.Ticker, name);", File.ReadAllText(Path.Combine(folder, "LedgerSetups.cs")), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void EveryFullBuildRunsItsSmokeMonthBeforeItWritesAndNoLookupReadsACodeAlone()
     {

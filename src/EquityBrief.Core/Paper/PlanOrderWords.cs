@@ -103,6 +103,21 @@ public static class PlanOrderWords
     public static decimal? Gap(decimal? price, decimal? close) =>
         price is { } at && close is { } last && last > 0 ? (last - at) / last : null;
 
+    // From the operator's answers of 2026-11-28, item 5: the one measure of how far a waiting order's price stands from the last
+    // close, the fall over the close, in their words wherever a waiting order is drawn; a close at or under the price says so.
+    // see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
+    public static string ToFall(decimal price, decimal close) => ToFallClause(price, close) + ".";
+
+    // The same words as a clause, for a line that goes on after it.
+    public static string ToFallClause(decimal price, decimal close) =>
+        Gap(price, close) is { } gap && gap > 0m
+            ? FormattableString.Invariant($"Needs to fall {gap * 100:0.0}% from its last close of ${close:#,##0.00} to reach its buy price of ${price:#,##0.00}")
+            : FormattableString.Invariant($"Its last close of ${close:#,##0.00} is at or below its buy price of ${price:#,##0.00}");
+
+    // The fall alone, as a list's row says it beside its price.
+    public static string ToFallShort(decimal? gap) =>
+        gap is { } apart ? FormattableString.Invariant($"{Math.Max(apart, 0m) * 100:0.0}% to fall") : "no price to fall to";
+
     // The last session an order waits: the window's sessions on the exchange calendar after the night that listed it.
     public static DateOnly LastDay(DateOnly listed, int window)
     {

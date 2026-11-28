@@ -42,4 +42,17 @@ public static class LedgerParts
             .Where(pair => pair.Shared > 0)
             .OrderBy(pair => pair.Code, StringComparer.Ordinal),
     ];
+
+    // The codes of a rebalance's size cuts whose heavyweights' setup the readings' own source leaves out: it takes a code's first
+    // part, so a code read in parts whose first part holds no bar of the session, where a later part does, has none.
+    // owes: The heavyweights' setups find a code's history by its session in the first pin move after the 2027-02-06 run
+    public static IReadOnlyList<string> SkippedByTheHeavyweightsRead(IReadOnlyDictionary<string, int[]> parts, Func<int, int[]> sessionsOf, IEnumerable<string> cut, int at) =>
+    [
+        .. cut.Distinct(StringComparer.Ordinal)
+            .Where(code => parts.TryGetValue(code, out var places)
+                && places.Length > 1
+                && Array.BinarySearch(sessionsOf(places[0]), at) < 0
+                && PlaceAt(parts, sessionsOf, code, at) >= 0)
+            .Order(StringComparer.Ordinal),
+    ];
 }

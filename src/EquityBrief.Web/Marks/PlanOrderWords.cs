@@ -29,8 +29,9 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
 
     public string Words => PlanOrderWords.Waiting(Price, LastDay);
 
-    // The row in the operator's words: what it buys at, the last close and how far above, and when it was placed by which
-    // setup and when it is cancelled.
+    // The row in the operator's words: what it buys at, how far it must fall from the last close to reach it, and when it was
+    // placed by which setup and when it is cancelled.
+    // see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
     public string Row(string setup)
     {
         var name = Company is { Length: > 0 } company ? Ticker + ", " + CompanyWords.Short(company) : Ticker;
@@ -38,9 +39,9 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
             ? FormattableString.Invariant($"buys if it falls to ${price.ToString("0.00", CultureInfo.InvariantCulture)}.")
             : "buys if it falls to a set level, which its plan could not place tonight.";
         var close = LastClose is { } last
-            ? FormattableString.Invariant($" Last close ${last.ToString("0.00", CultureInfo.InvariantCulture)}") + (PlanOrderWords.Gap(Price, last) is { } gap
-                ? FormattableString.Invariant($", {Math.Abs(gap * 100).ToString("0.0", CultureInfo.InvariantCulture)}% {(gap >= 0 ? "above" : "below")}.")
-                : ".")
+            ? Price is { } at
+                ? " " + PlanOrderWords.ToFall(at, last)
+                : FormattableString.Invariant($" Last close ${last.ToString("0.00", CultureInfo.InvariantCulture)}.")
             : string.Empty;
 
         return FormattableString.Invariant($"{name}: {buys}{close} Placed {Listed.ToString("d MMM", CultureInfo.InvariantCulture)} by {setup.ToLowerInvariant()}; cancelled if not filled by {LastDay.ToString("d MMM", CultureInfo.InvariantCulture)}.");

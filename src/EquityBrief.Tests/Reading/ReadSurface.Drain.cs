@@ -158,7 +158,8 @@ public partial class ReadSurface
         // drain. The launcher the press asks starts the worker at one call, and from the 18.4 correction of 2026-10-28 the
         // worker's publish verb starts the read surface built beside it with the copy's verb at one call and waits for it,
         // since the worker cannot reference the surface that draws the screens; and from the correction of 2026-11-26 the
-        // copy's verb starts a browser the machine has at one call to lay Home and Tonight out beside the app's; a fourth
+        // copy's verb starts a browser the machine has at one call to lay Home and Tonight out beside the app's, from 24.50 the
+        // one call the suite's alignment check starts it by as well; a fourth
         // place starting a process, for a pass or anything else, fails here. It reads the source because what it asserts is
         // where a thing is not.
         // see: The read-only copy draws each page as the app draws it, and a link it does not hold keeps its element
@@ -187,7 +188,7 @@ public partial class ReadSurface
 
     const string LauncherSource = "src/EquityBrief.Core/Research/DrainLauncher.cs";
 
-    const string LayoutSource = "src/EquityBrief.Api/Cloudflare/CopyLayout.cs";
+    const string LayoutSource = "src/EquityBrief.Api/Cloudflare/PageBrowser.cs";
 
     const string PublisherSource = "src/EquityBrief.Worker/Cloudflare/SitePublisher.cs";
 

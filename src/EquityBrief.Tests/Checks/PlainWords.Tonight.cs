@@ -284,8 +284,9 @@ public partial class PlainWords
 
         Assert.Empty(Faults(page, RegionsOf(TonightPage), terms));
 
-        // From 24.46 a pick's card stands in its plan in the list of every plan.
-        var planted = page.Replace("<p class=\"card-summary pp-said\" data-summary>Picked by the", "<p class=\"card-summary pp-said\" data-summary>Its reaction session held. Picked by the", StringComparison.Ordinal);
+        // From 24.46 a pick's card stands in its plan in the list of every plan, and from 24.50 the plan opens on its buy
+        // condition, the card's sentence no longer drawn there.
+        var planted = page.Replace("<p class=\"pp-cond\">", "<p class=\"pp-cond\">Its reaction session held. ", StringComparison.Ordinal);
 
         Assert.NotEqual(page, planted);
         Assert.Contains(Faults(planted, RegionsOf(TonightPage), terms), fault => fault.StartsWith("'held' in the card 'plans'", StringComparison.Ordinal));

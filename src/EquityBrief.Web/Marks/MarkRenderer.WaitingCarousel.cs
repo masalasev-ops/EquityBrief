@@ -287,7 +287,9 @@ public sealed partial class MarkRenderer
             ? Formatted($"<p class=\"wo-odds\" data-row=\"odds\" data-bought>{Escaped(bought)}</p>")
             : Formatted($"<p class=\"wo-odds\" data-row=\"odds\">{Escaped(order.Odds ?? string.Empty)}</p>");
 
-    // The highlighted line in the operator's words: "Buys only if it falls to $x. Last close $x, x% above."
+    // The highlighted line in the operator's words: "Buys only if it falls to $x." and, from their answers of 2026-11-28, item 5,
+    // "Needs to fall x.x% from its last close of $x to reach its buy price of $x."
+    // see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
     public static string WaitingCondition(WaitingOrderView order)
     {
         var buys = order.Price is { } price
@@ -295,7 +297,7 @@ public sealed partial class MarkRenderer
             : "Buys only if it falls to a set level, which its plan could not place tonight.";
 
         return order.LastClose is { } last
-            ? buys + " Last close " + Dollars(last) + (PlanOrderWords.Gap(order.Price, last) is { } gap ? FormattableString.Invariant($", {Math.Abs(gap * 100):0.0}% {(gap >= 0 ? "above" : "below")}.") : ".")
+            ? buys + (order.Price is { } at ? " " + PlanOrderWords.ToFall(at, last) : " Last close " + Dollars(last) + ".")
             : buys;
     }
 
@@ -349,14 +351,14 @@ public sealed partial class MarkRenderer
 
     static string Share(decimal? gap) => gap is { } apart ? FormattableString.Invariant($"{Math.Max(apart, 0m) * 100:0.0}%") : "no price";
 
-    static string ToGo(decimal? gap) => gap is { } apart ? FormattableString.Invariant($"{Math.Max(apart, 0m) * 100:0.0}% to go") : "no price to go to";
+    static string ToGo(decimal? gap) => PlanOrderWords.ToFallShort(gap);
 
-    // From the operator's answers of 2026-11-16, item 1b: the box on a new pick that waits for a price, in their words.
+    // From the operator's answers of 2026-11-16, item 1b: the box on a new pick that waits for a price, in their words, its
+    // distance from their answers of 2026-11-28, item 5.
     public static string ZoneBox(ZoneBuy zone, DateOnly night)
     {
         var last = PlanOrderWords.LastDay(night, zone.Within);
-        var above = zone.Close > 0 ? (zone.Close - zone.Price) / zone.Close : 0m;
 
-        return FormattableString.Invariant($"Not bought unless the price falls to {Dollars(zone.Price)} by {last:d MMM yyyy}. Tonight's close was {Dollars(zone.Close)}, {Math.Abs(above * 100):0.0}% {(above >= 0 ? "above" : "below")}. If it rises from here, there is no trade.");
+        return FormattableString.Invariant($"Not bought unless the price falls to {Dollars(zone.Price)} by {last:d MMM yyyy}. {PlanOrderWords.ToFall(zone.Price, zone.Close)} If it rises from here, there is no trade.");
     }
 }

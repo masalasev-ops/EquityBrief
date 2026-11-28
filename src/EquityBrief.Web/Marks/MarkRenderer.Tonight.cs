@@ -403,7 +403,7 @@ public sealed partial class MarkRenderer
         var nearest = waiting.Select(plan => plan.Gap).OfType<decimal>().DefaultIfEmpty().Min();
         var waits = waiting.Length == 0
             ? "No order from an earlier night waits for its price."
-            : Formatted($"Orders from earlier nights.{(waiting.Any(plan => plan.Gap is not null) ? Formatted($" The nearest is {Math.Max(nearest, 0m) * 100:0.0}% above its buy price.") : string.Empty)}");
+            : Formatted($"Orders from earlier nights.{(waiting.Any(plan => plan.Gap is not null) ? Formatted($" The nearest needs to fall {Math.Max(nearest, 0m) * 100:0.0}% from its last close to reach its buy price.") : string.Empty)}");
 
         body.Append(Invariant, $"<button type=\"button\" class=\"g-tile\" data-plan-filter=\"{PlanEntryView.Waiting}\" data-glance=\"waiting\"><span class=\"g-k\">Waiting to buy</span><span class=\"g-v\">{waiting.Length}</span><span class=\"g-s\">{Escaped(waits)}</span></button>");
 

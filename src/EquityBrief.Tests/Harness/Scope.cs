@@ -5466,6 +5466,15 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        // The 24.47 correction of 2026-11-28's merge guard.
+        [CheckReach.Key(CatalogueTable, "Merge guard")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the run log it reads and writes nothing, reconciled against the row; a worker's file under a night copy named by the copy and one elsewhere by its folder, read by hand; and the merge script asking the verb before it merges, its order read off the script",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Merge guard")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Order changes")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, an update and a delete refused, and the newest run of a constructed night read back as Paper trading's section",
