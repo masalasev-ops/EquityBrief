@@ -58,6 +58,8 @@ public enum Store
     OrderChange,
     FillCheck,
     FillOdds,
+    // From the 24.47 correction of 2026-11-28 each open trailing trade's stop as each night raised it.
+    TrailStop,
     // The check's settling: each stock-session or stretch marked unreliable or excluded, and each close held to a source.
     UnreliableMark,
     PriceCheck,

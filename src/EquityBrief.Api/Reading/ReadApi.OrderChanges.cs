@@ -16,6 +16,40 @@ public sealed partial class ReadApi
         SELECT family, band, days_left, orders, filled FROM fill_odds
         WHERE run_id = (SELECT run_id FROM fill_odds WHERE index_code = $index ORDER BY run_id DESC LIMIT 1);";
 
+    const string TrailStopRows = @"
+        SELECT family, ticker, listed_on, session_date, first_stop, stop FROM trail_stop
+        WHERE index_code = $index
+        ORDER BY session_date, run_id;";
+
+    // From the operator's answers of 2026-11-28, item 4: every trailing stop the nights stored on an index, which a closed
+    // trade's sale is read against.
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+    public async Task<IReadOnlyList<TrailStopRow>> TrailStopsAsync(string index)
+    {
+        var rows = new List<TrailStopRow>();
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = TrailStopRows;
+        command.Parameters.AddWithValue("$index", index);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new TrailStopRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                EquityBrief.Data.Money.FromStorage(reader.GetString(4)),
+                EquityBrief.Data.Money.FromStorage(reader.GetString(5))));
+        }
+
+        return rows;
+    }
+
     // The night's order changes as written, none where no run wrote them for the night.
     public async Task<OrderSummary?> OrderChangesAsync(DateOnly night)
     {

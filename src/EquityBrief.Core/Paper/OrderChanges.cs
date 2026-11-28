@@ -13,7 +13,7 @@ public sealed record OrderChange(string List, string Index, string Who, string T
 // One account's orders as the night's order changes read them: who it is, by its setup and index; whether a book's; each
 // trade the account's walk took, a trade it skipped for want of cash being no order; and each stock it kept that no fill
 // bought, with the night that listed it and why.
-public sealed record AccountOrders(string Who, bool Book, IReadOnlyList<PaperTrade> Taken, IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> Unfilled);
+public sealed record AccountOrders(string Who, bool Book, IReadOnlyList<PaperTrade> Taken, IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> Unfilled, string? Family = null);
 
 // One of the AI stock picker's picks as its account trades it: the stock, its night, the range it buys in or none for one
 // bought at the open, the trade its account took or none, and the side of its range it opened on with the session that was
@@ -21,15 +21,16 @@ public sealed record AccountOrders(string Who, bool Book, IReadOnlyList<PaperTra
 public sealed record PickerOrder(string Ticker, DateOnly Night, BuyRange? Range, PaperTrade? Trade, string? NotBought, DateOnly? NotBoughtOn);
 
 // One index's orders on a night: its code and name, its live rules' orders at a price, each live account's, the picker's,
-// and each stock's close on the night. A waiting order's distance is read in the typical daily move its plan was placed
-// with, as its fill odds read the ledger's past orders.
+// each stock's close on the night, and the trailing stops the nights stored. A waiting order's distance is read in the typical
+// daily move its plan was placed with, as its fill odds read the ledger's past orders.
 public sealed record IndexOrders(
     string Index,
     string Name,
     IReadOnlyList<PlannedTradeRow> Planned,
     IReadOnlyList<AccountOrders> Accounts,
     IReadOnlyList<PickerOrder> Picker,
-    IReadOnlyDictionary<string, decimal> Closes);
+    IReadOnlyDictionary<string, decimal> Closes,
+    IReadOnlyList<TrailStopRow>? Raised = null);
 
 // One order the 4:30 pm check read as filled: the index, who placed it, the stock, the night it was placed, its buy price and
 // the day's low the live quote read.
@@ -152,7 +153,9 @@ public static class OrderChanges
         {
             foreach (var trade in account.Taken.Where(trade => trade.Ended == night && trade.Sale is not null))
             {
-                yield return new OrderChange(Sold, index.Index, account.Who, trade.Ticker, SoldWords(trade, account.Who, account.Book));
+                var raised = TrailStops.Before(index.Raised, account.Family, trade.Ticker, trade.ListedOn, trade.FiredOn ?? night);
+
+                yield return new OrderChange(Sold, index.Index, account.Who, trade.Ticker, SoldWords(trade, account.Who, account.Book, raised));
             }
         }
 
@@ -255,12 +258,17 @@ public static class OrderChanges
             _ => "it places no stop and no take-profit; its book sells it at a reshuffle",
         };
 
-    // Why a sale came: its stop where it sold at or under it, its take-profit where at or over it, a book's own reason, and
-    // its time limit otherwise; with what it came to in per cent of the price paid.
-    static string SoldWords(PaperTrade trade, string who, bool book)
+    // Why a sale came: from the operator's answers of 2026-11-28, item 4, a trailing trade's trailing stop where it sold above
+    // its first stop or a night stored its stop above that, with the stop stored the night before its sale fired; its stop
+    // where it sold at or under it, its take-profit where at or over it, a book's own reason, and its time limit otherwise;
+    // with what it came to in per cent of the price paid.
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+    static string SoldWords(PaperTrade trade, string who, bool book, decimal? raised = null)
     {
         var sale = trade.Sale!.Value;
-        var why = trade.Stop is { } stop && sale <= stop ? "its stop"
+        var why = PaperAccount.SoldOnItsTrail(trade, raised) && !(trade.Target is { } goal && sale >= goal)
+            ? raised is { } at ? $"its trailing stop of ${Price(at)}" : "its trailing stop"
+            : trade.Stop is { } stop && sale <= stop ? "its stop"
             : trade.Target is { } target && sale >= target ? "its take-profit"
             : book ? trade.Outcome is { Length: > 0 } reason ? reason : "its book's reshuffle"
             : "its time limit";

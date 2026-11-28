@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the order changes storing each trailing trade's raised stop, at a correction to 24.47
+Decision: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+Was:
+> <td>bar store, judge picks, judge runs, judge pins, fill checks, phone messages</td><td>order changes, run log</td><td>from 24.47 works each index's paper accounts ... tickers, prices and dates alone; no trade, rule or source a rule pins moves (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message)</td></tr>
+Now:
+> <td>bar store, judge picks, judge runs, judge pins, fill checks, trailing stops, phone messages</td><td>order changes, trailing stops, run log</td><td>from 24.47 works each index's paper accounts ... tickers, prices and dates alone; from the 24.47 correction of 2026-11-28 it writes each open trailing trade's stop as the night raised it, and a sale is said on its trailing stop with the stop stored the night before it fired; no trade, rule or source a rule pins moves (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message) (see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop)</td></tr>
+Why: the operator's answers of 2026-11-28, item 4, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`; the stores table gains the trailing stops' row and SCHEMA.md the table, added lines alone.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the setup ledger finding a setup's history by its code and its session, and its smoke month, at a correction to 24.19
 Decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
 Corrects: the folded build of 2026-11-28 stopped on the S&P 500's standing ledger in its second quarter of 2019, a setup's code read by its first part, which held no bar on the session.

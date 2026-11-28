@@ -12,8 +12,15 @@ namespace EquityBrief.Core.Cards;
 public sealed record PaperPosition(decimal? Close, decimal? Now, decimal? Stop, double? Risks, double? Fraction, int? Held, string Standing);
 
 // A trade that ended: the price it was sold at, its result in risks and as a fraction of its buy, how it ended in words,
-// the sessions from its listing night to its end, and its edge as its fill stored it.
-public sealed record PaperEnded(decimal? Sale, double? Risks, double? Fraction, string Ending, int? Held, double? Edge);
+// the sessions from its listing night to its end, its edge as its fill stored it, and for one sold on its trailing stop the
+// stop the night before its sale fired stored for it, none where no night stored one.
+public sealed record PaperEnded(decimal? Sale, double? Risks, double? Fraction, string Ending, int? Held, double? Edge, decimal? TrailStop = null)
+{
+    // How it ended as a closed list draws it, a trailing stop with its price where one was stored.
+    public string Said => TrailStop is { } stop && Ending == PaperAccount.UnderTrail
+        ? Ending + " of $" + stop.ToString("#,##0.00", System.Globalization.CultureInfo.InvariantCulture)
+        : Ending;
+}
 
 // One reason listed stocks were not bought, with each stock and the night that listed it, newest first.
 public sealed record PaperUnbought(string Why, IReadOnlyList<(string Ticker, DateOnly Listed)> Stocks);
@@ -85,13 +92,16 @@ public static partial class PaperAccount
 
     public const string TimeRanOut = "time ran out";
 
-    // Why a trade's exit fired, read off the close it fired on as `Ending` reads a sale, for a trade the next open has yet to sell.
+    // Why a trade's exit fired, read off the close it fired on as `Ending` reads a sale, for a trade the next open has yet to sell;
+    // from the operator's answers of 2026-11-28, item 4, a trailing trade's close above its first stop fired on its trailing
+    // stop, never on a time limit.
     // see: Every count of trades names its group and one function works the four groups
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
     public static string WhyFired(decimal? close, decimal? target, decimal? stop, decimal? trail, int? held, int? cap) =>
         trail is null && target is { } goal && close >= goal ? TargetReached
             : close is { } read && stop is { } floor && read < floor ? UnderStop
-            : held is { } kept && cap is { } limit && kept >= limit ? TimeRanOut
             : trail is not null ? UnderTrail
+            : held is { } kept && cap is { } limit && kept >= limit ? TimeRanOut
             : UnderStop;
 
     // A trade whose exit fired by the night and whose sale the next open has not made: why it sells, none for any other.
@@ -127,6 +137,26 @@ public static partial class PaperAccount
     // The one in so many a rule's result must be rarer than to count as real: the bar's reciprocal.
     public static int RealOneIn => (int)Math.Round(1 / LoopGate.Bar);
 
+    // A trailing trade's stop as a night raised it: its first stop raised under each close after its listing night to the night
+    // by its trail, at the trade's own scale, and never lowered; its own stop for any other, and its first where the close it was
+    // marked from is not read.
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+    public static decimal? RaisedStop(PaperTrade trade, DateOnly night, IReadOnlyList<DateOnly> sessions, Func<string, DateOnly, decimal?> close)
+    {
+        if (trade.Trail is not { } trail || trade.Stop is not { } first || (trade.MarkedFrom ?? close(trade.Ticker, trade.Bought)) is not { } then || then <= 0m)
+        {
+            return trade.Stop;
+        }
+
+        var scale = trade.Buy / then;
+
+        return sessions
+            .Where(session => session > trade.ListedOn && session <= night)
+            .Select(session => close(trade.Ticker, session))
+            .OfType<decimal>()
+            .Aggregate(first, (floor, at) => Math.Max(floor, (at * scale) - trail));
+    }
+
     // An open trade on the night, marked by the ratio of its stock's closes as the walk marks it, so a split moves nothing:
     // its stop tonight the plan's, a trailing plan's raised to the highest close since its listing night less the distance
     // it trails and never lowered; its result so far in the risk its plan's close put up and as a fraction of its buy; the
@@ -150,13 +180,7 @@ public static partial class PaperAccount
 
         var scale = trade.Buy / then;
         var price = now * scale;
-        var stop = trade.Trail is { } trail && trade.Stop is { } first
-            ? sessions
-                .Where(session => session > trade.ListedOn && session <= night)
-                .Select(session => close(trade.Ticker, session))
-                .OfType<decimal>()
-                .Aggregate(first, (floor, at) => Math.Max(floor, (at * scale) - trail))
-            : trade.Stop;
+        var stop = RaisedStop(trade, night, sessions, close);
         var planned = trade.Planned ?? trade.Buy;
         double? risks = trade.Stop is { } level && planned > level ? Statistic.FromRatio((price - trade.Buy) / (planned - level)) : null;
         var standing = book
@@ -206,25 +230,33 @@ public static partial class PaperAccount
     // the reason its book sold it, a page list's trade the words its stored outcome reads as, handed in, and otherwise why
     // the walk that ended it sold it there, its own exit replayed over its closes to the session it ended; where its closes
     // do not reach that session, read off where it was sold as the walks sell, at or over its target reached it, under its
-    // stop under its stop, a trailing plan's before its cap under its trailing stop and at its cap its time limit; the
-    // sessions from its listing night to its end; and its edge.
-    public static PaperEnded Ended(PaperTrade trade, double? result, IReadOnlyList<DateOnly>? sessions = null, Func<string, DateOnly, decimal?>? close = null)
+    // stop under its stop, a trailing plan's under its trailing stop; the sessions from its listing night to its end; its edge;
+    // and from the operator's answers of 2026-11-28, item 4, a trailing trade sold above its first stop, or whose stop the night
+    // stored before its sale fired stood above its first, sold on its trailing stop and never its time limit, with that stop.
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+    public static PaperEnded Ended(PaperTrade trade, double? result, IReadOnlyList<DateOnly>? sessions = null, Func<string, DateOnly, decimal?>? close = null, decimal? raised = null)
     {
         var held = trade.Ended is { } end ? ExchangeClosures.SessionsUntil(trade.ListedOn, end) : null;
         var book = trade.Stop is null;
         double? fraction = trade.Sale is { } sale && trade.Buy > 0m ? Statistic.FromRatio((sale / trade.Buy) - 1m) : book ? result : null;
+        var ending = Ending(trade, held, Replayed(trade, held, sessions, close), raised);
 
-        return new PaperEnded(trade.Sale, book ? null : result, fraction, Ending(trade, held, Replayed(trade, held, sessions, close)), held, trade.Edge);
+        return new PaperEnded(trade.Sale, book ? null : result, fraction, ending, held, trade.Edge, ending == UnderTrail ? raised : null);
     }
 
-    static string Ending(PaperTrade trade, int? held, string? replayed) =>
+    // Whether a trailing trade sold on its trailing stop: above its first stop, or under a stop a night stored above its first.
+    public static bool SoldOnItsTrail(PaperTrade trade, decimal? raised) =>
+        trade.Trail is not null && trade.Stop is { } first && trade.Sale is { } sale && (sale > first || raised > first);
+
+    static string Ending(PaperTrade trade, int? held, string? replayed, decimal? raised) =>
         trade.Stop is null ? trade.Outcome is { } reason ? "sold: " + reason : "sold"
             : trade.Outcome is { } said ? said
             : trade.Sale is not { } sale ? NoResult
+            : SoldOnItsTrail(trade, raised) && replayed is null or TimeLimit ? UnderTrail
             : replayed is { } walked ? walked
             : trade.Trail is null && trade.Target is { } target && sale >= target ? ReachedTarget
             : trade.Stop is { } stop && sale < stop ? UnderStop
-            : trade.Trail is not null ? held is { } trailed && trade.Cap is { } trailCap && trailed >= trailCap ? TimeLimit : UnderTrail
+            : trade.Trail is not null ? UnderTrail
             : held is { } kept && trade.Cap is { } cap && kept >= cap ? TimeLimit
             : UnderStop;
 

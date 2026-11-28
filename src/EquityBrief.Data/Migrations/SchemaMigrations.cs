@@ -800,7 +800,32 @@ public static class SchemaMigrations
         new Migration(177, "create long_fill_bar, long_fill_hole and source_ask", CreateSecondSourceFill),
         new Migration(178, "create order_change, fill_check and fill_odds", CreateOrderChanges),
         new Migration(179, "create unreliable_mark, price_check and check_settled", CreateCheckSettling),
+        new Migration(180, "create trail_stop", CreateTrailStop),
     ];
+
+    // Each open trailing trade's stop as each night raised it, written by the night's order changes, inserts alone.
+    // see: A trailing trade's stop is stored as each night raises it, and a sale above its first stop is sold on its trailing stop
+    const string CreateTrailStop = @"
+        CREATE TABLE trail_stop (
+            run_id        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            listed_on     TEXT NOT NULL,
+            first_stop    TEXT NOT NULL,
+            stop          TEXT NOT NULL,
+            written_at    TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, ticker, listed_on)
+        ) STRICT;
+
+        CREATE INDEX trail_stop_by_trade ON trail_stop (index_code, family, ticker, listed_on, session_date);
+
+        CREATE TRIGGER trail_stop_takes_inserts_alone_on_change BEFORE UPDATE ON trail_stop
+        BEGIN SELECT RAISE(ABORT, 'trail_stop takes inserts alone.'); END;
+        CREATE TRIGGER trail_stop_takes_inserts_alone_on_removal BEFORE DELETE ON trail_stop
+        BEGIN SELECT RAISE(ABORT, 'trail_stop takes inserts alone.'); END;
+    ";
 
     // The check's settling: each stock-session or stretch marked unreliable or excluded, with the reading named, and a later
     // row lifting one; and each close held against a second source, with what it was held for. Each takes inserts alone.

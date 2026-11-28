@@ -100,7 +100,8 @@ public static class PaperScreen
         string fundName,
         Func<DateOnly, decimal?> fund,
         PaperCombinedView? combined = null,
-        IReadOnlyDictionary<string, PaperBookLine>? books = null)
+        IReadOnlyDictionary<string, PaperBookLine>? books = null,
+        IReadOnlyList<TrailStopRow>? raised = null)
     {
         var heads = views.Where(view => view.Head && (show is null || view.Family == show)).ToArray();
         var source = sources.ToDictionary(account => account.Key, StringComparer.Ordinal);
@@ -118,8 +119,12 @@ public static class PaperScreen
         PaperPosition? Opened(PaperTrade trade, string family = HeavyweightRule.Name) =>
             trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? Tonight(family, trade.Ticker) : null) : null;
 
-        PaperEnded? Shut(PaperTrade trade, double? result) =>
-            trade.Ended is { } end && end <= night ? PaperAccount.Ended(trade, result, sessions, close) : null;
+        // From the operator's answers of 2026-11-28, item 4, a trailing trade's sale read against the stop the night before it
+        // fired stored for it.
+        PaperEnded? Shut(PaperTrade trade, double? result, string family) =>
+            trade.Ended is { } end && end <= night
+                ? PaperAccount.Ended(trade, result, sessions, close, TrailStops.Before(raised, family, trade.Ticker, trade.ListedOn, trade.FiredOn ?? end))
+                : null;
 
         IReadOnlyList<(string Name, IReadOnlyList<PaperTrade> Trades)> VariantsOf(string family) =>
         [
@@ -143,7 +148,7 @@ public static class PaperScreen
                 trade.Cap,
                 trade.Ended,
                 Opened(trade, head.Family),
-                Shut(trade, result),
+                Shut(trade, result, head.Family),
                 version is null && (trade.Ended is null || trade.Ended > night) ? PaperAccount.HeldBy(trade.Ticker, night, VariantsOf(head.Family)) : [],
                 trade.Past,
                 version,
@@ -187,7 +192,7 @@ public static class PaperScreen
                 .Where(view => view.Family == variants && view.Standing == PaperAccountView.Variant)
                 .SelectMany(view => source[view.Key].Trades
                     .Where(one => !headTrades.Any(trade => trade.Ticker == one.Trade.Ticker && trade.ListedOn == one.Trade.ListedOn))
-                    .Select(one => new PaperOnlyView(one.Trade.Ticker, Company(one.Trade.Ticker), [view.Short ?? view.Name], one.Trade.ListedOn, one.Trade.Bought, one.Trade.Buy, one.Trade.Stop is null, Opened(one.Trade), Shut(one.Trade, one.Result))))
+                    .Select(one => new PaperOnlyView(one.Trade.Ticker, Company(one.Trade.Ticker), [view.Short ?? view.Name], one.Trade.ListedOn, one.Trade.Bought, one.Trade.Buy, one.Trade.Stop is null, Opened(one.Trade), Shut(one.Trade, one.Result, view.Family))))
                 .OrderByDescending(trade => trade.Bought)
                 .ThenBy(trade => trade.Ticker, StringComparer.Ordinal),
         ];

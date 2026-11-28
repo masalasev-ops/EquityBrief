@@ -2874,7 +2874,8 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             PaperBooks.Fund(reading.Code),
             accounts.Fund ?? (_ => null),
             accounts.Combined,
-            accounts.Books)
+            accounts.Books,
+            await read.TrailStopsAsync(reading.Code))
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
     // From 24.47 the night's order changes on the three indices, as the night wrote them.
