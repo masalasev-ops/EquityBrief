@@ -23852,3 +23852,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1805 passing, none out of scope and none unexamined, 1820 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.19 - correction: the check's settling brought onto main after 24.47, its migration 179   2026-11-28
+
+Ruled:      the operator's word of 2026-11-28 that 24.47 merges before this correction. No rule, figure or decision changes.
+Built:      main merged into the branch, its history kept: 24.47's migration keeps 178 and the check's settling's three tables
+            take 179; the components, the stores, the access matrix, section 17's rows, the pinned values, the worker's
+            help and the stated counts hold both sides, the second sources' fill as this correction left it.
+Tests:      none new.
+Pins:       none moved.
+Mutated:    none: the merge adds no assertion, each of its sides' mutations standing in their entries above.
+Claims:     1809, none added beyond the two sides' 1805 and four.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4124 of 4124 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1809
+            claims, 1809 passing, none out of scope and none unexamined, 1824 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.
