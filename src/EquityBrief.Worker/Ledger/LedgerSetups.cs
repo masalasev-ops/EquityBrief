@@ -621,17 +621,6 @@ public static class LedgerSetups
     {
         var names = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        // From the 24.19 correction of 2026-11-28 the part of a code read as several holding the session, and only where
-        // none does its first part.
-        // see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
-        for (var name = 0; name < series.Count; name++)
-        {
-            if (IndexNightRead.BarOf(series[name], at) >= 0)
-            {
-                names[series[name].Name.Ticker] = name;
-            }
-        }
-
         for (var name = 0; name < series.Count; name++)
         {
             names.TryAdd(series[name].Name.Ticker, name);
