@@ -54,6 +54,10 @@ public enum Store
     LongFillBar,
     LongFillHole,
     SourceAsk,
+    // From 24.47 the night's order changes, each waiting order the 4:30 pm check read, and each rule's fill odds.
+    OrderChange,
+    FillCheck,
+    FillOdds,
     LongFact,
     LongSetup,
     LongReading,
@@ -315,6 +319,12 @@ public enum Feed
     // From the 24.19 correction Yahoo's daily chart, Stooq's daily file and Tiingo's daily prices on the operator's key, asked
     // by the second source fill alone, by hand, for the holes inside a code's own prices.
     SecondSourcePrices,
+    // From 24.47 the provider's live quote of many listings in one request, a page of symbols, asked by the fill check alone
+    // after the close on each trading day, outside the night.
+    LiveQuotes,
+    // From 24.47 ntfy, one request a message to the operator's phone, on the topic the secrets file holds, sent by the order
+    // changes and the fill check alone.
+    PhoneMessages,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

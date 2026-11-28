@@ -46,18 +46,9 @@ public sealed record PlanEntryView(string Group, string Family, string Ticker)
 // see: Tonight lists every plan the rules hold on the night in one place, each at its own address in one design
 public sealed partial class MarkRenderer
 {
-    // A setup in a few plain words, as the list and the plan's header name it, its rule's name beside it on the setups' table.
-    public static IReadOnlyDictionary<string, string> SetupShort { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
-    {
-        [EquityBrief.Core.Families.SetupFamilies.Pullback] = "Bounce in an uptrend",
-        [EquityBrief.Core.Families.BreakoutRule.Name] = "New high",
-        [EquityBrief.Core.Families.DriftRule.Name] = "Strong earnings",
-        [EquityBrief.Core.Families.FundamentalsRule.Name] = "Growing and profitable",
-        [EquityBrief.Core.Families.ImprovingRule.Name] = "Getting stronger as a business",
-        [EquityBrief.Core.Families.DipRule.Name] = "Short-term dip",
-        [EquityBrief.Core.Families.HeavyweightRule.Name] = "Sector heavyweights",
-        [EquityBrief.Core.Families.QualityRule.Name] = "Quality at a fair price",
-    };
+    // A setup in a few plain words, as the list and the plan's header name it, its rule's name beside it on the setups' table;
+    // from 24.47 kept in the core, which the night's order changes name each setup by too.
+    public static IReadOnlyDictionary<string, string> SetupShort => EquityBrief.Core.Paper.SetupNames.Short;
 
     public static string ShortOf(string family) => SetupShort.GetValueOrDefault(family) ?? Capitalised(SetupOf(family));
 
@@ -337,13 +328,21 @@ public sealed partial class MarkRenderer
                 : "Its order has not been filled, so nothing is held yet and no second order is placed.";
         }
 
+        // From the operator's order of 2026-11-28 an order filled on the night says it was bought, and one still waiting how often
+        // its rule's past orders this far away with as long left filled.
+        // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+        if (entry.Order is { Bought: { } bought })
+        {
+            return bought + ". It is sold by its own exits from here.";
+        }
+
         if (entry.Order is { } order)
         {
             var left = DaysLeft(entry, night);
 
-            return order.Price is { } price
+            return (order.Price is { } price
                 ? Formatted($"Bought only if the price falls to ${Price(price)} by {order.LastDay.ToString("d MMM", Invariant)}.{(order.LastClose is { } close ? Formatted($" Tonight's close was ${Price(close)}, {Math.Abs((close - price) / price * 100):0.0}% {(close >= price ? "above" : "below")}.") : string.Empty)}{(left is { } days ? " " + Capitalised(Counted(days, "trading day is left.", "trading days are left.")) : string.Empty)} If it never gets there, nothing is bought.")
-                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.");
+                : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + odds : string.Empty);
         }
 
         if (entry.Card?.Zone is { NoBuy: false } zone)

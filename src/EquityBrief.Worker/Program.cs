@@ -138,8 +138,107 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "partner" => await PartnerVerb(args),
     "review" => await ReviewVerb(args),
     "long-fill" => await LongFillVerb(args),
+    "order-changes" => await OrderChangesVerb(args),
+    "fill-check" => await FillCheckVerb(args),
+    "fill-odds" => await FillOddsVerb(args),
     _ => NoVerb(),
 };
+
+// The ntfy topic read from the worker's settings alone, the secrets file holding it, and never printed: the lines name the
+// setting and say whether it is saved.
+// see: Phone messages go through ntfy on a topic only the secrets file holds and carry tickers, prices and dates alone
+static NtfyMessages PhoneOf(Microsoft.Extensions.Configuration.IConfiguration configuration, string verb)
+{
+    var topic = NtfyTopic.Read(configuration[NtfyTopic.SettingName]);
+
+    Console.WriteLine(topic is null
+        ? $"{verb}: no ntfy topic is saved at '{NtfyTopic.SettingName}', so no message is sent"
+        : $"{verb}: the ntfy topic is saved at '{NtfyTopic.SettingName}'");
+
+    return NtfyMessages.Live(topic);
+}
+
+// A night's order changes on the three indices, printed, and with '--word' written and sent; run by the AI stock picker's
+// process after its picks, or by hand for a night named.
+// see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+static async Task<int> OrderChangesVerb(string[] args)
+{
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--night") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var night))
+    {
+        Console.Error.WriteLine("order-changes: give '--night <yyyy-MM-dd>', with '--word' to write the lists and send the message.");
+
+        return 2;
+    }
+
+    return await OrderChangesAfter(night, args.Contains("--word", StringComparer.Ordinal));
+}
+
+static async Task<int> OrderChangesAfter(DateOnly night, bool word)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    try
+    {
+        await new EquityBrief.Worker.Paper.OrderChangesRun(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, PhoneOf(configuration, EquityBrief.Worker.Paper.OrderChangesRun.Stage))
+            .RunAsync(night, word, Console.Out);
+
+        return 0;
+    }
+    catch (Exception failure) when (failure is InvalidOperationException or Microsoft.Data.Sqlite.SqliteException or ProviderRefusal)
+    {
+        Console.Error.WriteLine("order-changes: " + failure.Message);
+
+        return 1;
+    }
+}
+
+// The 4:30 pm check, a process of its own outside the night: it waits until half past four in New York, reads every waiting
+// order's day low from the provider's live quote a page of symbols a request, and with '--word' writes them and sends the
+// message; '--now' reads at once, by hand.
+// see: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols
+static async Task<int> FillCheckVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    EquityBrief.Core.Time.IClock clock = SystemClock.ForUnitedStatesSessions();
+    var day = clock.SessionDateAt(clock.UtcNow);
+    var word = args.Contains("--word", StringComparer.Ordinal);
+    var at = EquityBrief.Worker.Paper.FillCheck.ReadingAt(day, clock.SessionZone);
+
+    if (word && !args.Contains("--now", StringComparer.Ordinal) && at > clock.UtcNow)
+    {
+        Console.WriteLine(FormattableString.Invariant($"fill-check: waiting until {at:yyyy-MM-ddTHH:mm}Z, half past four in New York"));
+        await Task.Delay(at - clock.UtcNow);
+    }
+
+    var waiting = await EquityBrief.Worker.Paper.FillCheck.WaitingAsync(store.DatabaseFile, day);
+    var feed = EodhdDayLowFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey], new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+
+    try
+    {
+        return await new EquityBrief.Worker.Paper.FillCheck(clock, store.DatabaseFile, feed, PhoneOf(configuration, EquityBrief.Worker.Paper.FillCheck.Stage))
+            .RunAsync(day, waiting, word, Console.Out);
+    }
+    catch (ProviderRefusal refusal)
+    {
+        Console.Error.WriteLine("fill-check: " + refusal.Message);
+
+        return 1;
+    }
+}
+
+// The fill odds of an index's live rules from the ledger's past orders, by hand: the orders printed, and with '--word' walked
+// and written.
+// see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+static async Task<int> FillOddsVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Loop.FillOddsTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(VerbArguments.Value(args, "--index") ?? string.Empty, args.Contains("--word", StringComparer.Ordinal));
+}
 
 // The second sources' fill: the holes inside each code's own prices on the three indices printed with what it would ask,
 // and asked of Yahoo, then Stooq, then Tiingo and written only with '--word'. Tiingo is asked only where its key is set, the
@@ -662,6 +761,7 @@ static async Task<int> JudgePickRun(string[] args)
     catch (InvalidOperationException refusal)
     {
         Console.Error.WriteLine("judge-pick: " + refusal.Message);
+        await OrderChangesAfter(session, word: true);
 
         return 1;
     }
@@ -680,6 +780,10 @@ static async Task<int> JudgePickRun(string[] args)
     {
         Console.Out.WriteLine(FormattableString.Invariant($"judge-pick: {pick.Rank}. {pick.Ticker} on {pick.Index}, {pick.Hold}, {pick.Shape}: {pick.Reason}"));
     }
+
+    // From 24.47 the night's order changes, once the picks are stored, so the picker's are among them.
+    // see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+    await OrderChangesAfter(session, word: true);
 
     return outcome.Outcome is EquityBrief.Worker.Judge.JudgePicker.Picked or EquityBrief.Worker.Judge.JudgePicker.NonePicked ? 0 : 1;
 }
@@ -1573,7 +1677,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 104 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 107 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1876,6 +1980,9 @@ static int NoVerb()
         "'partner --index <code>' prints the trained partner's rows on the index, a member each month of sessions of 2005 to 2014 to learn on and of 2015 to 2018 to check on, and with '--word' fits its trees and writes its tables, " +
         "'review --index <code> --night <yyyy-MM-dd>' prints the night's picks on the index and the members its random draw would take, and with '--word' writes what history expected of each, the past cases like it that closed before the night, " +
         "'long-fill' prints the holes inside each code's own prices on the three indices and what it would ask, and with '--word' asks Yahoo, then Stooq, then Tiingo for them and keeps a source's sessions only where its closes hold one ratio to the store's on each side, " +
+        "'order-changes --night <yyyy-MM-dd>' prints the night's order changes on the three indices, and with '--word' writes them and sends one phone message, as the AI stock picker's process does after its picks, " +
+        "'fill-check' prints the waiting orders the 4:30 pm check would read, and with '--word' waits until half past four in New York, or with '--now' reads at once, asks each one's day low a page of symbols a request and sends one phone message, " +
+        "'fill-odds --index <code>' prints the live rules' past orders it would read, and with '--word' walks them and writes how often each band and days left filled, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

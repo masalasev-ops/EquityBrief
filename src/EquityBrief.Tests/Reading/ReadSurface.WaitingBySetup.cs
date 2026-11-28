@@ -96,7 +96,7 @@ public partial class ReadSurface
         var cards = Regex.Matches(html, "<article class=\"wo-card[^\"]*\"[^>]*data-ticker=\"([^\"]+)\"[^>]*>(.*?)</article>", RegexOptions.Singleline);
 
         Assert.Equal(19, cards.Count);
-        Assert.Equal(10, MarkRenderer.WaitingCardRows.Length);
+        Assert.Equal(11, MarkRenderer.WaitingCardRows.Length);
 
         foreach (Match card in cards)
         {
@@ -112,9 +112,10 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"wo-bar\" data-row=\"bar\"></div>", cards.Single(card => card.Groups[1].Value == "NOPRICE").Value, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"wo-state\">{MarkRenderer.WaitingState}</span><b class=\"wo-again\">{HeldAgainView.AgainMark}</b></div>", cards.Single(card => card.Groups[1].Value == "W05").Value, StringComparison.Ordinal);
 
-        // The stylesheet lays each row on a row of the track's own grid, ten of them, and the company on one line cut short.
-        Assert.Contains(".wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 10;", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains(".waiting-orders .wo-track,.waiting-orders .wo-grid{grid-template-rows:repeat(10,auto)}", Stylesheet.Css, StringComparison.Ordinal);
+        // The stylesheet lays each row on a row of the track's own grid, eleven of them from 24.47's fill odds, and the company
+        // on one line cut short.
+        Assert.Contains(".wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 11;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".waiting-orders .wo-track,.waiting-orders .wo-grid{grid-template-rows:repeat(11,auto)}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".wo-co{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".wo-placed{margin:0;min-height:calc(2em * 1.45);", Stylesheet.Css, StringComparison.Ordinal);
 
@@ -186,7 +187,7 @@ public partial class ReadSurface
 
         // Opened, the panel is laid over the card's lower half out of its flow, and its own button closes it.
         Assert.Contains(".wo-panel{position:absolute;left:0;right:0;bottom:0;top:45%;overflow:auto;", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains(".wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 10;row-gap:8px;align-items:start;position:relative;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 11;row-gap:8px;align-items:start;position:relative;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("const close = event.target.closest ? event.target.closest('.wo-close') : null;", new SinglePageApp().Shell("T"), StringComparison.Ordinal);
     }
 

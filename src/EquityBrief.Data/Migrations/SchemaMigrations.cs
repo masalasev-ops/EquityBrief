@@ -798,7 +798,67 @@ public static class SchemaMigrations
         new Migration(175, "create partner_run and partner_cell", CreatePartner),
         new Migration(176, "create review", CreateReview),
         new Migration(177, "create long_fill_bar, long_fill_hole and source_ask", CreateSecondSourceFill),
+        new Migration(178, "create order_change, fill_check and fill_odds", CreateOrderChanges),
     ];
+
+    // The night's order changes line by line, each waiting order the 4:30 pm check read with the day's low its live quote
+    // stated, and each rule's fill odds by band and days left as a run over the ledger's past orders tallied them. Each takes
+    // inserts alone; a reader reads the newest run.
+    // see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+    const string CreateOrderChanges = @"
+        CREATE TABLE order_change (
+            run_id        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            list          TEXT NOT NULL CHECK (list IN ('new', 'filled', 'sold', 'ended', 'could-fill', 'differs')),
+            place         INTEGER NOT NULL,
+            index_code    TEXT NOT NULL,
+            who           TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            words         TEXT NOT NULL,
+            checked       INTEGER NOT NULL CHECK (checked IN (0, 1)),
+            written_at    TEXT NOT NULL,
+            PRIMARY KEY (run_id, list, place)
+        ) STRICT;
+
+        CREATE INDEX order_change_by_session ON order_change (session_date, written_at);
+
+        CREATE TABLE fill_check (
+            run_id        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            who           TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            listed        TEXT NOT NULL,
+            price         TEXT NOT NULL,
+            low           TEXT,
+            quoted_at     TEXT,
+            PRIMARY KEY (run_id, index_code, who, ticker, listed)
+        ) STRICT;
+
+        CREATE TABLE fill_odds (
+            run_id        TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            band          INTEGER NOT NULL,
+            days_left     INTEGER NOT NULL,
+            orders        INTEGER NOT NULL,
+            filled        INTEGER NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, band, days_left)
+        ) STRICT;
+
+        CREATE TRIGGER order_change_takes_inserts_alone_on_change BEFORE UPDATE ON order_change
+        BEGIN SELECT RAISE(ABORT, 'order_change takes inserts alone.'); END;
+        CREATE TRIGGER order_change_takes_inserts_alone_on_removal BEFORE DELETE ON order_change
+        BEGIN SELECT RAISE(ABORT, 'order_change takes inserts alone.'); END;
+        CREATE TRIGGER fill_check_takes_inserts_alone_on_change BEFORE UPDATE ON fill_check
+        BEGIN SELECT RAISE(ABORT, 'fill_check takes inserts alone.'); END;
+        CREATE TRIGGER fill_check_takes_inserts_alone_on_removal BEFORE DELETE ON fill_check
+        BEGIN SELECT RAISE(ABORT, 'fill_check takes inserts alone.'); END;
+        CREATE TRIGGER fill_odds_takes_inserts_alone_on_change BEFORE UPDATE ON fill_odds
+        BEGIN SELECT RAISE(ABORT, 'fill_odds takes inserts alone.'); END;
+        CREATE TRIGGER fill_odds_takes_inserts_alone_on_removal BEFORE DELETE ON fill_odds
+        BEGIN SELECT RAISE(ABORT, 'fill_odds takes inserts alone.'); END;
+    ";
 
     // The second sources' fill: each session kept from a second source with the source and the ratio it was scaled by, each
     // hole asked with what filled it or why none did, and each request to a source, Tiingo's counted against its limits.

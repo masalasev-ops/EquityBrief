@@ -23728,3 +23728,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1792 passing, none out of scope and none unexamined, 1807 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.47 - order changes and fill odds: the night's order changes on Paper trading and in one phone message, each waiting card's fill odds, the 4:30 pm check and the picker's plan in plain cases   2026-11-28
+
+Ruled:      the operator's order of 2026-11-28, kept word for word as Appendix AK of the phase 24 plan's file and in
+            `prompts/2026-11-28-24.x-order-changes-and-fill-odds.md`, added to the plan as a stage and built while the 24.19
+            correction's folded build runs. Four new decisions; the hard rule's carve-outs name the fill check.
+Built:      `OrderChanges` in the core works the night's lists on the three indices from the paper account's rows, the one
+            function the page and the worker read: new orders, fills with their exits, sales with why and the result, orders
+            ended unfilled, and waiting orders within 1 typical daily move under the close, none tonight under an empty list,
+            and where the 4:30 pm check ran each order it read otherwise (see: Each night ends with the order changes for
+            every live rule, book and the AI stock picker, on Paper trading and in one phone message). The picker's process
+            writes them once its picks are stored, and sends one ntfy message; `order-changes --night` works a night by hand.
+            `fill-odds` places each ledger setup's order as its rule's live plan places it, walks it as the plan walk fills it
+            and tallies each night it waited by band, half a typical daily move wide, and days left; every waiting card on Home
+            and Tonight reads the newest tally, too few under 30, and an order filled on the night reads bought until it leaves
+            the list (see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with
+            as long left filled before their last day). `fill-check`, a process of its own at half past four in New York, asks
+            the live quote 15 symbols a request and sends one message of the orders whose low reached their buy price (see:
+            The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols). The topic
+            is read from the secrets file alone and kept out of every line and error (see: Phone messages go through ntfy on a
+            topic only the secrets file holds and carry tickers, prices and dates alone). The picker's plan names its buy in
+            three plain cases under the heading The plan. Migration 178, three tables taking inserts alone. No file a rule or
+            the readings' version pins is edited.
+Waiting:    `fill-odds --index <code> --word` on each index on the operator's word once no writer runs, until which every
+            waiting card says too few past orders; the scheduler's entry for `fill-check` at 20:30 UTC on weekdays, which
+            the operator registers; and the ntfy topic, which the operator saves.
+Found:      CLAUDE.md's hard rule says fourteen carve-outs are named while it names more; the count is left as it stood, for
+            the operator's ruling.
+Tests:      6 new: the five lists of a constructed night by hand, its message and the check's differences; the fill odds
+            tallied by hand at 30 and under it; the 4:30 pm check listing a constructed fill, writing each order's low,
+            sending nothing with no topic saved and asking nothing on Thanksgiving; the topic in no error, line or log row;
+            the live quote's lows read as sent; and Paper trading's section read back. The picker range test reads the three
+            cases and the heading.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m42 every waiting
+            order listed as able to fill tomorrow: red; m43 the fewest past orders not read: red; m44 the check listing an
+            order whose low stood over its price: red; m45 the topic not taken out of a failure: red; m46 a floor at the stop
+            said as too far below the buy: red; m47 the section not drawn: red. Filtered to their tests and reverted before
+            anything was committed.
+Claims:     1805, thirteen added: three components' catalogue and matrix rows, three stores, section 17's three rows and
+            Paper trading's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4114 of 4114 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1805
+            claims, 1805 passing, none out of scope and none unexamined, 1820 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

@@ -1277,7 +1277,7 @@ details.all-facts{margin:10px 0 4px} details.all-facts summary{cursor:pointer;fo
 .judge-ladder{border:1px solid var(--hair-2);border-radius:8px;padding:6px 12px;background:var(--page)}
 .lad-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--hair);font-size:14px}
 .lad-row b{font-variant-numeric:tabular-nums} .lad-row .stop{color:var(--down)} .lad-row .aim{color:var(--sup-ink)}
-.lad-row .sale-note{grid-column:2 / -1;font-size:12.5px;color:var(--soft)}
+.lad-row .sale-note{grid-column:2 / -1;font-size:12.5px;color:var(--soft)} .lad-row .judge-case{display:block} .lad-row .judge-close{font-weight:400;font-size:12.5px;color:var(--soft)}
 .lad-row .dot{width:10px;height:10px;border-radius:50%;background:var(--hair-2)} .lad-row .dot.tp{background:var(--up)} .lad-row .dot.lc{background:var(--ink-2)} .lad-row .dot.sl{background:var(--down)}
 .judge-rr{display:flex;flex-direction:column;gap:4px;padding:8px 0 4px}
 .count-line{margin:0;font-size:15px;color:var(--ink)} .count-note{margin:2px 0 10px;font-size:13px;color:var(--soft)}
@@ -1770,7 +1770,9 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-track:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wo-track>.wo-card{scroll-snap-align:start}
 .wo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 10;row-gap:8px;align-items:start;position:relative;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+.wo-odds{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)} .wo-odds[data-bought]{font-weight:600;color:var(--ink)}
+.oc-list{margin:0 0 12px} .oc-h{margin:0 0 4px;font-size:14px;font-weight:600;color:var(--ink)} .oc-list ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.5;color:var(--ink-2);overflow-wrap:anywhere} .oc-list li.oc-empty{list-style:none;margin-left:-18px;color:var(--soft)} .oc-none{margin:0;font-size:13.5px;color:var(--soft)}
+.wo-card{display:grid;grid-template-rows:subgrid;grid-row:span 11;row-gap:8px;align-items:start;position:relative;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
 .wo-card.fam-edge{border-left-width:4px}
 .wo-card[hidden],.wo-chip[hidden]{display:none}
 .wo-card a.home-ticker{justify-self:start;text-decoration:none;color:var(--ink)}
@@ -1801,7 +1803,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 @media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
 @media (max-width:600px){.wo-track{grid-auto-columns:84%}.wo-placed{font-size:12px}}
 /* waiting by setup: begin. Waiting to buy's row of setup chips and its cards' own rows; every class they write is selected here alone. */
-.waiting-orders .wo-track,.waiting-orders .wo-grid{grid-template-rows:repeat(10,auto)}
+.waiting-orders .wo-track,.waiting-orders .wo-grid{grid-template-rows:repeat(11,auto)}
 .wo-setup-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 10px}
 .wo-setup-input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
 .wo-setup-chip{display:inline-flex;align-items:center;gap:7px;flex:none;white-space:nowrap;border:1px solid var(--hair-2);border-radius:999px;padding:5px 12px;font:600 13.5px var(--sans);color:var(--ink);background:var(--surface);cursor:pointer}

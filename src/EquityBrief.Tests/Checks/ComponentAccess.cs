@@ -351,6 +351,17 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Second source fill"),
     ];
 
+    // 24.47's order changes, the 4:30 pm check and the fill odds test.
+    internal static string[] OrderChangesRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Order changes run"),
+        CheckReach.Key(Scope.MatrixTable, "Order changes run"),
+        CheckReach.Key(Scope.CatalogueTable, "Fill check"),
+        CheckReach.Key(Scope.MatrixTable, "Fill check"),
+        CheckReach.Key(Scope.CatalogueTable, "Fill odds test"),
+        CheckReach.Key(Scope.MatrixTable, "Fill odds test"),
+    ];
+
     // 24.36's desk that writes what history expected of each pick of a night and of its random draw.
     internal static string[] ReviewerDeskRows =>
     [
@@ -504,6 +515,7 @@ public partial class ComponentAccess
             .. RecipeDeskRows,
             .. PartnerDeskRows,
             .. SecondSourceFillRows,
+            .. OrderChangesRows,
             .. ReviewerDeskRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.

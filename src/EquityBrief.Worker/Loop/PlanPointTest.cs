@@ -1244,6 +1244,23 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             return level is { } held && held < close ? (close - held) / typical : null;
         }
 
+        // From 24.47 one setup's order under an entry buying at a level as the plan walk fills it: the stock's closes, the
+        // setup's bar, the level under its close, its typical daily move and the bar its order filled at within the window, none
+        // where the entry draws no level under the close there, which the fill odds read the ledger's past orders by.
+        // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+        public (double[] Closes, int Bar, double Level, double Typical, int? FillBar)? OrderOf(FlaggedSetup setup, string entry, int window)
+        {
+            if (DistanceOf(setup, entry) is not { } moves || Placed(setup) is not { } placed)
+            {
+                return null;
+            }
+
+            var typical = series[placed.Name].Atr[placed.Bar];
+            var level = placed.Closes[placed.Bar] - (moves * typical);
+
+            return (placed.Closes, placed.Bar, level, typical, PlanPoints.FillOf(placed.Opens, placed.Lows, placed.Bar, level, window)?.Bar);
+        }
+
         IReadOnlyList<Worked> Walk(FlaggedSetup setup, (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes) placed, IReadOnlyList<PlanCombination>? combinations = null, RangeWidths? range = null)
         {
             var (name, bar, opens, lows, closes) = placed;

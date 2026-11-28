@@ -2869,6 +2869,13 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
+    // From 24.47 the night's order changes on the three indices, as the night wrote them.
+    // see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message
+    if (night is { } changedOn)
+    {
+        drawn = drawn with { OrderChanges = await read.OrderChangesAsync(changedOn) };
+    }
+
     // Each rule's and variant's waiting orders and those that left its list.
     if (paper is { } ordered && night is { } orderedOn)
     {
@@ -3511,6 +3518,13 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
             LastClose = lastCloses.TryGetValue((order.Ticker, night), out var last) ? last : null,
             Placing = placing.GetValueOrDefault((order.Listed, order.Family, order.Ticker)),
         })];
+
+        // From the operator's order of 2026-11-28 each with how often its rule's past orders this far away with as long left
+        // filled, or the price it was bought at where it filled on the night.
+        // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+        var odds = await read.FillOddsAsync(reading.Code);
+
+        stillWaiting = [.. stillWaiting.Select(order => PlanScreen.WithOdds(order, night, odds))];
     }
 
     return new PaperAccounts(
