@@ -23892,22 +23892,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
 
+### 24.47 - correction: a fill with no take-profit says how it sells, a rising stop or its own exit signal before a time limit   2026-11-28
+
+Found:      reading 24.48's screens over a constructed night, the order changes said a breakout's fill "sells by its time
+            limit, with no take-profit" where its stop is raised as the price climbs, and said the same of the dip's exit on
+            its own signal.
+Built:      the fill's words read the trade's own exits: a stop raised as the price climbs and never lowered, its own exit
+            signal, and a time limit only where neither is set. No rule, figure or decision changes.
+Tests:      the order changes' test works the three by hand.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the new guard taken out at the one place that decides it. m52 the rising stop
+            not read: red. Filtered to its test and reverted before anything was committed.
+Claims:     1806, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4117 of 4117 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1806
+            claims, 1806 passing, none out of scope and none unexamined, 1821 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    a sale of a trade with a rising stop is said as on its time limit where it sold over its first stop; the
+            paper account's row holds no raised stop to tell the two apart, left for the operator.
+
 ### 24.47 - correction: a fill with no take-profit says how it sells, a rising stop or its own exit signal before a time limit, and a waiting plan states its distance once   2026-11-28
 
-Found:      reading 24.48's screens over constructed nights, the order changes said a breakout's fill "sells by its time
-            limit, with no take-profit" where its stop is raised as the price climbs, and said the same of the dip's exit on
-            its own signal; and a waiting order's plan said its distance above its price and its days left twice, its
-            condition and then the fill odds' line.
-Built:      the fill's words read the trade's own exits: a stop raised as the price climbs and never lowered, its own exit
-            signal, and a time limit only where neither is set. A waiting plan whose condition states the distance and the
-            days draws the odds alone after it. No rule, figure or decision changes.
-Tests:      the order changes' test works the three exits by hand; the fill odds' test reads the plan's form and the whole
-            line where the plan could not place its price.
+Found:      reading 24.48's screens over the S&P 400's constructed night, a waiting order's plan said its distance above its
+            price and its days left twice, its condition and then the fill odds' line.
+Built:      a waiting plan whose condition states the distance and the days draws the odds alone after it, and one that
+            could not place its price the whole line. No rule, figure or decision changes.
+Tests:      the fill odds' test reads the plan's form and the whole line.
 Pins:       none moved.
-Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m52 the rising stop
-            not read: red; m53 the odds drawn whole after the condition: red. Filtered to their tests and reverted before
-            anything was committed.
+Mutated:    the rule, stated before the run: the new guard taken out at the one place that decides it. m53 the odds drawn
+            whole after the condition: red. Filtered to its test and reverted before anything was committed.
 Claims:     1806, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4117 of 4117 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1806
+            claims, 1806 passing, none out of scope and none unexamined, 1821 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
             before that run: all six steps, 0 warnings, 0 errors, 4117 of 4117 tests ran with none failed, migrations 0 to 178
             with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1806
