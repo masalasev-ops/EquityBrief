@@ -398,6 +398,12 @@ public sealed partial class SetupLedger
         var nights = await SessionsAsync(connection, NightSessionsOf, [("$index", index)], cancellation);
         var reportFilings = await ReportFilingsAsync(connection, cancellation);
 
+        // From the operator's answers of 2026-11-28 to the report of 11:55 am, item 1: each rebalance's size cut member whose
+        // heavyweights' setup the readings' own source leaves out, listed apart and never a difference to mark.
+        (string Ticker, DateOnly Session)[] skippedByHeavyweights = index == IndexFamilies.LargeIndex
+            ? [.. HeavyweightsSkipped(inputs, await HeavyweightHistoryAsync(history, inputs, through, output, cancellation, LongLedger.FirstScored)).Where(pair => only is null || only.Contains(pair))]
+            : [];
+
         // From the 24.19 closing plan the check is run again over the stock-sessions given alone, every row of each rebuilt and
         // held to the ledger, where the corrected codes are checked once more.
         var random = new Random(seed);
@@ -621,6 +627,13 @@ public sealed partial class SetupLedger
             output.WriteLine(FormattableString.Invariant($"session-readings-unrowed: {group.Count()} setup(s): {group.Key}; e.g. {group.First().Finding}"));
         }
 
+        output.WriteLine(FormattableString.Invariant($"session-readings-heavyweights: {skippedByHeavyweights.Length} heavyweights' setup(s) skipped by the heavyweights' read, listed and not marked"));
+
+        foreach (var (ticker, session) in skippedByHeavyweights)
+        {
+            output.WriteLine($"session-readings-heavyweights: {ticker} {Stamp(session)}: {SkippedByTheHeavyweightsRead}");
+        }
+
         // From the operator's order of 2026-11-25, item 5: the differences still to trace first, then the member lists held both
         // ways, then the seven readings the table works its own way apart and marked expected; any difference in any part still
         // fails the check.
@@ -651,7 +664,8 @@ public sealed partial class SetupLedger
         var detail = FormattableString.Invariant($"{sample.Length} sampled session(s) on the {DecisionCards.NameOf(index)}, {perYear} a year by seed {seed}: {rebuilt} row(s) rebuilt from the long history cut at their session, {setups} of the ledger's setup(s) held to their stock's row, {nightRows} of the nights' own row(s) held to the table, {memberSessions} session(s) of the standing ledger's members held to the table's both ways; ")
             + (differences == 0
                 ? "every reading the same"
-                : FormattableString.Invariant($"{differences} difference(s), each named on the command's output: {findings.Count} to trace, {memberFindings.Count} between the member lists and {expected.Count} expected by design"));
+                : FormattableString.Invariant($"{differences} difference(s), each named on the command's output: {findings.Count} to trace, {memberFindings.Count} between the member lists and {expected.Count} expected by design"))
+            + (skippedByHeavyweights.Length == 0 ? "" : FormattableString.Invariant($"; {skippedByHeavyweights.Length} heavyweights' setup(s) {SkippedByTheHeavyweightsRead}, listed apart"));
 
         await AppendAsync(connection, runId, SessionCheckStage, startedAt, 0, differences == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("session-readings-check: " + detail);
@@ -684,6 +698,34 @@ public sealed partial class SetupLedger
             ({ } a, { } b) => Math.Abs(a - b) <= LedgerPointInTime.Tolerance * Math.Max(Math.Abs(a), Math.Abs(b)),
             _ => false,
         };
+
+    public const string SkippedByTheHeavyweightsRead = "skipped by the heavyweights' read";
+
+    // Each rebalance's size cut members the heavyweights' setups leave out over the history, by session and then code.
+    static (string Ticker, DateOnly Session)[] HeavyweightsSkipped(SweepHistoryInputs inputs, IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> rebalances)
+    {
+        var parts = LedgerParts.Of([.. inputs.Names.Select(name => name.Ticker)]);
+        var sessionAt = inputs.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var places = new Dictionary<int, int[]>();
+
+        int[] SessionsOf(int place)
+        {
+            if (!places.TryGetValue(place, out var held))
+            {
+                held = [.. inputs.Names[place].Bars.Where(bar => sessionAt.ContainsKey(bar.Session)).Select(bar => sessionAt[bar.Session]).Order()];
+                places[place] = held;
+            }
+
+            return held;
+        }
+
+        return
+        [
+            .. rebalances.OrderBy(pair => pair.Key).SelectMany(pair =>
+                LedgerParts.SkippedByTheHeavyweightsRead(parts, SessionsOf, pair.Value.SelectMany(cut => cut.Largest), pair.Key)
+                    .Select(code => (code, inputs.Sessions[pair.Key]))),
+        ];
+    }
 
     // Why the table holds no row of a ledger setup's stock on its session, as the long history the table reads holds it.
     static string UnrowedCause(SweepHistoryInputs cut, string ticker, DateOnly session)

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/RUNBOOK.md - the every-session check listing what the heavyweights' first part read leaves out, at a correction to 24.19
+Decision: The heavyweights' setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists what it leaves out
+Was:
+> ... and its run log row counts each part; a difference in any part still fails the check.
+Now:
+> ... and its run log row counts each part; a difference in any part still fails the check. From the operator's answers of 2026-11-28 on the S&P 500 it also lists, on `session-readings-heavyweights` lines of their own with their count, each rebalance's size cut member whose heavyweights' setup the readings' source leaves out, ... each as skipped by the heavyweights' read; none is a difference and none is marked, until the first pin move after the run of 2027-02-06 moves that lookup (see: The heavyweights' setups keep their first part read until the first pin move after the 2027-02-06 run, and the 24.19 check lists what it leaves out).
+Why: the operator's answers of 2026-11-28 to the report of 11:55 am, item 1, kept word for word in `prompts/2026-11-28-24.47-answers-to-the-1155-report.md`; BUILD_PLAN's 24.19 section and its carried obligations gain the paragraph and the row, added lines alone.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the fill check at 21:30 UTC and the merge guard, at a correction to 24.47
 Decision: The fill check is scheduled at 21:30 UTC on trading days, after the close all year
 Was:
