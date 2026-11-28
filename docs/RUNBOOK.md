@@ -2375,6 +2375,28 @@ dotnet run --project src/EquityBrief.Worker -- long-fill --proof --word
 
 `--settle` runs `ledger-check --every-session` on the three indices, then prints the differences by index, group and reading, the codes with differences off their own prices, wild closes and stretches of another instrument's prices, and asks nothing; with `--word` it asks Yahoo and Tiingo in the order of the stock-sessions each affects, writes each correction, mark and close held, and prints each code's outcomes and the counts. `ledger-build --codes` writes the named codes' rows on one index again, as `--every-session --again` and the long and standing builds would write them, and states what it would write without `--word`; on a copy of the store, its rows for those codes are held to a full rebuild's before it runs on the store. `--recheck` runs the check over the corrected stock-sessions alone and marks each it still finds apart. `--sample` draws 1,000 stock-sessions from at most 250 codes by its seed, `--count`, `--codes` and `--seed` setting them, and holds each to Tiingo's close, printing the share agreeing by index and period and each disagreeing stock; `--proof` draws 20 corrected stock-sessions with the provider's, Tiingo's and Yahoo's closes.
 
+**Order changes, fill odds and the 4:30 pm check, from 24.47.** Each night's order changes are written by the AI stock picker's process once its picks are stored, so nothing is run by hand for them; a night named is worked again by hand with the first line, which prints the lists and, with `--word`, writes them and sends the message (see: Each night ends with the order changes for every live rule, book and the AI stock picker, on Paper trading and in one phone message):
+
+```bash
+dotnet run --project src/EquityBrief.Worker -- order-changes --night <yyyy-MM-dd> --word
+dotnet run --project src/EquityBrief.Worker -- fill-check --word
+dotnet run --project src/EquityBrief.Worker -- fill-odds --index GSPC --word
+```
+
+`fill-check` is the 4:30 pm check, a process of its own outside the night (see: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols). Register it with the scheduler at 20:30 UTC on weekdays, which is half past four in New York in summer and half past three in winter: it waits by the clock until half past four in New York, so it reads the whole session all year, and on a day the exchange is closed it asks nothing. Without `--word` it prints the waiting orders it would read and the requests it would make; `--now` reads at once, by hand. It writes no fill: the night's fill step stays the record, and the night's order changes name each order the two read otherwise.
+
+`fill-odds` walks one index's live rules' past orders over the long history and writes how often each band and days left filled, which every waiting card reads; without `--word` it prints the live plans buying at a level and the past orders it would walk. It reads the store as the buy and sell points' test does, for as long, so run it on the operator's word while no night, off-peak run, build or monthly run is writing; until it has run on an index, that index's waiting cards say too few past orders say how often they filled.
+
+**The phone messages.** The order changes and the 4:30 pm check send one message each through ntfy where a topic is saved, holding tickers, prices and dates and never an account's size (see: Phone messages go through ntfy on a topic only the secrets file holds and carry tickers, prices and dates alone). The topic is the one setting `EquityBrief:Notify:NtfyTopic`, saved in the worker's `appsettings.Secrets.json` by the operator alone, and no command prints it. To set it up:
+
+1. Install the ntfy app on the phone, from the App Store or Google Play.
+2. Choose a topic name no one would guess, long and random, since whoever knows it can read the messages.
+3. In the app, subscribe to that topic on the default server, ntfy.sh.
+4. Save the same name under `Notify` → `NtfyTopic` inside the `EquityBrief` section of the worker's secrets file.
+5. Run `order-changes --night <the newest night> --word` once: its first line says the topic is saved, without printing it, and the phone shows the night's order changes.
+
+With no topic saved nothing is sent, and Paper trading's Order changes section and the waiting cards draw as they do with one.
+
 **The sector splits, from 23.9.** Read by hand once the long ledger stands, writing no store row, asking nothing of anyone and calling no model:
 
 ```bash

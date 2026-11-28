@@ -52,6 +52,37 @@ Now:
 > The long history's reader reads a row of a hole only where the code holds no price for its session, and from the check's settling a row of a correction in place of the stored price, the newest run standing where a session is kept twice;
 Why: the closing plan's item 3c: the side a source parts from is corrected from the source's bars, kept in the same table.
 
+### 2026-11-28 - docs/BUILD_PLAN.md - 24.47's count of rows and the 4:30 pm check's requests in the phase's estimate
+Decision: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols
+Was:
+> - about 5 at 24.46, section 15.7's rows of the tiles at a glance, every plan, a plan, a waiting order's plan and the setups' table.
+> ... The provider: no money and no new request. The SEC: ...
+Now:
+> - about 5 at 24.46, section 15.7's rows of the tiles at a glance, every plan, a plan, a waiting order's plan and the setups' table;
+> - about 13 at 24.47, the order changes', the fill check's and the fill odds test's catalogue and matrix rows, their three stores, section 17's three rows and Paper trading's row of the order changes.
+> ... The provider: no money, and from 24.47 one request of its live quote a page of the waiting orders' symbols each trading day, outside the night. The SEC: ...
+Why: the operator's order of 2026-11-28, kept word for word as Appendix AK of the phase 24 plan's file, adding 24.47 to the plan as a stage.
+
+### 2026-11-28 - CLAUDE.md - the fill check named among the nightly run's carve-outs, at 24.47
+Decision: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols
+Was:
+> ... its calls on its own run and never on the night's, and asks nothing of a network, on the operator's approval of its fields of 2026-11-19. (see: The nightly run is arithmetic only)
+Now:
+> ... on the operator's approval of its fields of 2026-11-19, and from 24.47 the fill check, a process of its own on each trading day after the close, which asks the provider's live quote for the stocks of the live rules' orders still waiting, a page of symbols a request, so it follows the waiting orders rather than the index, its requests on its own run and never on the night's, on the operator's order of 2026-11-28. (see: The nightly run is arithmetic only) (see: The fill check asks EODHD's live quotes after the close on its own run, one request a page of symbols)
+Why: the operator's order of 2026-11-28, item 3, kept word for word as Appendix AK of the phase 24 plan's file: "Record this as a carve-out decision beside the others: requests on its own run, never the night's, one per page of symbols."
+
+### 2026-11-28 - docs/ARCHITECTURE.html - the waiting order's plan naming its fill odds, and the picker's plan under the heading The plan with its buy in three cases, at 24.47
+Decision: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+Was:
+> ... beside them tonight's close with how far above its price it stands and its trading days left; and where that night stored no card a line saying so ... (see: A waiting order's plan is the one stored on the night it was placed, its checks said as that night's)</td></tr>
+> <p><b>Answers:</b> what the local model picked for its own paper account, why, and the plan code set for each pick; ...
+> ... one card at a time under two tabs of why it picked it and the plan code set as one ladder of its prices; and the carousel and the tabs working with no script</td></tr>
+Now:
+> ... its trading days left; from 24.47 how often its rule's past orders this far away with as long left filled as its card on Home says it; once it filled on the night the day and price it was bought at in their place until it leaves the list; and where ... (see: A waiting order's plan is the one stored ...) (see: A waiting order's fill odds are ...)</td></tr>
+> <p><b>Answers:</b> what the local model picked for its own paper account, why, and the plan for each pick; ...
+> ... of why it picked it and the plan as one ladder of its prices, from 24.47 under the heading The plan, its buy in three plain cases with the last close on its first line: ...; and the carousel and the tabs working with no script</td></tr>
+Why: the operator's order of 2026-11-28, items 2 and 6, kept word for word as Appendix AK of the phase 24 plan's file.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the long history reader reading the sessions a second source filled, at a correction to 24.19
 Decision: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
 Was:

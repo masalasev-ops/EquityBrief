@@ -257,6 +257,7 @@ public class PriceStorageForm
                 "MarkRenderer.cs: Y",
                 "OneValue.cs: Multiple",
                 "OneValue.cs: Yield",
+                "OrderChanges.cs: MovesAbove",
                 "PaperAccount.cs: RoundTripOf",
                 "PaperAccount.cs: SaleOf",
                 "Percents.cs: FromFraction",

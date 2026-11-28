@@ -4711,6 +4711,8 @@ internal static class Scope
             Verdict.Pass,
             "a rule reading the analysts' estimates, one reading a business's reported quarters and a variant whose head cannot be walked each stored with the reading it lacks and no figure over a constructed ledger, its verdict naming what judges it instead, the rules beside them judged as they stand; and from 21.1 each cause the run of 2026-10-27 could not test routed to its sweep's own reading or kept with its judge over constructed registrations, a rule at a level its sweep reads walked by that reading's own trades over a constructed history, a book off the six settings walked at its own setting with its months the record command's, and the tone condition's opposite the complement of the variant's over the releases read",
             ByExpectations),
+        [CheckReach.Key("15.21 Paper trading", "Order changes")] = new Scoped(
+            Verdict.Pass, "a constructed night's order changes read back at the top of the rendered page under their headings with none tonight under an empty one, and a night with none written saying so", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "Your account")] = new Scoped(
             Verdict.Pass, "the sentence on what the page is, the account's line of the settings kept or the example's and the form behind Change the account read back off the rendered page, and distinctive settings found in no byte of the store or the run log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = new Scoped(
@@ -5426,6 +5428,55 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "Second sources' fill")] = new Scoped(
             Verdict.Pass,
             "the judge worked by hand at twice the source's prices and on both sides of the closes' band, a volume off its proportion, a source short of a session of the hole or around it and a hole with no side refused; Tiingo's hour, day and month by hand at each limit; and each figure read off the document against its constant",
+            ByExpectations),
+        // 24.47's order changes, fill check and fill odds: their components, their stores and section 17's rows.
+        [CheckReach.Key(CatalogueTable, "Order changes run")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the picker's tables, the bar store and the checks it reads, the changes and the run log it writes and the phone messages, each reconciled against the row; and the lists of a constructed night worked by hand, each under its heading, none tonight under an empty one",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Order changes run")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Fill check")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the checks and the run log it writes and the live quotes and phone messages, each reconciled against the row; and over a constructed store a constructed fill listed, every order written with its low, and nothing sent with no topic saved",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fill check")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Fill odds test")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the setups, the long setups and the register it reads and the odds and the run log it writes, each reconciled against the row; and a constructed order's nights tallied by hand",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fill odds test")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Order changes")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update and a delete refused, and the newest run of a constructed night read back as Paper trading's section",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Fill checks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete refused, and over a constructed store each order the check read written with its low",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Fill odds")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update refused, and a constructed run's cells read back as a waiting card's line",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Order changes")] = new Scoped(
+            Verdict.Pass,
+            "a waiting order within one typical daily move of its price listed as able to fill tomorrow and one past it left out, worked by hand, and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Fill odds")] = new Scoped(
+            Verdict.Pass,
+            "a constructed set of past orders tallied by hand into its band and days left, its share said at the fewest and too few said under it, and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The fill check")] = new Scoped(
+            Verdict.Pass,
+            "a constructed fill listed and the reading instant read as half past four in New York in winter and in summer, and each figure read off the document against its constant",
             ByExpectations),
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
@@ -7872,6 +7923,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, a pill saying whether it is still leading or lost its lead or is below its 200-day average read off tonight's closes by the rule's own functions and marked as information only")] = "19.3",
 
         // 19.4's: paper trading's rows, its parts standing in the place of the table of every account, and the trade log's two.
+        [CheckReach.Key("15.21 Paper trading", "Order changes")] = "24.47",
         [CheckReach.Key("15.21 Paper trading", "Your account")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "The tiles")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "The chart")] = "19.4",

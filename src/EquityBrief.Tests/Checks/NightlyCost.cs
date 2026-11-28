@@ -121,6 +121,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/DeepSeekSearchFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdDayLowFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdDividendCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEstimateTrendsFeed.cs",
@@ -145,6 +146,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
         "src/EquityBrief.Core/Providers/OpenFigiMappingFeed.cs",
+        "src/EquityBrief.Core/Providers/PhoneMessageFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
         "src/EquityBrief.Core/Providers/TipRanksRatingsFeed.cs",
         "src/EquityBrief.Core/Providers/TreasuryParYieldFeed.cs",
@@ -356,11 +358,13 @@ public partial class NightlyCost
         // archive and the provider's day files, symbol lists and prices for the long history, which the long members' commands
         // ask by hand and no night does, and thirty-six from 23.5, a filer's facts at the archive, which the long facts' capture
         // asks by hand and no night does, and thirty-seven from the 24.19 closing plan, Yahoo's chart, Stooq's daily file and
-        // Tiingo's prices, which the second sources' fill asks by hand and no night does.
+        // Tiingo's prices, which the second sources' fill asks by hand and no night does, and thirty-nine from 24.47, the
+        // provider's live quote of many listings, which the 4:30 pm check asks on its own run, and ntfy, which the order
+        // changes and that check send to, neither on the night's path.
         Assert.True(
-            MayHoldAClient.Length <= 37,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-seven feed " +
-            "implementations. A thirty-eighth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 39,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-nine feed " +
+            "implementations. A fortieth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.

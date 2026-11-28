@@ -274,6 +274,9 @@ public partial class ReadSurface
             // 24.46, Tonight redesigned: the tiles, every plan, a plan, a waiting order's plan and the setups' table.
             .. TonightPlanRows,
 
+            // 24.47: Paper trading's order changes at its top.
+            .. OrderChangesPageRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
             .. WaitingVariantRunRows,

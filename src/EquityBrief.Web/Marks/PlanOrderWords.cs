@@ -17,6 +17,16 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
     // whose checks its card carries folded; none where that night stored none.
     public DecisionCardView? Placing { get; init; }
 
+    // From the operator's order of 2026-11-28 the typical daily move its plan was placed with; how often its rule's past orders
+    // this far away with as long left filled, in the card's words; and once it filled on the night, the line saying so in their
+    // place, until it leaves the list.
+    // see: A waiting order's fill odds are how often the ledger's past orders of its rule this far away with as long left filled before their last day
+    public double? Typical { get; init; }
+
+    public string? Odds { get; init; }
+
+    public string? Bought { get; init; }
+
     public string Words => PlanOrderWords.Waiting(Price, LastDay);
 
     // The row in the operator's words: what it buys at, the last close and how far above, and when it was placed by which
