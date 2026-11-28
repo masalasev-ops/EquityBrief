@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Diagnostics;
 using EquityBrief.Core.Components;
 using EquityBrief.Data;
@@ -79,7 +78,7 @@ public sealed class MergeGuard(string dataRoot, string databaseFile) : IComponen
                 {
                     file = process.MainModule?.FileName;
                 }
-                catch (Exception fault) when (fault is Win32Exception or InvalidOperationException or NotSupportedException)
+                catch (Exception fault) when (fault is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException)
                 {
                 }
 
