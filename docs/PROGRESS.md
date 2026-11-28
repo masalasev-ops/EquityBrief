@@ -24031,6 +24031,8 @@ Tests:      three new: a code in parts found by code and session, parts sharing 
 Mutated:    m57, the property that a code in parts is found by its code and its session: the lookup returned the code's
             first part; the lookup test went red. m58, the property that parts sharing a session are found: a session counted
             only where three parts share it; the sharing test went red. Each reverted before the run below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, in the one run the entry
+            below states the figures of.
 Carried:    the folded build resumes from the standing ledgers once this merges, the S&P 500's whole again since its first
             quarter came from the faulty lookup, then the 24.19 runs and fill odds on each index.
 
