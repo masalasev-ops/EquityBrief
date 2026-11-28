@@ -144,7 +144,7 @@ public static class JudgeAccounts
             Listed: bars.Sessions[0],
             Target: sale.Target is { } whole ? Statistic.ToPrice(whole) : Statistic.ToPrice(sale.HalfAt!.Value),
             Trail: sale.Trail is { } trail ? Statistic.ToPrice(trail) : null,
-            Cap: held.Sessions), null);
+            Cap: held.Sessions) { EndedBy = ended is null ? null : outcome!.End }, null);
     }
 
     // The random accounts' trades: for each draw and each night the judge picked on, as many members as it picked, each

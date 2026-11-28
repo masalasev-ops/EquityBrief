@@ -461,7 +461,9 @@ public partial class ReadSurface
             var users = rules.Where(rule => rule.Body.Contains($"var({token})", StringComparison.Ordinal)).ToArray();
 
             Assert.NotEmpty(users);
-            Assert.All(users, rule => Assert.Contains(pictures.Append(".run-").Append(".ns-").Append(".status-pill.provisional").Append(".status-pill.failed").Append(".stt").Append(".tl-stop").Append(".wo-"), picture => rule.Selector.Contains(picture, StringComparison.Ordinal)));
+            // From 24.49 the blue top edge of the rules' folder tab, on the operator's order of 2026-11-28, which is never a level,
+            // and the picker's waiting picks on its trades tab marked in the waiting colour.
+            Assert.All(users, rule => Assert.Contains(pictures.Append(".run-").Append(".ns-").Append(".status-pill.provisional").Append(".status-pill.failed").Append(".stt").Append(".tl-stop").Append(".wo-").Append(".ft-rules").Append(".ap-st"), picture => rule.Selector.Contains(picture, StringComparison.Ordinal)));
         }
     }
 }

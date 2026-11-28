@@ -280,6 +280,9 @@ public partial class ReadSurface
             // 24.48: a setup's panel beneath its row on Tonight.
             .. SetupPanelRows,
 
+            // 24.49: the AI stock picker's two tabs and its trades.
+            .. PickerTabRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
             .. WaitingVariantRunRows,
@@ -4852,7 +4855,7 @@ public partial class ReadSurface
         // carrying a selection matched no route at all.
         Assert.Contains("const cut = hash.indexOf('?')", shell, StringComparison.Ordinal);
         Assert.Contains("const path = cut < 0 ? hash : hash.slice(0, cut)", shell, StringComparison.Ordinal);
-        Assert.Contains("const query = cut < 0 ? '' : hash.slice(cut + 1)", shell, StringComparison.Ordinal);
+        Assert.Contains("let query = cut < 0 ? '' : hash.slice(cut + 1)", shell, StringComparison.Ordinal);
 
         // And the selection reaches the server, which is what makes it a link
         // rather than a thing the browser keeps to itself.

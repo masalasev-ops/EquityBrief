@@ -92,11 +92,13 @@ public partial class ReadSurface
         var region = Blocks(drawn, "<section class=\"card\" data-card=\"judge-version-1\">.*?</section>").Single();
 
         Assert.Contains("<h2>Version 1, picked 19 Nov: its own account, apart from the record</h2>", region, StringComparison.Ordinal);
-        Assert.Contains("data-ticker=\"AAA\"", region, StringComparison.Ordinal);
-        Assert.Contains("data-ticker=\"DDD\"", region, StringComparison.Ordinal);
 
-        // Read outside the record version's "fixed 5", which draws its own picks in an account of their own.
-        var cards = Blocks(System.Text.RegularExpressions.Regex.Replace(drawn, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline), "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">.*?</article>");
+        // From 24.49 the region keeps its summary and links to its trades, where its cards are drawn on its past nights.
+        Assert.Contains($"<a href=\"{SinglePageApp.PickerTradesRoute}?universe=500&account=version-1\">{SinglePageApp.SeeItsTrades}</a>", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("<article", region, StringComparison.Ordinal);
+
+        var trades = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/judge-trades?account=version-1"));
+        var cards = Blocks(trades, "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">.*?</article>");
         var aaa = Assert.Single(cards, card => card.Contains("data-ticker=\"AAA\"", StringComparison.Ordinal));
         var ddd = Assert.Single(cards, card => card.Contains("data-ticker=\"DDD\"", StringComparison.Ordinal));
 
@@ -125,12 +127,14 @@ public partial class ReadSurface
 
         // No pick is drawn without an account that buys it: each card is tonight's under the record, or an earlier version's
         // saying what its account did, and every pick stored is drawn.
+        // From 24.49 tonight's card stands on the picks tab and the earlier version's on its trades tab.
         var since = cards.Where(card => card.Contains("data-since", StringComparison.Ordinal)).ToArray();
+        var tonightCards = Blocks(System.Text.RegularExpressions.Regex.Replace(drawn, "<section class=\"card\" data-card=\"judge-fixed-five\">.*?</section>", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline), "<article class=\"home-idea judge-card\" data-ticker=\"[A-Z]+\">.*?</article>");
 
-        Assert.Equal(3, cards.Count);
+        Assert.Equal(2, cards.Count);
         Assert.Equal(2, since.Length);
         Assert.All(since, card => Assert.Contains("version 1's own account", card, StringComparison.Ordinal));
-        Assert.Single(cards, card => card.Contains("data-ticker=\"BBB\"", StringComparison.Ordinal) && !card.Contains("data-since", StringComparison.Ordinal));
+        Assert.Single(tonightCards, card => card.Contains("data-ticker=\"BBB\"", StringComparison.Ordinal) && !card.Contains("data-since", StringComparison.Ordinal));
     }
 
     [Fact]

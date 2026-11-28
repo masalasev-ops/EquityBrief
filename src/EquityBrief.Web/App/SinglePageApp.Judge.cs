@@ -28,12 +28,25 @@ public sealed record JudgeCardView(int Rank, int Of, string Ticker, string? Comp
     // From the operator's answers of 2026-11-24 the range a pick of a night from the range's first buys in, none for a pick
     // of an earlier night, which buys at the open.
     public Core.Loop.BuyRange? Range { get; init; }
+
+    // From 24.49 whether the store holds a session after the pick's night, so a pick its range has not bought opened above it.
+    public bool Opened { get; init; }
 }
 
 // What an account did with one of the judge's picks: the session it bought at the open and the price it paid, its stop,
 // take-profit and give-up distance from that price, the session and price it sold at with its result per $1 risked once its
 // walk ended, and why the account skipped it where it did.
-public sealed record JudgeHeld(DateOnly Bought, decimal Paid, decimal? Stop, decimal? Target, decimal? Trail, DateOnly? Ended, decimal? Sold, double? Result, string? Skipped);
+public sealed record JudgeHeld(DateOnly Bought, decimal Paid, decimal? Stop, decimal? Target, decimal? Trail, DateOnly? Ended, decimal? Sold, double? Result, string? Skipped)
+{
+    // From 24.49 the newest close the store holds for the stock and the sessions it has been held, to its sale or to that
+    // close, which the trades tab draws.
+    public decimal? Now { get; init; }
+
+    public int? Days { get; init; }
+
+    // How its walk ended, as the walk names it, none while it is open.
+    public string? EndedBy { get; init; }
+}
 
 // From the 24.14 correction of 2026-11-21 an earlier judge version as its page draws it apart from the record: its number in
 // the order the versions first ran, its first and last nights, its picks' cards, its own account's scoreboard and its line.
@@ -204,6 +217,13 @@ public sealed record JudgeView(
 
     // The index's own tile as the record stands, which the scoreboard and the four accounts read whatever night is drawn.
     public JudgeTile? RecordTile { get; init; }
+
+    // From 24.49 the record's own account over every night it picked, each card saying what the account did with it, which
+    // the trades tab draws beside the earlier versions, the fixed 5 and the version across the three indices; and how many
+    // stocks each night's run marked worth buying, by the index it ran within, none for a run across the three.
+    public JudgeVersionView? Record { get; init; }
+
+    public IReadOnlyDictionary<(string? Index, DateOnly Night), int> MarkedOn { get; init; } = new Dictionary<(string? Index, DateOnly Night), int>();
 }
 
 // The AI stock picker's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
@@ -287,7 +307,7 @@ public sealed partial class SinglePageApp
         {
             var scope = string.Create(CultureInfo.InvariantCulture, $"version-{earlier.Number}");
 
-            region.Append(Cards.Computed(VersionWords(earlier), VersionSummary(earlier, view.RecordNumber) + PickCards(earlier.Picks, earlier.Score, earlier, scope, chosen), title: VersionWords(earlier) + ": its own account, apart from the record", region: "judge-" + scope));
+            region.Append(Cards.Computed(VersionWords(earlier), VersionSummary(earlier, view.RecordNumber) + TradesLink(chosen, scope), title: VersionWords(earlier) + ": its own account, apart from the record", region: "judge-" + scope));
         }
 
         if (view.Replayed is { } replayed)
@@ -311,7 +331,7 @@ public sealed partial class SinglePageApp
         + (view.Score.PerDollar is { } made
             ? $"Since it started: {Dollars(made)} per $1 risked, against {(view.RandomPerDollar is { } random ? Dollars(random) : "nothing yet")} for random picks. "
             : "No trade of it has closed yet. ")
-        + $"<a href=\"{JudgeRoute}\">See the AI stock picker</a></p>";
+        + $"<a href=\"{PickerTabRoute}\">See the AI stock picker</a></p>";
 
     // "picked 5 stocks from all 1,500 on the night of 20 Nov, before it picked within each index. Bought at today's open in its
     // own paper account."
@@ -441,14 +461,16 @@ public sealed partial class SinglePageApp
         if (its.Length > 0)
         {
             html.Append(CultureInfo.InvariantCulture, $"<p class=\"judge-same\" data-same=\"{(differ.Length == 0 && shared.Length == view.Picks.Count ? "all" : shared.Length.ToString(CultureInfo.InvariantCulture))}\"><b>{Escaped(SameWords(shared.Length, differ.Length, view.Past))}</b> {Escaped(FixedFiveWhy(view.Marked, view.Picks.Count))}{(its.All(pick => pick.Range is not null) ? " Each buys within its range." : string.Empty)} {Escaped(OwnAccountWords(five))}</p>");
-            html.Append(shared.Length > 0 ? "<p class=\"judge-chips\">" + string.Concat(shared.Select(pick => $"<span class=\"judge-chip\" data-ticker=\"{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</span>")) + "</p>" : string.Empty);
+            // From 24.49 the night's picks as chips, each it does not share with its version marked, their cards on the trades tab.
+            html.Append("<p class=\"judge-chips\">" + string.Concat(its.Select(pick => $"<span class=\"judge-chip{(versions.Contains(pick.Ticker) ? string.Empty : " differ")}\" data-ticker=\"{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</span>")) + "</p>");
         }
 
         // From the operator's correction of 2026-11-24, item 7, the tally once, under the chips, and the sentence repeating the
-        // variant's name and the tally gone; its closed trades said where any have closed.
+        // variant's name and the tally gone; its closed trades said where any have closed. From 24.49 its chart and every
+        // night's cards are on the trades tab, which the link opens.
+        // see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
         html.Append($"<p class=\"judge-bought\" data-bought>{Escaped(BoughtSoFarWords(five.Picks) + (five.Score.Closed > 0 ? " " + ClosedWords(five.Score) : string.Empty))}</p>");
-        html.Append(JudgeChart([new JudgeLineView("Its own account", five.Values)], [], VersionWords(five) + "'s own account", AccountLineWaits));
-        html.Append(PickCards([.. differ, .. five.Picks.Where(pick => pick.Night != view.Shown)], five.Score, five, "fixed-five", chosen));
+        html.Append(TradesLink(chosen, "fixed-five"));
 
         return html.ToString();
     }
@@ -457,7 +479,7 @@ public sealed partial class SinglePageApp
     public static string SameWords(int shared, int differ, bool past = false) =>
         differ == 0
             ? string.Create(CultureInfo.InvariantCulture, $"{(past ? "That night" : "Tonight")} it took the same {shared} pick{(shared == 1 ? string.Empty : "s")} as the version above.")
-            : string.Create(CultureInfo.InvariantCulture, $"{(past ? "That night" : "Tonight")} it shared {shared} of its picks with the version above; {differ} differ{(differ == 1 ? "s" : string.Empty)}, drawn as {(differ == 1 ? "a card" : "cards")} below.");
+            : string.Create(CultureInfo.InvariantCulture, $"{(past ? "That night" : "Tonight")} it shared {shared} of its picks with the version above; {differ} differ{(differ == 1 ? "s" : string.Empty)}, marked among the chips below.");
 
     // Why a fixed 5 and its version took what they took: the version takes the best quarter of what it marked and at most its
     // limit, so where a quarter is above the limit the limit decided and the fixed 5 takes the same stocks.
