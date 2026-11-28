@@ -156,8 +156,68 @@ static async Task<int> LongFillVerb(string[] args)
         ? $"long-fill: no Tiingo key is set at '{TiingoCredentials.ApiKeyName}', so Tiingo is not asked"
         : $"long-fill: the Tiingo key is set at '{TiingoCredentials.ApiKeyName}'");
 
-    await new EquityBrief.Worker.History.SecondSourceFill(store.DatabaseFile, SystemClock.ForUnitedStatesSessions(), SecondSourcePriceFeed.Live(key), key is not null)
-        .RunAsync(args.Contains("--word", StringComparer.Ordinal), Console.Out);
+    var word = args.Contains("--word", StringComparer.Ordinal);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var fill = new EquityBrief.Worker.History.SecondSourceFill(store.DatabaseFile, clock, SecondSourcePriceFeed.Live(key), key is not null);
+    var ledger = new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile);
+
+    // From the 24.19 closing plan's item 3 the check on the three indices settled, item 4's recheck of the corrected codes, and
+    // the addition's draws.
+    // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+    if (args.Contains("--settle", StringComparer.Ordinal))
+    {
+        var differences = new List<EquityBrief.Core.History.SessionDifference>();
+
+        foreach (var index in EquityBrief.Core.History.LongSpans.Larger)
+        {
+            await ledger.SessionCheckAsync(index, Console.Out);
+            differences.AddRange(ledger.LastDifferences);
+        }
+
+        await fill.SettleAsync(differences, word, Console.Out);
+
+        return 0;
+    }
+
+    if (args.Contains("--recheck", StringComparer.Ordinal))
+    {
+        var corrected = await fill.CorrectedOnAsync();
+        var differences = new List<EquityBrief.Core.History.SessionDifference>();
+
+        foreach (var index in EquityBrief.Core.History.LongSpans.Larger)
+        {
+            var pairs = corrected.Where(one => one.Index == index).Select(one => (one.Ticker, one.Session)).ToHashSet();
+
+            if (pairs.Count > 0)
+            {
+                await ledger.SessionCheckAsync(index, Console.Out, only: pairs);
+                differences.AddRange(ledger.LastDifferences);
+            }
+        }
+
+        await fill.ProveAsync(differences, word, Console.Out);
+
+        return 0;
+    }
+
+    if (args.Contains("--sample", StringComparer.Ordinal))
+    {
+        var count = int.TryParse(VerbArguments.Value(args, "--count"), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var asked) ? asked : 1000;
+        var codes = int.TryParse(VerbArguments.Value(args, "--codes"), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var most) ? most : 250;
+
+        await fill.SampleAsync(count, codes, VerbArguments.Value(args, "--seed") ?? "24.19", word, Console.Out);
+
+        return 0;
+    }
+
+    if (args.Contains("--proof", StringComparer.Ordinal))
+    {
+        await fill.ProofDrawAsync(20, VerbArguments.Value(args, "--seed") ?? "24.19", word, Console.Out);
+
+        return 0;
+    }
+
+    await fill.RunAsync(word, Console.Out);
 
     return 0;
 }
@@ -2317,6 +2377,23 @@ static async Task<int> LedgerBuildRun(string[] args)
     var index = VerbArguments.Value(args, "--index");
     var from = VerbArguments.Value(args, "--from");
     var through = VerbArguments.Value(args, "--through");
+
+    // From the 24.19 closing plan the rows of the codes named written again from their prices as they stand, only with '--word'.
+    // see: The rows of the codes a correction moved are written again code by code, as a full rebuild writes them for those codes
+    if (VerbArguments.Value(args, "--codes") is { } named)
+    {
+        var codes = named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(StringComparer.Ordinal);
+
+        if (index is null || codes.Count == 0)
+        {
+            Console.Error.WriteLine("ledger-build: give '--codes <code,code> --index <GSPC, MID or SML>', with '--word' to write.");
+
+            return 1;
+        }
+
+        return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+            .CodesAgainAsync(store.DataRoot, index, codes, args.Contains("--word", StringComparer.Ordinal), Console.Out);
+    }
 
     // Every member's readings on every session from 2005, written only with '--word'.
     // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then

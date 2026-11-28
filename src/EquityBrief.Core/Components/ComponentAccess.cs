@@ -54,6 +54,10 @@ public enum Store
     LongFillBar,
     LongFillHole,
     SourceAsk,
+    // The check's settling: each stock-session or stretch marked unreliable or excluded, and each close held to a source.
+    UnreliableMark,
+    PriceCheck,
+    CheckSettled,
     LongFact,
     LongSetup,
     LongReading,

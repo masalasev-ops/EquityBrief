@@ -106,7 +106,9 @@ public static class SecondSources
     // kept bar one that could have traded. A source's close adjusted for later splits and dividends is the one held to the
     // store's, its other prices brought to that adjustment first; its own close as traded is kept where it holds one ratio
     // to the store's traded closes, and otherwise the store's adjustment on the first session after the hole is taken off.
-    public static FillJudgement Judge(IReadOnlyList<SweepBar> stored, IReadOnlyList<DateOnly> hole, IReadOnlyList<SourceBar> source)
+    // With `partial`, as the check's settling fills a stretch, the sessions of it the source lacks are left out rather than
+    // refusing the rest.
+    public static FillJudgement Judge(IReadOnlyList<SweepBar> stored, IReadOnlyList<DateOnly> hole, IReadOnlyList<SourceBar> source, bool partial = false)
     {
         if (hole.Count == 0)
         {
@@ -125,7 +127,7 @@ public static class SecondSources
         var answered = source.GroupBy(bar => bar.Session).ToDictionary(group => group.Key, group => group.First());
         var held = hole.Count(answered.ContainsKey);
 
-        if (held < hole.Count)
+        if (held < hole.Count && (!partial || held == 0))
         {
             return new FillJudgement([], null, null, FormattableString.Invariant($"holds {held} of the hole's {hole.Count} session(s)"));
         }
@@ -181,7 +183,7 @@ public static class SecondSources
         var factor = after[0].RawClose > 0 ? after[0].RawClose / after[0].Close : 1m;
         var kept = new List<KeptBar>();
 
-        foreach (var session in hole.Order())
+        foreach (var session in hole.Where(answered.ContainsKey).Order())
         {
             var bar = answered[session];
 

@@ -34,6 +34,7 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
             new StoreTouch(Store.LongSetup, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.SessionReading, Touch.Read),
+            new StoreTouch(Store.UnreliableMark, Touch.Read),
             new StoreTouch(Store.SetupNight, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.BuyRangeWidth, Touch.Insert),
@@ -323,11 +324,19 @@ public sealed class RangeWidthTest(IClock clock, string databaseFile, string dat
         command.Parameters.AddWithValue("$place", FormattableString.Invariant($"$[{CompanyValuePlace}]"));
 
         var rows = new List<PlanPointTest.FlaggedSetup>();
+        var marked = await Ledger.UnreliableMarkRows.ReadAsync(connection, cancellation);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
+            // A stock-session the check marked unreliable or excluded is skipped.
+            // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+            if (marked.Skips(reader.GetString(0), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture)))
+            {
+                continue;
+            }
+
             rows.Add(new PlanPointTest.FlaggedSetup(
                 EveryMemberFamily,
                 reader.GetString(0),

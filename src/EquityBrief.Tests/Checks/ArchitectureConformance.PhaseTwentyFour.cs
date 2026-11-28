@@ -90,7 +90,8 @@ public partial class ArchitectureConformance
     // 17's four rows, so eleven of six; and from its background variants of 2026-11-27 the waiting step's catalogue and matrix
     // rows, its two stores, section 14's step and the Run page's row, which the plan did not count, so seventeen of six; and
     // from its closing plan of 2026-11-27 the second source fill's catalogue and matrix rows, its three stores and section 17's
-    // row, which the plan did not count either, so twenty-three of six. 24.21,
+    // row, which the plan did not count either, so twenty-three of six; and its check's settling's three stores and section
+    // 17's row, which it did not count, so twenty-seven of six. 24.21,
     // two of two: the shared reader's
     // catalogue and matrix rows, its check's row landing as a clause of read-surface's roster row where the plan counted it.
     // The stored cases, seven of six: two writers' catalogue and matrix rows and two stores where the plan counted one pair.
@@ -142,7 +143,7 @@ public partial class ArchitectureConformance
         ("24.16", 0),
         ("24.17", 0),
         ("24.18", 0),
-        ("24.19", 17),
+        ("24.19", 21),
         ("24.21", 0),
         ("24.20", 0),
         ("24.22", 1),
@@ -213,6 +214,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1792), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1796), (before, low, high, actual));
     }
 }

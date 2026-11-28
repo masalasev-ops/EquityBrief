@@ -5407,6 +5407,22 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store each of the four requests written as it was made",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Unreliable marks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, a mark covering its stock and sessions until a later row lifts it, and over a constructed store the widths test's every member dropping a marked stock-session and keeping it once lifted",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Price checks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store the close a difference was settled on written with the source's at the store's scale",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Differences settled")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update is refused, and over a constructed store each difference written with its outcome, the corrected one read back for the recheck",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The check's settling")] = new Scoped(
+            Verdict.Pass,
+            "the sort at 1% on both sides, the audit at the median ratio with a close 2% off apart and one 0.5% off agreeing, a wild close taken back in full and not one kept or taken back by less than half, and a stretch filled and excluded, each worked by hand, and each figure read off the document against its constant",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Second sources' fill")] = new Scoped(
             Verdict.Pass,
             "the judge worked by hand at twice the source's prices and on both sides of the closes' band, a volume off its proportion, a source short of a session of the hole or around it and a hole with no side refused; Tiingo's hour, day and month by hand at each limit; and each figure read off the document against its constant",

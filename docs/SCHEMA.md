@@ -221,6 +221,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_fill_bar` | SecondSourceFill | none | none |
 | `long_fill_hole` | SecondSourceFill | none | none |
 | `source_ask` | SecondSourceFill | none | none |
+| `unreliable_mark` | SecondSourceFill | none | none |
+| `price_check` | SecondSourceFill | none | none |
+| `check_settled` | SecondSourceFill | none | none |
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
@@ -609,7 +612,7 @@ Grain: one row per code, session and run of the second sources' fill, a session 
 
 Primary key: `ticker`, `session_date`, `run_id`.
 
-**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both** (see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated). The long history's reader reads a row of a hole only where the code holds no price for its session, the newest run standing where a session is kept twice; no bar table and no provider table moves. No night reads it.
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both** (see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated). The long history's reader reads a row of a hole only where the code holds no price for its session, and from the check's settling a row of a correction in place of the stored price, the newest run standing where a session is kept twice; no bar table and no provider table moves. No night reads it.
 
 ### long_fill_hole
 Grain: one row per run of the second sources' fill, code and hole asked, from migration 177.
@@ -647,6 +650,66 @@ Grain: one row per request the second sources' fill made, from migration 177.
 Primary key: `run_id`, `asked_at`, `source`, `kind`, `ticker`.
 
 **Inserted by the second source fill alone as each request is made, and never updated or deleted, its triggers refusing both.** The fill counts Tiingo's rows against its 50 requests an hour, 1,000 a day and 500 codes a month before each request to it. No key is ever written here.
+
+### unreliable_mark
+Grain: one row per run of the check's settling, stock, first session, reading and kind, from migration 178.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the settling's run |
+| `ticker` | TEXT | the stock |
+| `first_session` | TEXT | the first session the mark covers |
+| `last_session` | TEXT | its last, the first again for one stock-session |
+| `reading` | TEXT | the reading named, `close` for a wild close, `stretch` for a stretch excluded as a block |
+| `kind` | TEXT | `unreliable`, `excluded` or `lifted`, constrained in the table |
+| `why` | TEXT | what settled it so |
+| `marked_at` | TEXT | UTC instant to the millisecond it was written |
+
+Primary key: `run_id`, `ticker`, `first_session`, `reading`, `kind`.
+
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both** (see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table). A mark stands until a later row of the same stock, sessions and reading lifts it. Every reader of `session_reading`, the partner desk, the recipe desk, the reviewer desk and the widths test, skips each stock-session a standing mark covers on any reading.
+
+### price_check
+Grain: one row per run, purpose, index, stock, session and source of a close held to a second source, from migration 178.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `purpose` | TEXT | `settle`, `wild`, `stretch`, `sample` or `proof`, constrained in the table |
+| `index_code` | TEXT | the index, `all` where it is a code's across the three |
+| `ticker` | TEXT | the stock |
+| `session_date` | TEXT | the session |
+| `stored_close` | TEXT | decimal in code, the store's close, the provider's as traded on a proof |
+| `source` | TEXT | `yahoo`, `stooq` or `tiingo`, constrained in the table |
+| `source_close` | TEXT | decimal in code, the source's close as it sent it, null where it sent none |
+| `scaled_close` | TEXT | decimal in code, the source's adjusted close at the store's scale, null where none was worked |
+| `agrees` | INTEGER | 1 where the two stand within 1%, 0 where apart, null where nothing was held |
+
+Primary key: `run_id`, `purpose`, `index_code`, `ticker`, `session_date`, `source`.
+
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both.** No rule reads it.
+
+### check_settled
+Grain: one row per run of the check's settling and each difference, wild close or stretch it settled, from migration 178.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | the index, `all` for a wild close or a stretch |
+| `kind` | TEXT | what the check held the table's row to, `night`, `rebuilt` or `setup`, or `wild`, `stretch` or `proof` |
+| `family` | TEXT | the setup's family, empty where none |
+| `ticker` | TEXT | the stock |
+| `session_date` | TEXT | the session, a stretch's first |
+| `reading` | TEXT | the reading |
+| `table_value` | REAL | the table's figure, null where none |
+| `other_value` | REAL | the other side's figure, null where none |
+| `grouped` | TEXT | `a` accepted under 1%, `b` a built fix covers it, `c` off its own prices, or not from its prices, `d` a wild close, `e` a stretch |
+| `outcome` | TEXT | how it was settled |
+| `source` | TEXT | the source that settled it, null where none did |
+
+Primary key: `run_id`, `index_code`, `kind`, `family`, `ticker`, `session_date`, `reading`.
+
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both.** Its recheck reads the stock-sessions the newest settling corrected from it; no rule reads it.
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.

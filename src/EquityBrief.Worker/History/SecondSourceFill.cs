@@ -17,16 +17,19 @@ namespace EquityBrief.Worker.History;
 // 1,000 a day and 500 codes a month, counted off the asks the store records; a code past the month's is left for the
 // next month and named. Without `--word` it states what it would ask and asks nothing.
 // see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
-public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondSourceFeed feed, bool tiingo, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
+public sealed partial class SecondSourceFill(string databaseFile, IClock clock, ISecondSourceFeed feed, bool tiingo, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
 {
     public const string Stage = "second-source-fill";
 
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.LongFillBar, Touch.Insert),
+            new StoreTouch(Store.LongFillBar, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LongFillHole, Touch.Read | Touch.Insert),
             new StoreTouch(Store.SourceAsk, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.UnreliableMark, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.PriceCheck, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.CheckSettled, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.SecondSourcePrices]);
@@ -424,6 +427,24 @@ public sealed class SecondSourceFill(string databaseFile, IClock clock, ISecondS
 
     // A ratio written to ten places with its trailing zeros taken off.
     const string RatioForm = "0.##########";
+
+    // The check's settling's writes: each difference, wild close or stretch settled, each correction of a stored price, each
+    // mark and each close held to a source.
+    const string InsertSettled = @"
+        INSERT OR IGNORE INTO check_settled (run_id, index_code, kind, family, ticker, session_date, reading, table_value, other_value, grouped, outcome, source)
+        VALUES ($run_id, $index, $kind, $family, $ticker, $session, $reading, $table, $other, $grouped, $outcome, $source);";
+
+    const string InsertCorrection = @"
+        INSERT OR IGNORE INTO long_fill_bar (ticker, session_date, open, high, low, close, raw_close, volume, source, ratio, volume_proportion, kind, run_id)
+        VALUES ($ticker, $session, $open, $high, $low, $close, $raw, $volume, $source, $ratio, '1', 'correction', $run_id);";
+
+    const string InsertMark = @"
+        INSERT OR IGNORE INTO unreliable_mark (run_id, ticker, first_session, last_session, reading, kind, why, marked_at)
+        VALUES ($run_id, $ticker, $first, $last, $reading, $kind, $why, $at);";
+
+    const string InsertCheck = @"
+        INSERT OR IGNORE INTO price_check (run_id, purpose, index_code, ticker, session_date, stored_close, source, source_close, scaled_close, agrees)
+        VALUES ($run_id, $purpose, $index, $ticker, $session, $stored, $source, $own, $scaled, $agrees);";
 
     static string Named(string index) => index switch
     {

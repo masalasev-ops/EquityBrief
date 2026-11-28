@@ -798,7 +798,68 @@ public static class SchemaMigrations
         new Migration(175, "create partner_run and partner_cell", CreatePartner),
         new Migration(176, "create review", CreateReview),
         new Migration(177, "create long_fill_bar, long_fill_hole and source_ask", CreateSecondSourceFill),
+        new Migration(178, "create unreliable_mark, price_check and check_settled", CreateCheckSettling),
     ];
+
+    // The check's settling: each stock-session or stretch marked unreliable or excluded, with the reading named, and a later
+    // row lifting one; and each close held against a second source, with what it was held for. Each takes inserts alone.
+    // see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+    const string CreateCheckSettling = @"
+        CREATE TABLE unreliable_mark (
+            run_id         TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            first_session  TEXT NOT NULL,
+            last_session   TEXT NOT NULL,
+            reading        TEXT NOT NULL,
+            kind           TEXT NOT NULL CHECK (kind IN ('unreliable', 'excluded', 'lifted')),
+            why            TEXT NOT NULL,
+            marked_at      TEXT NOT NULL,
+            PRIMARY KEY (run_id, ticker, first_session, reading, kind)
+        ) STRICT;
+
+        CREATE TABLE price_check (
+            run_id         TEXT NOT NULL,
+            purpose        TEXT NOT NULL CHECK (purpose IN ('settle', 'wild', 'stretch', 'sample', 'proof')),
+            index_code     TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            session_date   TEXT NOT NULL,
+            stored_close   TEXT NOT NULL,
+            source         TEXT NOT NULL CHECK (source IN ('yahoo', 'stooq', 'tiingo')),
+            source_close   TEXT,
+            scaled_close   TEXT,
+            agrees         INTEGER CHECK (agrees IS NULL OR agrees IN (0, 1)),
+            PRIMARY KEY (run_id, purpose, index_code, ticker, session_date, source)
+        ) STRICT;
+
+        CREATE TABLE check_settled (
+            run_id        TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            kind          TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            reading       TEXT NOT NULL,
+            table_value   REAL,
+            other_value   REAL,
+            grouped       TEXT NOT NULL,
+            outcome       TEXT NOT NULL,
+            source        TEXT,
+            PRIMARY KEY (run_id, index_code, kind, family, ticker, session_date, reading)
+        ) STRICT;
+
+        CREATE TRIGGER check_settled_takes_inserts_alone_on_change BEFORE UPDATE ON check_settled
+        BEGIN SELECT RAISE(ABORT, 'check_settled takes inserts alone.'); END;
+        CREATE TRIGGER check_settled_takes_inserts_alone_on_removal BEFORE DELETE ON check_settled
+        BEGIN SELECT RAISE(ABORT, 'check_settled takes inserts alone.'); END;
+        CREATE TRIGGER unreliable_mark_takes_inserts_alone_on_change BEFORE UPDATE ON unreliable_mark
+        BEGIN SELECT RAISE(ABORT, 'unreliable_mark takes inserts alone: a mark is lifted by a later row.'); END;
+        CREATE TRIGGER unreliable_mark_takes_inserts_alone_on_removal BEFORE DELETE ON unreliable_mark
+        BEGIN SELECT RAISE(ABORT, 'unreliable_mark takes inserts alone: a mark is lifted by a later row.'); END;
+        CREATE TRIGGER price_check_takes_inserts_alone_on_change BEFORE UPDATE ON price_check
+        BEGIN SELECT RAISE(ABORT, 'price_check takes inserts alone.'); END;
+        CREATE TRIGGER price_check_takes_inserts_alone_on_removal BEFORE DELETE ON price_check
+        BEGIN SELECT RAISE(ABORT, 'price_check takes inserts alone.'); END;
+    ";
 
     // The second sources' fill: each session kept from a second source with the source and the ratio it was scaled by, each
     // hole asked with what filled it or why none did, and each request to a source, Tiingo's counted against its limits.

@@ -2361,6 +2361,19 @@ dotnet run --project src/EquityBrief.Worker -- long-fill --word
 
 Without `--word` it reads each index's long history as the lists do, which takes minutes an index, and prints each code holding sessions with no price inside its own prices, its runs back to back on the calendar, the counts by index and the most requests it could make; it asks nothing and writes nothing. With it, it asks Yahoo's chart, then Stooq's daily file, then Tiingo's meta and prices over each code's holes and 45 days on each side, the code holding most such sessions first, writing each request to `source_ask` as it is made; keeps a run from the first source whose answer the judge passes into `long_fill_bar` with the source and the ratio; and writes every run asked to `long_fill_hole`, a run none filled with each source's reason, which no later run asks again. Its last lines give the sessions filled from each source and those still open, and its run log row the same. Tiingo is asked only where the worker's secrets file sets `EquityBrief:Providers:Tiingo:ApiKey`; the run's first line says whether it is set and never prints the key. A run stopped part way is run again with the same line: what it kept stands, and Tiingo's asks so far count against its 50 an hour, 1,000 a day and 500 codes a month, the run waiting out the hour or the day where one is spent and leaving a code past the month's open.
 
+**The check settled, the corrected codes written again and the draws, from the 24.19 closing plan.** Run by hand in this order, each on the operator's word and while no night, off-peak run, local run, build or monthly run is writing, after the folded build (see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table) (see: The rows of the codes a correction moved are written again code by code, as a full rebuild writes them for those codes):
+
+```bash
+dotnet run --project src/EquityBrief.Worker -- long-fill --settle
+dotnet run --project src/EquityBrief.Worker -- long-fill --settle --word
+dotnet run --project src/EquityBrief.Worker -- ledger-build --codes <code,code> --index <code> --word
+dotnet run --project src/EquityBrief.Worker -- long-fill --recheck --word
+dotnet run --project src/EquityBrief.Worker -- long-fill --sample --word
+dotnet run --project src/EquityBrief.Worker -- long-fill --proof --word
+```
+
+`--settle` runs `ledger-check --every-session` on the three indices, then prints the differences by index, group and reading, the codes with differences off their own prices, wild closes and stretches of another instrument's prices, and asks nothing; with `--word` it asks Yahoo and Tiingo in the order of the stock-sessions each affects, writes each correction, mark and close held, and prints each code's outcomes and the counts. `ledger-build --codes` writes the named codes' rows on one index again, as `--every-session --again` and the long and standing builds would write them, and states what it would write without `--word`; on a copy of the store, its rows for those codes are held to a full rebuild's before it runs on the store. `--recheck` runs the check over the corrected stock-sessions alone and marks each it still finds apart. `--sample` draws 1,000 stock-sessions from at most 250 codes by its seed, `--count`, `--codes` and `--seed` setting them, and holds each to Tiingo's close, printing the share agreeing by index and period and each disagreeing stock; `--proof` draws 20 corrected stock-sessions with the provider's, Tiingo's and Yahoo's closes.
+
 **The sector splits, from 23.9.** Read by hand once the long ledger stands, writing no store row, asking nothing of anyone and calling no model:
 
 ```bash

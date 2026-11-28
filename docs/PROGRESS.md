@@ -23728,3 +23728,45 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1792 passing, none out of scope and none unexamined, 1807 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.19 - correction: the check's differences settled by second sources, wild closes and stretches held to them, every reader skipping a marked stock-session, and the corrected codes written again code by code   2026-11-27
+
+Ruled:      the operator's closing plan of 2026-11-27, items 3 and 4, and their addition of that evening, kept word for word in
+            `prompts/2026-11-27-24.19-the-closing-plan.md` and `prompts/2026-11-27-24.19-the-closing-plan-addition.md`. Two new
+            decisions.
+Built:      `long-fill --settle` runs the every-session check on the three indices, keeping each difference with both figures,
+            and sorts each: under 1% accepted; one the table reads its own way by design counted as a built fix; one of 1% or
+            more off the stock's own prices held to Yahoo's closes, then Tiingo's, over the 260 sessions to it at their median
+            ratio, a close 1% or more from the source's corrected from the source's bar into the kept bars as a correction, which
+            the long history's reader reads in place of the stored price, and the stock-session marked unreliable with its
+            reading named where every close agrees or no source holds them; and one not read off its prices marked the same way.
+            Each wild close, more than 5 times its typical move and taken back by more than half the next session, kept where a
+            source agrees, replaced where one holds it, marked otherwise; each stretch the long history's class reads as another
+            instrument kept, filled as a hole is or excluded as a block; the requests in the order of the stock-sessions each
+            affects (see: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with
+            a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table). The partner,
+            the recipes, the reviewer and the widths test skip a stock-session a standing mark covers. `--recheck` runs the check
+            over the corrected stock-sessions alone and marks each it still finds apart; `--sample` holds a seeded draw of
+            stock-sessions to Tiingo by index and period; `--proof` draws 20 corrected ones with each source's close. `ledger-build
+            --codes` writes the named codes' long setups, standing setups and every-session rows again, as the full builds write
+            them for those codes (see: The rows of the codes a correction moved are written again code by code, as a full rebuild
+            writes them for those codes). Migration 178, three tables taking inserts alone. No file a rule or the readings'
+            version pins is edited.
+Waiting:    the runs, in the plan's order after the fill and the folded build, and the one report.
+Tests:      10 new: the audit at the median ratio, a close 2% off apart and 0.5% off agreeing; a wild close by hand on both sides;
+            the sort at 1% and by its prices; a mark covering until lifted; the draw repeating from its seed; the settling over
+            a constructed store, a correction at twice Yahoo's close read back by the reader, a mark where Yahoo agrees and one
+            not from its prices, the recheck marking a correction still apart; a wild close kept, replaced and marked; a
+            stretch filled and excluded; the widths test skipping a marked stock-session until it is lifted; and the per-code
+            rewrite writing a full rebuild's rows for its code, row for row, the other's left.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each new guard taken out at the one place that decides it. m36 the 1% accepted band
+            never accepting: red; m37 no reader skipping a mark: red; m38 a stretch held at its own ratio: red; m39 the per-code
+            rewrite writing no row: red. Filtered to their tests and reverted before anything was committed.
+Claims:     1796, four added: the three stores and section 17's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4118 of 4118 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1796
+            claims, 1796 passing, none out of scope and none unexamined, 1811 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none beyond what waits above.

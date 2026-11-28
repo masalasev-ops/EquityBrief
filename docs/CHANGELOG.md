@@ -7,6 +7,26 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-27 - docs/ARCHITECTURE.html - the second source fill settling the check, and every reader of the every-session table skipping a marked stock-session, at a correction to 24.19
+Decision: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+Was:
+> <td>long fill holes, second source feed, source asks</td><td>long filled bars, long fill holes, source asks, run log</td> ... a code past the month's left open and named; no bar, no provider table and no rule's source moves (see: ...)</td></tr>
+> <tr><td>Second source fill</td> ... <td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td> ...
+> the buy range widths test's, recipe desk's, partner desk's and reviewer desk's reads without unreliable marks, each row ending at its own last decision
+Now:
+> <td>long filled bars, long fill holes, second source feed, source asks, unreliable marks, price checks, differences settled</td><td>long filled bars, long fill holes, source asks, unreliable marks, price checks, differences settled, run log</td> ... ; and from the closing plan's item 3, with <code>--settle</code>, ... (see: A difference of 1% or more the check finds ...)</td></tr>
+> <tr><td>Second source fill</td> ... <td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td> ...
+> each of the four reading unreliable marks, and its row ending "; and from the 24.19 closing plan skips each stock-session the check marked unreliable or excluded (see: ...)"
+Why: the operator's closing plan of 2026-11-27, item 3, kept word for word in `prompts/2026-11-27-24.19-the-closing-plan.md`: every reader of the table skips a stock-session marked unreliable.
+
+### 2026-11-27 - docs/SCHEMA.md - long_fill_bar read for a correction in place of the stored price, at a correction to 24.19
+Decision: A difference of 1% or more the check finds is settled by a second source's closes where one agrees with a side, and otherwise its stock-session is marked unreliable and skipped by every reader of the table
+Was:
+> The long history's reader reads a row of a hole only where the code holds no price for its session, the newest run standing where a session is kept twice;
+Now:
+> The long history's reader reads a row of a hole only where the code holds no price for its session, and from the check's settling a row of a correction in place of the stored price, the newest run standing where a session is kept twice;
+Why: the closing plan's item 3c: the side a source parts from is corrected from the source's bars, kept in the same table.
+
 ### 2026-11-27 - docs/ARCHITECTURE.html - the long history reader reading the sessions a second source filled, at a correction to 24.19
 Decision: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated
 Was:
