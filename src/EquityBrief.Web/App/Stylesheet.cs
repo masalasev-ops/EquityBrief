@@ -127,7 +127,7 @@ code{font-size:.92em}
 .m-drop a:hover{background:var(--hair);color:var(--ink)}
 .m-drop a[aria-current='page']{color:var(--ink);font-weight:600}
 .m-drop .lane{flex-wrap:wrap;margin-top:6px;padding:10px 6px 4px;border-top:1px solid var(--hair)}
-.m-search{order:2;margin-left:auto}
+.m-search{order:2;margin-left:auto;min-width:0}
 .m-index{order:3;flex:none;min-width:0}
 .mast .theme{order:4;flex:none}
 .m-menu{order:5;display:none;flex:none;align-items:center;font:600 12.5px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer}
@@ -231,7 +231,7 @@ form.ask[method='post']{display:inline-block;margin:0 0 0 8px}
 form.ask[method='post'] button,form.withdraw-control[method='post'] button{font:600 11.5px var(--sans);color:var(--soft);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:2px 8px;min-height:0;cursor:pointer}
 .theme{font:600 12.5px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer}
 .m-search{margin:0}
-.m-search input{font:14px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 10px;min-height:36px;width:220px}
+.m-search input{font:14px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 10px;min-height:36px;width:220px;max-width:100%;box-sizing:border-box}
 .m-search input::placeholder{color:var(--soft)}
 .c-nm .researched-on{display:block;font-size:12px;color:var(--soft)}
 .notice{margin:18px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);font-size:14px}

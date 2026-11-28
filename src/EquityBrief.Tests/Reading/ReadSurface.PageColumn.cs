@@ -152,6 +152,7 @@ public partial class ReadSurface
         Assert.Single(PageColumn.Faults("Tonight", new(390, 390, [new("table.list-table", "section.card", 31, 300, 31, 359, false, Scrolls: true)])));
         Assert.Single(PageColumn.Faults("Tonight", new(390, 390, [new("table.list-table", "section.card", 40, 851, 31, 359, false, Scrolls: true)])));
         Assert.Equal(["Tonight: the page runs 1500 px wide in a window of 1440 px"], PageColumn.Faults("Tonight", new(1440, 1500, [Block("section.tonight", 20, 1420)])));
+        Assert.Equal(["Tonight: the page runs 1500 px wide in a window of 1440 px, past it span.tag to 1500"], PageColumn.Faults("Tonight", new(1440, 1500, [Block("section.tonight", 20, 1420)], ["span.tag to 1500"])));
         Assert.Equal(["Tonight: the script read no block"], PageColumn.Faults("Tonight", new(1440, 1440, [])));
     }
 }
