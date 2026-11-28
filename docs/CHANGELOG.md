@@ -16,6 +16,27 @@ Now:
 > ... (see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session); and from the 24.19 correction of 2026-11-28 a build and the night find a setup's history by its code and its session together, ... refusing to start where that run stops or two parts of a code hold one session (see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds)</td></tr>
 Why: the operator's answers of 2026-11-28, item 1, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the AI stock picker on Tonight's tab and its trades on Paper trading's, at 24.49
+Decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
+Was:
+> <p><b>Route:</b> <code>#/picker</code> from 24.18, from the 24.25 correction of 2026-11-23 <code>#/picker/{yyyy-MM-dd}</code> for one night a version ran (see: ...), <code>#/judge</code> from 24.6 and from 24.18 a redirect to it, under the Records menu after History as the AI stock picker (see: ...
+> ... the variant named once in its heading and its tally said once under the chips and an account's chart drawing no frame until a night reads its first buy</td></tr>
+> ... so no pick is drawn without an account that buys it (see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's)</td></tr>
+Now:
+> <p><b>Route:</b> <code>#/tonight/ai</code> from 24.49, Tonight's tab of the AI stock picker's picks, and <code>#/paper/ai</code>, Paper trading's tab of its trades; <code>#/picker</code> from 24.18 and <code>#/judge</code> from 24.6 each a redirect to the picks tab from 24.49, and <code>#/picker/{yyyy-MM-dd}</code>, ... from 24.49 a redirect to that night on the trades tab (see: ...); under the Records menu after History as the AI stock picker, opening the picks tab (see: ...
+> ... drawing no frame until a night reads its first buy; from 24.49 the night's picks all drawn as chips with the one it does not share with its version marked and a link to its trades in place of its chart and its cards, which the trades tab draws</td></tr>
+> ... (see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's); from 24.49 its region keeping its summary with a link to its trades, its cards drawn on the trades tab's past nights</td></tr>
+Why: the operator's order of 2026-11-28, kept word for word in `prompts/2026-11-28-24.49-ai-tabs-order.md`; two rows added after Its own rules, Two tabs and Its trades.
+
+### 2026-11-28 - docs/BUILD_PLAN.md - 24.49's count of rows in the phase's estimate
+Decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
+Was:
+> - about 1 at 24.48, section 15.7's row of a setup's panel, the setups' table's row and a plan's row standing as clauses.
+Now:
+> - about 1 at 24.48, ... and a plan's row standing as clauses;
+> - about 2 at 24.49, section 15.26's rows of the two tabs and the picker's trades.
+Why: the operator's order of 2026-11-28, kept word for word in `prompts/2026-11-28-24.49-ai-tabs-order.md`, adding 24.49 to the plan as a stage.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the setups' table's rows closed until clicked, each opening a panel of its own
 Decision: Tonight's setup rows start closed and each opens a panel of its own on a click
 Was:

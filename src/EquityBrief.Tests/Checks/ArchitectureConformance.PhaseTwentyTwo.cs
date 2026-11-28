@@ -280,6 +280,9 @@ public partial class ArchitectureConformance
 
         // And Tonight's setup panel.
         .. Reading.ReadSurface.SetupPanelRows,
+
+        // And the AI stock picker's two tabs and its trades.
+        .. Reading.ReadSurface.PickerTabRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

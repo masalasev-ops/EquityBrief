@@ -3291,6 +3291,14 @@ internal static class Scope
             Verdict.Pass,
             "the breakout's panel read off the rendered page with no head of its own, its pick and the stock met again one line each opening its plan and its folds closed; and every page the order names over every night of the plans' and the families' constructed stores walked for a full card outside a plan or a panel or fold drawn open, a planted page named on each",
             ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "Two tabs")] = new Scoped(
+            Verdict.Pass,
+            "Tonight, the picks tab, Paper trading and the trades tab each read off the rendered page under its folder tabs with the one shown marked, and the shell's script read for the old addresses sent on to the picks tab and to that night on the trades tab before the routes are read and Records' link opening the picks tab",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI stock picker", "Its trades")] = new Scoped(
+            Verdict.Pass,
+            "the trades tab read off the rendered page over constructed nights holding more picks and nights than a page: every pick in one list alone, no list past a page and its pages read by the address, the past nights' newest open alone and a night the address names open on its own page with its cards, and the fixed 5's and an earlier version's cards found on their own accounts; and the reader of a list past a page shown to find a planted one",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
             "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none over a night storing only the first part each member failed, and from 20.11 the S&P 400's card, line and breakout expander drawing the four a closed market check alone keeps off over a constructed night with no press and no link to Universe; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
@@ -8513,6 +8521,9 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The setups' table")] = "24.46",
         // 24.48's, Tonight's setup panels.
         [CheckReach.Key("15.7 Tonight", "A setup's panel")] = "24.48",
+        // 24.49's, the AI stock picker's two tabs and its trades.
+        [CheckReach.Key("15.26 The AI stock picker", "Two tabs")] = "24.49",
+        [CheckReach.Key("15.26 The AI stock picker", "Its trades")] = "24.49",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
