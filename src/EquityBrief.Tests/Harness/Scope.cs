@@ -5386,6 +5386,31 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, an update and a delete are each refused, and over a constructed store a code asked again has its member sessions still without a price written as runs once, a second marking changing nothing, a code holding one refused when asked again, and the lists naming its sessions as held none",
             ByMigration),
+        // The 24.19 closing plan's second sources' fill: its component, its three stores and section 17's row.
+        [CheckReach.Key(CatalogueTable, "Second source fill")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the holes asked and the asks it reads, its stores and the run log it writes and the second source feed, each reconciled against the row; over a constructed store a code missing two sessions inside its own prices is asked of Yahoo, then Stooq, then Tiingo, kept from Tiingo at twice its prices where Stooq's closes part on one session, every ask written, a second run asking nothing, and without a key Tiingo asked nothing and the hole written open with each source's reason and asked no more",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Second source fill")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long filled bars")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, an update is refused, and over a constructed store the two sessions kept at twice Tiingo's prices with its source and ratio, read by the long history's reader so the code holds no session without a price",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long fill holes")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store a hole written with the source that filled it, another written open with each source's reason and asked no more",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Source asks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, a delete is refused, and over a constructed store each of the four requests written as it was made",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Second sources' fill")] = new Scoped(
+            Verdict.Pass,
+            "the judge worked by hand at twice the source's prices and on both sides of the closes' band, a volume off its proportion, a source short of a session of the hole or around it and a hole with no side refused; Tiingo's hour, day and month by hand at each limit; and each figure read off the document against its constant",
+            ByExpectations),
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,

@@ -90,7 +90,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership, DataStore.TickerJoin, DataStore.ListedName]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield, DataStore.SplitEvent]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.SessionMark, DataStore.MarkRuling, DataStore.DataCheck, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding, DataStore.LongSnapshot, DataStore.LongHolding, DataStore.LongSpan, DataStore.LongBar, DataStore.LongMarketBar, DataStore.LongPrint, DataStore.LongSplit, DataStore.LongDividend, DataStore.LongFiling, DataStore.LongHeldNone, DataStore.LongFact]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.SessionMark, DataStore.MarkRuling, DataStore.DataCheck, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding, DataStore.LongSnapshot, DataStore.LongHolding, DataStore.LongSpan, DataStore.LongBar, DataStore.LongMarketBar, DataStore.LongPrint, DataStore.LongSplit, DataStore.LongDividend, DataStore.LongFiling, DataStore.LongHeldNone, DataStore.LongFillBar, DataStore.LongFillHole, DataStore.SourceAsk, DataStore.LongFact]),
         ("Computed tables", [DataStore.SplitName, DataStore.EntryReading, DataStore.Indicator, DataStore.ChartCheck,DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.DipResult, DataStore.MemberReading, DataStore.SwitchReading, DataStore.FundamentalScore, DataStore.QualityResult, DataStore.ImprovingResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow, DataStore.QualityNight, DataStore.ImprovingNight]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.SessionReading, DataStore.SessionReadingYear, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopRuleUnit, DataStore.BookRecord, DataStore.LoopPooled, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.PromotionSwap, DataStore.ProvisionalSetting, DataStore.LoopAlarm, DataStore.QualityHolding, DataStore.ImprovingTrade, DataStore.LongSetup, DataStore.LongReading, DataStore.DepartedSetup, DataStore.LongSearch, DataStore.PlanPoint, DataStore.LongOutlier, DataStore.Notebook, DataStore.Survivor, DataStore.SurvivorState, DataStore.SurvivorPick, DataStore.BuyRangeWidth, DataStore.WaitingVariant, DataStore.WaitingVariantTrade, DataStore.Recipe, DataStore.RecipeRun, DataStore.RecipeReading, DataStore.DataRequest, DataStore.PartnerRun, DataStore.PartnerCell, DataStore.Review]),
@@ -197,6 +197,7 @@ internal static class ComponentVocabulary
         ["estimate trends feed"] = Feed.EstimateTrends,
         ["oil chart feed"] = Feed.OilChart,
         ["strip quote feed"] = Feed.StripQuotes,
+        ["second source feed"] = Feed.SecondSourcePrices,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.
@@ -397,6 +398,9 @@ internal static class ComponentVocabulary
         ["long dividends"] = DataStore.LongDividend,
         ["long filings"] = DataStore.LongFiling,
         ["long held none"] = DataStore.LongHeldNone,
+        ["long filled bars"] = DataStore.LongFillBar,
+        ["long fill holes"] = DataStore.LongFillHole,
+        ["source asks"] = DataStore.SourceAsk,
         ["long facts"] = DataStore.LongFact,
         ["dividend waits"] = DataStore.DividendWait,
         ["late bar asks"] = DataStore.LateBarAsk,

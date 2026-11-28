@@ -218,6 +218,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
 | `long_held_none` | LongPricePull | none | SchemaMigrations |
+| `long_fill_bar` | SecondSourceFill | none | none |
+| `long_fill_hole` | SecondSourceFill | none | none |
+| `source_ask` | SecondSourceFill | none | none |
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
@@ -584,6 +587,66 @@ Grain: one row per code and run of its member sessions the provider was asked fo
 Primary key: `ticker`, `first_session`.
 
 **Written once by the long price pull's `--held-none` after the write that read the answers asked again, a run already held changing nothing, and never updated or deleted, its triggers refusing both, but for migration 169's five rows and migration 171's four; the long price pull's write removes none of it** (see: A code's member sessions still without a price after the provider was asked again are marked held none and never asked again). `long-prices --capture --into <folder> --again <codes>` asks each code named again, whether or not the folder keeps its answer, each for its own member sessions or for those of the code named after it, and keeps the asks and their instant in the folder; it refuses, before asking anything, a code an ask is for that holds a row here. After `--write`, `--held-none <folder>` reads each such code's member sessions on every index through the newest session `bar` holds that still hold no price, as the long history's lists read them, and writes them here, so a session an answer asked in the day carries before the night stores it is never marked. Migration 169 removes the five rows the first marking wrote for 2026-11-23 past that session, HOS, LUMN, PRG, WEN and WWW, on the operator's answer of 2026-11-23 at 16:50, its removal trigger set aside for that one statement and put back as it stood. Migration 171 removes, the same way, the rows of LPI, PVAC, WTW_old and SIX that marking wrote, on the operator's answers of 2026-11-23 at about 10:40 pm: the first three read their later codes' prices by hand from then, and SIX's old company is asked of the provider once more under its delisted spelling (see: Three more codes read their later codes' prices by hand where the later close continues the earlier, each listed as made by hand). The long history's lists name these sessions as the provider holding no price for them, apart from those still without one; nothing else reads it.
+
+### long_fill_bar
+Grain: one row per code, session and run of the second sources' fill, a session a second source holds that the code's own prices lacked, from migration 177.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the code the session is kept for |
+| `session_date` | TEXT | the session |
+| `open` | TEXT | decimal in code, the source's open times the ratio, at the store's scale |
+| `high` | TEXT | decimal in code, its high the same way |
+| `low` | TEXT | decimal in code, its low the same way |
+| `close` | TEXT | decimal in code, its close adjusted for later splits and dividends where it states one, times the ratio |
+| `raw_close` | TEXT | decimal in code, the close as traded: the source's own times the ratio its closes hold to the store's traded closes, or the close with the store's adjustment on the first session after the hole taken off |
+| `volume` | INTEGER | the source's volume times the proportion its volumes hold to the store's |
+| `source` | TEXT | `yahoo`, `stooq` or `tiingo`, constrained in the table |
+| `ratio` | TEXT | decimal in code, the one ratio of the store's closes over the source's on the sessions around the hole |
+| `volume_proportion` | TEXT | decimal in code, the one proportion of the store's volumes over the source's |
+| `kind` | TEXT | `hole` where the code held no price for the session, `correction` where a source corrects a stored one, constrained in the table |
+| `run_id` | TEXT | the fill's run that kept it |
+
+Primary key: `ticker`, `session_date`, `run_id`.
+
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both** (see: A hole inside a code's own prices is filled from a second source's traded prices where they hold one ratio to the store's on each side, never interpolated). The long history's reader reads a row of a hole only where the code holds no price for its session, the newest run standing where a session is kept twice; no bar table and no provider table moves. No night reads it.
+
+### long_fill_hole
+Grain: one row per run of the second sources' fill, code and hole asked, from migration 177.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the fill's run |
+| `ticker` | TEXT | the code |
+| `first_session` | TEXT | the hole's first session |
+| `last_session` | TEXT | its last |
+| `sessions` | INTEGER | the sessions in it, back to back on the calendar |
+| `source` | TEXT | the source that filled it, `yahoo`, `stooq` or `tiingo`, null where none did |
+| `why` | TEXT | what the judge said of the source that filled it, or each source's reason none did |
+
+Primary key: `run_id`, `ticker`, `first_session`.
+
+**Inserted by the second source fill alone, and never updated or deleted, its triggers refusing both.** A later run of the fill reads its rows that no source filled and asks those holes no more.
+
+### source_ask
+Grain: one row per request the second sources' fill made, from migration 177.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the fill's run |
+| `asked_at` | TEXT | UTC instant to the millisecond it was made |
+| `source` | TEXT | `yahoo`, `stooq` or `tiingo`, constrained in the table |
+| `kind` | TEXT | `prices`, or `meta` for Tiingo's meta, constrained in the table |
+| `ticker` | TEXT | the code asked for |
+| `symbol` | TEXT | the symbol the source was asked under |
+| `from_session` | TEXT | the first day asked, null on a meta |
+| `to_session` | TEXT | the last day asked, null on a meta |
+| `sessions` | INTEGER | the sessions it sent |
+| `outcome` | TEXT | what it said, a refusal's words with any key and address taken out |
+
+Primary key: `run_id`, `asked_at`, `source`, `kind`, `ticker`.
+
+**Inserted by the second source fill alone as each request is made, and never updated or deleted, its triggers refusing both.** The fill counts Tiingo's rows against its 50 requests an hour, 1,000 a day and 500 codes a month before each request to it. No key is ever written here.
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.

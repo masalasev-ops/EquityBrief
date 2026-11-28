@@ -199,6 +199,9 @@ public partial class FixtureExpectations
             // Section 17's row of the trained partner's years and sizes.
             .. PartnerClaims,
 
+            // Section 17's row of the second sources' fill's sessions, bands and Tiingo's limits.
+            .. SecondSourceClaims,
+
             // Section 17's row of the reviewer's cases and its random draw.
             .. ReviewerClaims,
 
