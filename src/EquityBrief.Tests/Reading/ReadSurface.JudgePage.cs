@@ -169,9 +169,10 @@ public partial class ReadSurface
 
         Assert.Equal("#/picker", SinglePageApp.JudgeRoute);
         Assert.Equal("#/judge", SinglePageApp.JudgeOldRoute);
-        Assert.Contains("<a href=\"#/picker\" data-view=\"judge\">AI stock picker</a>", shell, StringComparison.Ordinal);
-        Assert.Contains("if (path === '#/judge') { path = '#/picker'; history.replaceState(null, '', path + (query ? '?' + query : '')); }", System.Text.RegularExpressions.Regex.Replace(shell, @"\s+", " "), StringComparison.Ordinal);
-        Assert.True(shell.IndexOf("path = '#/picker';", StringComparison.Ordinal) < shell.IndexOf("} else if (path === '#/picker' || path.startsWith('#/picker/')) {", StringComparison.Ordinal), "The old address is sent on before the routes are read.");
+        // From 24.49 Records' link and both old addresses open Tonight's AI tab, sent on before the routes are read.
+        Assert.Contains("<a href=\"#/tonight/ai\" data-view=\"judge\">AI stock picker</a>", shell, StringComparison.Ordinal);
+        Assert.Contains("if (path === '#/judge' || path === '#/picker') { path = '#/tonight/ai'; history.replaceState(null, '', path + (query ? '?' + query : '')); }", System.Text.RegularExpressions.Regex.Replace(shell, @"\s+", " "), StringComparison.Ordinal);
+        Assert.True(shell.IndexOf("path = '#/tonight/ai';", StringComparison.Ordinal) < shell.IndexOf("if (path === '#/tonight/ai') {", StringComparison.Ordinal), "The old address is sent on before the routes are read.");
 
         // The picker's store tables stand under their names.
         foreach (var table in new[] { "judge_pin", "judge_run", "judge_ask", "judge_pick", "judge_fact", "judge_naming" })
@@ -210,7 +211,7 @@ public partial class ReadSurface
         var view = new JudgeView(new DateOnly(2026, 11, 19), "picked", "", [new JudgeCardView(1, 2, "AAA", null, null, null, "r", 100m, 98m, 104m, null, "1 week", JudgeMenu.Whole), new JudgeCardView(2, 2, "BBB", null, null, null, "r", 100m, 97m, 106m, 3m, "2 weeks", JudgeMenu.HalfThenGiveUp)], new JudgeScoreboard(1, 1, 3.0, 2.25, 300), JudgeScore.NotToldApart, 0.4, [], [], [], null, 0);
         var drawn = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Judge = view }, string.Empty));
 
-        Assert.Contains($"<b>AI stock picker</b> Picked 2 stocks tonight in its own paper account. Since it started: $3.00 per $1 risked, against $0.40 for random picks. <a href=\"{SinglePageApp.JudgeRoute}\">See the AI stock picker</a>", drawn, StringComparison.Ordinal);
+        Assert.Contains($"<b>AI stock picker</b> Picked 2 stocks tonight in its own paper account. Since it started: $3.00 per $1 risked, against $0.40 for random picks. <a href=\"{SinglePageApp.PickerTabRoute}\">See the AI stock picker</a>", drawn, StringComparison.Ordinal);
         Assert.DoesNotContain("data-home=\"judge\"", WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day(), string.Empty)), StringComparison.Ordinal);
     }
 

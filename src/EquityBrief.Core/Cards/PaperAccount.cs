@@ -40,6 +40,10 @@ public sealed record PaperTrade(
     // The price the trade is sized from: the close its plan was set at where it was set the night before.
     public decimal SizedAt => Planned ?? Buy;
 
+    // From 24.49 how a walked plan ended, its stop, its take-profit, its trail or its time limit, as the walk names it, none
+    // where the walk names none.
+    public string? EndedBy { get; init; }
+
     // From 21.9 the share of the account's risk setting the trade is sized at: half on a night its rule's graded exposure
     // held one of its two switches, and the whole otherwise.
     // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
