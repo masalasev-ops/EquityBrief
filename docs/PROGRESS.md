@@ -23971,3 +23971,41 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1810 passing, none out of scope and none unexamined, 1825 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.49 - The AI stock picker's tabs: its picks on Tonight's AI tab and its trades on Paper trading's, every list ten rows a page   2026-11-28
+
+Ruled:      the operator's order of 2026-11-28, kept word for word in `prompts/2026-11-28-24.49-ai-tabs-order.md`, Part A of
+            their prompt of that night left unbuilt, built to the mockup in `prompts/` and given before the ledger's fix.
+            One decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows
+            and one past night open at a time, narrowing the fixed 5's decision of 2026-11-24.
+Built:      Tonight and Paper trading each under two folder tabs, the rules' the default; `#/tonight/ai` drawing the
+            picker's page, `#/paper/ai` its trades: the accounts to choose, five tiles, one chart of four lines, open,
+            waiting or not bought, closed and past nights, ten rows a page with "1 to 10 of n" and the arrows; `#/picker`
+            and `#/judge` sent to the picks tab and `#/picker/DATE` to that night on the trades tab; Records' link and
+            Home's line opening the picks tab. A walked trade keeps how its walk ended, so a closed trade's reason is the
+            walk's and never guessed from its sale, which fills at the next open.
+Moved:      every item of the picker's page, and where it stands now. On the picks tab, as before: the masthead and night
+            picker, the lede and run line, the three accounts' tiles, the version across the three indices on its night,
+            tonight's carousel and count line, its own rules, the scoreboard, the four accounts with each earlier
+            version's chart apart, where it looked, the replayed record. The fixed 5's sentence, its same-or-differ line
+            with why, its account line, its chips (now all its picks, one it does not share marked) and its counts stay,
+            with a link to its trades; its chart and its cards moved to the trades tab under its account. Each earlier
+            version's summary stays with the same link; its cards moved to the trades tab under its account. The record's
+            own picks of past nights, never drawn before, now stand on the trades tab's past nights.
+Tests:      three new: the trades tab over twelve constructed nights, the unpaged-list reader over a planted list of
+            eleven, and the old addresses off the shell's script with Tonight's and Paper trading's tabs; seven updated for
+            the moved cards, the links and the colours a folder tab and a waiting pick draw in.
+Pins:       none moved; no rule's code version reads the files changed.
+Shots:      both AI tabs and the trades tab with 10 Nov opened through `#/picker/2026-11-10`, at 1440 and a true 390 in
+            both palettes, over a constructed scratch store; no page wider than its window at either width.
+Mutated:    m54, the property that no list draws past a page: each page took one row more; the trades test went red on
+            the past nights drawing 11. m55, the property that the reader finds a list past a page: its bound one higher;
+            the reader's own test went red on the planted 11. m56, the property that `#/picker/DATE` opens that night on the
+            trades tab: the redirect removed; the old addresses test went red. Each reverted before the run below.
+Claims:     1812, two added: section 15.26's Two tabs and Its trades.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4130 of 4130 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1812
+            claims, 1812 passing, none out of scope and none unexamined, 1827 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    none.

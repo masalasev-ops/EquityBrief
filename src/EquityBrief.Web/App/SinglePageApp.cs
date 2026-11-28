@@ -444,7 +444,7 @@ public sealed partial class SinglePageApp : IComponent
         + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
         + MenuGroup("loop", MarkRenderer.CheckUpName, $"<a href=\"{LoopRoute}\" data-view=\"loop\">This week<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a><a href=\"{CaseRoute}\" data-view=\"case\">{CaseName}</a>")
         + MenuGroup("research", "Research", $"<a href=\"{ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{WatchRoute}\" data-view=\"watch\">Watch list</a>" + LaneSwitch(lane))
-        + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a><a href=\"{JudgeRoute}\" data-view=\"judge\">AI stock picker</a>")
+        + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a><a href=\"{PickerTabRoute}\" data-view=\"judge\">AI stock picker</a>")
         + "</nav>";
 
     public string Shell(string title, string lane = PaidLane) =>
@@ -486,13 +486,25 @@ public sealed partial class SinglePageApp : IComponent
           const hash = location.hash;
           const cut = hash.indexOf('?');
           let path = cut < 0 ? hash : hash.slice(0, cut);
-          const query = cut < 0 ? '' : hash.slice(cut + 1);
-          if (path === '{{{JudgeOldRoute}}}') {
-            path = '{{{JudgeRoute}}}';
+          let query = cut < 0 ? '' : hash.slice(cut + 1);
+          // The picker's old addresses: its page opens Tonight's AI tab, and one night of it that night on Paper trading's AI tab.
+          if (path === '{{{JudgeOldRoute}}}' || path === '{{{JudgeRoute}}}') {
+            path = '{{{PickerTabRoute}}}';
             history.replaceState(null, '', path + (query ? '?' + query : ''));
+          } else if (path.startsWith('{{{JudgeNightRoute}}}')) {
+            query = (query ? query + '&' : '') + '{{{JudgeTradesLink.NightKey}}}=' + encodeURIComponent(path.slice('{{{JudgeNightRoute}}}'.length));
+            path = '{{{PickerTradesRoute}}}';
+            history.replaceState(null, '', path + '?' + query);
           }
           let view = 'tonight';
-          if (path === '' || path === '{{{HomeRoute}}}' || path.startsWith('{{{HomeNightRoute}}}')) {
+          if (path === '{{{PickerTabRoute}}}') {
+            const judge = await fetch('/screens/judge' + (query ? '?' + query : ''));
+            screen.innerHTML = await judge.text();
+          } else if (path === '{{{PickerTradesRoute}}}') {
+            view = 'paper';
+            const trades = await fetch('/screens/judge-trades' + (query ? '?' + query : ''));
+            screen.innerHTML = await trades.text();
+          } else if (path === '' || path === '{{{HomeRoute}}}' || path.startsWith('{{{HomeNightRoute}}}')) {
             view = 'home';
             const date = path.startsWith('{{{HomeNightRoute}}}') ? path.slice('{{{HomeNightRoute}}}'.length) : '';
             const home = await fetch('/screens/home' + (date === '' ? '' : '/' + encodeURIComponent(date)) + (query ? '?' + query : ''));
@@ -524,11 +536,6 @@ public sealed partial class SinglePageApp : IComponent
             view = 'history';
             const history = await fetch('/screens/history');
             screen.innerHTML = await history.text();
-          } else if (path === '{{{JudgeRoute}}}' || path.startsWith('{{{JudgeNightRoute}}}')) {
-            view = 'judge';
-            const date = path.startsWith('{{{JudgeNightRoute}}}') ? path.slice('{{{JudgeNightRoute}}}'.length) : '';
-            const judge = await fetch('/screens/judge' + (date === '' ? '' : '/' + encodeURIComponent(date)) + (query ? '?' + query : ''));
-            screen.innerHTML = await judge.text();
           } else if (path === '{{{MarkingRoute}}}') {
             view = 'marking';
             const marking = await fetch('/screens/marking');

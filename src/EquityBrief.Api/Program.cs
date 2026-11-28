@@ -1777,8 +1777,16 @@ static bool Traded(DateOnly day)
 // `/screens/tonight/<date>` to an earlier one, which is the pair 15.3's routes
 // name. From 22.16 `/screens/home` is Home, drawn from the newest night by the same reads Tonight is drawn from.
 // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
-app.MapGet("/screens/tonight/{night?}", (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
-    TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, false));
+// From 24.49 Tonight under its two folder tabs, the rules' picks drawn here and the AI stock picker's on its own tab.
+// see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
+app.MapGet("/screens/tonight/{night?}", async (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
+{
+    var screen = await TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, false);
+
+    return screen is Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult drawn
+        ? Results.Content(SinglePageApp.FolderTabs(false, false, Universes.Of(request.Query[Universes.Query].FirstOrDefault())) + drawn.ResponseContent, drawn.ContentType)
+        : screen;
+});
 app.MapGet("/screens/home/{night?}", (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
     TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, true));
 
@@ -2943,7 +2951,7 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     };
 
     return Results.Content(
-        page.PaperRegion(
+        SinglePageApp.FolderTabs(true, false, reading) + page.PaperRegion(
             marks,
             reading,
             night,
@@ -4126,10 +4134,33 @@ app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/judge/{night?}", async (string? night, HttpRequest request, ReadApi read, SinglePageApp page, StoreLocation store) =>
 {
     var within = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
-    var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.JudgeRoute) : string.Empty;
+    var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.PickerTabRoute) : string.Empty;
     DateOnly? chosen = DateOnly.TryParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
 
-    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within, drawnNight: chosen, tiles: true), selector), "text/html; charset=utf-8");
+    return Results.Content(SinglePageApp.FolderTabs(false, true, within) + page.JudgeRegion(await JudgeViewAsync(read, store, within, drawnNight: chosen, tiles: true), selector), "text/html; charset=utf-8");
+});
+
+// From 24.49 the AI stock picker's trades, Paper trading's AI tab: the account chosen, its tiles and chart, its open, waiting and
+// closed trades and its past nights, every list a page of ten rows, and the past night the address names open.
+// see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
+app.MapGet("/screens/judge-trades", async (HttpRequest request, ReadApi read, SinglePageApp page, StoreLocation store) =>
+{
+    var within = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.PickerTradesRoute) : string.Empty;
+
+    int PageAt(string key) =>
+        int.TryParse(request.Query[key].FirstOrDefault(), NumberStyles.None, CultureInfo.InvariantCulture, out var at) && at > 0 ? at : 1;
+
+    var link = new JudgeTradesLink(
+        within.Word,
+        request.Query[JudgeTradesLink.AccountKey].FirstOrDefault() is { Length: > 0 } account ? account : null,
+        PageAt(JudgeTradesLink.OpenKey),
+        PageAt(JudgeTradesLink.WaitingKey),
+        PageAt(JudgeTradesLink.ClosedKey),
+        PageAt(JudgeTradesLink.NightsKey),
+        DateOnly.TryParseExact(request.Query[JudgeTradesLink.NightKey].FirstOrDefault(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var opened) ? opened : null);
+
+    return Results.Content(SinglePageApp.FolderTabs(true, true, within) + page.JudgeTradesRegion(await JudgeViewAsync(read, store, within, tiles: true), link, selector), "text/html; charset=utf-8");
 });
 
 // From 24.17 the case for promotion under the Improvement loop: every running revision on each index against its variants over

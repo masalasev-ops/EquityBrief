@@ -55,6 +55,12 @@ public static class JudgeScreen
         DateOnly[] ranNights = [.. runs.Where(run => !run.Replayed).Select(run => run.Session).Distinct().OrderDescending()];
         var shown = drawnNight is { } chosenNight && ranNights.Contains(chosenNight) ? chosenNight : ranNights.Length == 0 ? (DateOnly?)null : ranNights[0];
 
+        // From 24.49 how many stocks each live run marked worth buying, which the trades tab's past nights say.
+        var markedOn = runs
+            .Where(run => !run.Replayed && run.Outcome is "picked" or "none" && (run.Index is null || Within(run.Index, within)))
+            .GroupBy(run => (run.Index, run.Session))
+            .ToDictionary(group => group.Key, group => group.Max(run => run.Kept));
+
         runs =[.. runs.Where(run => Within(run.Index, within) && run.Standing is null or "running")];
 
         var started = runs.Any(run => !run.Replayed);
@@ -138,6 +144,25 @@ public static class JudgeScreen
         decimal? Close(string ticker, DateOnly session) =>
             closes.TryGetValue(ticker, out var held) && held.TryGetValue(session, out var close) ? Statistic.ToPrice(close) : null;
 
+        // From 24.49 a bought pick's newest close and the sessions it has been held after the session it bought on, to its
+        // sale or to that close, which the trades tab draws.
+        JudgeCardView WithNow(JudgeCardView card)
+        {
+            if (!bars.TryGetValue(card.Ticker, out var rows) || rows.Count == 0)
+            {
+                return card;
+            }
+
+            if (card.Held is not { Skipped: null } taken)
+            {
+                return card.Held is null && card.Night is { } night && rows[^1].Session > night ? card with { Opened = true } : card;
+            }
+
+            var end = taken.Ended ?? rows[^1].Session;
+
+            return card with { Held = taken with { Now = Statistic.ToPrice(rows[^1].Close), Days = rows.Count(row => row.Session > taken.Bought && row.Session <= end) } };
+        }
+
         // Each earlier version's account: its picks bought at the open after their night and walked under their plans from its
         // first night, the same money, sizing and costs as the record's, each card saying what its account did with it.
         JudgeVersionView Apart((string Key, DateOnly First, DateOnly Last) one, int number, bool fixedFive = false)
@@ -145,7 +170,7 @@ public static class JudgeScreen
             var its = (fixedFive ? ranked : every).Where(pick => KeyOf(pick) == one.Key).OrderBy(pick => pick.Session).ThenBy(pick => pick.Rank).ToArray();
             var itsTrades = its.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
             var walk = PaperAccount.Walk(settings, [.. itsTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= one.First)], Close);
-            var cards = its.Select((pick, at) => Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, itsTrades[at], walk) }).ToArray();
+            var cards = its.Select((pick, at) => WithNow(Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, itsTrades[at], walk) })).ToArray();
 
             double? noOverSamePlan = null;
             (double? Result, double? OverSamePlan)[] results = [.. itsTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noOverSamePlan))];
@@ -169,7 +194,7 @@ public static class JudgeScreen
             var acrossTrades = acrossPicks.Select(pick => TradeOf(pick.Ticker, pick.Session, pick.Hold, pick.Shape, pick.Rank, pick.TypicalMove)).ToArray();
             var acrossFirst = acrossPicks[0].Session;
             var acrossWalk = PaperAccount.Walk(settings, [.. acrossTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= acrossFirst)], Close);
-            var cards = acrossPicks.Select((pick, at) => Card(pick, acrossPicks.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, acrossTrades[at], acrossWalk), Index = pick.Index }).ToArray();
+            var cards = acrossPicks.Select((pick, at) => WithNow(Card(pick, acrossPicks.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldFor(pick, acrossTrades[at], acrossWalk), Index = pick.Index })).ToArray();
             double? noneOver = null;
             (double? Result, double? OverSamePlan)[] acrossResults = [.. acrossTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noneOver))];
 
@@ -244,6 +269,18 @@ public static class JudgeScreen
         // The index's tile: its account's return since its first session, none before it has bought a trade, its trades still
         // open and closed, and its picks tonight.
         var score = JudgeScore.Of(record);
+
+        // From 24.49 the record's own account over every night it picked, as the trades tab draws each account.
+        // see: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
+        var recordCards = judged
+            .Select(one => WithNow(Card(one.Pick, live.Count(other => other.Session == one.Pick.Session)) with { Night = one.Pick.Session, Held = HeldFor(one.Pick, one.Trade, judgeWalk) }))
+            .OrderBy(card => card.Night)
+            .ThenBy(card => card.Rank)
+            .ToArray();
+        var recordAccount = live.Length == 0
+            ? null
+            : new JudgeVersionView(recordNumber ?? 1, live.Min(pick => pick.Session), live.Max(pick => pick.Session), recordCards, score, judgeWalk.Values);
+
         var tile = new JudgeTile(
             within,
             judgeWalk.Trades.Any(one => one.Skipped is null) && judgeWalk.Values.Count > 1 && judgeWalk.Values[0].Value > 0m ? Statistic.FromRatio((judgeWalk.Values[^1].Value / judgeWalk.Values[0].Value) - 1m) : null,
@@ -295,6 +332,8 @@ public static class JudgeScreen
             Past = shown is { } chosenOn && ranNights.Length > 0 && chosenOn < ranNights[0],
             AcrossTonight = acrossView is null || shown is not { } on ? [] : [.. acrossView.Picks.Where(card => card.Night == on)],
             AcrossStillOpen = AcrossOpenOn(acrossView, shown, ranNights.Length > 0 && shown < ranNights[0]),
+            Record = recordAccount,
+            MarkedOn = markedOn,
         };
     }
 
@@ -369,7 +408,7 @@ public static class JudgeScreen
 
         var taken = walk.Trades.FirstOrDefault(one => one.Trade.Ticker == trade.Ticker && one.Trade.Bought == trade.Bought && one.Trade.Place == trade.Place);
 
-        return new JudgeHeld(trade.Bought, trade.Buy, trade.Stop, trade.Target, trade.Trail, trade.Ended, trade.Sale, JudgeAccounts.ResultOf(trade), taken is null ? NotTaken : taken.Skipped);
+        return new JudgeHeld(trade.Bought, trade.Buy, trade.Stop, trade.Target, trade.Trail, trade.Ended, trade.Sale, JudgeAccounts.ResultOf(trade), taken is null ? NotTaken : taken.Skipped) { EndedBy = trade.EndedBy };
     }
 
     // One fact of a pick's sheet: its words and its value drawn in the page's own words from the text the judge was shown, a
