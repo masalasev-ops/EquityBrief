@@ -126,13 +126,13 @@ public partial class ReadSurface
         Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(fixedPlan with { Sale = 104m, Cap = 3 }, 0.4).Ending);
         Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(fixedPlan with { Sale = 90m, Cap = 3 }, -1.0).Ending);
 
-        // A trailing plan sold before its cap closed under its trailing stop, at a gain or a loss, and at its cap its time
-        // limit.
+        // A trailing plan sold before its cap closed under its trailing stop, at a gain or a loss, and sold at its cap above
+        // its first stop of 90 on its trailing stop too, never its time limit, on the operator's answers of 2026-11-28.
         var trailing = fixedPlan with { Target = null, Trail = 10m };
 
         Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing with { Sale = 104m }, 0.4).Ending);
         Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing with { Sale = 96m }, -0.4).Ending);
-        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing with { Sale = 104m, Cap = 3 }, 0.4).Ending);
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing with { Sale = 104m, Cap = 3 }, 0.4).Ending);
 
         // A page list's trade reads the words its stored outcome reads as, wherever it was sold.
         Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(fixedPlan with { Sale = 120m, Outcome = PaperAccount.TimeLimit }, 2.0).Ending);
@@ -154,13 +154,14 @@ public partial class ReadSurface
 
         // Trailing 10 under the highest close from a stop of 90, given three sessions: closes of 108 and 112 raise its
         // stop to 102, so a close of 101 on its third and last session falls through it, and the walk sells it there under
-        // its trailing stop; the sale alone, on its cap's session, reads its time limit. A close of 103 there holds, and
-        // the cap's close ends it at its time limit.
+        // its trailing stop; the sale alone, on its cap's session above its first stop of 90, reads its trailing stop too. A
+        // close of 103 there holds and the cap's close ends it, above its first stop and so on its trailing stop, never its
+        // time limit, on the operator's answers of 2026-11-28.
         var trailing = Planned with { Target = null, Trail = 10m, Cap = 3, Ended = Week[3], Sale = 101m };
 
-        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1).Ending);
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing, 0.1).Ending);
         Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing, 0.1, Week, Closes(108m, 112m, 101m)).Ending);
-        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing with { Sale = 103m }, 0.3, Week, Closes(108m, 112m, 103m)).Ending);
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing with { Sale = 103m }, 0.3, Week, Closes(108m, 112m, 103m)).Ending);
 
         // A fixed plan whose last close stands on its stop of 90 is sold at its cap, the walks selling only under a stop.
         Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(Planned with { Cap = 3, Ended = Week[3], Sale = 90m }, -1.0, Week, Closes(95m, 92m, 90m)).Ending);
@@ -174,9 +175,11 @@ public partial class ReadSurface
         Assert.Equal(PaperAccount.UnderStop, PaperAccount.Ended(timed, -0.2).Ending);
         Assert.Equal(PaperAccount.TimeExit, PaperAccount.Ended(timed, -0.2, fortnight, (_, session) => session == Filled.AddDays(-1) || session == Filled ? 100m : 98m).Ending);
 
-        // Where a close is missing, or the closes the store holds would have ended it on another session, its sale is read.
-        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1, Week, Closes(108m, null, 101m)).Ending);
-        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1, Week, Closes(85m, 112m, 101m)).Ending);
+        // Where a close is missing, or the closes the store holds would have ended it on another session, its sale is read,
+        // above its first stop of 90 on its trailing stop, and at or under it under its stop.
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing, 0.1, Week, Closes(108m, null, 101m)).Ending);
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing, 0.1, Week, Closes(85m, 112m, 101m)).Ending);
+        Assert.Equal(PaperAccount.UnderStop, PaperAccount.Ended(trailing with { Sale = 89m }, -1.1, Week, Closes(108m, null, 89m)).Ending);
     }
 
     [Fact]
