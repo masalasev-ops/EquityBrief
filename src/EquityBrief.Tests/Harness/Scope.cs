@@ -3289,7 +3289,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A setup's panel")] = new Scoped(
             Verdict.Pass,
-            "the breakout's panel read off the rendered page with no head of its own, its pick and the stock met again one line each opening its plan and its folds closed; and every page the order names over every night of two constructed stores walked for a full card outside a plan or a panel or fold drawn open, a planted page named on each",
+            "the breakout's panel read off the rendered page with no head of its own, its pick and the stock met again one line each opening its plan and its folds closed; and every page the order names over every night of the plans' and the families' constructed stores walked for a full card outside a plan or a panel or fold drawn open, a planted page named on each",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
