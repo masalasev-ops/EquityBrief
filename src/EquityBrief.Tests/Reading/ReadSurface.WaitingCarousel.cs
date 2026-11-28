@@ -79,7 +79,11 @@ public partial class ReadSurface
             Assert.Contains($"<div class=\"home-co wo-co\" data-row=\"company\" title=\"Company {order.Ticker} Inc.\">Company {order.Ticker} Inc.</div>", card, StringComparison.Ordinal);
             Assert.Contains(FormattableString.Invariant($"data-listed=\"{order.Listed:yyyy-MM-dd}\" data-price=\"100.00\" data-close=\"{order.LastClose:0.00}\" data-last-day=\"{order.LastDay:yyyy-MM-dd}\""), card, StringComparison.Ordinal);
             Assert.Contains(System.Net.WebUtility.HtmlEncode(MarkRenderer.WaitingCondition(order)), card, StringComparison.Ordinal);
-            Assert.Matches(FormattableString.Invariant($"Buys only if it falls to \\$100\\.00\\. Last close \\${order.LastClose:#,##0.00}, [0-9.]+% above\\."), System.Net.WebUtility.HtmlDecode(card));
+            // From the operator's answers of 2026-11-28, item 5, the fall over the close, which is each order's share in the table
+            // above since its close is 100 over one less that share.
+            var share = Sixteen.Single(one => order.Ticker == FormattableString.Invariant($"W{one.At:00}")).Above;
+
+            Assert.Contains(FormattableString.Invariant($"Buys only if it falls to $100.00. Needs to fall {share * 100:0.0}% from its last close of ${order.LastClose:#,##0.00} to reach its buy price of $100.00."), System.Net.WebUtility.HtmlDecode(card), StringComparison.Ordinal);
             Assert.Contains(FormattableString.Invariant($"Placed {order.Listed:d MMM} by {setup.ToLowerInvariant()}. Cancelled if not filled by {order.LastDay:d MMM}, {PlanOrderWords.SessionsLeft(CarouselNight, order.LastDay)} trading days left."), System.Net.WebUtility.HtmlDecode(card), StringComparison.Ordinal);
             Assert.Contains($"<span class=\"fam-tag\" data-family=\"{order.Family}\">", card, StringComparison.Ordinal);
             Assert.Contains("<span class=\"wo-state\">Waiting to buy</span>", card, StringComparison.Ordinal);
@@ -157,6 +161,7 @@ public partial class ReadSurface
     {
         var said = MarkRenderer.ZoneBox(new ZoneBuy(376.21m, 20, 389.59m), CarouselNight);
 
-        Assert.Equal("Not bought unless the price falls to $376.21 by 15 Dec 2026. Tonight's close was $389.59, 3.4% above. If it rises from here, there is no trade.", said);
+        // The fall over the close, (389.59 - 376.21) / 389.59 = 3.43%, by hand.
+        Assert.Equal("Not bought unless the price falls to $376.21 by 15 Dec 2026. Needs to fall 3.4% from its last close of $389.59 to reach its buy price of $376.21. If it rises from here, there is no trade.", said);
     }
 }

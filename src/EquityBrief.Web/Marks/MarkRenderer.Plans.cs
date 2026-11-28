@@ -43,8 +43,8 @@ public sealed record PlanEntryView(string Group, string Family, string Ticker)
     // The id the list's row and the plan it opens share, unique on the page.
     public string Id => ("plan-" + Group + "-" + Family + "-" + Ticker).ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 
-    // A waiting order's distance above its buy price as a share of it, or a held trade's move since its fill.
-    public decimal? Gap => Order is { Price: { } price, LastClose: { } close } && price > 0 ? (close - price) / price : null;
+    // A waiting order's fall to its buy price as a share of its last close, the one measure every page says.
+    public decimal? Gap => EquityBrief.Core.Paper.PlanOrderWords.Gap(Order?.Price, Order?.LastClose);
 }
 
 // From the operator's order of 2026-11-26 Tonight holds one list of every stock the rules hold a plan for, in three groups,
@@ -198,7 +198,7 @@ public sealed partial class MarkRenderer
     {
         var left = DaysLeft(entry, night);
 
-        return Formatted($"{(entry.Gap is { } gap ? Formatted($"{Math.Max(gap, 0m) * 100:0.0}% to go") : "no price to go to")}<br><small>{(left is { } days ? Counted(days, "trading day left", "trading days left") : "its last day not read")}</small>");
+        return Formatted($"{Escaped(EquityBrief.Core.Paper.PlanOrderWords.ToFallShort(entry.Gap))}<br><small>{(left is { } days ? Counted(days, "trading day left", "trading days left") : "its last day not read")}</small>");
     }
 
     static string HeldFigure(PlanEntryView entry)
@@ -366,7 +366,7 @@ public sealed partial class MarkRenderer
             var left = DaysLeft(entry, night);
 
             return (order.Price is { } price
-                ? Formatted($"Bought only if the price falls to ${Price(price)} by {order.LastDay.ToString("d MMM", Invariant)}.{(order.LastClose is { } close ? Formatted($" Tonight's close was ${Price(close)}, {Math.Abs((close - price) / price * 100):0.0}% {(close >= price ? "above" : "below")}.") : string.Empty)}{(left is { } days ? " " + Capitalised(Counted(days, "trading day is left.", "trading days are left.")) : string.Empty)} If it never gets there, nothing is bought.")
+                ? Formatted($"Bought only if the price falls to ${Price(price)} by {order.LastDay.ToString("d MMM", Invariant)}.{(order.LastClose is { } close ? " " + EquityBrief.Core.Paper.PlanOrderWords.ToFall(price, close) : string.Empty)}{(left is { } days ? " " + Capitalised(Counted(days, "trading day is left.", "trading days are left.")) : string.Empty)} If it never gets there, nothing is bought.")
                 : Formatted($"Bought only if the price falls to a set level, which its plan could not place; cancelled if not filled by {order.LastDay.ToString("d MMM", Invariant)}.")) + (order.Odds is { } odds ? " " + OddsAfterTheDistance(odds, order.Price is not null) : string.Empty);
         }
 

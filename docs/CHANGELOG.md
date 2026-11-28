@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - a waiting order's distance in one measure, at a correction to 24.47
+Decision: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price
+Was:
+> ... the orders waiting to buy counted with how far the nearest stands above its buy price; ...
+> ... beside them tonight's close with how far above its price it stands and its trading days left; ...
+Now:
+> ... the orders waiting to buy counted with how far the nearest must fall from its last close to reach its buy price, from the 24.47 correction of 2026-11-28 the one measure every page says (see: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy price); ...
+> ... beside them how far the price must fall from tonight's close to reach its buy price and its trading days left; ...
+Why: the operator's answers of 2026-11-28, item 5, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the setup ledger finding a setup's history by its code and its session, and its smoke month, at a correction to 24.19
 Decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
 Corrects: the folded build of 2026-11-28 stopped on the S&P 500's standing ledger in its second quarter of 2019, a setup's code read by its first part, which held no bar on the session.

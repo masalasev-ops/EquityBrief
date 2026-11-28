@@ -108,7 +108,8 @@ public partial class FixtureExpectations
                 "QQQ, the AI stock picker on the S&P 500: not bought: opened below its range",
             ],
             summary.Of(OrderChanges.Ended).Select(change => change.Words));
-        Assert.Equal(["CCC, Bounce in an uptrend on the S&P 500: buy at $100.00, last close $101.20, 0.6 typical daily moves above"], summary.Of(OrderChanges.CouldFill).Select(change => change.Words));
+        // From the operator's answers of 2026-11-28, item 5, in the one measure: the fall over the close, 1.20 / 101.20 = 1.19%.
+        Assert.Equal(["CCC, Bounce in an uptrend on the S&P 500: Needs to fall 1.2% from its last close of $101.20 to reach its buy price of $100.00."], summary.Of(OrderChanges.CouldFill).Select(change => change.Words));
 
         // An empty night says none tonight under every heading, and no check's list without a check.
         var empty = OrderChanges.Sections(OrderChanges.Of(ChangeNight, ChangePrevious, []));
@@ -157,13 +158,14 @@ public partial class FixtureExpectations
         var cell = FillOdds.CellOf(cells, 0.5, 3);
 
         Assert.Equal(new FillOddsCell(1, 3, 30, 20), cell);
+        // From the operator's answers of 2026-11-28, item 5, the distance as the fall over the close, 1 / 101 = 0.99%.
         Assert.Equal(
-            "1.0% above its buy price, 3 trading days left. Past orders this far away with this long left were filled 67% of the time (30 orders). Its rule's past orders, not this stock's chance.",
+            "Needs to fall 1.0% from its last close of $101.00 to reach its buy price of $100.00, 3 trading days left. Past orders this far away with this long left were filled 67% of the time (30 orders). Its rule's past orders, not this stock's chance.",
             FillOdds.Line(101m, 100m, 3, cell));
 
         // Under 30 says too few, and no cell says the same.
-        Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, cell! with { Orders = 29 }));
-        Assert.Equal("1.0% above its buy price, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, null));
+        Assert.Equal("Needs to fall 1.0% from its last close of $101.00 to reach its buy price of $100.00, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, cell! with { Orders = 29 }));
+        Assert.Equal("Needs to fall 1.0% from its last close of $101.00 to reach its buy price of $100.00, 3 trading days left. Too few past orders to say how often they filled.", FillOdds.Line(101m, 100m, 3, null));
 
         // From the 24.47 correction of 2026-11-28 a plan whose sentence before it says the distance and the days draws the
         // odds alone, and one that could not place its price the whole line.

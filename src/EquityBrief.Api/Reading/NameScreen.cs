@@ -2238,9 +2238,7 @@ public static partial class NameScreen
         if (card is null && waiting is { Price: { } price } order)
         {
             var setup = (EquityBrief.Core.Families.SetupFamilies.Named(order.Family)?.Label ?? order.Family).ToLowerInvariant();
-            var gap = PlanOrderWords.Gap(price, order.LastClose) is { } above
-                ? FormattableString.Invariant($" Last close {Math.Abs(above * 100):0.0}% {(above >= 0 ? "above" : "below")}.")
-                : string.Empty;
+            var gap = order.LastClose is { } last ? " " + PlanOrderWords.ToFall(price, last) : string.Empty;
 
             return new HeadlineView(FormattableString.Invariant($"{named} has an order waiting: {setup} buys it if it falls to ${price:0.00} by {order.LastDay:d MMM}.{gap}"), Written: false);
         }
