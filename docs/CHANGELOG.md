@@ -25,6 +25,23 @@ Now:
 > It is refused while the night's lock file stands under the data root, and from the 24.47 correction of 2026-11-28 while any writer runs: before it merges it runs the worker's `writers` verb, ... and refuses the merge where any runs (see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer). `writers` run by hand says the same and writes nothing. ...
 Why: the operator's answers of 2026-11-28, items 2 and 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
 
+### 2026-11-28 - docs/BUILD_PLAN.md - 24.48's stock page ruled a plan view
+Decision: A stock's own page counts as its plan view, so its full card stands there with its report proof's six rules unchanged
+Was:
+> ... the stock's own page keeps its card until the operator rules on it, the report's proof reading that card. No rule's code version moves. ...
+Now:
+> ... the stock's own page keeps its card, the report's proof reading that card, and on the operator's ruling of 2026-11-28 counts as that stock's plan view (see: A stock's own page counts as its plan view, so its full card stands there with its report proof's six rules unchanged). No rule's code version moves. ...
+Why: the operator's answers of 2026-11-28, item 3, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
+### 2026-11-28 - CLAUDE.md - the nightly run's carve-outs stated with no count, at a correction to 24.47
+Decision: The nightly run is arithmetic only
+Corrects: the count before the carve-outs read fourteen while the list beside it named more, each carve-out added since the count was written leaving it behind.
+Was:
+> ... Fourteen carve-outs are named rather than left to be discovered, and none but the tenth asks for every member every night: ...
+Now:
+> ... The carve-outs named below are stated rather than left to be discovered, and none but the night's ask for every member's estimate trend asks for every member every night: ...
+Why: the operator's answers of 2026-11-28, item 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`: "drop the number and say 'the carve-outs named below', so it never goes stale again"; the tenth named by what it is, for the same reason.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the AI stock picker on Tonight's tab and its trades on Paper trading's, at 24.49
 Decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
 Was:
