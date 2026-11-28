@@ -141,6 +141,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "order-changes" => await OrderChangesVerb(args),
     "fill-check" => await FillCheckVerb(args),
     "fill-odds" => await FillOddsVerb(args),
+    "writers" => await WritersVerb(),
     _ => NoVerb(),
 };
 
@@ -1739,10 +1740,20 @@ static async Task<int> OutcomesAgainRun(string[] args)
     return 0;
 }
 
+// From the 24.47 correction of 2026-11-28 the writers running now, which tools/merge asks before it merges.
+// see: The merge script refuses while any writer runs and names it, read off the machine's processes and the run log
+static async Task<int> WritersVerb()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Merge.MergeGuard(store.DataRoot, store.DatabaseFile).RunAsync(Console.Out);
+}
+
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 107 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 108 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -2048,6 +2059,7 @@ static int NoVerb()
         "'order-changes --night <yyyy-MM-dd>' prints the night's order changes on the three indices, and with '--word' writes them and sends one phone message, as the AI stock picker's process does after its picks, " +
         "'fill-check' prints the waiting orders the 4:30 pm check would read, and with '--word' waits until half past four in New York, or with '--now' reads at once, asks each one's day low a page of symbols a request and sends one phone message, " +
         "'fill-odds --index <code>' prints the live rules' past orders it would read, and with '--word' walks them and writes how often each band and days left filled, " +
+        "'writers' names every writer running, each worker process and the night's lock, with the run log's newest rows, and answers 3 where any runs, which tools/merge refuses on, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

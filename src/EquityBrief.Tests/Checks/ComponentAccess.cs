@@ -351,7 +351,7 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Second source fill"),
     ];
 
-    // 24.47's order changes, the 4:30 pm check and the fill odds test.
+    // 24.47's order changes, the 4:30 pm check and the fill odds test, and from its correction of 2026-11-28 the merge guard.
     internal static string[] OrderChangesRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Order changes run"),
@@ -360,6 +360,8 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Fill check"),
         CheckReach.Key(Scope.CatalogueTable, "Fill odds test"),
         CheckReach.Key(Scope.MatrixTable, "Fill odds test"),
+        CheckReach.Key(Scope.CatalogueTable, "Merge guard"),
+        CheckReach.Key(Scope.MatrixTable, "Merge guard"),
     ];
 
     // 24.36's desk that writes what history expected of each pick of a night and of its random draw.
@@ -1160,8 +1162,9 @@ public partial class ComponentAccess
         // folder the command names, and from 23.6 the long history reader and the long ledger reader, and from 23.9 the
         // sector splits reader, which read the store and write nothing, and the paper reads, the one reader Paper trading's
         // accounts are read through, which writes nothing, and from 24.35 the pullback search, which reads the register and
-        // has the one tester walk and write its lines, writing nothing of its own.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "PaperReads", "PullbackSearch", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // has the one tester walk and write its lines, writing nothing of its own, and from the 24.47 correction the merge guard,
+        // which reads the machine's processes and the run log and writes nothing.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "MergeGuard", "PaperReads", "PullbackSearch", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SectorSplitsReader", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(
