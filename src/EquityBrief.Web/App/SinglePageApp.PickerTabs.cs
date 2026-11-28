@@ -162,15 +162,13 @@ public sealed partial class SinglePageApp
         return html.ToString();
     }
 
-    // An account's return over its values, none before it holds two.
-    static double? ReturnOver(IReadOnlyList<(DateOnly Session, decimal Value)> values) =>
-        values.Count > 1 && values[0].Value > 0m ? ReturnFrom(values[^1].Value, values[0].Value) : null;
+    // An account's return over its values as a tile draws it, none yet before it holds two.
+    static string ShareOver(IReadOnlyList<(DateOnly Session, decimal Value)> values) =>
+        values.Count > 1 && values[0].Value > 0m ? Figures.Share(ReturnFrom(values[^1].Value, values[0].Value)) : "None yet";
 
     // A comparison line read over the account's own sessions alone, so each tile and line is the same days.
     static IReadOnlyList<(DateOnly Session, decimal Value)> SameDays(IReadOnlyList<(DateOnly Session, decimal Value)> line, JudgeVersionView version) =>
         version.Values.Count == 0 ? [] : [.. line.Where(point => point.Session >= version.Values[0].Session)];
-
-    static string Share(double? value) => value is { } made ? Figures.Share(made) : "None yet";
 
     static string TradesTiles(JudgeView view, JudgeVersionView version)
     {
@@ -180,10 +178,10 @@ public sealed partial class SinglePageApp
         var started = version.Values.Count > 0 ? version.Values[0].Session.ToString("d MMM", CultureInfo.InvariantCulture) : "its first night";
         var tiles = new StringBuilder("<section class=\"ap-tiles\" data-tiles>");
 
-        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"account\"><span class=\"k\">Its account</span><b>{Share(ReturnOver(version.Values))}</b><span class=\"s\">since {Escaped(started)}</span></div>");
-        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"rules\"><span class=\"k\">The rules' trades</span><b>{Share(ReturnOver(Line(1)))}</b><span class=\"s\">same days, same sizing</span></div>");
-        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"random\"><span class=\"k\">Random picks</span><b>{Share(ReturnOver(Line(2)))}</b><span class=\"s\">the middle of 1,000 random accounts</span></div>");
-        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"index\"><span class=\"k\">Just holding the index</span><b>{Share(ReturnOver(Line(3)))}</b><span class=\"s\">over the same days</span></div>");
+        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"account\"><span class=\"k\">Its account</span><b>{ShareOver(version.Values)}</b><span class=\"s\">since {Escaped(started)}</span></div>");
+        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"rules\"><span class=\"k\">The rules' trades</span><b>{ShareOver(Line(1))}</b><span class=\"s\">same days, same sizing</span></div>");
+        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"random\"><span class=\"k\">Random picks</span><b>{ShareOver(Line(2))}</b><span class=\"s\">the middle of 1,000 random accounts</span></div>");
+        tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"index\"><span class=\"k\">Just holding the index</span><b>{ShareOver(Line(3))}</b><span class=\"s\">over the same days</span></div>");
         tiles.Append(CultureInfo.InvariantCulture, $"<div class=\"t\" data-tile=\"trades\"><span class=\"k\">Trades</span><b>{open} open · {version.Score.Closed} closed</b><span class=\"s\">{version.Score.Closed} of {version.Score.Needed} closed for a firm verdict</span></div>");
         tiles.Append("</section>");
 
@@ -260,7 +258,7 @@ public sealed partial class SinglePageApp
             var held = pick.Held!;
             var whole = string.Equals(pick.Shape, JudgeMenu.Whole, StringComparison.Ordinal);
             var target = held.Target ?? pick.Target;
-            var since = held.Now is { } now && held.Paid > 0m ? (double?)Core.Prices.Statistic.FromRatio((now / held.Paid) - 1m) : null;
+            double? since = held.Now is { } now && held.Paid > 0m ? Core.Prices.Statistic.FromRatio((now / held.Paid) - 1m) : null;
             var limit = JudgeMenu.HoldOf(pick.Hold)?.Sessions;
 
             return "<tr data-row>" + Stock(pick)
@@ -303,7 +301,7 @@ public sealed partial class SinglePageApp
     public static string WhereItStands(JudgeCardView pick)
     {
         var ceiling = pick.Range is { } range ? Dollars(Core.Prices.Statistic.ToPrice(range.Ceiling)) : null;
-        var floor = pick.Range is { Floor: { } low } ? Core.Prices.Statistic.ToPrice(low) : (decimal?)null;
+        decimal? floor = pick.Range is { Floor: { } low } ? Core.Prices.Statistic.ToPrice(low) : null;
 
         return pick.Held switch
         {
@@ -363,7 +361,7 @@ public sealed partial class SinglePageApp
         string Row(JudgeCardView pick)
         {
             var held = pick.Held!;
-            var result = held.Sold is { } sold && held.Paid > 0m ? (double?)Core.Prices.Statistic.FromRatio((sold / held.Paid) - 1m) : null;
+            double? result = held.Sold is { } sold && held.Paid > 0m ? Core.Prices.Statistic.FromRatio((sold / held.Paid) - 1m) : null;
 
             return "<tr data-row>" + Stock(pick)
                 + $"<td>{DayOf(held.Bought)} at {Dollars(held.Paid)}</td>"
