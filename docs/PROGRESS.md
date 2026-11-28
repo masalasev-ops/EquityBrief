@@ -24138,3 +24138,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
 Carried:    none.
+
+### 24.47 - correction: a waiting order's distance said in one measure, the fall from its last close to its buy price   2026-11-28
+
+Ruled:      the operator's answers of 2026-11-28, item 5, kept word for word in `prompts/`: one distance measure on Home,
+            Tonight's plans and the order changes, "Needs to fall x.x% from its last close of $x to reach its buy price of $x."
+            One decision: A waiting order's distance is said in one measure everywhere, the fall from its last close to its buy
+            price.
+Found:      one order's distance was said three ways: over its buy price on a plan and its list, over its last close on the
+            waiting cards and a new pick's box, and in typical daily moves in the order changes; ABNB of 27 Nov read 4.4% in one
+            place and 4.3% in another.
+Built:      one function in the core says the fall over the last close in the operator's words, and every place draws it: Home's
+            waiting cards and box, Tonight's plans, their list as "x.x% to fall" and their tile, the order changes and their
+            message, the fill odds line and a stock's own page. Which orders the order changes list as could fill tomorrow is
+            unchanged.
+Tests:      two new: the measure in the operator's words worked by hand, and no shipped source saying it another way.
+Mutated:    m66, the property that the fall is over the last close: the divisor set to the buy price; the measure test went
+            red; reverted before the run below.
+Claims:     1814, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4143 of 4143 tests ran with none failed, migrations 0 to 179
+            with none pending, schema version 179, against `data-ci` and never `data`; the phase report 68 tables, 1814 claims,
+            1814 passing, none out of scope and none unexamined, 1829 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
+Carried:    none.
