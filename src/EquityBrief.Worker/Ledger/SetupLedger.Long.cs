@@ -146,6 +146,13 @@ public sealed partial class SetupLedger
             ? FormattableString.Invariant($"ledger-build: every session of {Stamp(prepared.Calendar[first])} to {Stamp(prepared.Calendar[last])} holding a setup is in the long ledger already, which stays as written until the restart")
             : FormattableString.Invariant($"ledger-build: {sessionsToWrite.Length} session(s) of the long ledger to read of the {last - first + 1} in 2005 to 2018, under both readings"));
 
+        // From the 24.19 correction of 2026-11-28 the smoke run before the long ledger writes anything.
+        // see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+        if (sessionsToWrite.Length > 0 && !SmokeHolds(prepared, output))
+        {
+            return SmokeRefused;
+        }
+
         for (var taken = 0; taken < sessionsToWrite.Length; taken += ChunkSessions)
         {
             var chunkSessions = sessionsToWrite.Skip(taken).Take(ChunkSessions).ToArray();
@@ -362,7 +369,7 @@ public sealed partial class SetupLedger
         {
             while (await reader.ReadAsync(cancellation))
             {
-                if (!reader.IsDBNull(7) || reader.GetInt64(12) != 0 || !prepared.Places.TryGetValue(reader.GetString(1), out var name) || !prepared.Stopped[name])
+                if (!reader.IsDBNull(7) || reader.GetInt64(12) != 0 || Array.BinarySearch(prepared.Calendar, Date(reader.GetString(2))) is not (>= 0 and var on) || prepared.PlaceAt(reader.GetString(1), on) is not (>= 0 and var name) || !prepared.Stopped[name])
                 {
                     continue;
                 }

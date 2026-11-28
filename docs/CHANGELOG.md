@@ -7,6 +7,15 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the setup ledger finding a setup's history by its code and its session, and its smoke month, at a correction to 24.19
+Decision: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds
+Corrects: the folded build of 2026-11-28 stopped on the S&P 500's standing ledger in its second quarter of 2019, a setup's code read by its first part, which held no bar on the session.
+Was:
+> ... a night with no cap until the pin move (see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session)</td></tr>
+Now:
+> ... (see: A build reads a stock's short interest only from the two newest settlements FINRA published before the session); and from the 24.19 correction of 2026-11-28 a build and the night find a setup's history by its code and its session together, ... refusing to start where that run stops or two parts of a code hold one session (see: A ledger build finds a setup's history by its code and its session, and runs one month over every code before it rebuilds)</td></tr>
+Why: the operator's answers of 2026-11-28, item 1, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the setups' table's rows closed until clicked, each opening a panel of its own
 Decision: Tonight's setup rows start closed and each opens a panel of its own on a click
 Was:
