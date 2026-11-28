@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-28 - docs/ARCHITECTURE.html - the fill check at 21:30 UTC and the merge guard, at a correction to 24.47
+Decision: The fill check is scheduled at 21:30 UTC on trading days, after the close all year
+Was:
+> <td>a process of its own on each trading day, scheduled at 20:30 UTC and reading at half past four in New York, <code>fill-check --word</code></td>
+Now:
+> <td>a process of its own on each trading day, from the 24.47 correction of 2026-11-28 scheduled at 21:30 UTC, after the close all year, reading once half past four in New York has passed, <code>fill-check --word</code> (see: The fill check is scheduled at 21:30 UTC on trading days, after the close all year)</td>
+Why: the operator's answers of 2026-11-28, item 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`; the merge guard's catalogue and matrix rows added beside the fill odds test's (see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer).
+
+### 2026-11-28 - docs/RUNBOOK.md - the fill check at 21:30 UTC and the merge refused while any writer runs, at a correction to 24.47
+Decision: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer
+Was:
+> ... Register it with the scheduler at 20:30 UTC on weekdays, which is half past four in New York in summer and half past three in winter: it waits by the clock until half past four in New York, so it reads the whole session all year, and on a day the exchange is closed it asks nothing. ...
+> It is refused while the night's lock file stands under the data root, and is run only when no night, off-peak run, local run, ledger build or monthly run is writing, as the merge rule says. ...
+Now:
+> ... Register it with the scheduler at 21:30 UTC on weekdays, which is half past four in New York in winter and half past five in summer, after the close all year: ... (see: The fill check is scheduled at 21:30 UTC on trading days, after the close all year). ...
+> It is refused while the night's lock file stands under the data root, and from the 24.47 correction of 2026-11-28 while any writer runs: before it merges it runs the worker's `writers` verb, ... and refuses the merge where any runs (see: tools/merge refuses while any writer runs, read off the machine's processes and the run log, and names the writer). `writers` run by hand says the same and writes nothing. ...
+Why: the operator's answers of 2026-11-28, items 2 and 6, kept word for word in `prompts/2026-11-28-answers-to-the-9am-report.md`.
+
 ### 2026-11-28 - docs/ARCHITECTURE.html - the AI stock picker on Tonight's tab and its trades on Paper trading's, at 24.49
 Decision: The AI stock picker's trades are drawn on Paper trading's own tab, every list paged at ten rows and one past night open at a time
 Was:

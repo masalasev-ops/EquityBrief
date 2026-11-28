@@ -351,7 +351,7 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Second source fill"),
     ];
 
-    // 24.47's order changes, the 4:30 pm check and the fill odds test.
+    // 24.47's order changes, the 4:30 pm check and the fill odds test, and from its correction of 2026-11-28 the merge guard.
     internal static string[] OrderChangesRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Order changes run"),
@@ -360,6 +360,8 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Fill check"),
         CheckReach.Key(Scope.CatalogueTable, "Fill odds test"),
         CheckReach.Key(Scope.MatrixTable, "Fill odds test"),
+        CheckReach.Key(Scope.CatalogueTable, "Merge guard"),
+        CheckReach.Key(Scope.MatrixTable, "Merge guard"),
     ];
 
     // 24.36's desk that writes what history expected of each pick of a night and of its random draw.

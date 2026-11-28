@@ -33,7 +33,8 @@ public partial class ReadSurface
         Assert.Equal("The store needs migrating.", SinglePageApp.NeedsMigrating);
 
         var merge = File.ReadAllText(Path.Combine(Repository.Root, "tools", "merge"));
-        var steps = new[] { "night.lock", "gh pr merge \"$number\" --merge --delete-branch", "git checkout main", "git pull --ff-only", "-- migrate" }
+        // From the 24.47 correction of 2026-11-28 the writers verb asked after the lock and before the merge.
+        var steps = new[] { "night.lock", "if ! dotnet run --project src/EquityBrief.Worker -- writers; then", "gh pr merge \"$number\" --merge --delete-branch", "git checkout main", "git pull --ff-only", "-- migrate" }
             .Select(step => merge.IndexOf(step, StringComparison.Ordinal))
             .ToArray();
 
