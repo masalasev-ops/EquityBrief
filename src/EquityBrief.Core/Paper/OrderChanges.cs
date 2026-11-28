@@ -242,10 +242,14 @@ public static class OrderChanges
         }
     }
 
-    static string Exits(PaperTrade trade) =>
+    // A trade with no take-profit says how it sells instead: its stop raised as the price climbs, its own exit signal, or its
+    // time limit.
+    public static string Exits(PaperTrade trade) =>
         (trade.Stop, trade.Target) switch
         {
             ({ } stop, { } target) => $"set the stop at ${Price(stop)} and the take-profit at ${Price(target)}",
+            ({ } stop, null) when trade.Trail is not null => $"set the stop at ${Price(stop)}, raised as the price climbs and never lowered, with no take-profit",
+            ({ } stop, null) when trade.Exit is not null => $"set the stop at ${Price(stop)}; it sells on its own exit signal, with no take-profit",
             ({ } stop, null) => $"set the stop at ${Price(stop)}; it sells by its time limit, with no take-profit",
             (null, { } target) => $"set the take-profit at ${Price(target)}; it places no stop",
             _ => "it places no stop and no take-profit; its book sells it at a reshuffle",

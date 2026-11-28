@@ -23814,3 +23814,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             claims, 1806 passing, none out of scope and none unexamined, 1821 placements and verdicts reconciled against a
             floor of 34, 57 checks on the roster run and passed.
 Carried:    none beyond what waits above.
+
+### 24.47 - correction: a fill with no take-profit says how it sells, a rising stop or its own exit signal before a time limit   2026-11-28
+
+Found:      reading 24.48's screens over a constructed night, the order changes said a breakout's fill "sells by its time
+            limit, with no take-profit" where its stop is raised as the price climbs, and said the same of the dip's exit on
+            its own signal.
+Built:      the fill's words read the trade's own exits: a stop raised as the price climbs and never lowered, its own exit
+            signal, and a time limit only where neither is set. No rule, figure or decision changes.
+Tests:      the order changes' test works the three by hand.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the new guard taken out at the one place that decides it. m52 the rising stop
+            not read: red. Filtered to its test and reverted before anything was committed.
+Claims:     1806, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 4117 of 4117 tests ran with none failed, migrations 0 to 178
+            with none pending, schema version 178, against `data-ci` and never `data`; the phase report 68 tables, 1806
+            claims, 1806 passing, none out of scope and none unexamined, 1821 placements and verdicts reconciled against a
+            floor of 34, 57 checks on the roster run and passed.
+Carried:    a sale of a trade with a rising stop is said as on its time limit where it sold over its first stop; the
+            paper account's row holds no raised stop to tell the two apart, left for the operator.
